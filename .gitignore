@@ -1,0 +1,5 @@
+# Ignore gunk from Futhark test suite runner.
+*.bin
+*.compilerout
+*.interpreterout
+*.c
