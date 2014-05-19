@@ -59,7 +59,7 @@ fun real erf(real x) =
 ////////////////////////////////////////////////////////////////////////
 
 fun real to_solve(int fid, [{real,real}] scalesbbi, real yhat) =
-    if(fid = 33) then (yhat+3.0)*(yhat-1.0)*(yhat-1.0)
+    if(fid == 33) then (yhat+3.0)*(yhat-1.0)*(yhat-1.0)
     else
         let tmps = map( fn real ( {real,real} scalesbbi ) =>
                             let {scales, bbi} = scalesbbi in
@@ -99,13 +99,13 @@ rootFinding_Brent(int fid, [{real,real}] scalesbbi, real lb, real ub, real tol, 
     loop ({a,b,c,d,fa,fb,fc,mflag,it}) =
         for i < iter_max do
 
-            if( fb=0.0 || abs(b-a)<tol )
+            if( fb==0.0 || abs(b-a)<tol )
             then {a,b,c,d,fa,fb,fc,mflag,it}
             else
 
                 // the rest of the code implements the else branch!
 
-                let s = if( fa=fc || fb = fc )
+                let s = if( fa==fc || fb == fc )
                         then    b-fb*(b-a)/(fb-fa)
 
                         else let s1 = (a*fb*fc)/( (fa-fb)*(fa-fc) ) in
@@ -139,7 +139,7 @@ rootFinding_Brent(int fid, [{real,real}] scalesbbi, real lb, real ub, real tol, 
 
                 // reporting non-convergence!
                 let dummy =
-                    if(i = iter_max-1)
+                    if(i == iter_max-1)
                     then let w = trace("# ERROR: Brent method not converged, error: ") in
                          let w = trace(fb) in 0
                     else 0
@@ -287,7 +287,7 @@ fun {real,real,real} bigv({real,real,real,real,real} genome, real tau) =
     let {g_a, g_b, g_rho, g_nu, g_sigma} = genome in
 
     // sanity check; this check should be hoisted higher up
-    let g_sigma = if(g_sigma = 0.0) then 1.0e-10 else g_sigma in
+    let g_sigma = if(g_sigma == 0.0) then 1.0e-10 else g_sigma in
 
     let ba = b_fun(g_a,        tau) in
     let bb = b_fun(g_b,        tau) in
@@ -541,7 +541,7 @@ pricer_of_swaption( real                       today,
     let ci = map(   fn real (int i) =>
                         let {d_beg,d_end} = schedulei[i]   in
                         let tau = date_act_365(d_end,d_beg)in
-                        if(i = n_schedi-1)
+                        if(i == n_schedi-1)
                         then 1.0 + tau*strike
                         else       tau*strike
                     , iota(n_schedi)
@@ -667,7 +667,7 @@ fun real exactYhat( int n_schedi,
 
     let {bai, bbi, aici, log_aici} = unzip(babaicis) in
 
-    if(n_schedi = 1)
+    if(n_schedi == 1)
     then lo
     else
          let log_s = log(up)                  in
@@ -704,8 +704,8 @@ fun real exactYhat( int n_schedi,
               let {root, iteration, error} =
                     rootFinding_Brent(1, zip(scales, bbi), root_lb, root_ub, 1.0e-4, 1000) in
 
-              if      ( error = -infinity() ) then y0 - 1.0
-              else if ( error =  infinity() ) then y1 + 1.0
+              if      ( error == -infinity() ) then y0 - 1.0
+              else if ( error ==  infinity() ) then y1 + 1.0
               else                                 root
 
 ////////////////////////////////////////////////////////////////
@@ -857,7 +857,7 @@ fun real minutes_in_day  () = 24.0*60.0
 fun int date_of_gregorian( {int,int,int,int,int} date) =
     let {year, month, day, hour, mins} = date in
     let ym =
-        if(month = 1 || month = 2)
+        if(month == 1 || month == 2)
         then    ( 1461 * ( year + 4800 - 1 ) ) / 4 +
                   ( 367 * ( month + 10 ) ) / 12 -
                   ( 3 * ( ( year + 4900 - 1 ) / 100 ) ) / 4
@@ -886,7 +886,7 @@ gregorian_of_date ( int minutes_since_epoch ) =
     //let daytime = minutes_since_epoch mod minutes_in_day in
     let daytime = MOD( minutes_since_epoch, minutes_in_dayI() ) in
 
-    if ( daytime = minutes_to_noonI() )
+    if ( daytime == minutes_to_noonI() )
 
     //then [year = y; month = m; day = d; hour = 12; minute = 0]
     then {y, m, d, 12, 0}
@@ -899,10 +899,10 @@ fun bool check_date(int year, int month, int day) =
     let tmp1 = ( 1 <= day && 1 <= month && month <= 12 && 1980 <= year && year <= 2299 ) in
     let tmp2 = ( day <= 28 ) in
 
-    let tmp3 = if      ( month = 2 )
+    let tmp3 = if      ( month == 2 )
                then let tmpmod = MOD(year, 100) in
-                        ( day = 29 && MOD(year, 4) = 0 && ( year = 2000 || (not (tmpmod = 0)) ) )
-               else if ( month = 4 || month = 6 || month = 9 || month = 11 )
+                        ( day == 29 && MOD(year, 4) == 0 && ( year == 2000 || (not (tmpmod == 0)) ) )
+               else if ( month == 4 || month == 6 || month == 9 || month == 11 )
                     then ( day <= 30 )
                     else ( day <= 31 )
 
@@ -914,12 +914,12 @@ fun real days_between(real t1, real t2) =
 
 fun real date_act_365(real t1, real t2) = days_between(t1, t2) / 365.0
 
-fun bool leap(int y) = ( MOD(y,4) = 0  && ( (not (MOD(y,100)=0)) || (MOD(y,400)=0) ) )
+fun bool leap(int y) = ( MOD(y,4) == 0  && ( (not (MOD(y,100)==0)) || (MOD(y,400)==0) ) )
 
 fun int end_of_month(int year, int month) =
-    if      ( month = 2 && leap(year) )                           then 29
-    else if ( month = 2)                                          then 28
-    else if ( month = 4 || month = 6 || month = 9 || month = 11 ) then 30
+    if      ( month == 2 && leap(year) )                           then 29
+    else if ( month == 2)                                          then 28
+    else if ( month == 4 || month == 6 || month == 9 || month == 11 ) then 30
     else                                                               31
 
 

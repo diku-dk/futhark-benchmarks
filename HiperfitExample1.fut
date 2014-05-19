@@ -78,8 +78,8 @@ fun *[[real]] explicitX
      [[real]] myResult, [[real]] myMuX, [[real]] myDx, [[real]] myDxx, [[real]] myVarX) =
     map(fn *[real] (int j) =>
         map(fn real (int i) =>
-            let kl = if i = 0 then 1 else 0 in
-            let ku = 2 - if i=numX-1 then 1 else 0 in
+            let kl = if i == 0 then 1 else 0 in
+            let ku = 2 - if i==numX-1 then 1 else 0 in
             reduce(op +, dtInv*myResult[i,j],
                    map(fn real (int k) =>
                        let k = k + kl in
@@ -94,8 +94,8 @@ fun *[[real]] explicitY
      [[real]] myResult, [[real]] myMuY, [[real]] myDy, [[real]] myDyy, [[real]] myVarY) =
     map(fn *[real] (int i) =>
         map(fn real (int j) =>
-            let ll = 1 * (if j = 0 then 1 else 0) in
-            let lu = 2 - 1*(if j=numY-1 then 1 else 0) in
+            let ll = 1 * (if j == 0 then 1 else 0) in
+            let lu = 2 - 1*(if j==numY-1 then 1 else 0) in
             reduce(op +, 0.0,
                    map(fn real (int l) =>
                        let l = l + ll in

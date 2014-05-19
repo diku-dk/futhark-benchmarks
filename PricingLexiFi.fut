@@ -6,7 +6,7 @@ fun int grayCode(int x) = (x >> 1) ^ x
 fun int index([int] arr, int i) = arr[i]
 
 fun bool testBit(int n, int ind) =
-    let t = (1 << ind) in (n & t) = t
+    let t = (1 << ind) in (n & t) == t
 
 /////////////////////////////////////////////////////////////////
 //// DIFFICULT VERSION: filter is hoisted outside map:
@@ -165,7 +165,7 @@ fun [real] brownianBridgeDates (
             let zi = gauss [i+1] in
             let tmp= rw[i+1] * wk + sd[i+1] * zi in
 
-            let bbrow[ l ] = if( (j + 1) = 0)   // if(j=-1)
+            let bbrow[ l ] = if( (j + 1) == 0)   // if(j=-1)
                              then tmp
                              else tmp + lw[i+1] * bbrow[j]
             in  bbrow
