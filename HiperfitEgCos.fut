@@ -84,13 +84,16 @@ fun [[real]] explicitX
         map(fn real (int i) =>
             let res = dtInv*myResult[i,j] in
             let {{dx0, dx1, dx2}, {dxx0, dxx1, dxx2}} = {myDx[i], myDxx[i]} in
-            let res = res +
-                      if(i == 0) then 0.0
-                      else  0.5 * (myMuX[i,j]*dx0+0.5*myVarX[i,j]*dxx0) * myResult[i-1,j] in
+            let res = res + 
+                      if ( i < 1 )
+                      then 0.0  
+                      else 0.5 * (myMuX[i,j]*dx0+0.5*myVarX[i,j]*dxx0) * myResult[i-1,j] in
+
             let res = res + 0.5 * (myMuX[i,j]*dx1+0.5*myVarX[i,j]*dxx1) * myResult[i  ,j] in
             let res = res +
-                      if(i == numX-1) then 0.0
-                      else  0.5 * (myMuX[i,j]*dx2+0.5*myVarX[i,j]*dxx2) * myResult[i+1,j]
+                      if(i <= numX-2) 
+                      then 0.5 * (myMuX[i,j]*dx2+0.5*myVarX[i,j]*dxx2) * myResult[i+1,j]
+                      else 0.0
             in res
         , iota(numX))
     , iota(numY))
@@ -102,13 +105,15 @@ fun [[real]] explicitY
         map(fn real (int j) =>
             let res = 0.0 in
             let {{dy0, dy1, dy2}, {dyy0, dyy1, dyy2}} = {myDy[j], myDyy[j]} in
-            let res = res +
-                      if(j == 0) then 0.0
-                      else  (myMuY[i,j]*dy0+0.5*myVarY[i,j]*dyy0) * myResult[i,j-1] in
+            let res = res + 
+                      if ( 1 <= j ) 
+                      then (myMuY[i,j]*dy0+0.5*myVarY[i,j]*dyy0) * myResult[i,j-1]
+                      else 0.0 in
             let res = res + (myMuY[i,j]*dy1+0.5*myVarY[i,j]*dyy1) * myResult[i,j  ] in
             let res = res +
-                      if(j == numY-1) then 0.0
-                      else  (myMuY[i,j]*dy2+0.5*myVarY[i,j]*dyy2) * myResult[i,j+1]
+                      if ( numY-2 < j )
+                      then 0.0 
+                      else (myMuY[i,j]*dy2+0.5*myVarY[i,j]*dyy2) * myResult[i,j+1]
             in res
         , iota(numY))
     , iota(numX))
@@ -156,8 +161,10 @@ fun *[[real]] rollback
             , zip(transpose(u), v, replicate(numX, myDy), replicate(numX, myDyy), myMuY, myVarY))
     in myResult
 
-fun real value(real s0, real strike, real t, real alpha, real nu, real beta) =
-    let {numX, numY, numT} = {32, 16, 32} in //(256, 32, 64) in
+
+fun real value( int  numX,  int  numY,   int  numT, 
+                real s0,    real strike, real t, 
+                real alpha, real nu,     real beta ) = 
     let {myXindex, myYindex, myX, myY, myTimeline, myMuX, myVarX, myMuY, myVarY} =
         initGrid(s0, alpha, nu, t, numX, numY, numT) in
     let {myDx, myDxx} = initOperator(myX) in
@@ -175,7 +182,11 @@ fun real value(real s0, real strike, real t, real alpha, real nu, real beta) =
             {myResult, myMuX, myVarX, myMuY, myVarY} in
     myResult[myXindex,myYindex]
 
-fun [real] main (int outer_loop_count, real s0, real strike, real t, real alpha, real nu, real beta) =
+
+fun [real] main (   int outer_loop_count, int numX, int numY, int numT, 
+                    real s0, real strike, real t, real alpha, real nu, real beta ) =
+
     let strikes = map(fn real (int i) => 0.001*toReal(i), iota(outer_loop_count)) in
-    let res = map(fn real (real x) => value(s0, x, t, alpha, nu, beta), strikes) in
+    let res = map(fn real (real x) => value(numX, numY, numT, s0, x, t, alpha, nu, beta), strikes) in
     res
+
