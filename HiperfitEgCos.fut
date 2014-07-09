@@ -47,22 +47,23 @@ fun int maxInt(int x, int y) = if y < x then x else y
 
 fun *[[real]] setPayoff(real strike, [real] myX, [real] myY) =
     let n = size(0, myY) in
-    map(fn *[real] (real xi) => replicate(n, max(xi-strike,0.0)), myX)
+    map(fn *[real] (real xi) => copy(replicate(n, max(xi-strike,0.0))), myX)
 
 // Returns new myMuX, myVarX, myMuY, myVarY.
 fun {*[[real]] , *[[real]] , *[[real]] , *[[real]]} updateParams
     ([real] myX, [real] myY, [real] myTimeline, int g, real alpha, real beta, real nu) =
-    unzip (map(fn {*[real],*[real],*[real],*[real]} (real xi) =>
-           unzip (map (fn {real,real,real,real} (real yj) =>
-                  {0.0,
-                   exp(2.0*(beta*log(xi) + yj - 0.5*nu*nu*myTimeline[g])),
-                   0.0,
-                   nu * nu}, myY)), myX))
+    copy(unzip (map(fn {[real],[real],[real],[real]} (real xi) =>
+                      unzip (map (fn {real,real,real,real} (real yj) =>
+                                    {0.0,
+                                     exp(2.0*(beta*log(xi) + yj - 0.5*nu*nu*myTimeline[g])),
+                                     0.0,
+                                     nu * nu}, myY)), myX)))
 
 fun {*[real],[real]} tridag
     ([real] a, [real] b, [real] c, [real] r, int n) =
     let bet = 1.0/b[0] in
-    let {u, uu} = {replicate(n,0.0), replicate(n,0.0)} in
+    let {u, uu} = {copy(replicate(n,0.0)),
+                   copy(replicate(n,0.0))} in
     let u[0] = r[0] * bet in
     loop ({u, uu, bet}) =
       for j < n-1 do

@@ -152,7 +152,7 @@ fun [real] brownianBridgeDates (
     let rw = bb_data[2] in
 
 //  let gauss[ bi[0]-1 ] = sd[0] * gauss[0]  in
-    let bbrow = replicate(num_dates, 0.0)   in
+    let bbrow = copy(replicate(num_dates, 0.0))   in
     let bbrow[ bi[0]-1 ] = sd[0] * gauss[0] in
 
     loop (bbrow) =

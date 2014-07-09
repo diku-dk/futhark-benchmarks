@@ -43,7 +43,7 @@ fun int maxInt(int x, int y) = if y < x then x else y
 
 fun *[[real]] setPayoff(real strike, [real] myX, [real] myY) =
     let n = size(0, myY) in
-    map(fn *[real] (real xi) => replicate(n, max(xi-strike,0.0)), myX)
+    copy(map(fn [real] (real xi) => replicate(n, max(xi-strike,0.0)), myX))
 
 // Returns new myMuX, myVarX, myMuY, myVarY.
 fun {[[real]] , [[real]] , [[real]] , [[real]]} updateParams
@@ -58,7 +58,8 @@ fun {[[real]] , [[real]] , [[real]] , [[real]]} updateParams
 fun {[real],[real]} tridag
     ([real] a, [real] b, [real] c, [real] r, int n) =
     let bet = 1.0/b[0] in
-    let {u, uu} = {replicate(n,0.0), replicate(n,0.0)} in
+    let {u, uu} = {copy(replicate(n,0.0)),
+                   copy(replicate(n,0.0))} in
     let u[0] = r[0] * bet in
     loop ({u, uu, bet}) =
       for j < n-1 do
@@ -76,34 +77,34 @@ fun {[real],[real]} tridag
 fun *[[real]] explicitX
     (int numX, int numY, real dtInv,
      [[real]] myResult, [[real]] myMuX, [[real]] myDx, [[real]] myDxx, [[real]] myVarX) =
-    map(fn *[real] (int j) =>
-        map(fn real (int i) =>
-            let kl = if i == 0 then 1 else 0 in
-            let ku = 2 - if i==numX-1 then 1 else 0 in
-            reduce(op +, dtInv*myResult[i,j],
-                   map(fn real (int k) =>
-                       let k = k + kl in
-                       0.5 * (myMuX[i,j]*myDx[i,k]+0.5*myVarX[i,j]*myDxx[i,k])
-                           * myResult[i+k-1,j],
-                       iota(ku-kl+1))),
-            iota(numX)),
-        iota(numY))
+    copy(map(fn [real] (int j) =>
+               map(fn real (int i) =>
+                     let kl = if i == 0 then 1 else 0 in
+                     let ku = 2 - if i==numX-1 then 1 else 0 in
+                     reduce(op +, dtInv*myResult[i,j],
+                            map(fn real (int k) =>
+                                  let k = k + kl in
+                                  0.5 * (myMuX[i,j]*myDx[i,k]+0.5*myVarX[i,j]*myDxx[i,k])
+                                * myResult[i+k-1,j],
+                                iota(ku-kl+1))),
+                   iota(numX)),
+               iota(numY)))
 
 fun *[[real]] explicitY
     (int numX, int numY, real dtInv,
      [[real]] myResult, [[real]] myMuY, [[real]] myDy, [[real]] myDyy, [[real]] myVarY) =
-    map(fn *[real] (int i) =>
-        map(fn real (int j) =>
-            let ll = 1 * (if j == 0 then 1 else 0) in
-            let lu = 2 - 1*(if j==numY-1 then 1 else 0) in
-            reduce(op +, 0.0,
-                   map(fn real (int l) =>
-                       let l = l + ll in
-                           (myMuY[i,j]*myDy[j,l]+0.5*myVarY[i,j]*myDyy[j,l])
-                           * myResult[i,j+l-1],
-                   iota(lu-ll+1))),
-            iota(numY)),
-        iota(numX))
+    copy(map(fn [real] (int i) =>
+               map(fn real (int j) =>
+                     let ll = 1 * (if j == 0 then 1 else 0) in
+                     let lu = 2 - 1*(if j==numY-1 then 1 else 0) in
+                     reduce(op +, 0.0,
+                            map(fn real (int l) =>
+                                  let l = l + ll in
+                                  (myMuY[i,j]*myDy[j,l]+0.5*myVarY[i,j]*myDyy[j,l])
+                                * myResult[i,j+l-1],
+                                iota(lu-ll+1))),
+                   iota(numY)),
+               iota(numX)))
 
 fun *[[real]] rollback
     ([real] myX, [real] myY, [real] myTimeline, *[[real]] myResult,
@@ -132,7 +133,7 @@ fun *[[real]] rollback
                                   dtInv - 0.5*(myMuY[i,j]*myDy[j,1]+0.5*myVarY[i,j]*myDyy[j,1]),
                                   -0.5*(myMuY[i,j]*myDy[j,2]+0.5*myVarY[i,j]*myDyy[j,2])},
                                   iota(numY))) in
-       let y = replicate(numY, 0.0) in
+       let y = copy(replicate(numY, 0.0)) in
        loop (y) = for j < numY do
                     let y[j] = dtInv * u[j,i] - 0.5*v[i,j] in
                     y in
