@@ -141,8 +141,7 @@ fun *[[real]] rollback
        let myResult[i] = ri in myResult
     in myResult
 
-fun real value(real s0, real strike, real t, real alpha, real nu, real beta) =
-    let {numX, numY, numT} = {32, 16, 32} in //(256, 32, 64) in
+fun real value(int numX, int numY, int numT, real s0, real strike, real t, real alpha, real nu, real beta) =
     let {myXindex, myYindex, myX, myY, myTimeline, myMuX, myVarX, myMuY, myVarY} =
         initGrid(s0, alpha, nu, t, numX, numY, numT) in
     let {myDx, myDxx} = initOperator(myX) in
@@ -162,7 +161,7 @@ fun real value(real s0, real strike, real t, real alpha, real nu, real beta) =
             myResult in
     myResult[myXindex,myYindex]
 
-fun [real] main (int outer_loop_count, real s0, real strike, real t, real alpha, real nu, real beta) =
+fun [real] main (int outer_loop_count, int numX, int numY, int numT, real s0, real strike, real t, real alpha, real nu, real beta) =
     let strikes = map(fn real (int i) => 0.001*toReal(i), iota(outer_loop_count)) in
-    let res = map(fn real (real x) => value(s0, x, t, alpha, nu, beta), strikes) in
+    let res = map(fn real (real x) => value(numX, numY, numT, s0, x, t, alpha, nu, beta), strikes) in
     res
