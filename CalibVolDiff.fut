@@ -147,7 +147,6 @@ fun real value(int numX, int numY, int numT, real s0, real strike, real t, real 
     let {myDx, myDxx} = initOperator(myX) in
     let {myDy, myDyy} = initOperator(myY) in
     let myResult = setPayoff(strike, myX, myY) in
-    let indices = map(fn int (int i) => numT-2-i,  iota(numT-1)) in
     //loop ((myResult, myMuX, myVarX, myMuY, myVarY)) =
     loop (myResult) =
         for i < numT - 1 do
