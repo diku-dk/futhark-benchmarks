@@ -213,20 +213,11 @@ fun [[real]] correlateDeltas(int num_paths, [[real]] md_c, [[real]] zds) =
 fun [real] combineVs([real] n_row, [real] vol_row, [real] dr_row) =
     map( op +, zip(dr_row, map( op *, zip(n_row, vol_row ) )))
 
- fun [[real]] mkPrices ([real] md_starts, [[real]] md_vols, [[real]] md_drifts, [[real]] noises) =
+fun [[real]] mkPrices ([real] md_starts, [[real]] md_vols, [[real]] md_drifts, [[real]] noises) =
     let e_rows = map( fn [real] ([real] x) => map(exp, x),
                       map(combineVs, zip(noises, md_vols, md_drifts))
                     )
-        // If we use the scan(op *, e, [x1,..,xn]) = [e*x1, e*x1*x2,...,e*x1*x2*...xn]
     in  scan( fn [real] ([real] x, [real] y) => map(op *, zip(x, y)), md_starts, e_rows )
-
-        // If we use the scan(op *, e, [x1,..,xn]) = [e, e*x1, ..., e*..*xnm1]
-    //  let tmp = scan( fn [real] ([real] x, [real] y) => zipWith(op *, x, y), md_starts, e_rows )
-    //  in  zipWith(zipWith(op *), tmp, e_rows)
-        // If we use the scan(op *, e, [x1,...,xn]) = [e, e*x1, .., e*x1*..*xn], i.e., Haskell's scan then:
-    // tail( scan( fn [real] ([real] x, [real] y) => zipWith(op *, x, y), md_starts, e_rows ) )
-
-
 
 //[num_dates, num_paths]
 fun [[real]] blackScholes(
@@ -244,16 +235,25 @@ fun [[real]] blackScholes(
 // MAIN
 ////////////////////////////////////////
 
-fun real main(int num_mc_it, int num_dates, int num_und, int num_bits, [[int]] dir_vs,
-             [[real]] md_c, [[real]] md_vols, [[real]] md_drifts, [real] md_st, [real] md_dv, [real] md_disc,
-             [[int]] bb_inds, [[real]] bb_data) =
+fun real main(int contract_number,
+              int num_mc_it,
+              int num_dates,
+              int num_und,
+              int num_models, // Unused?
+              int num_bits,
+              [[int]] dir_vs,
+              [[real]] md_c,
+              [[real]] md_vols,
+              [[real]] md_drifts,
+              [real] md_st,
+              [real] md_dv, // Unused?
+              [real] md_disc,
+              [[int]] bb_inds,
+              [[real]] bb_data) =
     let sobol_mat = map ( sobolIndR(num_bits, dir_vs), map(fn int (int x) => x + 1, iota(num_mc_it)) ) in
-    //let x = write(sobol_mat) in
     let gauss_mat = map ( ugaussian, sobol_mat )                                       in
-    //let x = write(gauss_mat) in
     let bb_mat    = map ( brownianBridge( num_und, num_dates, bb_inds, bb_data ), gauss_mat )    in
     let bs_mat    = map ( blackScholes( num_und, md_c, md_vols, md_drifts, md_st ), bb_mat ) in
-    //let x = write(bs_mat) in
 
     let payoffs   = map ( payoff2(md_disc), bs_mat ) in
     let payoff    = reduce ( op +, 0.0, payoffs )       in
@@ -276,6 +276,7 @@ fun real payoff2 ([real] md_disc, [[real]] xss) =
                             else if( 0.75 < mins[4] ) then trajInner(1000.0, 4, md_disc)
                                  else trajInner(1000.0 * mins[4], 4, md_disc)
 
-fun real MIN([real] arr) = reduce( fn real (real x, real y) => if(x<y) then x else y, arr[0], arr )
+fun real MIN([real] arr) =
+  reduce( fn real (real x, real y) => if(x<y) then x else y, arr[0], arr )
 
 fun real trajInner(real amount, int ind, [real] disc) = amount * disc[ind]
