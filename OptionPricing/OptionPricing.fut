@@ -33,7 +33,7 @@ fun [real] sobolIndR( int bits_num, [[int]] dir_vs, int n ) =
 fun int index_of_least_significant_0(int n) = 
   let {goon,k} = {True,0} in
   loop ({goon,k,n}) =
-        for i < 31 do
+        for i < 30 do
 	  if(goon) 
 	  then if (n & 1) == 1
 	       then {True, k+1, n>>1} 
@@ -50,18 +50,18 @@ fun [int] sobolRecI(int bits_num, [[int]] sob_dir_vs, [int] prev, int n) =
 
 fun [[real]] sobolRecMap(real sob_fact, int bits_num, [[int]] dir_vs, {int,int} lu_bds) =
   let {lb_inc, ub_exc} = lu_bds in 
-  let first = sobolIndI(bits_num, dir_vs, lb_inc)  in
-  let contribs = map( recM(dir_vs) 
-		    , map( op +(lb_inc), iota(ub_exc-lb_inc-1) ) 
+  let contribs = map( fn [int] (int k) => if (k==0) 
+      	       	      	       	       	  then sobolIndI(bits_num,dir_vs,lb_inc+1)
+					  else recM(dir_vs,k+lb_inc)
+		    , iota(ub_exc-lb_inc) 
 		    ) in
-  let scaninp  = concat(replicate(1, first), contribs) in
   let vct_ints = scan( fn [int] ([int] x, [int] y) => zipWith(op ^, x, y) 
-	 	     , replicate(0, size(0,first)) 
-		     , scaninp
+	 	     , replicate( size(0,dir_vs), 0 ) 
+		     , contribs
 		     ) 
   in  map( fn [real] ([int] xs) => 
 	     map ( fn real (int x) => 
-		     toReal(x) / sob_fact 
+		     toReal(x) * sob_fact 
 		 , xs)
 	 , vct_ints)
 
@@ -275,94 +275,78 @@ fun [real] main(
               int        num_und,
               int        num_models,
               int        num_bits,
-              [[int]]    dir_vs,
-              [[[real]]] md_cs,
-              [[[real]]] md_vols,
-              [[[real]]] md_drifts,
-              [[real]]   md_sts,
-              [[real]]   md_discts,
-	      [[real]]   md_detvals,
-              [[int]]    bb_inds,
-              [[real]]   bb_data) =
-    let sobol_mat = map ( sobolIndR(num_bits, dir_vs), 
-			  map( fn int (int x) => x + 1, iota(num_mc_it) ) ) in
-    let gauss_mat = map ( ugaussian, sobol_mat )                            in
-    let bb_mat    = map ( brownianBridge( num_und, num_dates, bb_inds, bb_data ), gauss_mat ) in
+	      int        chunk_size,
+             [[int]]   dir_vs,
+             [[[real]]] md_cs,
+             [[[real]]] md_vols,
+             [[[real]]] md_drifts,
+             [[real]]   md_sts,
+	     [[real]]   md_detvals,
+             [[real]]   md_discts,
+             [[int]]    bb_inds,
+             [[real]]   bb_data) =
+  let num_chunks = (num_mc_it + chunk_size - 1)/chunk_size in 
 
-    let payoffs   = map ( fn [real] ([[real]] bb_row) =>
-			    let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
-			    let bd_row = map (fn [[real]] ({[[real]],[[real]],[[real]],[real]} m) =>
-					             let {c,vol,drift,st} = m in
-						     blackScholes(num_und, c, vol, drift, st, bb_row)
-					     , market_params) 
-			    in
-			    let payoff_params = zip(md_discts, md_detvals, bd_row) 
-			    in  map (fn real ({[real],[real],[[real]]} p) =>
-				       let {disct, detval, bd} = p in
-				       genericPayoff(contract_number, disct, detval, bd)
-				    , payoff_params)
-			, bb_mat)
-    in
-    let payoff    = reduce ( fn [real] ([real] x, [real] y) => 
-			       zipWith(op +, x, y)
-			   , replicate(num_models, 0.0)
-			   , payoffs )
-    in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
+  let chunks = map (fn {int,int} (int i) => 
+		      {i*chunk_size, MINint(num_mc_it, (i+1)*chunk_size)}
+		   , iota(num_chunks) )
+  in
+  let payoffs= map( compute_chunk( {contract_number,num_mc_it,num_dates,num_und,num_models,num_bits}, dir_vs,
+				   {bb_inds,bb_data}, {md_cs,md_vols,md_drifts,md_sts,md_discts,md_detvals} )
+		  , chunks )
+  in
+  let payoff = reduce ( fn [real] ([real] x, [real] y) => 
+			  zipWith(op +, x, y)
+		      , replicate(num_models, 0.0)
+		      , payoffs )
 
+  in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
 
-
-
-//compute_chunk :: Int -> Int -> Int -> Int -> Int -> Int -> [[Int]] 
-//              -> [[[Double]]] -> [[[Double]]] -> [[[Double]]] 
-//              ->  [[Double]]  ->  [[Double]]  ->  [[Double]]
-//              ->  [[Int   ]]  ->  [[Double]]  -> (Int,Int) 
-//              -> [Double]
-//compute_chunk contract  num_mc_it num_dates num_under num_models num_bits 
-//              dir_vs    md_cs     md_vols   md_drifts md_starts  md_detvals 
-//              md_discts bb_inds   bb_data   (lb,ub) =
-//  let sob_factor = 1.0 / (2.0 ** fromIntegral num_bits)
+//    let sobol_mat = map ( sobolIndR(num_bits, dir_vs), 
+//			  map( fn int (int x) => x + 1, iota(num_mc_it) ) ) in
+//    let gauss_mat = map ( ugaussian, sobol_mat )                            in
+//    let bb_mat    = map ( brownianBridge( num_und, num_dates, bb_inds, bb_data ), gauss_mat ) in
 //
-//      sobol_mat = sobolRecMap sob_factor num_bits dir_vs (lb,ub)
-//      gauss_mat = map     ugaussian sobol_mat
-//      bb_mat    = map    (brownianBridge num_under num_dates bb_inds bb_data) gauss_mat
-//      bs_mat    = map (\bb_row -> zipWith4 (blackScholes num_under bb_row) md_cs md_vols md_drifts md_starts) bb_mat
-//      payoffs   = bs_mat  `deepseq` map (\bs_row -> zipWith3 (payoff contract) md_discts md_detvals bs_row) bs_mat
-//      sum_prices= payoffs `deepseq` reduce (zipWith (+)) (replicate num_models 0.0) payoffs
-//      prices    = map (\sp -> sp / fromIntegral num_mc_it) sum_prices
-//  in  prices
-//
-//tiledSkeleton :: Int -> Int -> Int -> ((Int,Int) -> [Double]) -> [Double]
-//tiledSkeleton sob_dim num_mc_its chunk fun =
-//  let divides = num_mc_its `mod` chunk == 0
-//      extra   = if (divides) then [] else [num_mc_its]
-//      iv = zip [1,chunk+1..] ([chunk, 2*chunk .. num_mc_its] ++ extra )
-//  in (reduce (zipWith (+)) (replicate sob_dim 0.0) . map fun) iv 
+//    let payoffs   = map ( fn [real] ([[real]] bb_row) =>
+//			    let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
+//			    let bd_row = map (fn [[real]] ({[[real]],[[real]],[[real]],[real]} m) =>
+//					             let {c,vol,drift,st} = m in
+//						     blackScholes(num_und, c, vol, drift, st, bb_row)
+//					     , market_params) 
+//			    in
+//			    let payoff_params = zip(md_discts, md_detvals, bd_row) 
+//			    in  map (fn real ({[real],[real],[[real]]} p) =>
+//				       let {disct, detval, bd} = p in
+//				       genericPayoff(contract_number, disct, detval, bd)
+//				    , payoff_params)
+//			, bb_mat)
+//    in
+//    let payoff    = reduce ( fn [real] ([real] x, [real] y) => 
+//			       zipWith(op +, x, y)
+//			   , replicate(num_models, 0.0)
+//			   , payoffs )
+//    in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
 
 
 fun [real] compute_chunk(
-  int        contract_number,
-  int        num_mc_it,
-  {int,int}  lu_bds,
-  int        ub_exc, 
-  int        num_dates,
-  int        num_und,
-  int        num_models,
-  int        num_bits,
-  [[int]]    dir_vs,
-
+  {int,int,int,int,int,int}           param_ints,
+  [[int]]                             dir_vs,
   {[[int]],[[real]]}         brownian_bridge_params,
-
   {[[[real]]],[[[real]]],[[[real]]],
-    [[real]],  [[real]],  [[real]]  } market_params  
+    [[real]],  [[real]],  [[real]]  } market_params,
+  {int,int}                           lu_bds
 ) = 
+    let {contract_number,num_mc_it,num_dates,num_und,num_models,num_bits} = param_ints in
     let {md_cs,md_vols,md_drifts,md_sts,md_discts,md_detvals} = market_params in
     let {bb_inds, bb_data} = brownian_bridge_params in
     let {lb_inc,  ub_exc } = lu_bds in
     let sob_factor= 1.0 / toReal(1 << num_bits) in
-    let sobol_mat = sobolRecMap(sob_factor, num_bits, dir_vs, lu_bds) in
-
-//    let sobol_mat = map ( sobolIndR(num_bits, dir_vs), 
-//			  map( fn int (int x) => x + lb_inc + 1, iota(ub_exc-lb_inc) ) ) in
+    let sobol_mat = if (1 == 1)
+    		    then sobolRecMap(sob_factor, num_bits, dir_vs, lu_bds)
+		    else map ( sobolIndR(num_bits, dir_vs) 
+			     , map( fn int (int x) => x + lb_inc + 1 
+			       	  , iota(ub_exc - lb_inc) ) 
+			     ) in
 
     let gauss_mat = map ( ugaussian, sobol_mat ) in
     let bb_mat    = map ( brownianBridge( num_und, num_dates, bb_inds, bb_data ), gauss_mat ) in
@@ -380,12 +364,11 @@ fun [real] compute_chunk(
 				       genericPayoff(contract_number, disct, detval, bd)
 				    , payoff_params)
 			, bb_mat)
-    in
-    let payoff    = reduce ( fn [real] ([real] x, [real] y) => 
-			       zipWith(op +, x, y)
-			   , replicate(num_models, 0.0)
-			   , payoffs )
-    in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
+    in  reduce ( fn [real] ([real] x, [real] y) => 
+		   zipWith(op +, x, y)
+	       , replicate(num_models, 0.0)
+	       , payoffs )
+    
 
 ////////////////////////////////////////
 // PAYOFF FUNCTIONS
@@ -411,7 +394,7 @@ fun real payoff2 ([real] md_disc, [[real]] xss) =
     else if (1.0 <= fminPayoff(xss[2])) then {2, 1450.0}
     else if (1.0 <= fminPayoff(xss[3])) then {3, 1600.0}
     else let x50  = fminPayoff(xss[4]) in
-	 let val  = if      ( 1. <= x50  ) then 1750.0
+	 let val  = if      ( 1.0 <= x50 ) then 1750.0
                     else if ( 0.75 < x50 ) then 1000.0
                     else                        x50*1000.0
 	 in {4, val}
@@ -422,9 +405,10 @@ fun real payoff3([real] md_disct, [[real]] xss) =
     let conds  = map (fn bool ([real] x) => (x[0] <= 2630.6349999999998) || 
 	 	                            (x[1] <= 8288.0)             || 
 		                            (x[2] <=  840.0)
-		     , xss)                     in
-    let price1 = trajInner(100.0,  0, md_disct) in
-    let goto40= conds && 
+		     , xss)                    in
+    let cond  = reduce (op ||, False, conds)   in
+    let price1= trajInner(100.0,  0, md_disct) in
+    let goto40= cond && 
                   ( (xss[366,0] < 3758.05) || 
                     (xss[366,1] < 11840.0) ||
                     (xss[366,2] < 1200.0 )  )   in
@@ -436,11 +420,23 @@ fun real payoff3([real] md_disct, [[real]] xss) =
 
 fun real fminPayoff([real] xs) = 
 //    MIN( zipWith(op /, xss, {3758.05, 11840.0, 1200.0}) )
-    let {a,b,c} = {xss[0,1]/11840.0, xss[0,2]/1200.0, xss[0,0]/3758.05} in
+    let {a,b,c} = { xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0} in
     if a < b then if a < c then a else c
 	     else if b < c then b else c
 
 fun real MIN([real] arr) =
   reduce( fn real (real x, real y) => if(x<y) then x else y, arr[0], arr )
 
+fun int MINint(int x, int y) = if x < y then x else y
+
 fun real trajInner(real amount, int ind, [real] disc) = amount * disc[ind]
+
+
+//replicate(size(0,dir_vs),0)
+
+// Benchmark running: ./finpar benchmarks/GenericPricing cpp_openmp medium
+// futhark -s -fe --in-place-lowering -a -e --compile-sequential OptionPricing.fut > OptionPricing.cpp
+
+//futhark -s -fe --in-place-lowering -a -e --compile-sequential OptionPricing.fut > OptionPricing.cpp
+//g++ -O3 -lm OptionPricing.cpp
+//./a.out -t timings.txt < OptionPricing.in
