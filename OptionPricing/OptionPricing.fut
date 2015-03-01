@@ -50,6 +50,8 @@ fun [int] sobolRecI(int bits_num, [[int]] sob_dir_vs, [int] prev, int n) =
 
 fun [[real]] sobolRecMap(real sob_fact, int bits_num, [[int]] dir_vs, {int,int} lu_bds) =
   let {lb_inc, ub_exc} = lu_bds in 
+  // the if inside may be particularly ugly for
+  // flattening since it introduces control flow!
   let contribs = map( fn [int] (int k) => if (k==0) 
       	       	      	       	       	  then sobolIndI(bits_num,dir_vs,lb_inc+1)
 					  else recM(dir_vs,k+lb_inc)
@@ -350,15 +352,15 @@ fun [real] mainOLD(
               int        num_models,
               int        num_bits,
 	      int        chunk_size,
-             [[int]]   dir_vs,
-             [[[real]]] md_cs,
-             [[[real]]] md_vols,
-             [[[real]]] md_drifts,
-             [[real]]   md_sts,
-	     [[real]]   md_detvals,
-             [[real]]   md_discts,
-             [[int]]    bb_inds,
-             [[real]]   bb_data
+             [[int]]     dir_vs,
+             [[[real]]]  md_cs,
+             [[[real]]]  md_vols,
+             [[[real]]]  md_drifts,
+             [[real]]    md_sts,
+	     [[real]]    md_detvals,
+             [[real]]    md_discts,
+             [[int]]     bb_inds,
+             [[real]]    bb_data
 ) =
 
   let sobol_mat = map ( sobolIndR(num_bits, dir_vs) 
