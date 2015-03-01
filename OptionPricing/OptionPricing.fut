@@ -58,7 +58,7 @@ fun [[real]] sobolRecMap(real sob_fact, int bits_num, [[int]] dir_vs, {int,int} 
   let vct_ints = scan( fn [int] ([int] x, [int] y) => zipWith(op ^, x, y) 
 	 	     , replicate( size(0,dir_vs), 0 ) 
 		     , contribs
-		     ) 
+		     )
   in  map( fn [real] ([int] xs) => 
 	     map ( fn real (int x) => 
 		     toReal(x) * sob_fact 
@@ -302,32 +302,6 @@ fun [real] main(
 
   in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
 
-//    let sobol_mat = map ( sobolIndR(num_bits, dir_vs), 
-//			  map( fn int (int x) => x + 1, iota(num_mc_it) ) ) in
-//    let gauss_mat = map ( ugaussian, sobol_mat )                            in
-//    let bb_mat    = map ( brownianBridge( num_und, num_dates, bb_inds, bb_data ), gauss_mat ) in
-//
-//    let payoffs   = map ( fn [real] ([[real]] bb_row) =>
-//			    let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
-//			    let bd_row = map (fn [[real]] ({[[real]],[[real]],[[real]],[real]} m) =>
-//					             let {c,vol,drift,st} = m in
-//						     blackScholes(num_und, c, vol, drift, st, bb_row)
-//					     , market_params) 
-//			    in
-//			    let payoff_params = zip(md_discts, md_detvals, bd_row) 
-//			    in  map (fn real ({[real],[real],[[real]]} p) =>
-//				       let {disct, detval, bd} = p in
-//				       genericPayoff(contract_number, disct, detval, bd)
-//				    , payoff_params)
-//			, bb_mat)
-//    in
-//    let payoff    = reduce ( fn [real] ([real] x, [real] y) => 
-//			       zipWith(op +, x, y)
-//			   , replicate(num_models, 0.0)
-//			   , payoffs )
-//    in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
-
-
 fun [real] compute_chunk(
   {int,int,int,int,int,int}           param_ints,
   [[int]]                             dir_vs,
@@ -347,7 +321,6 @@ fun [real] compute_chunk(
 			     , map( fn int (int x) => x + lb_inc + 1 
 			       	  , iota(ub_exc - lb_inc) ) 
 			     ) in
-
     let gauss_mat = map ( ugaussian, sobol_mat ) in
     let bb_mat    = map ( brownianBridge( num_und, num_dates, bb_inds, bb_data ), gauss_mat ) in
 
@@ -369,6 +342,51 @@ fun [real] compute_chunk(
 	       , replicate(num_models, 0.0)
 	       , payoffs )
     
+fun [real] mainOLD(
+              int        contract_number,
+              int        num_mc_it,
+              int        num_dates,
+              int        num_und,
+              int        num_models,
+              int        num_bits,
+	      int        chunk_size,
+             [[int]]   dir_vs,
+             [[[real]]] md_cs,
+             [[[real]]] md_vols,
+             [[[real]]] md_drifts,
+             [[real]]   md_sts,
+	     [[real]]   md_detvals,
+             [[real]]   md_discts,
+             [[int]]    bb_inds,
+             [[real]]   bb_data
+) =
+
+  let sobol_mat = map ( sobolIndR(num_bits, dir_vs) 
+		      , map( fn int (int x) => x + 1, iota(num_mc_it) ) 
+		      ) in
+  let gauss_mat = map ( ugaussian, sobol_mat )                            in
+  let bb_mat    = map ( brownianBridge( num_und, num_dates, bb_inds, bb_data ), gauss_mat ) in
+
+  let payoffs   = map ( fn [real] ([[real]] bb_row) =>
+			  let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
+			  let bd_row = map (fn [[real]] ({[[real]],[[real]],[[real]],[real]} m) =>
+				              let {c,vol,drift,st} = m in
+					      blackScholes(num_und, c, vol, drift, st, bb_row)
+					   , market_params) 
+			  in
+			  let payoff_params = zip(md_discts, md_detvals, bd_row) 
+			  in  map (fn real ({[real],[real],[[real]]} p) =>
+				     let {disct, detval, bd} = p in
+				     genericPayoff(contract_number, disct, detval, bd)
+				  , payoff_params)
+		      , bb_mat)
+  in
+  let payoff    = reduce ( fn [real] ([real] x, [real] y) => 
+			     zipWith(op +, x, y)
+			 , replicate(num_models, 0.0)
+			 , payoffs )
+  in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
+
 
 ////////////////////////////////////////
 // PAYOFF FUNCTIONS
