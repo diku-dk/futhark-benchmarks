@@ -10,31 +10,33 @@ initGrid(real s0, real alpha, real nu, real t, int numX, int numY, int numT) =
     let myY = map(fn real (int i) => toReal(i) * dy - toReal(myYindex) * dy + logAlpha, iota(numY)) in
     {myXindex, myYindex, myX, myY, myTimeline}
 
+// make the innermost dimension of the result of size 4 instead of 3?
 fun {[[real]],[[real]]} initOperator([real] x) =
-    let n = size(0, x) in
-    let dxu = x[1] - x[0] in
-    let dxl = 0.0 in
-    let Dxlow = [[0.0, -1.0 / dxu, 1.0 / dxu]] in
-    let Dxxlow = [[0.0, 0.0, 0.0]] in
-    let Dxmid = map(fn [real] (int i) => let dxl = x[i] - x[i-1] in
-                                         let dxu = x[i+1] - x[i] in
-                                         [-dxu/dxl/(dxl+dxu),
-                                         (dxu/dxl - dxl/dxu)/(dxl+dxu),
-                                         dxl/dxu/(dxl+dxu)],
-                   map (op + (1), iota(n-2))) in
-    let Dxxmid = map(fn [real] (int i) => let dxl = x[i] - x[i-1] in
-                                          let dxu = x[i+1] - x[i] in
-                                          [2.0/dxl/(dxl+dxu),
-                                          -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu),
-                                          2.0/dxu/(dxl+dxu)],
-                    map (op + (1), iota(n-2))) in
-    let dxl = x[n-1] - x[n-2] in
-    let dxu = 0.0 in
+    let n      = size(0, x)  in
+    let dxu    = x[1] - x[0] in
+    let dxl    = 0.0         in
+    let Dxlow  = [[0.0, -1.0 / dxu, 1.0 / dxu]] in
+    let Dxxlow = [[0.0, 0.0, 0.0]]              in
+    let Dxmids = map(fn {[real],[real]} (int i) => 
+		       let dxl = x[i] - x[i-1]  in
+                       let dxu = x[i+1] - x[i]  in
+                       { [ -dxu/dxl/(dxl+dxu),
+                           (dxu/dxl - dxl/dxu)/(dxl+dxu),
+                            dxl/dxu/(dxl+dxu)
+			 ],
+			 [  2.0/dxl/(dxl+dxu),
+                           -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu),
+                            2.0/dxu/(dxl+dxu)
+			 ] }
+                   , map (op + (1), iota(n-2))) in
+    let {Dxmid, Dxxmid} = unzip(Dxmids)         in
+    let dxl    = x[n-1] - x[n-2] in
+    let dxu    = 0.0 in
     let Dxhigh = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]] in
-    let Dxxhigh = [[0.0, 0.0, 0.0 ]] in
-    let Dx = concat(concat(Dxlow, Dxmid), Dxhigh) in
-    let Dxx = concat(concat(Dxxlow, Dxxmid), Dxxhigh) in
-    {Dx, Dxx}
+    let Dxxhigh= [[0.0, 0.0, 0.0 ]] in
+    let Dx     = concat(concat(Dxlow, Dxmid), Dxhigh) in
+    let Dxx    = concat(concat(Dxxlow, Dxxmid), Dxxhigh) 
+    in  {Dx, Dxx}
 
 fun real max(real x, real y) = if y < x then x else y
 fun int maxInt(int x, int y) = if y < x then x else y
@@ -59,23 +61,20 @@ updateParams( [real] myX, [real] myY, [real] myTimeline,
 		  , myY )
   in  { myMuX, myVarX, myMuY, myVarY }
 
-fun *[real] tridagSeq( [real] a, [real] b, [real] c, *[real] r, *[real] y ) =
-    let n   = size(0, a)           in
-    let t = copy(replicate(n,0.0)) in
-    let y[0] = r[0] in
-    let t[0] = b[0] in
-    loop ({y, t}) =
+fun *[real] tridagSeq( [real] a, *[real] b, [real] c, *[real] y ) =
+    let n     = size(0, a)            in
+    loop ({y, b}) =
       for i < n-1 do
         let i    = i + 1              in
-	let beta = a[i] / t[i-1]      in
-	let t[i] = b[i] - beta*c[i-1] in
-	let y[i] = r[i] - beta*y[i-1] 
-	in  {y, t} 
+	let beta = a[i] / b[i-1]      in
+	let b[i] = b[i] - beta*c[i-1] in
+	let y[i] = y[i] - beta*y[i-1] 
+	in  {y, b} 
     in
-    let y[n-1] = y[n-1]/t[n-1] in
+    let y[n-1] = y[n-1]/b[n-1] in
     loop (y) = for j < n - 1 do
                  let i = n - 2 - j in
-                 let y[i] = (y[i] - c[i]*y[i+1]) / t[i] 
+                 let y[i] = (y[i] - c[i]*y[i+1]) / b[i] 
 		 in  y
     in  y
 
@@ -104,9 +103,9 @@ fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD,
 // for implicitY: should be called with transpose(u) instead of u
 fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD, 
 			      [[real]] myMu, [[real]] myVar, 
-			     *[[real]] u,   *[[real]] v, real dtInv  ) =
-  map( fn *[real] ( {[real],[real],*[real],*[real]} tup )  =>
-	 let {mu_row,var_row,u_row,v_row} = tup in
+			     *[[real]] u,    real     dtInv  ) =
+  map( fn *[real] ( {[real],[real],*[real]} tup )  =>
+	 let {mu_row,var_row,u_row} = tup in
 	 let abc = map( fn {real,real,real} ({real,real,[real],[real]} tup) =>
 			  let {mu, var, d, dd} = tup in
 			  { 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
@@ -116,8 +115,9 @@ fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD,
 		      , zip(mu_row, var_row, myD, myDD) 
 		      ) in
 	 let {a,b,c} = unzip(abc) in
-	 tridagSeq( a, b, c, u_row, v_row )
-     , zip(myMu,myVar,u,v)
+	 tridagSeq( a, copy(b), c, u_row )
+	 // UGLY COPY BELOW, PLEASE FIX!
+     , copy(zip(myMu,myVar,u))
      )
 		 
     
@@ -150,14 +150,14 @@ fun *[[real]] rollback
     // explicitY
     let myResultTR = transpose(myResult) in
     let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR ) in
-    let u = map( fn [real] ({[real],[real]} tup) =>
+    let u = map( fn *[real] ({[real],[real]} tup) =>
 		    let {u_row, v_row} = tup in
-		    map( op +, zip(u_row,v_row) )
-	       , zip( u, transpose(v) ) 
-	       ) 
+		    copy( map( op +, zip(u_row,v_row) ) )
+	       , zip( u, transpose(v) )
+	       )
     in
     // implicitX
-    let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, u, dtInv ) in
+    let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv ) in
 
     // implicitY
     let y = copy( map( fn [real] ({[real],[real]} uv_row) =>
@@ -170,7 +170,7 @@ fun *[[real]] rollback
 		     , zip(transpose(u),v)
 		     ) )
     in
-    let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, myResultTR, dtInv ) 
+    let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv ) 
     in  transpose(myResultTR)
 
 fun real value(int numX, int numY, int numT, real s0, real strike, real t, real alpha, real nu, real beta) =
