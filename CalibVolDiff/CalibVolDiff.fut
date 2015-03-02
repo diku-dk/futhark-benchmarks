@@ -20,14 +20,8 @@ fun {[[real]],[[real]]} initOperator([real] x) =
     let Dxmids = map(fn {[real],[real]} (int i) => 
 		       let dxl = x[i] - x[i-1]  in
                        let dxu = x[i+1] - x[i]  in
-                       { [ -dxu/dxl/(dxl+dxu),
-                           (dxu/dxl - dxl/dxu)/(dxl+dxu),
-                            dxl/dxu/(dxl+dxu)
-			 ],
-			 [  2.0/dxl/(dxl+dxu),
-                           -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu),
-                            2.0/dxu/(dxl+dxu)
-			 ] }
+                       { [ -dxu/dxl/(dxl+dxu), (dxu/dxl - dxl/dxu)/(dxl+dxu),      dxl/dxu/(dxl+dxu) ],
+			 [  2.0/dxl/(dxl+dxu), -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu), 2.0/dxu/(dxl+dxu) ] }
                    , map (op + (1), iota(n-2))) in
     let {Dxmid, Dxxmid} = unzip(Dxmids)         in
     let dxl    = x[n-1] - x[n-2] in
@@ -78,10 +72,15 @@ fun *[real] tridagSeq( [real] a, *[real] b, [real] c, *[real] y ) =
 		 in  y
     in  y
 
+///////////////////////////////////////////
+// myD,myDD          : [[real,3],m]
+// myMu,myVar,result : [[real,m],n]
+// RETURN            : [[real,m],n]  
+///////////////////////////////////////////
 fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD, 
 			      [[real]] myMu, [[real]] myVar, [[real]] result ) =
   // 0 <= i < m AND 0 <= j < n
-  let m = size(0,myMu) in
+  let m = size(0,myD) in
   copy( map( fn [real] ( {[real],[real],[real]} tup ) =>
 	       let {mu_row, var_row, result_row} = tup in  
 	       map( fn real ({[real], [real], real, real, int} tup) =>
@@ -89,10 +88,10 @@ fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD,
 		      let c1 = if 0 < j
 		               then ( mu*dx[0] + 0.5*var*dxx[0] ) * result_row[j-1]
 			       else 0.0 in
-		      let c2 = if j < (m-1)
+		      let c3 = if j < (m-1)
 		               then ( mu*dx[2] + 0.5*var*dxx[2] ) * result_row[j+1]
 			       else 0.0 in
-		      let c3 = ( mu*dx[1] + 0.5*var*dxx[1] ) * result_row[j]
+		      let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * result_row[j  ]
 		      in  c1 + c2 + c3
 		  , zip( myD, myDD, mu_row, var_row, iota(m) ) 
 		  )
@@ -100,6 +99,11 @@ fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD,
 	   )
       )
 
+///////////////////////////////////////////
+// myD,myDD     : [[real,3],m]
+// myMu,myVar,u : [[real,m],n]
+// RETURN       : [[real,m],n]  
+///////////////////////////////////////////
 // for implicitY: should be called with transpose(u) instead of u
 fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD, 
 			      [[real]] myMu, [[real]] myVar, 
@@ -119,15 +123,6 @@ fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD,
 	 // UGLY COPY BELOW, PLEASE FIX!
      , copy(zip(myMu,myVar,u))
      )
-		 
-    
-
-////////////////////////////////////////
-// code for explicitX:
-//   map (\{x_row,res_row}-> map (\{x,res}->0.5*x+dtInv*res, zip(x_row,res_row)), 
-//        zip(transpose(myResult),explicitMethod( myDx, myDxx, transpose(myMuX), transpose(myVarX), transpose(myResult) ))
-// code for explicitY:
-//   explicitMethod(myDy, myDyy, myMuY, myVarY, myResult)
 
 fun *[[real]] rollback
     ([real] myX, [real] myY, [real] myTimeline, *[[real]] myResult,
@@ -150,15 +145,12 @@ fun *[[real]] rollback
     // explicitY
     let myResultTR = transpose(myResult) in
     let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR ) in
-    let u = map( fn *[real] ({[real],[real]} tup) =>
-		    let {u_row, v_row} = tup in
-		    copy( map( op +, zip(u_row,v_row) ) )
-	       , zip( u, transpose(v) )
-	       )
-    in
+    let u = map( fn *[real] ([real] us, [real] vs) => 
+		   copy(map(op +, zip(us, vs)))
+               , zip(u, transpose(v))
+	       ) in
     // implicitX
     let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv ) in
-
     // implicitY
     let y = copy( map( fn [real] ({[real],[real]} uv_row) =>
 			 let {u_row, v_row} = uv_row in
@@ -170,14 +162,14 @@ fun *[[real]] rollback
 		     , zip(transpose(u),v)
 		     ) )
     in
-    let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv ) 
+    let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
     in  transpose(myResultTR)
 
 fun real value(int numX, int numY, int numT, real s0, real strike, real t, real alpha, real nu, real beta) =
     let {myXindex, myYindex, myX, myY, myTimeline} =
         initGrid(s0, alpha, nu, t, numX, numY, numT) in
-    let {myDx, myDxx} = initOperator(myX) in
-    let {myDy, myDyy} = initOperator(myY) in
+    let {myDx, myDxx} = initOperator(myX) in 
+    let {myDy, myDyy} = initOperator(myY) in 
     let myResult = setPayoff(strike, myX, myY) in
     
     loop (myResult) =
@@ -190,7 +182,7 @@ fun real value(int numX, int numY, int numT, real s0, real strike, real t, real 
                                     myMuY, myDy, myDyy, myVarY, i) in
             
             myResult in
-    myResult[myXindex,myYindex]
+    myResult[myYindex,myXindex]
 
 fun [real] main (int outer_loop_count, int numX, int numY, int numT, 
 		 real s0, real strike, real t, real alpha, real nu, real beta) =
