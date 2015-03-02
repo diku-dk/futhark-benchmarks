@@ -72,6 +72,75 @@ fun *[real] tridagSeq( [real] a, *[real] b, [real] c, *[real] y ) =
 		 in  y
     in  y
 
+fun *[real] tridagPar( [real] a, *[real] b, [real] c, *[real] y ) =
+    let n    = size(0, a) in
+    ////////////////////////////////////////////////////
+    // Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] //
+    //   solved by scan with 2x2 matrix mult operator //
+    ////////////////////////////////////////////////////
+    let b0   = b[0] in
+    let mats = map ( fn {real,real,real,real} (int i) =>
+		         if 0 < i 
+			 then {b[i], 0.0-a[i]*c[i-1], 1.0, 0.0}
+			 else {1.0,  0.0,             0.0, 1.0}
+		   , iota(n) ) in
+    let scmt = scan( fn {real,real,real,real} ( {real,real,real,real} a, 
+					        {real,real,real,real} b ) =>
+		         let {a0,a1,a2,a3} = a   in
+			 let {b0,b1,b2,b3} = b   in
+			 let val = 1.0/(a0*b0)   in
+			 { (b0*a0 + b1*a2)*val,
+			   (b0*a1 + b1*a3)*val,
+			   (b2*a0 + b3*a2)*val,
+			   (b2*a1 + b3*a3)*val 
+			 }
+		   , {1.0,  0.0, 0.0, 1.0}, mats ) in
+    let b    = map ( fn real ({real,real,real,real} tup) =>
+		         let {t0,t1,t2,t3} = tup in
+			 (t0*b0 + t1) / (t2*b0 + t3)
+		   , scmt ) in
+    //////////////////////////////////////////////////////
+    // Recurrence 2: y[i] = y[i] - (a[i]/b[i-1])*y[i-1] //
+    //   solved by scan with linear func comp operator  //
+    //////////////////////////////////////////////////////
+    let y0   = y[0] in
+    let lfuns= map ( fn {real,real} (int i) =>
+		         if 0 < i 
+		 	 then {y[i], 0.0-a[i]/b[i-1]}
+			 else {0.0,  1.0            }
+		   , iota(n) ) in
+    let cfuns= scan( fn {real,real} ({real,real} a, {real,real} b) =>
+		         let {a0,a1} = a in
+			 let {b0,b1} = b in
+			 { b0 + b1*a0, a1*b1 }
+		   , {0.0, 1.0}, lfuns ) in
+    let y    = map ( fn real ({real,real} tup) =>
+		         let {a,b} = tup in
+			 a + b*y0
+		   , cfuns ) in
+    //////////////////////////////////////////////////////
+    // Recurrence 3: backward recurrence solved via     //
+    //             scan with linear func comp operator  //
+    //////////////////////////////////////////////////////
+    let yn   = y[n-1]/b[n-1] in
+    let lfuns= map ( fn {real,real} (int k) =>
+		         let i = n-k-1
+			 in  if   0 < k
+		 	     then {y[i]/b[i], 0.0-c[i]/b[i]}
+			     else {0.0,       1.0          }
+		   , iota(n) ) in
+    let cfuns= scan( fn {real,real} ({real,real} a, {real,real} b) =>
+		         let {a0,a1} = a in
+			 let {b0,b1} = b in
+			 {b0 + b1*a0, a1*b1}
+		   , {0.0, 1.0}, lfuns ) in
+    let y    = map ( fn real ({real,real} tup) =>
+		         let {a,b} = tup in
+			 a + b*yn
+		   , cfuns ) in
+    let y    = map (fn real (int i) => y[n-i-1], iota(n)) in
+    copy(y)
+
 ///////////////////////////////////////////
 // myD,myDD          : [[real,3],m]
 // myMu,myVar,result : [[real,m],n]
@@ -119,9 +188,10 @@ fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD,
 		      , zip(mu_row, var_row, myD, myDD) 
 		      ) in
 	 let {a,b,c} = unzip(abc) in
-	 tridagSeq( a, copy(b), c, u_row )
+	 tridagPar( a, copy(b), c, u_row )
+	 //tridagSeq( a, copy(b), c, u_row )
 	 // UGLY COPY BELOW, PLEASE FIX!
-     , copy(zip(myMu,myVar,u))
+     , zip(myMu,myVar,u)
      )
 
 fun *[[real]] rollback
