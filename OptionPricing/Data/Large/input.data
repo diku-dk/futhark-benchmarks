@@ -1,9 +1,11 @@
+// This corresponds to the large dataset from finpar.
 3       // contract number 
 131072  // number of Monte-Carlo Iterations
 367     // number of path dates
 3       // number of underlyings
 1       // number of models
 30      // integer bit-length representation for Sobol
+32      // chunk size
 
 // Begin Direction vectors [3*367][30]
 [

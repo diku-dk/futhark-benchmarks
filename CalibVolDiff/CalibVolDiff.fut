@@ -73,7 +73,7 @@ fun *[real] tridagSeq( [real] a, *[real] b, [real] c, *[real] y ) =
     in
     let y[n-1] = y[n-1]/b[n-1] in
     loop (y) = for j < n - 1 do
-                 let i = n - 2 - j in
+                 let i    = n - 2 - j in
                  let y[i] = (y[i] - c[i]*y[i+1]) / b[i] 
 		 in  y
     in  y
