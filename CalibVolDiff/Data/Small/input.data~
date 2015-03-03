@@ -1,5 +1,0 @@
-16//128  // OUTER -- no restrictions
-32//32   // NUM_X -- 2^x, where x \in {5, ..., 9}
-256//32   // NUM_Y -- 2^x, where x \in {5, ..., 9}
-256  // NUM_T -- no restrictions
-
