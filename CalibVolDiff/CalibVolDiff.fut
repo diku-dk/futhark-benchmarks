@@ -188,9 +188,8 @@ fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD,
 		      , zip(mu_row, var_row, myD, myDD) 
 		      ) in
 	 let {a,b,c} = unzip(abc) in
-	 tridagPar( a, copy(b), c, u_row )
-	 //tridagSeq( a, copy(b), c, u_row )
-	 // UGLY COPY BELOW, PLEASE FIX!
+	 if 1==1 then tridagSeq( a, copy(b), c, u_row )
+		 else tridagPar( a, copy(b), c, u_row )
      , zip(myMu,myVar,u)
      )
 

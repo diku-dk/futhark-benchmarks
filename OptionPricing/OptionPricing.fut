@@ -48,13 +48,15 @@ fun [int] sobolRecI(int bits_num, [[int]] sob_dir_vs, [int] prev, int n) =
 	 vct_row[bit] ^ prev
       , zip(sob_dir_vs,prev))
 
-fun [[real]] sobolRecMap(real sob_fact, int bits_num, [[int]] dir_vs, {int,int} lu_bds) =
+fun [[real]] sobolRecMap( real  sob_fact, int bits_num, 
+			  [[int]] dir_vs, {int,int} lu_bds ) =
   let {lb_inc, ub_exc} = lu_bds in 
   // the if inside may be particularly ugly for
   // flattening since it introduces control flow!
-  let contribs = map( fn [int] (int k) => if (k==0) 
-      	       	      	       	       	  then sobolIndI(bits_num,dir_vs,lb_inc+1)
-					  else recM(dir_vs,k+lb_inc)
+  let contribs = map( fn [int] (int k) => 
+			if (k==0) 
+      	       	      	then sobolIndI(bits_num,dir_vs,lb_inc+1)
+			else recM(dir_vs,k+lb_inc)
 		    , iota(ub_exc-lb_inc) 
 		    ) in
   let vct_ints = scan( fn [int] ([int] x, [int] y) => zipWith(op ^, x, y) 
