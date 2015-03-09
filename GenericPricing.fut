@@ -198,7 +198,7 @@ fun [[real]] brownianBridge (
 
 fun real zwop(real a, real b, int j) = a * b
 
-fun [real] take(int n, [real] a) = let {first, rest} = split(n, a) in first
+fun [real] take(int n, [real] a) = let {first,_} = split((n), a) in first
 
 fun [real] fftmp(int num_paths, [[real]] md_c, [real] zi) =
     map( fn real (int j) =>
