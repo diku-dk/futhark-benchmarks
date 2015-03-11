@@ -35,8 +35,8 @@ fun {{real,real,real,real,real,real},[[real]]}
 		       ) = 
   // initialize the genomes
   let genomes = map ( fn [real] (int i) =>
-			let k   = 5*i + 1                 in
-			let z5s = map( op +(k), iota(5) ) in
+			let k   = 5*i + 1                  in
+			let z5s = map ( op +(k), iota(5) ) in
 			let sobs= map ( sobolInd(sobDirVct), z5s )
 			in  initGenome( copy(sobs) ) 
 		    , iota(POP) ) in
