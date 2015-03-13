@@ -89,7 +89,7 @@ fun {{real,real,real,real,real,real},[[real]]}
 
 	else                // move_type == DEMCMC
 	     let new_genomes = 
-	         map( fn [real] (int i) =>
+	         map( fn *[real] (int i) =>
 			let kk  = 8*i + sob_offs            in
 			let s1  = sobolInd( sobDirVct, kk ) in
 			let k = trunc( s1 * toReal(POP-1) ) in // random in [0,POP-1)
@@ -353,7 +353,7 @@ fun int selectMoveType(real r01) =
 
 fun real MOVES_UNIF_AMPL_RATIO() = 0.005
 
-fun {[real],real} mutate_dims_all({[real],[real],[real]} tup) = 
+fun {*[real],real} mutate_dims_all({[real],[real],[real]} tup) = 
   let {sob_row, orig, muta} = tup in
   let gene_bds = genomeBounds()   in
   let amplitude = MOVES_UNIF_AMPL_RATIO() in
@@ -361,9 +361,9 @@ fun {[real],real} mutate_dims_all({[real],[real],[real]} tup) =
   let {tmp_genome, fb_rats} = unzip(gene_rats) in
   let new_genome= map( constrainDim, zip(tmp_genome, gene_bds) ) in
   let fb_rat    = reduce(op *, 1.0, fb_rats)
-  in  {new_genome, fb_rat}
+  in  {copy(new_genome), fb_rat}
   
-fun {[real],real} mutate_dims_one(int dim_j, {[real],[real],[real]} tup) = 
+fun {*[real],real} mutate_dims_one(int dim_j, {[real],[real],[real]} tup) = 
   let {sob_row, orig, muta} = tup in
   let gene_bds = genomeBounds()   in
   let amplitudes= map(fn real (int i) =>
@@ -374,10 +374,10 @@ fun {[real],real} mutate_dims_one(int dim_j, {[real],[real],[real]} tup) =
   let {tmp_genome, fb_rats} = unzip(gene_rats) in
   let new_genome= map( constrainDim, zip(tmp_genome, gene_bds) ) in
   let fb_rat    = reduce(op *, 1.0, fb_rats)
-  in  {new_genome, fb_rat}
+  in  {copy(new_genome), fb_rat}
 
 
-fun [real] mcmc_DE(real r01, [real] sob_row, [real] g_i, [real] g_k, [real] g_l) =
+fun *[real] mcmc_DE(real r01, [real] sob_row, [real] g_i, [real] g_k, [real] g_l) =
   let gene_bds = genomeBounds()         in
   let gamma_avg = 2.38 / sqrt(2.0*5.0)    in
   let ampl_ratio= 0.1 * MOVES_UNIF_AMPL_RATIO() in
@@ -390,7 +390,7 @@ fun [real] mcmc_DE(real r01, [real] sob_row, [real] g_i, [real] g_k, [real] g_l)
   let tmp_genome = zipWith( perturbation(gamma1,ampl_ratio) 
 			  , g_i, g_k, g_l, sob_row, mm_diffs  )
  
-  in  map( constrainDim, zip(tmp_genome, gene_bds) )
+  in  copy( map( constrainDim, zip(tmp_genome, gene_bds) ) )
   
 
 fun real perturbation( real gamma1, real ampl_rat, real gene,
