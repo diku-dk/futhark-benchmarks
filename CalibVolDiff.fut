@@ -23,13 +23,13 @@ fun {[[real]],[[real]]} initOperator([real] x) =
                                          [-dxu/dxl/(dxl+dxu),
                                          (dxu/dxl - dxl/dxu)/(dxl+dxu),
                                          dxl/dxu/(dxl+dxu)],
-                   map (op + (1), iota(n-2))) in
+                   map (+ (1), iota(n-2))) in
     let Dxxmid = map(fn [real] (int i) => let dxl = x[i] - x[i-1] in
                                           let dxu = x[i+1] - x[i] in
                                           [2.0/dxl/(dxl+dxu),
                                           -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu),
                                           2.0/dxu/(dxl+dxu)],
-                    map (op + (1), iota(n-2))) in
+                    map (+ (1), iota(n-2))) in
     let dxl = x[n-1] - x[n-2] in
     let dxu = 0.0 in
     let Dxhigh = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]] in
@@ -81,7 +81,7 @@ fun *[[real]] explicitX
                map(fn real (int i) =>
                      let kl = if i == 0 then 1 else 0 in
                      let ku = 2 - if i==numX-1 then 1 else 0 in
-                     reduce(op +, dtInv*myResult[i,j],
+                     reduce(+, dtInv*myResult[i,j],
                             map(fn real (int k) =>
                                   let k = k + kl in
                                   0.5 * (myMuX[i,j]*myDx[i,k]+0.5*myVarX[i,j]*myDxx[i,k])
@@ -97,7 +97,7 @@ fun *[[real]] explicitY
                map(fn real (int j) =>
                      let ll = 1 * (if j == 0 then 1 else 0) in
                      let lu = 2 - 1*(if j==numY-1 then 1 else 0) in
-                     reduce(op +, 0.0,
+                     reduce(+, 0.0,
                             map(fn real (int l) =>
                                   let l = l + ll in
                                   (myMuY[i,j]*myDy[j,l]+0.5*myVarY[i,j]*myDyy[j,l])
@@ -115,7 +115,7 @@ fun *[[real]] rollback
     let dtInv = 1.0/(myTimeline[g+1]-myTimeline[g]) in
     let u = explicitX(numX, numY, dtInv, myResult, myMuX, myDx, myDxx, myVarX) in
     let v = explicitY(numX, numY, 0.0, myResult, myMuY, myDy, myDyy, myVarY) in
-    let u = map(fn [real] ([real] us, [real] vs) => map(op +, zip(us, vs)),
+    let u = map(fn [real] ([real] us, [real] vs) => map(+, zip(us, vs)),
                 zip(u, transpose(v))) in
     let u = map(fn [real] ({[real], int} t) =>
                 let {uj, j} = t in

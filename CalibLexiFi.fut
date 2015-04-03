@@ -66,7 +66,7 @@ fun real to_solve(int fid, [{real,real}] scalesbbi, real yhat) =
                                 scales * exp(-bbi*yhat)
                         , scalesbbi
                       )
-            in reduce(op +, 0.0, tmps) - 1.0
+            in reduce(+, 0.0, tmps) - 1.0
 
 /////////////////////////////////////////////////////////
 //// the function-parameter to rootFinding_Brent
@@ -454,7 +454,7 @@ fun int main_g2pp_header() =
     let {res_mat, res_swap_schd, res_strike} = extended_swaption_of_swaption(swaption) in
     let mat_ok    = equal(maturity, res_mat   ) in
     let strike_ok = equal(strike,   res_strike) in
-    let sched_ok  = reduce( op &&, True,
+    let sched_ok  = reduce( &&, True,
                             map(    fn bool({{real,real},{real,real}} z) =>
                                         let {{x1,x2},{y1,y2}} = z in equal(x1,y1) && equal(x2,y2),
                                     zip(swap_schedule, res_swap_schd)
@@ -627,7 +627,7 @@ pricer_of_swaption( real                       today,
                                                 t1_csti * exp(scalei*x) * uGaussian_P(-h2)
                                         , zip(bbi, t1_cst, scale)
                                      ) in
-                        let accum = reduce(op +, 0.0, tmps) in
+                        let accum = reduce(+, 0.0, tmps) in
                         let integrand_res = t1 * ( uGaussian_P(-h1) - accum )
                         ///////////////////////////////////////////
                         // END   function integrand(x) inlined
@@ -637,7 +637,7 @@ pricer_of_swaption( real                       today,
 
                   , zip(x_quads, w_quads)
                   )                        in
-    let sum = reduce(op +, 0.0, tmps)      in
+    let sum = reduce(+, 0.0, tmps)      in
             zc_mat * ( sum / sqrt( pi() ) )
 
 
@@ -662,7 +662,7 @@ fun real exactYhat( int n_schedi,
                       , babaicis
                    )                                          in
     let {ups, los} = unzip(uplos)             in
-    let up = reduce(op +, 0.0, ups)           in
+    let up = reduce(+, 0.0, ups)           in
     let lo = reduce(MAX, -infinity(), los)    in
 
     let {bai, bbi, aici, log_aici} = unzip(babaicis) in
@@ -790,7 +790,7 @@ fun int main_pricer_of_swaption([real] x_quads, [real] w_quads) =
 //                            t1_cst * exp(scale*x) * uGaussian_P(-h2)
 //                    , zip(bbi, t1_cst, scale)
 //                 ) in
-//    let accum = reduce(op +, 0.0, tmps) in
+//    let accum = reduce(+, 0.0, tmps) in
 //        t1 * ( uGaussian_P(-h1) - accum )
 //
 /////////////////////////////////////////////////////////////////////////////////
@@ -827,7 +827,7 @@ fun real main([{{real,real,real} , real}] swaptionQuotes,
                     , swaptionQuotes
                     )    in
 
-    let rms    = reduce(op +, 0.0, prices)      in
+    let rms    = reduce(+, 0.0, prices)      in
     let numswapts = size(0, swaptionQuotes ) in
     let rms    = 100.0 * sqrt ( rms / toReal(numswapts) ) in
 

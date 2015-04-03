@@ -13,7 +13,7 @@ fun bool testBit(int n, int ind) =
 ////         less computation but variable array size!
 /////////////////////////////////////////////////////////////////
 //fun int xorInds([int] indices, [int] dir_vs ) =
-//    reduce( op ^, 0, map( index(dir_vs), indices ) )
+//    reduce( ^, 0, map( index(dir_vs), indices ) )
 //
 //fun [int] sobolIndI ( int bits_num, [[int]] dir_vs, int n ) =
 //    let bits    = iota   ( bits_num ) in
@@ -29,7 +29,7 @@ fun bool testBit(int n, int ind) =
 fun int xorInds(int bits_num, int n, [int] dir_vs ) =
     let bits    = iota   ( bits_num )                   in
     let indices = filter ( testBit(grayCode(n)), bits ) in
-    reduce( op ^, 0, map( index(dir_vs), indices ) )
+    reduce( ^, 0, map( index(dir_vs), indices ) )
 
 fun [int] sobolIndI ( int bits_num, [[int]] dir_vs, int n ) =
     map( xorInds(bits_num, n), dir_vs )
@@ -203,7 +203,7 @@ fun [real] take(int n, [real] a) = let {first,_} = split((n), a) in first
 fun [real] fftmp(int num_paths, [[real]] md_c, [real] zi) =
     map( fn real (int j) =>
             let x = map(zwop, zip(take(j+1,zi), take(j+1,md_c[j]), iota(j+1)))
-            in  reduce(op +, 0.0, x),
+            in  reduce(+, 0.0, x),
          iota(num_paths)
        )
 
@@ -211,13 +211,13 @@ fun [[real]] correlateDeltas(int num_paths, [[real]] md_c, [[real]] zds) =
     map( fftmp(num_paths, md_c), zds )
 
 fun [real] combineVs([real] n_row, [real] vol_row, [real] dr_row) =
-    map( op +, zip(dr_row, map( op *, zip(n_row, vol_row ) )))
+    map( +, zip(dr_row, map( *, zip(n_row, vol_row ) )))
 
 fun [[real]] mkPrices ([real] md_starts, [[real]] md_vols, [[real]] md_drifts, [[real]] noises) =
     let e_rows = map( fn [real] ([real] x) => map(exp, x),
                       map(combineVs, zip(noises, md_vols, md_drifts))
                     )
-    in  scan( fn [real] ([real] x, [real] y) => map(op *, zip(x, y)), md_starts, e_rows )
+    in  scan( fn [real] ([real] x, [real] y) => map(*, zip(x, y)), md_starts, e_rows )
 
 //[num_dates, num_paths]
 fun [[real]] blackScholes(
@@ -256,7 +256,7 @@ fun real main(int contract_number,
     let bs_mat    = map ( blackScholes( num_und, md_c, md_vols, md_drifts, md_st ), bb_mat ) in
 
     let payoffs   = map ( payoff2(md_disc), bs_mat ) in
-    let payoff    = reduce ( op +, 0.0, payoffs )       in
+    let payoff    = reduce ( +, 0.0, payoffs )       in
     payoff / toReal(num_mc_it)
 
 ////////////////////////////////////////
@@ -266,7 +266,7 @@ fun real main(int contract_number,
 fun real payoff2 ([real] md_disc, [[real]] xss) =
 // invariant: length(xss) == 5, i.e., 5x3 matrix
     let divs    = [ 1.0/3758.05, 1.0/11840.0, 1.0/1200.0 ]             in
-    let xss_div = map( fn [real] ([real] xs) => map(op *, zip(xs, divs)), xss     ) in
+    let xss_div = map( fn [real] ([real] xs) => map(*, zip(xs, divs)), xss     ) in
     let mins    = map( MIN, xss_div )
     in  if( 1.0 <= mins[0] ) then trajInner(1150.0, 0, md_disc)
         else if( 1.0 <= mins[1] ) then trajInner(1300.0, 1, md_disc)
