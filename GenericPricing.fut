@@ -1,3 +1,8 @@
+// Generic pricing
+// --
+// input @ GenericPricing.in
+// output @ GenericPricing.out
+
 fun int grayCode(int x) = (x >> 1) ^ x
 
 ////////////////////////////////////////

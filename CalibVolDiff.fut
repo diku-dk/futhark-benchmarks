@@ -1,3 +1,8 @@
+// CalibVolDiff
+// --
+// input @ CalibVolDiff.in
+// output @ CalibVolDiff.out
+
 fun {int,int,[real],[real],[real],[[real]],[[real]],[[real]],[[real]]} initGrid
     (real s0, real alpha, real nu, real t, int numX, int numY, int numT) =
     let logAlpha = log(alpha) in
