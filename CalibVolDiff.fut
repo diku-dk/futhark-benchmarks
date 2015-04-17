@@ -1,158 +1,258 @@
-// CalibVolDiff
+// LocVolCalib
 // --
-// input @ CalibVolDiff.in
-// output @ CalibVolDiff.out
+// compiled input @ CalibVolDiff-data/small.in
+// output @ CalibVolDiff-data/small.out
+//
+// compiled input @ CalibVolDiff-data/medium.in
+// output @ CalibVolDiff-data/medium.out
+//
+// compiled input @ CalibVolDiff-data/large.in
+// output @ CalibVolDiff-data/large.out
 
-fun {int,int,[real],[real],[real],[[real]],[[real]],[[real]],[[real]]} initGrid
-    (real s0, real alpha, real nu, real t, int numX, int numY, int numT) =
+
+fun {int,int,[real],[real],[real]} 
+initGrid(real s0, real alpha, real nu, real t, int numX, int numY, int numT) =
     let logAlpha = log(alpha) in
     let myTimeline = map(fn real (int i) => t * toReal(i) / (toReal(numT) - 1.0), iota(numT)) in
     let {stdX, stdY} = {20.0 * alpha * s0 * sqrt(t),
                         10.0 * nu         * sqrt(t)} in
     let {dx, dy} = {stdX / toReal(numX), stdY / toReal(numY)} in
     let {myXindex, myYindex} = {trunc(s0 / dx), numY / 2} in
-    let myX = map(fn real (int i) => toReal(i) * dx - toReal(myXindex) * dx + s0, iota(numX)) in
+    let myX = map(fn real (int i) => toReal(i) * dx - toReal(myXindex) * dx + s0,       iota(numX)) in
     let myY = map(fn real (int i) => toReal(i) * dy - toReal(myYindex) * dy + logAlpha, iota(numY)) in
-    let xXy = replicate(numX,replicate(numY, 0.0)) in
-    let {myMuX, myVarX, myMuY, myVarY} = {xXy, xXy, xXy, xXy} in
-    {myXindex, myYindex, myX, myY, myTimeline, myMuX, myVarX, myMuY, myVarY}
+    {myXindex, myYindex, myX, myY, myTimeline}
 
+// make the innermost dimension of the result of size 4 instead of 3?
 fun {[[real]],[[real]]} initOperator([real] x) =
-    let n = size(0, x) in
-    let dxu = x[1] - x[0] in
-    let dxl = 0.0 in
-    let Dxlow = [[0.0, -1.0 / dxu, 1.0 / dxu]] in
-    let Dxxlow = [[0.0, 0.0, 0.0]] in
-    let Dxmid = map(fn [real] (int i) => let dxl = x[i] - x[i-1] in
-                                         let dxu = x[i+1] - x[i] in
-                                         [-dxu/dxl/(dxl+dxu),
-                                         (dxu/dxl - dxl/dxu)/(dxl+dxu),
-                                         dxl/dxu/(dxl+dxu)],
-                   map (+ (1), iota(n-2))) in
-    let Dxxmid = map(fn [real] (int i) => let dxl = x[i] - x[i-1] in
-                                          let dxu = x[i+1] - x[i] in
-                                          [2.0/dxl/(dxl+dxu),
-                                          -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu),
-                                          2.0/dxu/(dxl+dxu)],
-                    map (+ (1), iota(n-2))) in
-    let dxl = x[n-1] - x[n-2] in
-    let dxu = 0.0 in
+    let n      = size(0, x)  in
+    let dxu    = x[1] - x[0] in
+    let dxl    = 0.0         in
+    let Dxlow  = [[0.0, -1.0 / dxu, 1.0 / dxu]] in
+    let Dxxlow = [[0.0, 0.0, 0.0]]              in
+    let Dxmids = map(fn {[real],[real]} (int i) => 
+		       let dxl = x[i] - x[i-1]  in
+                       let dxu = x[i+1] - x[i]  in
+                       { [ -dxu/dxl/(dxl+dxu), (dxu/dxl - dxl/dxu)/(dxl+dxu),      dxl/dxu/(dxl+dxu) ],
+			 [  2.0/dxl/(dxl+dxu), -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu), 2.0/dxu/(dxl+dxu) ] }
+                   , map (+ (1), iota(n-2))) in
+    let {Dxmid, Dxxmid} = unzip(Dxmids)         in
+    let dxl    = x[n-1] - x[n-2] in
+    let dxu    = 0.0 in
     let Dxhigh = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]] in
-    let Dxxhigh = [[0.0, 0.0, 0.0 ]] in
-    let Dx = concat(concat(Dxlow, Dxmid), Dxhigh) in
-    let Dxx = concat(concat(Dxxlow, Dxxmid), Dxxhigh) in
-    {Dx, Dxx}
+    let Dxxhigh= [[0.0, 0.0, 0.0 ]] in
+    let Dx     = concat(concat(Dxlow, Dxmid), Dxhigh) in
+    let Dxx    = concat(concat(Dxxlow, Dxxmid), Dxxhigh) 
+    in  {Dx, Dxx}
 
 fun real max(real x, real y) = if y < x then x else y
 fun int maxInt(int x, int y) = if y < x then x else y
 
 fun *[[real]] setPayoff(real strike, [real] myX, [real] myY) =
-    let n = size(0, myY) in
-    copy(map(fn [real] (real xi) => replicate(n, max(xi-strike,0.0)), myX))
+  let n     = size(0, myY) in
+  let myres = map(fn [real] (real xi) => replicate(n, max(xi-strike,0.0)), myX) in
+  copy(transpose(myres))
 
 // Returns new myMuX, myVarX, myMuY, myVarY.
-fun {[[real]] , [[real]] , [[real]] , [[real]]} updateParams
-    ([real] myX, [real] myY, [real] myTimeline, int g, real alpha, real beta, real nu) =
-    unzip (map(fn {[real],[real],[real],[real]} (real xi) =>
-           unzip (map (fn {real,real,real,real} (real yj) =>
-                  {0.0,
-                   exp(2.0*(beta*log(xi) + yj - 0.5*nu*nu*myTimeline[g])),
-                   0.0,
-                   nu * nu}, myY)), myX))
+fun {[[real]] , [[real]] , [[real]] , [[real]]} 
+updateParams( [real] myX, [real] myY, [real] myTimeline, 
+	      int g, real alpha, real beta, real nu    ) =
+  let { numX, numY } = { size(0,myX), size(0,myY) }    in
+  let myMuY  = replicate(numX, replicate(numY, 0.0  )) in
+  let myVarY = replicate(numX, replicate(numY, nu*nu)) in
+  let myMuX  = replicate(numY, replicate(numX, 0.0  )) in
+  let myVarX = map( fn [real] (real yj) => 
+		      map ( fn real (real xi) => 
+			      exp(2.0*(beta*log(xi) + yj - 0.5*nu*nu*myTimeline[g]))
+			  , myX )
+		  , myY )
+  in  { myMuX, myVarX, myMuY, myVarY }
 
-fun {[real],[real]} tridag
-    ([real] a, [real] b, [real] c, [real] r, int n) =
-    let bet = 1.0/b[0] in
-    let {u, uu} = {copy(replicate(n,0.0)),
-                   copy(replicate(n,0.0))} in
-    let u[0] = r[0] * bet in
-    loop ({u, uu, bet}) =
-      for j < n-1 do
-        let j = j + 1 in
-        let uu[j] = c[j-1]*bet in
-        let bet = 1.0/(b[j] - a[j] * uu[j]) in
-        let u[j] = (r[j] - a[j]*u[j-1]) * bet in
-        {u, uu, bet} in
-    loop (u) = for j < n - 1 do
-                 let j = n - 2 - j in
-                 let u[j] = u[j] - uu[j+1]*u[j+1] in
-                 u
-    in {u, uu}
+fun *[real] tridagSeq( [real] a, *[real] b, [real] c, *[real] y ) =
+    let n     = size(0, a)            in
+    loop ({y, b}) =
+      for i < n-1 do
+        let i    = i + 1              in
+	let beta = a[i] / b[i-1]      in
+	let b[i] = b[i] - beta*c[i-1] in
+	let y[i] = y[i] - beta*y[i-1] 
+	in  {y, b} 
+    in
+    let y[n-1] = y[n-1]/b[n-1] in
+    loop (y) = for j < n - 1 do
+                 let i    = n - 2 - j in
+                 let y[i] = (y[i] - c[i]*y[i+1]) / b[i] 
+		 in  y
+    in  y
 
-fun *[[real]] explicitX
-    (int numX, int numY, real dtInv,
-     [[real]] myResult, [[real]] myMuX, [[real]] myDx, [[real]] myDxx, [[real]] myVarX) =
-    copy(map(fn [real] (int j) =>
-               map(fn real (int i) =>
-                     let kl = if i == 0 then 1 else 0 in
-                     let ku = 2 - if i==numX-1 then 1 else 0 in
-                     reduce(+, dtInv*myResult[i,j],
-                            map(fn real (int k) =>
-                                  let k = k + kl in
-                                  0.5 * (myMuX[i,j]*myDx[i,k]+0.5*myVarX[i,j]*myDxx[i,k])
-                                * myResult[i+k-1,j],
-                                iota(ku-kl+1))),
-                   iota(numX)),
-               iota(numY)))
+fun *[real] tridagPar( [real] a, *[real] b, [real] c, *[real] y ) =
+    let n    = size(0, a) in
+    ////////////////////////////////////////////////////
+    // Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] //
+    //   solved by scan with 2x2 matrix mult operator //
+    ////////////////////////////////////////////////////
+    let b0   = b[0] in
+    let mats = map ( fn {real,real,real,real} (int i) =>
+		         if 0 < i 
+			 then {b[i], 0.0-a[i]*c[i-1], 1.0, 0.0}
+			 else {1.0,  0.0,             0.0, 1.0}
+		   , iota(n) ) in
+    let scmt = scan( fn {real,real,real,real} ( {real,real,real,real} a, 
+					        {real,real,real,real} b ) =>
+		         let {a0,a1,a2,a3} = a   in
+			 let {b0,b1,b2,b3} = b   in
+			 let val = 1.0/(a0*b0)   in
+			 { (b0*a0 + b1*a2)*val,
+			   (b0*a1 + b1*a3)*val,
+			   (b2*a0 + b3*a2)*val,
+			   (b2*a1 + b3*a3)*val 
+			 }
+		   , {1.0,  0.0, 0.0, 1.0}, mats ) in
+    let b    = map ( fn real ({real,real,real,real} tup) =>
+		         let {t0,t1,t2,t3} = tup in
+			 (t0*b0 + t1) / (t2*b0 + t3)
+		   , scmt ) in
+    //////////////////////////////////////////////////////
+    // Recurrence 2: y[i] = y[i] - (a[i]/b[i-1])*y[i-1] //
+    //   solved by scan with linear func comp operator  //
+    //////////////////////////////////////////////////////
+    let y0   = y[0] in
+    let lfuns= map ( fn {real,real} (int i) =>
+		         if 0 < i 
+		 	 then {y[i], 0.0-a[i]/b[i-1]}
+			 else {0.0,  1.0            }
+		   , iota(n) ) in
+    let cfuns= scan( fn {real,real} ({real,real} a, {real,real} b) =>
+		         let {a0,a1} = a in
+			 let {b0,b1} = b in
+			 { b0 + b1*a0, a1*b1 }
+		   , {0.0, 1.0}, lfuns ) in
+    let y    = map ( fn real ({real,real} tup) =>
+		         let {a,b} = tup in
+			 a + b*y0
+		   , cfuns ) in
+    //////////////////////////////////////////////////////
+    // Recurrence 3: backward recurrence solved via     //
+    //             scan with linear func comp operator  //
+    //////////////////////////////////////////////////////
+    let yn   = y[n-1]/b[n-1] in
+    let lfuns= map ( fn {real,real} (int k) =>
+		         let i = n-k-1
+			 in  if   0 < k
+		 	     then {y[i]/b[i], 0.0-c[i]/b[i]}
+			     else {0.0,       1.0          }
+		   , iota(n) ) in
+    let cfuns= scan( fn {real,real} ({real,real} a, {real,real} b) =>
+		         let {a0,a1} = a in
+			 let {b0,b1} = b in
+			 {b0 + b1*a0, a1*b1}
+		   , {0.0, 1.0}, lfuns ) in
+    let y    = map ( fn real ({real,real} tup) =>
+		         let {a,b} = tup in
+			 a + b*yn
+		   , cfuns ) in
+    let y    = map (fn real (int i) => y[n-i-1], iota(n)) in
+    copy(y)
 
-fun *[[real]] explicitY
-    (int numX, int numY, real dtInv,
-     [[real]] myResult, [[real]] myMuY, [[real]] myDy, [[real]] myDyy, [[real]] myVarY) =
-    copy(map(fn [real] (int i) =>
-               map(fn real (int j) =>
-                     let ll = 1 * (if j == 0 then 1 else 0) in
-                     let lu = 2 - 1*(if j==numY-1 then 1 else 0) in
-                     reduce(+, 0.0,
-                            map(fn real (int l) =>
-                                  let l = l + ll in
-                                  (myMuY[i,j]*myDy[j,l]+0.5*myVarY[i,j]*myDyy[j,l])
-                                * myResult[i,j+l-1],
-                                iota(lu-ll+1))),
-                   iota(numY)),
-               iota(numX)))
+///////////////////////////////////////////
+// myD,myDD          : [[real,3],m]
+// myMu,myVar,result : [[real,m],n]
+// RETURN            : [[real,m],n]  
+///////////////////////////////////////////
+fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD, 
+			      [[real]] myMu, [[real]] myVar, [[real]] result ) =
+  // 0 <= i < m AND 0 <= j < n
+  let m = size(0,myD) in
+  copy( map( fn [real] ( {[real],[real],[real]} tup ) =>
+	       let {mu_row, var_row, result_row} = tup in  
+	       map( fn real ({[real], [real], real, real, int} tup) =>
+		      let { dx, dxx, mu, var, j } = tup in
+		      let c1 = if 0 < j
+		               then ( mu*dx[0] + 0.5*var*dxx[0] ) * result_row[j-1]
+			       else 0.0 in
+		      let c3 = if j < (m-1)
+		               then ( mu*dx[2] + 0.5*var*dxx[2] ) * result_row[j+1]
+			       else 0.0 in
+		      let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * result_row[j  ]
+		      in  c1 + c2 + c3
+		  , zip( myD, myDD, mu_row, var_row, iota(m) ) 
+		  )
+	   , zip( myMu, myVar, result )
+	   )
+      )
+
+///////////////////////////////////////////
+// myD,myDD     : [[real,3],m]
+// myMu,myVar,u : [[real,m],n]
+// RETURN       : [[real,m],n]  
+///////////////////////////////////////////
+// for implicitY: should be called with transpose(u) instead of u
+fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD, 
+			      [[real]] myMu, [[real]] myVar, 
+			     *[[real]] u,    real     dtInv  ) =
+  map( fn *[real] ( {[real],[real],*[real]} tup )  =>
+	 let {mu_row,var_row,u_row} = tup in
+	 let abc = map( fn {real,real,real} ({real,real,[real],[real]} tup) =>
+			  let {mu, var, d, dd} = tup in
+			  { 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
+			  , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
+			  , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])
+			  }
+		      , zip(mu_row, var_row, myD, myDD) 
+		      ) in
+	 let {a,b,c} = unzip(abc) in
+	 if 1==1 then tridagSeq( a, copy(b), c, u_row )
+		 else tridagPar( a, copy(b), c, u_row )
+     , zip(myMu,myVar,u)
+     )
 
 fun *[[real]] rollback
     ([real] myX, [real] myY, [real] myTimeline, *[[real]] myResult,
      [[real]] myMuX, [[real]] myDx, [[real]] myDxx, [[real]] myVarX,
      [[real]] myMuY, [[real]] myDy, [[real]] myDyy, [[real]] myVarY, int g) =
+
     let {numX, numY} = {size(0, myX), size(0, myY)} in
-    let numZ = maxInt(numX, numY) in
     let dtInv = 1.0/(myTimeline[g+1]-myTimeline[g]) in
-    let u = explicitX(numX, numY, dtInv, myResult, myMuX, myDx, myDxx, myVarX) in
-    let v = explicitY(numX, numY, 0.0, myResult, myMuY, myDy, myDyy, myVarY) in
-    let u = map(fn [real] ([real] us, [real] vs) => map(+, zip(us, vs)),
-                zip(u, transpose(v))) in
-    let u = map(fn [real] ({[real], int} t) =>
-                let {uj, j} = t in
-                let {a,b,c} = unzip(map(fn {real,real,real} (int i) =>
-                                        {-0.5*(myMuX[i,j]*myDx[i,0] + 0.5*myVarX[i,j]*myDxx[i,0]),
-                                         dtInv - 0.5*(myMuX[i,j]*myDx[i,1] + 0.5*myVarX[i,j]*myDxx[i,1]),
-                                         -0.5*(myMuX[i,j]*myDx[i,2]+0.5*myVarX[i,j]*myDxx[i,2])},
-                                         iota(numX))) in
-                let {uj, yy} = tridag(a,b,c,uj,numX) in uj,
-            zip(u, iota(numY))) in
-    loop (myResult) =
-      for i < numX do
-       let {a,b,c} = unzip(map(fn {real,real,real} (int j) =>
-                                 {-0.5*(myMuY[i,j]*myDy[j,0]+0.5*myVarY[i,j]*myDyy[j,0]),
-                                  dtInv - 0.5*(myMuY[i,j]*myDy[j,1]+0.5*myVarY[i,j]*myDyy[j,1]),
-                                  -0.5*(myMuY[i,j]*myDy[j,2]+0.5*myVarY[i,j]*myDyy[j,2])},
-                                  iota(numY))) in
-       let y = copy(replicate(numY, 0.0)) in
-       loop (y) = for j < numY do
-                    let y[j] = dtInv * u[j,i] - 0.5*v[i,j] in
-                    y in
-       let {ri, yy} = tridag(a,b,c,y,numY) in
-       let myResult[i] = ri in myResult
-    in myResult
+
+    // explicitX
+    let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult ) in
+    let u = map( fn [real] ({[real],[real]} tup) =>
+		    let {u_row, res_row} = tup in
+		    map (fn real ({real,real} tup) =>
+			   let {u_el,res_el} = tup 
+			   in  dtInv*res_el + 0.5*u_el
+			, zip(u_row,res_row) )
+		, zip(u,myResult) ) 
+    in
+    // explicitY
+    let myResultTR = transpose(myResult) in
+    let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR ) in
+    let u = map( fn *[real] ([real] us, [real] vs) => 
+		   copy(map(+, zip(us, vs)))
+               , zip(u, transpose(v))
+	       ) in
+    // implicitX
+    let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv ) in
+    // implicitY
+    let y = copy( map( fn [real] ({[real],[real]} uv_row) =>
+			 let {u_row, v_row} = uv_row in
+			 map( fn real ({real,real} uv) =>
+				let {u_el,v_el} = uv 
+				in  dtInv*u_el - 0.5*v_el
+			    , zip(u_row,v_row)
+			    )
+		     , zip(transpose(u),v)
+		     ) )
+    in
+    let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
+    in  transpose(myResultTR)
 
 fun real value(int numX, int numY, int numT, real s0, real strike, real t, real alpha, real nu, real beta) =
-    let {myXindex, myYindex, myX, myY, myTimeline, myMuX, myVarX, myMuY, myVarY} =
+    let {myXindex, myYindex, myX, myY, myTimeline} =
         initGrid(s0, alpha, nu, t, numX, numY, numT) in
-    let {myDx, myDxx} = initOperator(myX) in
-    let {myDy, myDyy} = initOperator(myY) in
+    let {myDx, myDxx} = initOperator(myX) in 
+    let {myDy, myDyy} = initOperator(myY) in 
     let myResult = setPayoff(strike, myX, myY) in
-    //loop ((myResult, myMuX, myVarX, myMuY, myVarY)) =
+    
     loop (myResult) =
         for i < numT - 1 do
             let i = numT-2-i in
@@ -161,11 +261,12 @@ fun real value(int numX, int numY, int numT, real s0, real strike, real t, real 
             let myResult = rollback(myX, myY, myTimeline, myResult,
                                     myMuX, myDx, myDxx, myVarX,
                                     myMuY, myDy, myDyy, myVarY, i) in
-            //(myResult, myMuX, myVarX, myMuY, myVarY) in
+            
             myResult in
-    myResult[myXindex,myYindex]
+    myResult[myYindex,myXindex]
 
-fun [real] main (int outer_loop_count, int numX, int numY, int numT, real s0, real strike, real t, real alpha, real nu, real beta) =
+fun [real] main (int outer_loop_count, int numX, int numY, int numT, 
+		 real s0, real strike, real t, real alpha, real nu, real beta) =
     let strikes = map(fn real (int i) => 0.001*toReal(i), iota(outer_loop_count)) in
     let res = map(fn real (real x) => value(numX, numY, numT, s0, x, t, alpha, nu, beta), strikes) in
     res
