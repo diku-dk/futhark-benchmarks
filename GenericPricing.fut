@@ -34,9 +34,9 @@ fun [int] sobolIndI ( int bits_num, [[int]] dir_vs, int n ) =
     map( xorInds(bits_num, n), dir_vs )
 
 fun [real] sobolIndR( int bits_num, [[int]] dir_vs, int n ) =
-    let divisor = 2.0 pow toReal (bits_num)        in
+    let divisor = 2.0 pow toFloat (bits_num)        in
     let arri    = sobolIndI( bits_num, dir_vs, n ) in
-        map( fn real (int x) => toReal(x) / divisor, arri )
+        map( fn real (int x) => toFloat(x) / divisor, arri )
 
 /////////////////////////////////
 //// STRENGTH-REDUCED FORMULA
@@ -76,7 +76,7 @@ fun [[real]] sobolRecMap( real  sob_fact, int bits_num,
 		     )
   in  map( fn [real] ([int] xs) => 
 	     map ( fn real (int x) => 
-		     toReal(x) * sob_fact 
+		     toFloat(x) * sob_fact 
 		 , xs)
 	 , vct_ints)
 
@@ -315,7 +315,7 @@ fun [real] main(
 		      , replicate(num_models, 0.0)
 		      , payoffs )
 
-  in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
+  in  map (fn real (real price) => price / toFloat(num_mc_it), payoff)
 
 fun [real] compute_chunk(
   {int,int,int,int,int,int}           param_ints,
@@ -329,7 +329,7 @@ fun [real] compute_chunk(
     let {md_cs,md_vols,md_drifts,md_sts,md_discts,md_detvals} = market_params in
     let {bb_inds, bb_data} = brownian_bridge_params in
     let {lb_inc,  ub_exc } = lu_bds in
-    let sob_factor= 1.0 / toReal(1 << num_bits) in
+    let sob_factor= 1.0 / toFloat(1 << num_bits) in
     let sobol_mat = if (1 == 1)
     		    then sobolRecMap(sob_factor, num_bits, dir_vs, lu_bds)
 		    else map ( sobolIndR(num_bits, dir_vs) 
@@ -400,7 +400,7 @@ fun [real] mainOLD(
 			     zipWith(+, x, y)
 			 , replicate(num_models, 0.0)
 			 , payoffs )
-  in  map (fn real (real price) => price / toReal(num_mc_it), payoff)
+  in  map (fn real (real price) => price / toFloat(num_mc_it), payoff)
 
 
 ////////////////////////////////////////

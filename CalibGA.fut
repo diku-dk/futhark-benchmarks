@@ -85,7 +85,7 @@ fun {{real,real,real,real,real,real},[[real]]}
 	else 
         if (move_type == 2) // move_type == DIMS_ONE
 	then let s1  = sobolInd( sobDirVct, sob_offs )  in
-	     let dim_j = trunc( s1 * toReal(5) )        in
+	     let dim_j = trunc( s1 * toFloat(5) )        in
 	     let sob_mat = 
 	         map( fn [real] (int i) =>
 			let k   = 5*i + sob_offs + 1    in
@@ -103,13 +103,13 @@ fun {{real,real,real,real,real,real},[[real]]}
 	         map( fn *[real] (int i) =>
 			let kk  = 8*i + sob_offs            in
 			let s1  = sobolInd( sobDirVct, kk ) in
-			let k = trunc( s1 * toReal(POP-1) ) in // random in [0,POP-1)
+			let k = trunc( s1 * toFloat(POP-1) ) in // random in [0,POP-1)
 			let {k,cand_UB} = if k == i 
 			                  then {POP-1, POP-2}
 					  else {k,     POP-1} 
 			in
 			let s2  = sobolInd(sobDirVct, kk+1) in
-			let l = trunc( s2*toReal(cand_UB) ) in // random in [0,cand_UB -1)
+			let l = trunc( s2*toFloat(cand_UB) ) in // random in [0,cand_UB -1)
 			let l = if (l == i) || (l == k)
 			        then cand_UB
 				else l
@@ -216,7 +216,7 @@ fun {real,real} evalGenomeOnSwap (
   //   and convergence loop ...
   ////////////////////////////////////////
   let a12s = map ( fn {real,real,real} (int i) =>
-		     let a1 = add_months( maturity, swap_freq*toReal(i) ) in
+		     let a1 = add_months( maturity, swap_freq*toFloat(i) ) in
 		     let a2 = add_months( a1, swap_freq ) in
 		     { zc(a2) * date_act_365(a2, a1), a1, a2 }
 		 , iota(n_schedi) ) in
@@ -251,7 +251,7 @@ fun {real,real} evalGenomeOnSwap (
   // computing n_schedi-size temporary arrays
   let tmp_arrs = 
           map( fn {real,real,real,real,real,real,real} (int i) =>
-		 let beg_date = add_months( maturity, swap_freq*toReal(i) ) in 
+		 let beg_date = add_months( maturity, swap_freq*toFloat(i) ) in 
                  let end_date = add_months( beg_date, swap_freq  )          in 
 		 let res      = date_act_365( end_date, beg_date ) * strike in
 		 let cii      = if i==(n_schedi-1) then 1.0 + res  else res in
@@ -319,13 +319,13 @@ fun {real,real} evalGenomeOnSwap (
 /// Sobol Random Number Generation
 ///////////////////////////////////////////////////
 //fun [real] getChunkSobNums(int sob_ini, int CHUNK, [int] dirVct) = 
-//  let norm_fact = 1.0 / ( toReal(1 << size(0,dirVct)) + 1.0 ) in
+//  let norm_fact = 1.0 / ( toFloat(1 << size(0,dirVct)) + 1.0 ) in
 //  let sob_inds  = map(+sob_ini, iota(CHUNK))
 //  in  map( sobolInd(dirVct,norm_fact), sob_inds )
 
 fun real sobolInd( [int] dirVct, int n ) =
     // placed norm_fact here to check that hoisting does its job!
-    let norm_fact = 1.0 / ( toReal(1 << size(0,dirVct)) + 1.0 ) in
+    let norm_fact = 1.0 / ( toFloat(1 << size(0,dirVct)) + 1.0 ) in
     let n_gray = (n >> 1) ^ n in
     let res = 0 in
     loop (res) =
@@ -334,7 +334,7 @@ fun real sobolInd( [int] dirVct, int n ) =
         if (n_gray & t) == t
 	then res ^ dirVct[i]
 	else res
-    in  toReal(res) * norm_fact
+    in  toFloat(res) * norm_fact
   
 ///////////////////////////////////////////////////
 /// Genome Implementation
@@ -574,11 +574,11 @@ rootFinding_Brent(int fid, [{real,real}] scalesbbi, real lb, real ub, real tol, 
                                 s1 + s2 + s3
                                                                     in
 
-                let {mflag, s} = if ( ( not ((3.0*a+b)/4.0 <= s && s <= b)    ) ||
+                let {mflag, s} = if ( ( !((3.0*a+b)/4.0 <= s && s  <= b)    ) ||
                                       (     mflag && fabs(b-c)/2.0 <= fabs(s-b) ) ||
-                                      ( not mflag && fabs(c-d)/2.0 <= fabs(s-b) ) ||
+                                      ( !mflag && fabs(c-d)/2.0    <= fabs(s-b) ) ||
                                       (     mflag && fabs(b-c)     <= fabs(tol) ) ||
-                                      ( not mflag && fabs(c-d)     <= fabs(tol) )
+                                      ( !mflag && fabs(c-d)        <= fabs(tol) )
                                     )
                                  then {True,  (a+b)/2.0}
                                  else {False, s        }
@@ -634,7 +634,7 @@ extended_swaption_of_swaption({real,real,real} swaption)  =  // swaption = (sw_m
     let nschedule  = trunc(12.0 * sw_ty / freq)   in
 
     let a12s = map ( fn {real,real,real} (int i) =>
-		     let a1 = add_months( maturity, freq*toReal(i) ) in
+		     let a1 = add_months( maturity, freq*toFloat(i) ) in
 		     let a2 = add_months( a1, freq ) in
 		     { zc(a2) * date_act_365(a2, a1), a1, a2 }
 		 , iota(nschedule) ) in
@@ -1001,7 +1001,7 @@ fun real mainOLD([{{real,real,real} , real}] swaptionQuotes,
 
     let rms    = reduce(+, 0.0, prices)      in
     let numswapts = size(0, swaptionQuotes ) in
-    let rms    = 100.0 * sqrt ( rms / toReal(numswapts) ) in
+    let rms    = 100.0 * sqrt ( rms / toFloat(numswapts) ) in
 
     // printing the error!
     let tmp    = trace("\n\nComputed RMS is: ") in
@@ -1103,7 +1103,7 @@ fun real add_months ( real date, real rnbmonths ) =
     let {y, m} = if (m <= 0) then {y - 1, m + 12} else {y, m} in
     let resmin = date_of_gregorian ( {y, m, minI( d, end_of_month(y, m) ), 12, 0} ) in
 
-            toReal(resmin)
+            toFloat(resmin)
 
 
 fun real add_years(real date, real nbyears) =
@@ -1117,7 +1117,7 @@ fun real max_date () = 168307199.0
 fun real min_date () = 3600.0
 
 // Date.of_string("2012-01-01")
-fun real today    () = toReal( date_of_gregorian( {2012, 1, 1, 12, 0} ) )
+fun real today    () = toFloat( date_of_gregorian( {2012, 1, 1, 12, 0} ) )
 
 
 ////// Previous, approximate implementation ////////

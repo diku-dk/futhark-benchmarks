@@ -13,13 +13,13 @@
 fun {int,int,[real],[real],[real]} 
 initGrid(real s0, real alpha, real nu, real t, int numX, int numY, int numT) =
     let logAlpha = log(alpha) in
-    let myTimeline = map(fn real (int i) => t * toReal(i) / (toReal(numT) - 1.0), iota(numT)) in
+    let myTimeline = map(fn real (int i) => t * toFloat(i) / (toReal(numT) - 1.0), iota(numT)) in
     let {stdX, stdY} = {20.0 * alpha * s0 * sqrt(t),
                         10.0 * nu         * sqrt(t)} in
-    let {dx, dy} = {stdX / toReal(numX), stdY / toReal(numY)} in
+    let {dx, dy} = {stdX / toFloat(numX), stdY / toReal(numY)} in
     let {myXindex, myYindex} = {trunc(s0 / dx), numY / 2} in
-    let myX = map(fn real (int i) => toReal(i) * dx - toReal(myXindex) * dx + s0,       iota(numX)) in
-    let myY = map(fn real (int i) => toReal(i) * dy - toReal(myYindex) * dy + logAlpha, iota(numY)) in
+    let myX = map(fn real (int i) => toFloat(i) * dx - toReal(myXindex) * dx + s0,       iota(numX)) in
+    let myY = map(fn real (int i) => toFloat(i) * dy - toReal(myYindex) * dy + logAlpha, iota(numY)) in
     {myXindex, myYindex, myX, myY, myTimeline}
 
 // make the innermost dimension of the result of size 4 instead of 3?
@@ -267,6 +267,6 @@ fun real value(int numX, int numY, int numT, real s0, real strike, real t, real 
 
 fun [real] main (int outer_loop_count, int numX, int numY, int numT, 
 		 real s0, real strike, real t, real alpha, real nu, real beta) =
-    let strikes = map(fn real (int i) => 0.001*toReal(i), iota(outer_loop_count)) in
+    let strikes = map(fn real (int i) => 0.001*toFloat(i), iota(outer_loop_count)) in
     let res = map(fn real (real x) => value(numX, numY, numT, s0, x, t, alpha, nu, beta), strikes) in
     res
