@@ -1073,7 +1073,7 @@ fun bool check_date(int year, int month, int day) =
 
     let tmp3 = if      ( month == 2 )
                then let tmpmod = MOD(year, 100) in
-                        ( day == 29 && MOD(year, 4) == 0 && ( year == 2000 || (not (tmpmod == 0)) ) )
+                        ( day == 29 && MOD(year, 4) == 0 && ( year == 2000 || (! (tmpmod == 0)) ) )
                else if ( month == 4 || month == 6 || month == 9 || month == 11 )
                     then ( day <= 30 )
                     else ( day <= 31 )
@@ -1086,7 +1086,7 @@ fun real days_between(real t1, real t2) =
 
 fun real date_act_365(real t1, real t2) = days_between(t1, t2) / 365.0
 
-fun bool leap(int y) = ( MOD(y,4) == 0  && ( (not (MOD(y,100)==0)) || (MOD(y,400)==0) ) )
+fun bool leap(int y) = ( MOD(y,4) == 0  && ( (!(MOD(y,100)==0)) || (MOD(y,400)==0) ) )
 
 fun int end_of_month(int year, int month) =
     if      ( month == 2 && leap(year) )                           then 29
