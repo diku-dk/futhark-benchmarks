@@ -1,13 +1,13 @@
-// This corresponds to the medium dataset from finpar.
-2       // contract number 
-1048576 // number of Monte-Carlo Iterations
-5       // number of path dates
-3       // number of underlyings
-1       // number of models
-30      // integer bit-length representation for Sobol
-128     // chunk size
+-- This corresponds to the medium dataset from finpar.
+2       -- contract number 
+1048576 -- number of Monte-Carlo Iterations
+5       -- number of path dates
+3       -- number of underlyings
+1       -- number of models
+30      -- integer bit-length representation for Sobol
+128     -- chunk size
 
-// Begin Direction vectors [3*5][30]
+-- Begin Direction vectors [3*5][30]
 [
 	[
 		536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 524288, 262144, 131072, 65536, 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1
@@ -54,57 +54,57 @@
 	[
 		536870912, 805306368, 939524096, 603979776, 100663296, 452984832, 998244352, 188743680, 866123776, 389021696, 287834112, 172228608, 824836096, 977731584, 153714688, 507854848, 254402560, 88403968, 883578880, 235160576, 118055424, 422917888, 371224704, 326210368, 654926368, 691353392, 773877944, 930190180, 554263078, 842348331
 	]
-] // End   Direction Vectors
+] -- End   Direction Vectors
 
 
 
 
-// The Market / Model Data
-//	 md_c	 md_vols	 md_drifts	 md_starts	 md_detval	 md_disc
+-- The Market / Model Data
+--	 md_c	 md_vols	 md_drifts	 md_starts	 md_detval	 md_disc
 
-[[ 	 // md_c[1][3][3] (begin)
+[[ 	 -- md_c[1][3][3] (begin)
 	[ 1.0000000 , 0.6000000 , 0.8000000  ],
 	[ 0.6000000 , 0.8000000 , 0.1500000  ],
 	[ 0.8000000 , 0.1500000 , 0.5809475  ]
-]] 	 // md_c (end)
+]] 	 -- md_c (end)
 
-[[	 // md_vols[1][5][3] volatility (begin)
+[[	 -- md_vols[1][5][3] volatility (begin)
 	[ 0.1900000 , 0.1900000 , 0.1500000  ],
 	[ 0.1900000 , 0.1900000 , 0.1500000  ],
 	[ 0.1900000 , 0.1900000 , 0.1500000  ],
 	[ 0.1900000 , 0.1900000 , 0.1500000  ],
 	[ 0.1900000 , 0.1900000 , 0.1500000  ]
-]]	 // md_vols volatility (end)
+]]	 -- md_vols volatility (end)
 
-[[	 // md_drifts[1][5][3] (begin)
+[[	 -- md_drifts[1][5][3] (begin)
 	[ -0.0283491736871803 , 0.0178771081725381 , 0.0043096808044729  ],
 	[ -0.0183841413744211 , -0.0044530897672834 , 0.0024263805987983 ],
 	[ -0.0172686581005089 , 0.0125638544546015 , 0.0094452810918001  ],
 	[ -0.0144179417871814 , 0.0157411263968213 , 0.0125315353728014  ],
 	[ -0.0121497422218761 , 0.0182904634062437 , 0.0151125070556484  ]
-]]	 // md_drifts (end)
+]]	 -- md_drifts (end)
 
-// md_starts[1][3]
+-- md_starts[1][3]
 [[ 3758.0500000000001819, 11840.0000000000000000, 1200.0000000000000000 ]]
 
-// model deterministic values [0]
+-- model deterministic values [0]
 [[ 0.0 ]]
 
-// model discounts [5]
+-- model discounts [5]
 [[ 0.9797862861805930 , 0.9505748482484491 , 0.9214621679912968 , 0.8906693055891434 , 0.8588567633110704  ]]
 
-// Brownian Bridge (BB) Metadata
+-- Brownian Bridge (BB) Metadata
 
-//BB indirect accessing:
-[	[ 5, 2, 1, 3, 4 ],	//bb_bi[5]
-	[ 0, 0, 0, 2, 3 ],	//bb_li[5]
-	[ 0, 5, 2, 5, 5 ]	//bb_ri[5]
+--BB indirect accessing:
+[	[ 5, 2, 1, 3, 4 ],	--bb_bi[5]
+	[ 0, 0, 0, 2, 3 ],	--bb_li[5]
+	[ 0, 5, 2, 5, 5 ]	--bb_ri[5]
 ]
 
-//BB (real) data:
-[	[ 2.2372928847280580, 1.0960951589853829, 0.7075902730592357, 0.8166828043492210, 0.7075902730592357 ],	//bb_sd[5] (standard deviation)
-	[ 0.0000000000000000, 0.5998905309250137, 0.4993160054719562, 0.6669708029197080, 0.5006839945280438 ],	//bb_lw[5]
-	[ 0.0000000000000000, 0.4001094690749863, 0.5006839945280438, 0.3330291970802919, 0.4993160054719562 ]	//bb_rw[5]
+--BB (real) data:
+[	[ 2.2372928847280580, 1.0960951589853829, 0.7075902730592357, 0.8166828043492210, 0.7075902730592357 ],	--bb_sd[5] (standard deviation)
+	[ 0.0000000000000000, 0.5998905309250137, 0.4993160054719562, 0.6669708029197080, 0.5006839945280438 ],	--bb_lw[5]
+	[ 0.0000000000000000, 0.4001094690749863, 0.5006839945280438, 0.3330291970802919, 0.4993160054719562 ]	--bb_rw[5]
 ]
 
-// [(EXsimple_price(EUR, 937.3914952240884, "MC BS (C) 3dim, Sobol, 1048576 paths, 1800 ms"))]
+-- [(EXsimple_price(EUR, 937.3914952240884, "MC BS (C) 3dim, Sobol, 1048576 paths, 1800 ms"))]

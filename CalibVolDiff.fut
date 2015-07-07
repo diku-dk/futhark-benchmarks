@@ -1,13 +1,13 @@
-// LocVolCalib
-// --
-// compiled input @ CalibVolDiff-data/small.in
-// output @ CalibVolDiff-data/small.out
-//
-// compiled input @ CalibVolDiff-data/medium.in
-// output @ CalibVolDiff-data/medium.out
-//
-// compiled input @ CalibVolDiff-data/large.in
-// output @ CalibVolDiff-data/large.out
+-- LocVolCalib
+-- ==
+-- compiled input @ CalibVolDiff-data/small.in
+-- output @ CalibVolDiff-data/small.out
+--
+-- compiled input @ CalibVolDiff-data/medium.in
+-- output @ CalibVolDiff-data/medium.out
+--
+-- compiled input @ CalibVolDiff-data/large.in
+-- output @ CalibVolDiff-data/large.out
 
 
 fun {int,int,[real],[real],[real]} 
@@ -22,7 +22,7 @@ initGrid(real s0, real alpha, real nu, real t, int numX, int numY, int numT) =
     let myY = map(fn real (int i) => toFloat(i) * dy - toFloat(myYindex) * dy + logAlpha, iota(numY)) in
     {myXindex, myYindex, myX, myY, myTimeline}
 
-// make the innermost dimension of the result of size 4 instead of 3?
+-- make the innermost dimension of the result of size 4 instead of 3?
 fun {[[real]],[[real]]} initOperator([real] x) =
     let n      = size(0, x)  in
     let dxu    = x[1] - x[0] in
@@ -52,7 +52,7 @@ fun *[[real]] setPayoff(real strike, [real] myX, [real] myY) =
   let myres = map(fn [real] (real xi) => replicate(n, max(xi-strike,0.0)), myX) in
   copy(transpose(myres))
 
-// Returns new myMuX, myVarX, myMuY, myVarY.
+-- Returns new myMuX, myVarX, myMuY, myVarY.
 fun {[[real]] , [[real]] , [[real]] , [[real]]} 
 updateParams( [real] myX, [real] myY, [real] myTimeline, 
 	      int g, real alpha, real beta, real nu    ) =
@@ -86,10 +86,10 @@ fun *[real] tridagSeq( [real] a, *[real] b, [real] c, *[real] y ) =
 
 fun *[real] tridagPar( [real] a, *[real] b, [real] c, *[real] y ) =
     let n    = size(0, a) in
-    ////////////////////////////////////////////////////
-    // Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] //
-    //   solved by scan with 2x2 matrix mult operator //
-    ////////////////////////////////////////////////////
+    ----------------------------------------------------
+    -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --
+    --   solved by scan with 2x2 matrix mult operator --
+    ----------------------------------------------------
     let b0   = b[0] in
     let mats = map ( fn {real,real,real,real} (int i) =>
 		         if 0 < i 
@@ -111,10 +111,10 @@ fun *[real] tridagPar( [real] a, *[real] b, [real] c, *[real] y ) =
 		         let {t0,t1,t2,t3} = tup in
 			 (t0*b0 + t1) / (t2*b0 + t3)
 		   , scmt ) in
-    //////////////////////////////////////////////////////
-    // Recurrence 2: y[i] = y[i] - (a[i]/b[i-1])*y[i-1] //
-    //   solved by scan with linear func comp operator  //
-    //////////////////////////////////////////////////////
+    ------------------------------------------------------
+    -- Recurrence 2: y[i] = y[i] - (a[i]/b[i-1])*y[i-1] --
+    --   solved by scan with linear func comp operator  --
+    ------------------------------------------------------
     let y0   = y[0] in
     let lfuns= map ( fn {real,real} (int i) =>
 		         if 0 < i 
@@ -130,10 +130,10 @@ fun *[real] tridagPar( [real] a, *[real] b, [real] c, *[real] y ) =
 		         let {a,b} = tup in
 			 a + b*y0
 		   , cfuns ) in
-    //////////////////////////////////////////////////////
-    // Recurrence 3: backward recurrence solved via     //
-    //             scan with linear func comp operator  //
-    //////////////////////////////////////////////////////
+    ------------------------------------------------------
+    -- Recurrence 3: backward recurrence solved via     --
+    --             scan with linear func comp operator  --
+    ------------------------------------------------------
     let yn   = y[n-1]/b[n-1] in
     let lfuns= map ( fn {real,real} (int k) =>
 		         let i = n-k-1
@@ -153,14 +153,14 @@ fun *[real] tridagPar( [real] a, *[real] b, [real] c, *[real] y ) =
     let y    = map (fn real (int i) => y[n-i-1], iota(n)) in
     copy(y)
 
-///////////////////////////////////////////
-// myD,myDD          : [[real,3],m]
-// myMu,myVar,result : [[real,m],n]
-// RETURN            : [[real,m],n]  
-///////////////////////////////////////////
+------------------------------------------/
+-- myD,myDD          : [[real,3],m]
+-- myMu,myVar,result : [[real,m],n]
+-- RETURN            : [[real,m],n]  
+------------------------------------------/
 fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD, 
 			      [[real]] myMu, [[real]] myVar, [[real]] result ) =
-  // 0 <= i < m AND 0 <= j < n
+  -- 0 <= i < m AND 0 <= j < n
   let m = size(0,myD) in
   copy( map( fn [real] ( {[real],[real],[real]} tup ) =>
 	       let {mu_row, var_row, result_row} = tup in  
@@ -180,12 +180,12 @@ fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD,
 	   )
       )
 
-///////////////////////////////////////////
-// myD,myDD     : [[real,3],m]
-// myMu,myVar,u : [[real,m],n]
-// RETURN       : [[real,m],n]  
-///////////////////////////////////////////
-// for implicitY: should be called with transpose(u) instead of u
+------------------------------------------/
+-- myD,myDD     : [[real,3],m]
+-- myMu,myVar,u : [[real,m],n]
+-- RETURN       : [[real,m],n]  
+------------------------------------------/
+-- for implicitY: should be called with transpose(u) instead of u
 fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD, 
 			      [[real]] myMu, [[real]] myVar, 
 			     *[[real]] u,    real     dtInv  ) =
@@ -213,7 +213,7 @@ fun *[[real]] rollback
     let {numX, numY} = {size(0, myX), size(0, myY)} in
     let dtInv = 1.0/(myTimeline[g+1]-myTimeline[g]) in
 
-    // explicitX
+    -- explicitX
     let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult ) in
     let u = map( fn [real] ({[real],[real]} tup) =>
 		    let {u_row, res_row} = tup in
@@ -223,16 +223,16 @@ fun *[[real]] rollback
 			, zip(u_row,res_row) )
 		, zip(u,myResult) ) 
     in
-    // explicitY
+    -- explicitY
     let myResultTR = transpose(myResult) in
     let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR ) in
     let u = map( fn *[real] ([real] us, [real] vs) => 
 		   copy(map(+, zip(us, vs)))
                , zip(u, transpose(v))
 	       ) in
-    // implicitX
+    -- implicitX
     let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv ) in
-    // implicitY
+    -- implicitY
     let y = copy( map( fn [real] ({[real],[real]} uv_row) =>
 			 let {u_row, v_row} = uv_row in
 			 map( fn real ({real,real} uv) =>

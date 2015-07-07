@@ -1,11 +1,11 @@
-128     // OUTER -- no restrictions
-256     // NUM_X -- 2^x, where x \in {5, ..., 9}
-32      // NUM_Y -- 2^x, where x \in {5, ..., 9}    
-64      // NUM_T -- no restrictions  
-0.03 //s0
-0.03 // strike
-5.0 // t
-0.2 // alpha
-0.6 // nu
-0.5 // beta
+128     -- OUTER -- no restrictions
+256     -- NUM_X -- 2^x, where x \in {5, ..., 9}
+32      -- NUM_Y -- 2^x, where x \in {5, ..., 9}    
+64      -- NUM_T -- no restrictions  
+0.03 --s0
+0.03 -- strike
+5.0 -- t
+0.2 -- alpha
+0.6 -- nu
+0.5 -- beta
 

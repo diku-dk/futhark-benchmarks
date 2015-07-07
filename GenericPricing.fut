@@ -1,30 +1,30 @@
-// Generic pricing
-// --
-// compiled input @ GenericPricing-data/small.in
-// output @ GenericPricing-data/small.out
-//
-// compiled input @ GenericPricing-data/medium.in
-// output @ GenericPricing-data/medium.out
-//
-// compiled input @ GenericPricing-data/large.in
-// output @ GenericPricing-data/large.out
+-- Generic pricing
+-- ==
+-- compiled input @ GenericPricing-data/small.in
+-- output @ GenericPricing-data/small.out
+--
+-- compiled input @ GenericPricing-data/medium.in
+-- output @ GenericPricing-data/medium.out
+--
+-- compiled input @ GenericPricing-data/large.in
+-- output @ GenericPricing-data/large.out
 
 fun int grayCode(int x) = (x >> 1) ^ x
 
-////////////////////////////////////////
-/// Sobol Generator
-////////////////////////////////////////
+----------------------------------------
+--/ Sobol Generator
+----------------------------------------
 fun int index([int] arr, int i) = arr[i]
 
 fun bool testBit(int n, int ind) =
     let t = (1 << ind) in (n & t) == t
 
-/////////////////////////////////////////////////////////////////
-//// INDEPENDENT FORMULA: 
-////    filter is redundantly computed inside map.
-////    Currently Futhark hoists it outside, but this will
-////    not allow fusing the filter with reduce => redomap,
-/////////////////////////////////////////////////////////////////
+----------------------------------------------------------------/
+---- INDEPENDENT FORMULA: 
+----    filter is redundantly computed inside map.
+----    Currently Futhark hoists it outside, but this will
+----    not allow fusing the filter with reduce => redomap,
+----------------------------------------------------------------/
 fun int xorInds(int bits_num, int n, [int] dir_vs ) =
     let bits    = iota   ( bits_num )                   in
     let indices = filter ( testBit(grayCode(n)), bits ) in
@@ -38,9 +38,9 @@ fun [real] sobolIndR( int bits_num, [[int]] dir_vs, int n ) =
     let arri    = sobolIndI( bits_num, dir_vs, n ) in
         map( fn real (int x) => toFloat(x) / divisor, arri )
 
-/////////////////////////////////
-//// STRENGTH-REDUCED FORMULA
-/////////////////////////////////
+--------------------------------/
+---- STRENGTH-REDUCED FORMULA
+--------------------------------/
 fun int index_of_least_significant_0(int n) = 
   let {goon,k} = {True,0} in
   loop ({goon,k,n}) =
@@ -62,8 +62,8 @@ fun [int] sobolRecI(int bits_num, [[int]] sob_dir_vs, [int] prev, int n) =
 fun [[real]] sobolRecMap( real  sob_fact, int bits_num, 
 			  [[int]] dir_vs, {int,int} lu_bds ) =
   let {lb_inc, ub_exc} = lu_bds in 
-  // the if inside may be particularly ugly for
-  // flattening since it introduces control flow!
+  -- the if inside may be particularly ugly for
+  -- flattening since it introduces control flow!
   let contribs = map( fn [int] (int k) => 
 			if (k==0) 
       	       	      	then sobolIndI(bits_num,dir_vs,lb_inc+1)
@@ -87,9 +87,9 @@ fun [int] recM( [[int]] sob_dirs, int i ) =
   let bit= index_of_least_significant_0(i) in
   map( fn int([int] row) => row[bit], sob_dirs )
 
-////////////////////////////////////////
-/// Inverse Gaussian
-////////////////////////////////////////
+----------------------------------------
+--/ Inverse Gaussian
+----------------------------------------
 fun real polyAppr(      real x,
                         real a0, real a1, real a2, real a3,
                         real a4, real a5, real a6, real a7,
@@ -167,7 +167,7 @@ fun real tail(real r) =
 
 fun real ugaussianEl( real p ) =
     let dp = p - 0.5
-    in  //if  ( fabs(dp) <= 0.425 )
+    in  --if  ( fabs(dp) <= 0.425 )
         if ( ( (dp < 0.0 ) && (0.0 - dp <= 0.425) ) || 
 	     ( (0.0 <= dp) && (dp <= 0.425)       )  )
         then smallcase(dp)
@@ -179,19 +179,19 @@ fun real ugaussianEl( real p ) =
              if(dp < 0.0) then 0.0 - x 
 			  else x
 
-// Transforms a uniform distribution [0,1) 
-// into a gaussian distribution (-inf, +inf)
+-- Transforms a uniform distribution [0,1) 
+-- into a gaussian distribution (-inf, +inf)
 fun [real] ugaussian([real] ps) = map(ugaussianEl, ps)
 
 
-/////////////////////////////////
-/// Brownian Bridge
-/////////////////////////////////
+--------------------------------/
+--/ Brownian Bridge
+--------------------------------/
 fun [real] brownianBridgeDates (
                   int    num_dates,
-                [[int ]] bb_inds,       // [3,  num_dates]
-                [[real]] bb_data,       // [3,  num_dates]
-                 [real]  gauss          // [num_dates]
+                [[int ]] bb_inds,       -- [3,  num_dates]
+                [[real]] bb_data,       -- [3,  num_dates]
+                 [real]  gauss          -- [num_dates]
             ) =
     let bi = bb_inds[0] in
     let li = bb_inds[1] in
@@ -204,7 +204,7 @@ fun [real] brownianBridgeDates (
     let bbrow[ bi[0]-1 ] = sd[0] * gauss[0]       in
 
     loop (bbrow) =
-        for i < num_dates-1 do  // use i+1 since i in 1 .. num_dates-1
+        for i < num_dates-1 do  -- use i+1 since i in 1 .. num_dates-1
             let j  = li[i+1] - 1 in
             let k  = ri[i+1] - 1 in
             let l  = bi[i+1] - 1 in
@@ -218,8 +218,8 @@ fun [real] brownianBridgeDates (
                              else tmp + lw[i+1] * bbrow[j]
             in  bbrow
 
-        // This can be written as map-reduce, but it
-        //   needs delayed arrays to be mapped nicely!
+        -- This can be written as map-reduce, but it
+        --   needs delayed arrays to be mapped nicely!
     in loop (bbrow) =
         for ii < num_dates-1 do
             let i = num_dates - (ii+1) in
@@ -227,13 +227,13 @@ fun [real] brownianBridgeDates (
             in  bbrow
        in bbrow
 
-// [num_dates,num_paths]
+-- [num_dates,num_paths]
 fun [[real]] brownianBridge (
                   int    num_paths,
                   int    num_dates,
-                [[int ]] bb_inds,       // [3,  num_dates]
-                [[real]] bb_data,       // [3,  num_dates]
-                 [real]  gaussian_arr   // [num_paths * num_dates]
+                [[int ]] bb_inds,       -- [3,  num_dates]
+                [[real]] bb_data,       -- [3,  num_dates]
+                 [real]  gaussian_arr   -- [num_paths * num_dates]
             ) =
     let gauss2d  = reshape((num_dates,num_paths), gaussian_arr) in
     let gauss2dT = transpose(gauss2d) in
@@ -242,9 +242,9 @@ fun [[real]] brownianBridge (
       )
 
 
-/////////////////////////////////
-/// Black-Scholes
-/////////////////////////////////
+--------------------------------/
+--/ Black-Scholes
+--------------------------------/
 fun [real] take(int n, [real] a) = let {first, rest} = split((n), a) in first
 
 fun [real] fftmp(int num_paths, [[real]] md_c, [real] zi) =
@@ -268,21 +268,21 @@ fun [[real]] mkPrices(  [real]  md_starts, [[real]] md_vols,
     in  scan( fn [real] ([real] x, [real] y) => map(*, zip(x, y)), 
 	      md_starts, e_rows )
 
-//[num_dates, num_paths]
+--[num_dates, num_paths]
 fun [[real]] blackScholes(
                 int      num_paths,
-                [[real]] md_c,         //[num_paths, num_paths]
-                [[real]] md_vols,      //[num_paths, num_dates]
-                [[real]] md_drifts,    //[num_paths, num_dates]
-                 [real]  md_starts,    //[num_paths]
-                [[real]] bb_arr        //[num_dates,num_paths]
+                [[real]] md_c,         --[num_paths, num_paths]
+                [[real]] md_vols,      --[num_paths, num_dates]
+                [[real]] md_drifts,    --[num_paths, num_dates]
+                 [real]  md_starts,    --[num_paths]
+                [[real]] bb_arr        --[num_dates,num_paths]
            ) =
     let noises = correlateDeltas(num_paths, md_c, bb_arr)
     in  mkPrices(md_starts, md_vols, md_drifts, noises)
 
-////////////////////////////////////////
-// MAIN
-////////////////////////////////////////
+----------------------------------------
+-- MAIN
+----------------------------------------
 fun [real] main(
               int        contract_number,
               int        num_mc_it,
@@ -403,9 +403,9 @@ fun [real] mainOLD(
   in  map (fn real (real price) => price / toFloat(num_mc_it), payoff)
 
 
-////////////////////////////////////////
-// PAYOFF FUNCTIONS
-////////////////////////////////////////
+----------------------------------------
+-- PAYOFF FUNCTIONS
+----------------------------------------
 fun real genericPayoff(int contract, [real] md_disct, [real] md_detval, [[real]] xss) = 
     if      (contract == 1) then payoff1(md_disct, md_detval, xss)
     else if (contract == 2) then payoff2(md_disct, xss)
@@ -413,14 +413,14 @@ fun real genericPayoff(int contract, [real] md_disct, [real] md_detval, [[real]]
     else 0.0                
 
 fun real payoff1([real] md_disct, [real] md_detval, [[real]] xss) = 
-// invariant: xss is a 1x1 matrix
+-- invariant: xss is a 1x1 matrix
     let detval = md_detval[0]                   in
     let amount = ( xss[0,0] - 4000.0 ) * detval in
     let amount0= if (0.0 < amount) then amount else 0.0
     in  trajInner(amount0, 0, md_disct)
 
 fun real payoff2 ([real] md_disc, [[real]] xss) =
-// invariant: xss is a 5x3 matrix
+-- invariant: xss is a 5x3 matrix
   let {date, amount} = 
     if      (1.0 <= fminPayoff(xss[0])) then {0, 1150.0}
     else if (1.0 <= fminPayoff(xss[1])) then {1, 1300.0}
@@ -434,7 +434,7 @@ fun real payoff2 ([real] md_disc, [[real]] xss) =
   in  trajInner(amount, date, md_disc) 
 
 fun real payoff3([real] md_disct, [[real]] xss) =
-// invariant: xss is a 367x3 matrix
+-- invariant: xss is a 367x3 matrix
     let conds  = map (fn bool ([real] x) => (x[0] <= 2630.6349999999998) || 
 	 	                            (x[1] <= 8288.0)             || 
 		                            (x[2] <=  840.0)
@@ -452,7 +452,7 @@ fun real payoff3([real] md_disct, [[real]] xss) =
     price1 + price2
 
 fun real fminPayoff([real] xs) = 
-//    MIN( zipWith(/, xss, {3758.05, 11840.0, 1200.0}) )
+--    MIN( zipWith(/, xss, {3758.05, 11840.0, 1200.0}) )
     let {a,b,c} = { xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0} in
     if a < b then if a < c then a else c
 	     else if b < c then b else c
