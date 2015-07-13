@@ -1,6 +1,6 @@
-256 // population size
-128 // number of iterations of the convergence loop
-196 // number of swaption quotes (NUM_SWAP_QUOTES)
+256 -- population size
+128 -- number of iterations of the convergence loop
+196 -- number of swaption quotes (NUM_SWAP_QUOTES)
 [
         [1.0, 6.0, 1.0, 1.052],
         [2.0, 6.0, 1.0, 0.81485],
@@ -211,33 +211,33 @@
         [20.0, 6.0, 30.0, 0.1989],
         [25.0, 6.0, 30.0, 0.18115],
         [30.0, 6.0, 30.0, 0.16355]
-]  // SwaptionQuotes :: REAL[NUM_SWAP_QUOTES,4] 
+]  -- SwaptionQuotes :: REAL[NUM_SWAP_QUOTES,4] 
 
 
 
-11 // Gauss_DIM: Number of Hermite Coefficients;
+11 -- Gauss_DIM: Number of Hermite Coefficients;
 [  
     0.0,                       0.6568095668820999044613, -0.6568095668820997934390,
    -1.3265570844949334805563,  1.3265570844949330364670,  2.0259480158257567872226,
    -2.0259480158257558990442, -2.7832900997816496513337,  2.7832900997816474308877,  
     3.6684708465595856630159, -3.6684708465595838866591 
-] // GaussHermiteCoefs::coefs[Gauss_DIM]
+] -- GaussHermiteCoefs::coefs[Gauss_DIM]
 
 [  
     0.6547592869145917315876, 0.6609604194409607336169, 0.6609604194409606225946, 
     0.6812118810666693002887, 0.6812118810666689672217, 0.7219536247283847574252, 
     0.7219536247283852015144, 0.8025168688510405656800, 0.8025168688510396775015, 
     1.0065267861723647957461, 1.0065267861723774522886 
-] // GaussHermiteCoefs::weights[Gauss_DIM] 
+] -- GaussHermiteCoefs::weights[Gauss_DIM] 
 
 
 
-30 // SOBOL_BITS_NUM
+30 -- SOBOL_BITS_NUM
 [   536870912, 268435456, 134217728, 67108864, 33554432,
     16777216,  8388608,   4194304,   2097152,  1048576, 
     524288,    262144,    131072,    65536,    32768,
     16384,     8192,      4096,      2048,     1024,
     512,       256,       128,       64,       32,
     16,        8,         4,         2,        1
-] // SOBOL_DIR_VCT == Sobol Direction Vectors REAL[SOBOL_BITS_NUM]   
+] -- SOBOL_DIR_VCT == Sobol Direction Vectors REAL[SOBOL_BITS_NUM]   
 

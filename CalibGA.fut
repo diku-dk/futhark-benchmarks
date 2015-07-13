@@ -1,17 +1,17 @@
-// Interest rate calibration
-// --
-// compiled input @ CalibGA-data/small.in
-// output @ CalibGA-data/small.out
-//
-// compiled input @ CalibGA-data/medium.in
-// output @ CalibGA-data/medium.out
-//
-// compiled input @ CalibGA-data/large.in
-// output @ CalibGA-data/large.out
+-- Interest rate calibration
+-- ==
+-- compiled input @ CalibGA-data/small.in
+-- output @ CalibGA-data/small.out
+--
+-- compiled input @ CalibGA-data/medium.in
+-- output @ CalibGA-data/medium.out
+--
+-- compiled input @ CalibGA-data/large.in
+-- output @ CalibGA-data/large.out
 
-///////////////////////////////////////////////////
-/// ENTRY POINT 
-///////////////////////////////////////////////////
+--------------------------------------------------/
+--/ ENTRY POINT 
+--------------------------------------------------/
 fun {{real,real,real,real,real,real},[[real]]}
     main( int POP, int MCMC_CONV, int l
 	    , [[real]] swaptions,     int ll  
@@ -22,10 +22,10 @@ fun {{real,real,real,real,real,real},[[real]]}
   let hermData  = zip(hermCoefs, hermWeights) in
   InterestCalibKernel(POP, MCMC_CONV, swaptions, hermData, sobDirVct)
 
-////////////////////////////////////////////////////
-/// Prepares the output summary for each swaption
-/// [calibration price, black price, % error]
-////////////////////////////////////////////////////
+----------------------------------------------------
+--/ Prepares the output summary for each swaption
+--/ [calibration price, black price, % error]
+----------------------------------------------------
 fun [[real]] makeSummary([{real,real}] quote_prices) =
   map( fn [real] ({real,real} qp) =>
 	 let {black_price, calib_price} = qp in
@@ -34,9 +34,9 @@ fun [[real]] makeSummary([{real,real}] quote_prices) =
      , quote_prices
      )
 
-////////////////////////////////////////////////////
-/// COMPUTATIONAL KERNEL
-////////////////////////////////////////////////////
+----------------------------------------------------
+--/ COMPUTATIONAL KERNEL
+----------------------------------------------------
 fun {{real,real,real,real,real,real},[[real]]}
     InterestCalibKernel( int            POP
 		       , int            MCMC_CONV
@@ -44,14 +44,14 @@ fun {{real,real,real,real,real,real},[[real]]}
 		       , [{real,real}]  hermdata
 		       , [int]          sobDirVct
 		       ) = 
-  // initialize the genomes
+  -- initialize the genomes
   let genomes = map ( fn [real] (int i) =>
 			let k   = 5*i + 1                  in
 			let z5s = map ( +k, iota(5) ) in
 			let sobs= map ( sobolInd(sobDirVct), z5s )
 			in  initGenome( copy(sobs) ) 
 		    , iota(POP) ) in
-  // evaluate genomes
+  -- evaluate genomes
   let logLiks = map ( fn real ([real] genome) =>
 			let qtprs = map ( evalGenomeOnSwap(genome,hermdata)
 					, swaptions ) in 
@@ -59,8 +59,8 @@ fun {{real,real,real,real,real,real},[[real]]}
 					, qtprs     ) in
 			          reduce( +, 0.0, terms )
 		    , genomes ) in
-//  logLiks
-//  genomes[POP/2]
+--  logLiks
+--  genomes[POP/2]
   let proposals = copy(genomes) in
   let sob_offs = 5*POP+1        in
   loop ({genomes,proposals,logLiks,sob_offs}) =
@@ -70,7 +70,7 @@ fun {{real,real,real,real,real,real},[[real]]}
       let sob_offs = sob_offs + 1                    in
 
       let {proposals, fb_rats, sob_offs} =
-	if (move_type == 1) //  move_type == DIMS_ALL
+	if (move_type == 1) --  move_type == DIMS_ALL
 	then let sob_mat = 
 	         map( fn [real] (int i) =>
 			let k   = 5*i + sob_offs          in
@@ -83,7 +83,7 @@ fun {{real,real,real,real,real,real},[[real]]}
 	     in  {new_genomes, fb_rats, sob_offs+5*POP}
 
 	else 
-        if (move_type == 2) // move_type == DIMS_ONE
+        if (move_type == 2) -- move_type == DIMS_ONE
 	then let s1  = sobolInd( sobDirVct, sob_offs )  in
 	     let dim_j = trunc( s1 * toFloat(5) )        in
 	     let sob_mat = 
@@ -98,18 +98,18 @@ fun {{real,real,real,real,real,real},[[real]]}
 	     let {new_genomes, fb_rats} = unzip(new_gene_rat) 
 	     in  {new_genomes, fb_rats, sob_offs+5*POP+1}
 
-	else                // move_type == DEMCMC
+	else                -- move_type == DEMCMC
 	     let new_genomes = 
 	         map( fn *[real] (int i) =>
 			let kk  = 8*i + sob_offs            in
 			let s1  = sobolInd( sobDirVct, kk ) in
-			let k = trunc( s1 * toFloat(POP-1) ) in // random in [0,POP-1)
+			let k = trunc( s1 * toFloat(POP-1) ) in -- random in [0,POP-1)
 			let {k,cand_UB} = if k == i 
 			                  then {POP-1, POP-2}
 					  else {k,     POP-1} 
 			in
 			let s2  = sobolInd(sobDirVct, kk+1) in
-			let l = trunc( s2*toFloat(cand_UB) ) in // random in [0,cand_UB -1)
+			let l = trunc( s2*toFloat(cand_UB) ) in -- random in [0,cand_UB -1)
 			let l = if (l == i) || (l == k)
 			        then cand_UB
 				else l
@@ -144,7 +144,7 @@ fun {{real,real,real,real,real,real},[[real]]}
       in
       let {res_genomes, res_logLiks} = unzip(res_gene_liks) in
       {res_genomes, proposals, res_logLiks, sob_offs+POP}
-  // END OF DO LOOP!!!
+  -- END OF DO LOOP!!!
 
   in
   let {winner_ind, winner_logLik} = 
@@ -163,9 +163,9 @@ fun {{real,real,real,real,real,real},[[real]]}
       , makeSummary(winner_quote_prices)
       }
 
-///////////////////////////////////////////////////
-/// Constants and Utility Functions
-///////////////////////////////////////////////////
+--------------------------------------------------/
+--/ Constants and Utility Functions
+--------------------------------------------------/
 fun real EPS0   () = 1.0e-3
 fun real EPS    () = 1.0e-5
 fun real PI     () = 3.1415926535897932384626433832795
@@ -192,10 +192,10 @@ fun real fabs(real a) = if(a < 0.0) then -a else a
 fun bool equal(real x1, real x2) =
     fabs(x1-x2) <= 1.0e-8
 
-///////////////////////////////////////////////////
-/// evaluating a genome on a swaption and getting
-/// back the quote and the estimated price
-///////////////////////////////////////////////////
+--------------------------------------------------/
+--/ evaluating a genome on a swaption and getting
+--/ back the quote and the estimated price
+--------------------------------------------------/
 fun {real,real} evalGenomeOnSwap (   
                         [real]         genomea
 		      , [{real,real}]  hermdata
@@ -208,13 +208,13 @@ fun {real,real} evalGenomeOnSwap (
 
   let tmat0      = date_act_365( maturity, today() ) in
 
-  ////////////////////////////////////////
-  // Quote (black) price computation
-  // This computation does not depend on 
-  //   the swaption and can be separated
-  //   and hoisted outside the swaption
-  //   and convergence loop ...
-  ////////////////////////////////////////
+  ----------------------------------------
+  -- Quote (black) price computation
+  -- This computation does not depend on 
+  --   the swaption and can be separated
+  --   and hoisted outside the swaption
+  --   and convergence loop ...
+  ----------------------------------------
   let a12s = map ( fn {real,real,real} (int i) =>
 		     let a1 = add_months( maturity, swap_freq*toFloat(i) ) in
 		     let a2 = add_months( a1, swap_freq ) in
@@ -232,7 +232,7 @@ fun {real,real} evalGenomeOnSwap (
   let d1         = 0.5 * swaption[3] * tmat0 in
   let new_quote  = lvl * strike * ( uGaussian_P(d1) - uGaussian_P(-d1) ) in
 
-  // starting new price compuation
+  -- starting new price compuation
   let {v0_mat, dummy1, dummy2} = bigv( {a,b,rho,nu,sigma}, tmat0 ) in
   let mux = 0.0 - bigmx( {a,b,rho,nu,sigma}, today(), maturity, today(), maturity ) in
   let muy = 0.0 - bigmy( {a,b,rho,nu,sigma}, today(), maturity, today(), maturity ) in
@@ -242,13 +242,13 @@ fun {real,real} evalGenomeOnSwap (
   let rhoxy  = rho * b_fun(a+b, tmat0) / (sqrt_bfun_a * sqrt_bfun_b) in
   let sigmax = sigma * sqrt_bfun_a  in
   let sigmay = nu    * sqrt_bfun_b  in
-  //
-  let rhoxyc = 1.0 - rhoxy * rhoxy  in // used in reduction kernel
-  let rhoxycs= sqrt( rhoxyc )       in // used in reduction kernel
+  --
+  let rhoxyc = 1.0 - rhoxy * rhoxy  in -- used in reduction kernel
+  let rhoxycs= sqrt( rhoxyc )       in -- used in reduction kernel
   let sigmay_rhoxycs = sigmay * rhoxycs  in
   let t4     = (rhoxy * sigmay) / sigmax in
 
-  // computing n_schedi-size temporary arrays
+  -- computing n_schedi-size temporary arrays
   let tmp_arrs = 
           map( fn {real,real,real,real,real,real,real} (int i) =>
 		 let beg_date = add_months( maturity, swap_freq*toFloat(i) ) in 
@@ -278,13 +278,13 @@ fun {real,real} evalGenomeOnSwap (
   let scals = {b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy}     in
   let exact_arrs = zip( bas, bbs, aicis, log_aicis )                    in
 
-  // exactYhat via Brent method 
+  -- exactYhat via Brent method 
   let eps = 0.5 * sigmax in
   let f   = exactYhat( n_schedi, scals, exact_arrs, mux       ) in
   let g   = exactYhat( n_schedi, scals, exact_arrs, mux + eps ) in
   let h   = exactYhat( n_schedi, scals, exact_arrs, mux - eps ) in
 
-  // integration with Hermite polynomials
+  -- integration with Hermite polynomials
   let herm_arrs   = zip( bbs, scales, cs, t1_cs ) in
   let df          = 0.5 * ( g - h ) / eps    in
   let sqrt2sigmax = sqrt(2.0) * sigmax       in
@@ -315,16 +315,16 @@ fun {real,real} evalGenomeOnSwap (
   {new_quote, new_price}
 
 
-///////////////////////////////////////////////////
-/// Sobol Random Number Generation
-///////////////////////////////////////////////////
-//fun [real] getChunkSobNums(int sob_ini, int CHUNK, [int] dirVct) = 
-//  let norm_fact = 1.0 / ( toFloat(1 << size(0,dirVct)) + 1.0 ) in
-//  let sob_inds  = map(+sob_ini, iota(CHUNK))
-//  in  map( sobolInd(dirVct,norm_fact), sob_inds )
+--------------------------------------------------/
+--/ Sobol Random Number Generation
+--------------------------------------------------/
+--fun [real] getChunkSobNums(int sob_ini, int CHUNK, [int] dirVct) = 
+--  let norm_fact = 1.0 / ( toFloat(1 << size(0,dirVct)) + 1.0 ) in
+--  let sob_inds  = map(+sob_ini, iota(CHUNK))
+--  in  map( sobolInd(dirVct,norm_fact), sob_inds )
 
 fun real sobolInd( [int] dirVct, int n ) =
-    // placed norm_fact here to check that hoisting does its job!
+    -- placed norm_fact here to check that hoisting does its job!
     let norm_fact = 1.0 / ( toFloat(1 << size(0,dirVct)) + 1.0 ) in
     let n_gray = (n >> 1) ^ n in
     let res = 0 in
@@ -336,9 +336,9 @@ fun real sobolInd( [int] dirVct, int n ) =
 	else res
     in  toFloat(res) * norm_fact
   
-///////////////////////////////////////////////////
-/// Genome Implementation
-///////////////////////////////////////////////////
+--------------------------------------------------/
+--/ Genome Implementation
+--------------------------------------------------/
 fun [{real,real,real}] genomeBounds() =
     [ {EPS0(),     1.0-EPS0(), 0.02}
     , {EPS0(),     1.0-EPS0(), 0.02}
@@ -356,11 +356,11 @@ fun [real] initGenome ([real] rand_nums) =
 	       ) 
 
 fun int selectMoveType(real r01) = 
-  if r01 <= 0.2   then 1 // r01 in [0.0, 0.2] => DIMS_ALL
+  if r01 <= 0.2   then 1 -- r01 in [0.0, 0.2] => DIMS_ALL
   else 
-    if r01 <= 0.5 then 2 // r01 in (0.2, 0.5] => DIMS_ONE
-    else               3 // r01 in (0.5, 1.0) => DEMCMC
-//{ MV_EL_TYPE(0.2,DIMS_ALL), MV_EL_TYPE(0.5,DIMS_ONE), MV_EL_TYPE(1.0,DEMCMC) };
+    if r01 <= 0.5 then 2 -- r01 in (0.2, 0.5] => DIMS_ONE
+    else               3 -- r01 in (0.5, 1.0) => DEMCMC
+--{ MV_EL_TYPE(0.2,DIMS_ALL), MV_EL_TYPE(0.5,DIMS_ONE), MV_EL_TYPE(1.0,DEMCMC) };
 
 fun real MOVES_UNIF_AMPL_RATIO() = 0.005
 
@@ -434,9 +434,9 @@ fun real constrainDim( real gene, {real,real,real} tup ) =
   let {g_min, g_max, g_ini} = tup 
   in  max( g_min, min(g_max, gene) )
 
-///////////////////////////////////////////////////////////////
-/// Likelihood implementation
-///////////////////////////////////////////////////////////////
+--------------------------------------------------------------/
+--/ Likelihood implementation
+--------------------------------------------------------------/
 fun real logLikelihood(real y_ref, real y) =
   if   IS_CAUCHY_LLHOOD() 
   then logLikeCauchy(y_ref, y)
@@ -452,7 +452,7 @@ fun real logLikeNormal( real y_ref, real y) =
     let pdfs  = normalPdf( y, y_ref, sigma ) in
     log(pdfs + 1.0e-20)
 
-fun real cauchyPdf( real z, real mu, real gamma ) = // mu=0.0, gamma=4.0
+fun real cauchyPdf( real z, real mu, real gamma ) = -- mu=0.0, gamma=4.0
     let x = (z-mu) / gamma in
     1.0 / ( PI() * gamma * (1.0 + x*x) )
 fun real logLikeCauchy( real y_ref, real y ) = 
@@ -460,12 +460,12 @@ fun real logLikeCauchy( real y_ref, real y ) =
     let pdfs  = cauchyPdf( y, y_ref, gamma ) in
     log(pdfs + 1.0e-20)
 
-////////////////////////////////////////////////////////////////
-///// MATH MODULE
-////////////////////////////////////////////////////////////////
+----------------------------------------------------------------
+----/ MATH MODULE
+----------------------------------------------------------------
 
-//-------------------------------------------------------------------------
-// Cumulative Distribution Function for a standard normal distribution
+---------------------------------------------------------------------------
+-- Cumulative Distribution Function for a standard normal distribution
 
 fun real uGaussian_P(real x) =
     let u = x / sqrt(2.0) in
@@ -481,10 +481,10 @@ fun real uGaussian_P_withExpFactor( real x, real exp_factor ) =
     then exp(exp_factor) - res
     else res
 
-//-------------------------------------------------------------------------
-// polynomial expansion of the erf() function, with error<=1.5e-7
-//   formula 7.1.26 (page 300), Handbook of Mathematical Functions, Abramowitz and Stegun
-//   http://people.math.sfu.ca/~cbm/aands/frameindex.htm
+---------------------------------------------------------------------------
+-- polynomial expansion of the erf() function, with error<=1.5e-7
+--   formula 7.1.26 (page 300), Handbook of Mathematical Functions, Abramowitz and Stegun
+--   http:--people.math.sfu.ca/~cbm/aands/frameindex.htm
 
 fun real erf(real x) =
     let p = 0.3275911 in
@@ -497,8 +497,8 @@ fun real erf(real x) =
     let t5 = t2 * t3        in
          1.0 - (a1*t + a2*t2 + a3*t3 + a4*t4 + a5*t5) * exp(-(x*x))
 
-//-------------------------------------------------------------------------
-// iteration_max = 10000 (hardcoded)
+---------------------------------------------------------------------------
+-- iteration_max = 10000 (hardcoded)
 
 fun real erff_poly_only( real x ) =
     let p = 0.3275911 in
@@ -512,10 +512,10 @@ fun real erff_poly_only( real x ) =
     let t5 = t2 * t3       in
     (a1*t + a2*t2 + a3*t3 + a4*t4 + a5*t5)
 
-////////////////////////////////////////////////////////////////////////
-// if fid = 33 then: to_solve(real x) = (x+3.0)*(x-1.0)*(x-1.0)
-// otherwise follows the real implementation
-////////////////////////////////////////////////////////////////////////
+------------------------------------------------------------------------
+-- if fid = 33 then: to_solve(real x) = (x+3.0)*(x-1.0)*(x-1.0)
+-- otherwise follows the real implementation
+------------------------------------------------------------------------
 
 fun real to_solve(int fid, [{real,real}] scalesbbi, real yhat) =
     if(fid == 33) then (yhat+3.0)*(yhat-1.0)*(yhat-1.0)
@@ -527,9 +527,9 @@ fun real to_solve(int fid, [{real,real}] scalesbbi, real yhat) =
                       )
             in reduce(+, 0.0, tmps) - 1.0
 
-/////////////////////////////////////////////////////////
-//// the function-parameter to rootFinding_Brent
-/////////////////////////////////////////////////////////
+--------------------------------------------------------/
+---- the function-parameter to rootFinding_Brent
+--------------------------------------------------------/
 
 
 fun {real,int,real}
@@ -538,15 +538,15 @@ rootFinding_Brent(int fid, [{real,real}] scalesbbi, real lb, real ub, real tol, 
     let iter_max = if(iter_max<= 0  ) then 10000  else iter_max in
     let {a,b}    = {lb,ub}                                      in
 
-    // `to_solve' is curried so it will need extra arguments!!!
-    // said fid refers to the version of `to_solve', e.g., testing or real implem.
-    // Was previous (eval(a),eval(b)), now:
+    -- `to_solve' is curried so it will need extra arguments!!!
+    -- said fid refers to the version of `to_solve', e.g., testing or real implem.
+    -- Was previous (eval(a),eval(b)), now:
     let {fa,fb}  = { to_solve(fid, scalesbbi, a), to_solve(fid, scalesbbi, b) } in
 
     if(0.0 <= fa*fb)
     then
-        if(0.0 <= a) then { 0.0, 0,  infinity() }  // root not bracketed above
-                     else { 0.0, 0, -infinity() }  // root not bracketed below
+        if(0.0 <= a) then { 0.0, 0,  infinity() }  -- root not bracketed above
+                     else { 0.0, 0, -infinity() }  -- root not bracketed below
     else
     let {fa, fb, a, b} = if( fabs(fa) < fabs(fb) ) 
 			 then {fb, fa, b, a}
@@ -563,7 +563,7 @@ rootFinding_Brent(int fid, [{real,real}] scalesbbi, real lb, real ub, real tol, 
             then {a,b,c,d,fa,fb,fc,mflag,it}
             else
 
-                // the rest of the code implements the else branch!
+                -- the rest of the code implements the else branch!
 
                 let s = if( fa==fc || fb == fc )
                         then    b-fb*(b-a)/(fb-fa)
@@ -583,21 +583,21 @@ rootFinding_Brent(int fid, [{real,real}] scalesbbi, real lb, real ub, real tol, 
                                  then {True,  (a+b)/2.0}
                                  else {False, s        }
                                                                     in
-                // Was previous `eval(s)', Now:
+                -- Was previous `eval(s)', Now:
                 let fs = to_solve(fid, scalesbbi, s)                in
 
-                // d is assigned for the first time here:
-                // it's not used above because mflag is set
+                -- d is assigned for the first time here:
+                -- it's not used above because mflag is set
                 let d = c in let {c,fc} = {b, fb}                   in
                 let {a,b,fa,fb} = if( fa*fs < 0.0 )
                                   then {a,s,fa,fs}
                                   else {s,b,fs,fb}                  in
 
                 let {a,b,fa,fb} = if( fabs(fa) < fabs(fb) )
-                                  then {b,a,fb,fa} // swap args
+                                  then {b,a,fb,fa} -- swap args
                                   else {a,b,fa,fb}                  in
 
-                // reporting non-convergence!
+                -- reporting non-convergence!
                 let dummy =
                     if(i == iter_max-1)
                     then let w = trace("# ERROR: Brent method not converged, error: ") in
@@ -606,29 +606,29 @@ rootFinding_Brent(int fid, [{real,real}] scalesbbi, real lb, real ub, real tol, 
 
                 in {a,b,c,d,fa,fb,fc,mflag,i}
 
-    // Finally, the result of function rootFinding_Brent is:
+    -- Finally, the result of function rootFinding_Brent is:
     in { b, it, fb }
 
 
-////////////////////////////////////////////////////////////////
-///// G2PP Module
-////////////////////////////////////////////////////////////////
+----------------------------------------------------------------
+----/ G2PP Module
+----------------------------------------------------------------
 
 fun real zc(real t) = exp(-r() * date_act_365(t, today()))
 
-///////////////////////////////////////////
-//// the first param `swaption' is a triple of reals,
-////    i.e., the swaption maturity date, frequency of payment and
-////          swapt-term in years (how often to vary the condition of the contract)
-////  the result is also a triple:
-////    the maturity time stamp,
-////    the range of time stamps of for each swap term : [(real,real)]
-////    the strike price
-///////////////////////////////////////////
-// Quote (block) price computation
-///////////////////////////////////////////
+------------------------------------------/
+---- the first param `swaption' is a triple of reals,
+----    i.e., the swaption maturity date, frequency of payment and
+----          swapt-term in years (how often to vary the condition of the contract)
+----  the result is also a triple:
+----    the maturity time stamp,
+----    the range of time stamps of for each swap term : [(real,real)]
+----    the strike price
+------------------------------------------/
+-- Quote (block) price computation
+------------------------------------------/
 fun {real,[{real,real}],{real,real}}
-extended_swaption_of_swaption({real,real,real} swaption)  =  // swaption = (sw_mat, freq, sw_ty)
+extended_swaption_of_swaption({real,real,real} swaption)  =  -- swaption = (sw_mat, freq, sw_ty)
     let {sw_mat, freq, sw_ty} = swaption          in
     let maturity   = add_years( today(), sw_mat ) in
     let nschedule  = trunc(12.0 * sw_ty / freq)   in
@@ -662,17 +662,17 @@ fun real t_fun(real sigma, real x, real tau) =
         sigma*sigma/(x*x)*(tau+2.0/x*expxtau-1.0/(2.0*x)*exp2xtau-3.0/(2.0*x))
 
 
-///////////////////////////////////////////////////////////////////
-// the first parameter `genome' is the five-genes genome used in
-//     the genetic algorithms that models the interest rate
-// the second parameter is the time
-// the result is V in Brigo and Mercurio's book page 148.
-//     \var(\int_t^T [x(u)+y(u)]du)
-///////////////////////////////////////////////////////////////////
+------------------------------------------------------------------/
+-- the first parameter `genome' is the five-genes genome used in
+--     the genetic algorithms that models the interest rate
+-- the second parameter is the time
+-- the result is V in Brigo and Mercurio's book page 148.
+--     \var(\int_t^T [x(u)+y(u)]du)
+------------------------------------------------------------------/
 fun {real,real,real} bigv({real,real,real,real,real} genome, real tau) =
     let {g_a, g_b, g_rho, g_nu, g_sigma} = genome in
 
-    // sanity check; this check should be hoisted higher up
+    -- sanity check; this check should be hoisted higher up
     let g_sigma = if(g_sigma == 0.0) then 1.0e-10 else g_sigma in
 
     let ba = b_fun(g_a,        tau) in
@@ -685,14 +685,14 @@ fun {real,real,real} bigv({real,real,real,real,real} genome, real tau) =
 
         in {t1+t2+t3, ba, bb}
 
-///////////////////////////////////////////////////////////////////
-// the first parameter `genome' is the five-genes genome used in
-//     the genetic algorithms that models the interest rate
-// the other parameter are times: today, maturity, and the
-//      lower and upper bound of the considered time interval
-//
-// the result is: x drift term in tmat-forward measure
-///////////////////////////////////////////////////////////////////
+------------------------------------------------------------------/
+-- the first parameter `genome' is the five-genes genome used in
+--     the genetic algorithms that models the interest rate
+-- the other parameter are times: today, maturity, and the
+--      lower and upper bound of the considered time interval
+--
+-- the result is: x drift term in tmat-forward measure
+------------------------------------------------------------------/
 
 fun real bigmx( {real,real,real,real,real} genome,
                 real today, real tmat, real s, real t
@@ -717,14 +717,14 @@ fun real bigmx( {real,real,real,real,real} genome,
         in tmp1 * tmp2 - ( tmp3 * tmp5 ) - ( tmp4 * tmp6 )
 
 
-///////////////////////////////////////////////////////////////////
-// the first parameter `genome' is the five-genes genome used in
-//     the genetic algorithms that models the interest rate
-// the other parameter are times: today, maturity, and the
-//      lower and upper bound of the considered time interval
-//
-// the result is: y drift term in tmat-forward measure
-///////////////////////////////////////////////////////////////////
+------------------------------------------------------------------/
+-- the first parameter `genome' is the five-genes genome used in
+--     the genetic algorithms that models the interest rate
+-- the other parameter are times: today, maturity, and the
+--      lower and upper bound of the considered time interval
+--
+-- the result is: y drift term in tmat-forward measure
+------------------------------------------------------------------/
 
 fun real bigmy( {real,real,real,real,real} genome,
                 real today, real tmat, real s, real t
@@ -747,13 +747,13 @@ fun real bigmy( {real,real,real,real,real} genome,
 
         in tmp1 * tmp2 - ( tmp3 * tmp5 ) - ( tmp4 * tmp6 )
 
-///////////////////////////////////////////////////////////////////
-// the first  parameter `today' is today (and very different from tomorrow)
-// the second parameter is the swaption
-// the third  parameter is the implied volability
-//
-// the result is: the swaption's price
-///////////////////////////////////////////////////////////////////
+------------------------------------------------------------------/
+-- the first  parameter `today' is today (and very different from tomorrow)
+-- the second parameter is the swaption
+-- the third  parameter is the implied volability
+--
+-- the result is: the swaption's price
+------------------------------------------------------------------/
 
 fun real black_price(real today, {real,real,real} swaption, real vol ) =
     let {maturity, swap_sched, {strike,lvl}} =
@@ -766,20 +766,20 @@ fun real black_price(real today, {real,real,real} swaption, real vol ) =
         lvl * strike * ( uGaussian_P(d1) - uGaussian_P(d2) )
 
 
-///////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////
-/// Main function of Module G2PP: pricer_of_swaption    ///
-///////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////
+----------------------------------------------------------/
+----------------------------------------------------------/
+--/ Main function of Module G2PP: pricer_of_swaption    --/
+----------------------------------------------------------/
+----------------------------------------------------------/
 
-//////////////
-// def a_fun(end_date,a,b,rho,nu,sigma,today,maturity,zc_mat,v0_mat):
-//   # Brigo and Mercurio: defined top p. 148
-//   v0_end,dummyA,dummyB=bigv(a,b,rho,nu,sigma,tau=Date.act_365(end_date,today))
-//   vt_end,ba,bb=bigv(a,b,rho,nu,sigma,tau=Date.act_365(end_date,maturity))
-//   res=zc(end_date)/zc_mat*N.exp(0.5*(vt_end-v0_end+v0_mat))
-//   return res,ba,bb
-//////////////
+--------------
+-- def a_fun(end_date,a,b,rho,nu,sigma,today,maturity,zc_mat,v0_mat):
+--   # Brigo and Mercurio: defined top p. 148
+--   v0_end,dummyA,dummyB=bigv(a,b,rho,nu,sigma,tau=Date.act_365(end_date,today))
+--   vt_end,ba,bb=bigv(a,b,rho,nu,sigma,tau=Date.act_365(end_date,maturity))
+--   res=zc(end_date)/zc_mat*N.exp(0.5*(vt_end-v0_end+v0_mat))
+--   return res,ba,bb
+--------------
 
 fun real
 pricer_of_swaption( real                       today,
@@ -800,11 +800,11 @@ pricer_of_swaption( real                       today,
                         else       tau*strike
                     , iota(n_schedi)
                 )                                       in
-//
+--
     let tmat0    = date_act_365( maturity, today() )    in
     let {v0_mat, dummyA, dummyB} = bigv( genome, tmat0) in
     let zc_mat   = zc(maturity)                         in
-//
+--
     let {a,b,rho,nu,sigma} = genome                     in
     let sigmax = sigma * sqrt( b_fun(2.0*a, tmat0) )    in
     let sigmay = nu    * sqrt( b_fun(2.0*b, tmat0) )    in
@@ -816,17 +816,17 @@ pricer_of_swaption( real                       today,
     let t2     = rhoxy / (sigmax*rhoxycs)               in
     let sigmay_rhoxycs = sigmay * rhoxycs               in
     let t4     = (rhoxy * sigmay) / sigmax              in
-//
+--
     let mux    = -bigmx( genome, today, maturity, today, maturity ) in
     let muy    = -bigmy( genome, today, maturity, today, maturity ) in
-//
+--
     let {scheduleix, scheduleiy} = unzip(schedulei) in
-//
+--
     let {bai, bbi, aici, log_aici, t1_cst, scale} = unzip (
             map(fn {real,real,real,real,real,real} ({real,real} dc) =>
                     let {end_date, ci} = dc                                   in
 
-                  // Begin Brigo and Mercurio: defined top p. 148
+                  -- Begin Brigo and Mercurio: defined top p. 148
                     let {v0_end, dummyA, dummyB} =
                             bigv( genome, date_act_365(end_date, today   ) )  in
 
@@ -835,7 +835,7 @@ pricer_of_swaption( real                       today,
 
                     let aa = zc(end_date) / zc_mat *
                                 exp( 0.5 * (vt_end-v0_end+v0_mat) )           in
-                  // END Brigo and Mercurio: defined top p. 148
+                  -- END Brigo and Mercurio: defined top p. 148
 
                     let aici = ci * aa                                        in
                     let log_aici = log(aici)                                  in
@@ -866,9 +866,9 @@ pricer_of_swaption( real                       today,
                         let {x_quad, w_quad} = quad       in
                         let x = sqrt2sigmax*x_quad + mux  in
 
-                        ///////////////////////////////////////////
-                        // BEGIN function integrand(x) inlined
-                        ///////////////////////////////////////////
+                        ------------------------------------------/
+                        -- BEGIN function integrand(x) inlined
+                        ------------------------------------------/
                         let tmp = (x - mux) / sigmax      in
                         let t1  = exp( -0.5 * tmp * tmp ) in
 
@@ -883,9 +883,9 @@ pricer_of_swaption( real                       today,
                                      ) in
                         let accum = reduce(+, 0.0, tmps) in
                         let integrand_res = t1 * ( uGaussian_P(-h1) - accum )
-                        ///////////////////////////////////////////
-                        // END   function integrand(x) inlined
-                        ///////////////////////////////////////////
+                        ------------------------------------------/
+                        -- END   function integrand(x) inlined
+                        ------------------------------------------/
 
                         in w_quad * integrand_res
 
@@ -895,15 +895,15 @@ pricer_of_swaption( real                       today,
             zc_mat * ( sum / sqrt( PI() ) )
 
 
-//////////////////////////
-// Root finder
-//////////////////////////
+--------------------------
+-- Root finder
+--------------------------
 fun real exactYhat( int n_schedi,
                     {real,real,real,real,real,real,real,real} scals,
                     [{real,real,real,real}] babaicis,
                     real x
                   ) =
-    // ugaussian_Pinv(k)=1.0e-4
+    -- ugaussian_Pinv(k)=1.0e-4
     let k=-3.71901648545568                                   in
 
 
@@ -923,12 +923,12 @@ fun real exactYhat( int n_schedi,
 			   , {0.0, -infinity()}
 			   , uplos 
 			   )
-//    let up = reduce(+, 0.0, ups)           in
-//    let lo = reduce(max, -infinity(), los)    in
+--    let up = reduce(+, 0.0, ups)           in
+--    let lo = reduce(max, -infinity(), los)    in
     in
     let {bai, bbi, aici, log_aici} = unzip(babaicis) in
 
-    if(n_schedi < 2) // == 1
+    if(n_schedi < 2) -- == 1
     then lo
     else
          let log_s = log(up)                  in
@@ -944,21 +944,21 @@ fun real exactYhat( int n_schedi,
 
          let {b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy} = scals   in
 
-         // y01 x = y0, y1 / phi(h_i(x, y0)) <= epsilon, 1 - phi(h_i(x, y1)) <= epsilon
+         -- y01 x = y0, y1 / phi(h_i(x, y0)) <= epsilon, 1 - phi(h_i(x, y1)) <= epsilon
          let y0 = sigmay * (rhoxy*(x-mux)/sigmax+k*rhoxycs) - rhoxyc/b + muy  in
          let y1 = sigmay * (rhoxy*(x-mux)/sigmax-k*rhoxycs) + muy             in
 
-         if      (y1 <= yl) then y1 + 1.0  // yhat is greater than y1 => 1 - phi(h_i(x, yhat)) < epsilon
-         else if (yu <= y0) then y0 - 1.0  // yhat is lower than y0 => phi(h_i(x, yhat)) < epsilon)
+         if      (y1 <= yl) then y1 + 1.0  -- yhat is greater than y1 => 1 - phi(h_i(x, yhat)) < epsilon
+         else if (yu <= y0) then y0 - 1.0  -- yhat is lower than y0 => phi(h_i(x, yhat)) < epsilon)
          else
-              //// `scales' is the same as `ups', however, if this branch
-              //// is not oftenly taken, it might make sense to duplicate computation,
-              //// since if the previous `ups' is in a map-reduce pattern!
-              //let scales  = map(  fn real ( {real,real} baiaici) =>
-              //                      let {bai,aici} = baiaici in
-              //                      aici * exp( -bai * x )
-              //                    , zip(bai, aici)
-              //                 )        in
+              ---- `scales' is the same as `ups', however, if this branch
+              ---- is not oftenly taken, it might make sense to duplicate computation,
+              ---- since if the previous `ups' is in a map-reduce pattern!
+              --let scales  = map(  fn real ( {real,real} baiaici) =>
+              --                      let {bai,aici} = baiaici in
+              --                      aici * exp( -bai * x )
+              --                    , zip(bai, aici)
+              --                 )        in
 	      let scales  = ups         in
               let root_lb = max(yl, y0) in
               let root_ub = min(yu, y1) in
@@ -969,13 +969,13 @@ fun real exactYhat( int n_schedi,
               else if ( error ==  infinity() ) then y1 + 1.0
               else                                  root
 
-//////////////////////////////////////////////////////
-////   OLD MAIN CALIBRATION!!!
-//////////////////////////////////////////////////////
+------------------------------------------------------
+----   OLD MAIN CALIBRATION!!!
+------------------------------------------------------
 
 
 fun real mainOLD([{{real,real,real} , real}] swaptionQuotes,
-              // Gaussian quadrature data
+              -- Gaussian quadrature data
               [real] x_quads,
               [real] w_quads) =
     let genome = {0.02453, 0.98376, -0.82400, 0.11830, 0.02398} in
@@ -984,15 +984,15 @@ fun real mainOLD([{{real,real,real} , real}] swaptionQuotes,
                         let g2pp_price   = pricer_of_swaption(today(), swaption, genome, x_quads, w_quads) in
                         let market_price = black_price       (today(), swaption, quote ) in
 
-                        // printing
+                        -- printing
                         let {mat_year, swap_freq, term_year} = swaption                in
-                        //let tmp = trace("\n")                                        in
-                        //let tmp = trace(trunc( mat_year)) in let tmp = trace("Y")    in
-                        //let tmp = trace(trunc(term_year)) in let tmp = trace("Y")    in
-                        //let tmp = trace(" Swaption Calibrated Price: ") in let tmp = trace(10000.0*g2pp_price) in
-                        //let tmp = trace(" Market Price: ") in let tmp = trace(10000.0*market_price) in
+                        --let tmp = trace("\n")                                        in
+                        --let tmp = trace(trunc( mat_year)) in let tmp = trace("Y")    in
+                        --let tmp = trace(trunc(term_year)) in let tmp = trace("Y")    in
+                        --let tmp = trace(" Swaption Calibrated Price: ") in let tmp = trace(10000.0*g2pp_price) in
+                        --let tmp = trace(" Market Price: ") in let tmp = trace(10000.0*market_price) in
 
-                                //(g2pp_price, market_price)
+                                --(g2pp_price, market_price)
                         let res = (g2pp_price - market_price) / market_price
                                 in res * res
 
@@ -1003,7 +1003,7 @@ fun real mainOLD([{{real,real,real} , real}] swaptionQuotes,
     let numswapts = size(0, swaptionQuotes ) in
     let rms    = 100.0 * sqrt ( rms / toFloat(numswapts) ) in
 
-    // printing the error!
+    -- printing the error!
     let tmp    = trace("\n\nComputed RMS is: ") in
     let tmp    = trace(rms)                     in
     let tmp    = trace("\n\n END \n\n")         in
@@ -1012,9 +1012,9 @@ fun real mainOLD([{{real,real,real} , real}] swaptionQuotes,
 
 
 
-//////////////////////////////////////////////////////
-////   Date: Gregorian calendar
-//////////////////////////////////////////////////////
+------------------------------------------------------
+----   Date: Gregorian calendar
+------------------------------------------------------
 
 fun int MOD(int x, int y) = x - (x/y)*y
 
@@ -1025,7 +1025,7 @@ fun int minutes_to_noonI() = (hours_in_dayI() / 2) * 60
 fun real minutes_in_day  () = 24.0*60.0
 
 
-//                           year*month*day*hour*mins
+--                           year*month*day*hour*mins
 fun int date_of_gregorian( {int,int,int,int,int} date) =
     let {year, month, day, hour, mins} = date in
     let ym =
@@ -1055,15 +1055,15 @@ gregorian_of_date ( int minutes_since_epoch ) =
     let m = j + 2 - ( 12 * l ) in
     let y = 100 * ( n - 49 ) + i + l in
 
-    //let daytime = minutes_since_epoch mod minutes_in_day in
+    --let daytime = minutes_since_epoch mod minutes_in_day in
     let daytime = MOD( minutes_since_epoch, minutes_in_dayI() ) in
 
     if ( daytime == minutes_to_noonI() )
 
-    //then [year = y; month = m; day = d; hour = 12; minute = 0]
+    --then [year = y; month = m; day = d; hour = 12; minute = 0]
     then {y, m, d, 12, 0}
 
-    //else [year = y; month = m; day = d; hour = daytime / 60; minute = daytime mod 60]
+    --else [year = y; month = m; day = d; hour = daytime / 60; minute = daytime mod 60]
     else {y, m, d, daytime / 60, MOD(daytime, 60) }
 
 
@@ -1110,32 +1110,32 @@ fun real add_years(real date, real nbyears) =
         add_months(date, nbyears * 12.0)
 
 
-//assert max_date==168307199, a.k.a. "2299-12-31T23:59:59"
+--assert max_date==168307199, a.k.a. "2299-12-31T23:59:59"
 fun real max_date () = 168307199.0
 
-//assert min_date==3600, a.k.a., "1980-01-01T12:00:00"
+--assert min_date==3600, a.k.a., "1980-01-01T12:00:00"
 fun real min_date () = 3600.0
 
-// Date.of_string("2012-01-01")
+-- Date.of_string("2012-01-01")
 fun real today    () = toFloat( date_of_gregorian( {2012, 1, 1, 12, 0} ) )
 
 
-////// Previous, approximate implementation ////////
-//fun real date_act_365(real t1, real t2) = (t1 - t2) / 365.0
-//fun real add_years   (real d1, real y ) = d1 + y*365.0
-//fun real add_months  (real d1, real m ) = d1 + m*30.5
-//fun real days_between(real t1, real t2) = t1 - t2
-//fun real days_from_mins(real t) = t / (24.0*60.0)
-//fun real max_date () = 128.0*365.0 //support 128 years
-//fun real min_date () = -1.0
+------ Previous, approximate implementation --------
+--fun real date_act_365(real t1, real t2) = (t1 - t2) / 365.0
+--fun real add_years   (real d1, real y ) = d1 + y*365.0
+--fun real add_months  (real d1, real m ) = d1 + m*30.5
+--fun real days_between(real t1, real t2) = t1 - t2
+--fun real days_from_mins(real t) = t / (24.0*60.0)
+--fun real max_date () = 128.0*365.0 --support 128 years
+--fun real min_date () = -1.0
 
 
-//assert add_months(min_date,1)==48240
-//assert add_months(min_date,2)==90000
-//assert add_years(min_date,1)==530640
-//assert add_years(min_date,5)==2634480
-//assert "%.6f" % days_between(max_date,min_date) == "116877.499306"
-//assert "%.6f" % act_365(max_date,min_date) == "320.212327"
+--assert add_months(min_date,1)==48240
+--assert add_months(min_date,2)==90000
+--assert add_years(min_date,1)==530640
+--assert add_years(min_date,5)==2634480
+--assert "%.6f" % days_between(max_date,min_date) == "116877.499306"
+--assert "%.6f" % act_365(max_date,min_date) == "320.212327"
 fun int main_dates() =
     let tmp = trace("Today: ") in let tmp = trace(trunc(today())) in let tmp = trace("\n") in
     let tmp = trace("add_months(min_date,1)==48240")            in
@@ -1143,31 +1143,31 @@ fun int main_dates() =
     let bbb = if( equal(tmp, 48240.0) ) then trace("SUCCESS ")
                                         else trace("FAILS ")    in
     let bbb = trace(tmp) in let bbb = trace("\n")               in
-//
+--
     let tmp = trace("add_months(min_date,2)==90000")            in
     let tmp = add_months(min_date(), 2.0)                       in
     let bbb = if( equal(tmp, 90000.0) ) then trace("SUCCESS ")
                                         else trace("FAILS ")    in
     let bbb = trace(tmp) in let bbb = trace("\n")               in
-//
+--
     let tmp = trace("add_years(min_date,1)==530640")            in
     let tmp = add_years(min_date(), 1.0)                        in
     let bbb = if( equal(tmp, 530640.0) )then trace("SUCCESS ")
                                         else trace("FAILS ")    in
     let bbb = trace(tmp) in let bbb = trace("\n")               in
-//
+--
     let tmp = trace("add_years(min_date,5)==2634480")           in
     let tmp = add_years(min_date(), 5.0)                        in
     let bbb = if( equal(tmp, 2634480.0) )then trace("SUCCESS ")
                                          else trace("FAILS ")   in
     let bbb = trace(tmp) in let bbb = trace("\n")               in
-//
+--
     let tmp = trace("days_between(max_date(),min_date()) == 116877.499306") in
     let tmp = days_between( max_date(), min_date() )                        in
     let bbb = if( equal(tmp, 116877.499305555) )then trace("SUCCESS ")
                                              else trace("FAILS ")           in
     let bbb = trace(tmp) in let bbb = trace("\n")                           in
-//
+--
     let tmp = trace("act_365(max_date,min_date) == 320.212327")   in
     let tmp = date_act_365(max_date(), min_date())                in
     let bbb = if( equal(tmp, 320.2123268645) ) then trace("SUCCESS ")

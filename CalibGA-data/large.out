@@ -1,9 +1,9 @@
-0.325608 	// a-field      of the winning genome
-0.001000 	// b-field      of the winning genome
-0.009058 	// sigma-field  of the winning genome
-0.018683 	// nu-field     of the winning genome
--0.083963 	// rho-field    of the winning genome
-624.116935 	// LgLikelihood of the winning genome
+0.325608 	-- a-field      of the winning genome
+0.001000 	-- b-field      of the winning genome
+0.009058 	-- sigma-field  of the winning genome
+0.018683 	-- nu-field     of the winning genome
+-0.083963 	-- rho-field    of the winning genome
+624.116935 	-- LgLikelihood of the winning genome
 
 [ 
  [ 74.172585 , 115.320470 , 35.681337  ],
@@ -202,5 +202,5 @@
  [ 2877.611282 , 3105.329082 , 7.333129  ],
  [ 2641.365086 , 2736.951332 , 3.492435  ],
  [ 2382.949281 , 2378.093534 , 0.204187  ]
-]	//Swaption Calibration Result: foreach swaption [CalibPrice,BlackPrice,PercentDiff]
+]	--Swaption Calibration Result: foreach swaption [CalibPrice,BlackPrice,PercentDiff]
 
