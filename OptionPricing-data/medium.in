@@ -1,11 +1,6 @@
 -- This corresponds to the medium dataset from finpar.
 2       -- contract number 
 1048576 -- number of Monte-Carlo Iterations
-5       -- number of path dates
-3       -- number of underlyings
-1       -- number of models
-30      -- integer bit-length representation for Sobol
-128     -- chunk size
 
 -- Begin Direction vectors [3*5][30]
 [
