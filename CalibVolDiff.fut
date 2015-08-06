@@ -47,7 +47,7 @@ fun {[[real]],[[real]]} initOperator([real] x) =
 fun real max(real x, real y) = if y < x then x else y
 fun int maxInt(int x, int y) = if y < x then x else y
 
-fun *[[real]] setPayoff(real strike, [real] myX, [real] myY) =
+fun *[[real,numX],numY] setPayoff(real strike, [real,numX] myX, [real,numY] myY) =
   let n     = size(0, myY) in
   let myres = map(fn [real] (real xi) => replicate(n, max(xi-strike,0.0)), myX) in
   copy(transpose(myres))
@@ -205,8 +205,8 @@ fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD,
      , zip(myMu,myVar,u)
      )
 
-fun *[[real]] rollback
-    ([real] myX, [real] myY, [real] myTimeline, *[[real]] myResult,
+fun *[[real,numX],numY] rollback
+    ([real,numX] myX, [real,numY] myY, [real] myTimeline, *[[real]] myResult,
      [[real]] myMuX, [[real]] myDx, [[real]] myDxx, [[real]] myVarX,
      [[real]] myMuY, [[real]] myDy, [[real]] myDyy, [[real]] myVarY, int g) =
 
