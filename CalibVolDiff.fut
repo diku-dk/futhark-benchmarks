@@ -10,8 +10,8 @@
 -- output @ CalibVolDiff-data/large.out
 
 
-fun {int,int,[real],[real],[real]} 
-initGrid(real s0, real alpha, real nu, real t, int numX, int numY, int numT) =
+fun {int,int,[real,numX],[real,numY],[real,numT]}
+  initGrid(real s0, real alpha, real nu, real t, int numX, int numY, int numT) =
     let logAlpha = log(alpha) in
     let myTimeline = map(fn real (int i) => t * toFloat(i) / (toFloat(numT) - 1.0), iota(numT)) in
     let {stdX, stdY} = {20.0 * alpha * s0 * sqrt(t),
