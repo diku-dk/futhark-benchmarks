@@ -7,6 +7,8 @@ typedef cl_uchar ftk_uchar;
 
 #include "DataStructs.h"
 
+#define MAX_BLOCK_SIZE  1024
+#define PREF_BLOCK_SIZE 512
 #define HWD_PAR_DEG 131072//65536//49152
 //65536
 
@@ -15,7 +17,7 @@ typedef cl_uchar ftk_uchar;
 
 int timeval_subtract(struct timeval *result, struct timeval *t2, struct timeval *t1)
 {
-    unsigned int resolution=1000000;
+    cl_uint resolution=1000000;
     long int diff = (t2->tv_usec + resolution * t2->tv_sec) - (t1->tv_usec + resolution * t1->tv_sec);
     result->tv_sec = diff / resolution;
     result->tv_usec = diff % resolution;
@@ -30,9 +32,9 @@ int timeval_subtract(struct timeval *result, struct timeval *t2, struct timeval 
 void transpadWrap(
     cl_command_queue    cqCommandQueue,
     cl_kernel           transpad_ker,
-    unsigned int        width,
-    unsigned int        height,
-    unsigned int        arr_len, 
+    cl_uint             width,
+    cl_uint             height,
+    cl_uint             arr_len, 
     cl_mem              arr_in1,
     cl_mem              arr_in2,
     cl_mem              arr_in3, 
@@ -41,7 +43,7 @@ void transpadWrap(
     cl_mem              arr_out3
 ) {
     cl_int ciErr = 0, ciErr_tmp;
-    unsigned int counter = 0;
+    cl_uint counter = 0;
 
     ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(cl_mem), (void*)&arr_out1);
     ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(cl_mem), (void*)&arr_out2);
@@ -49,10 +51,10 @@ void transpadWrap(
     ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(cl_mem), (void*)&arr_in1);
     ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(cl_mem), (void*)&arr_in2);
     ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(cl_mem), (void*)&arr_in3);
-    ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(unsigned int), (void*)&width);
-    ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(unsigned int), (void*)&height);
-    ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(unsigned int), (void*)&arr_len);
-//    const unsigned int CACHE_SIZE = 8 * 256;
+    ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(cl_uint), (void*)&width);
+    ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(cl_uint), (void*)&height);
+    ciErr |= clSetKernelArg(transpad_ker, counter++, sizeof(cl_uint), (void*)&arr_len);
+//    const cl_uint CACHE_SIZE = 8 * 256;
 //    ciErr |= clSetKernelArg(transpad_ker, counter++, CACHE_SIZE*sizeof(ftk_uchar) , NULL);
 //    ciErr |= clSetKernelArg(transpad_ker, counter++, CACHE_SIZE*sizeof(ftk_ulong), NULL);
 //    ciErr |= clSetKernelArg(transpad_ker, counter++, CACHE_SIZE*sizeof(ftk_float), NULL);
@@ -75,7 +77,7 @@ void transpadWrap(
 }
 
 ////////////////////////////////////////
-/// Scan Wrappers
+/// Inclusive Scan Wrapper
 ////////////////////////////////////////
 
 void scanInc(
@@ -86,8 +88,8 @@ void scanInc(
     cl_kernel           inc_scan_outchunk_ker,
     cl_kernel           transp_topad_ker,
     cl_kernel           transp_frompad_ker,
-    unsigned int        block_size,
-    unsigned int        arr_len, 
+    cl_uint             block_size,
+    cl_uint             arr_len, 
     cl_mem              arr_in1,
     cl_mem              arr_in2,
     cl_mem              arr_in3,  
@@ -101,16 +103,16 @@ void scanInc(
     cl_int ciErr = 0, ciErr_tmp;
 
     // make parallel work be a multiple of block_size
-    unsigned int par_work  = (HWD_PAR_DEG <= arr_len) ? 
-                                ((HWD_PAR_DEG+block_size -1) / block_size) * block_size :
-                                ((arr_len    +block_size -1) / block_size) * block_size ;
-    unsigned int num_blocks= par_work / block_size;
+    cl_uint par_work  = (HWD_PAR_DEG <= arr_len) ? 
+                        ((HWD_PAR_DEG+block_size -1) / block_size) * block_size :
+                        ((arr_len    +block_size -1) / block_size) * block_size ;
+    cl_uint num_blocks= par_work / block_size;
 
     // the chunk that is scanned sequentially
-    unsigned int seq_chunk = (arr_len + par_work - 1) / par_work;
+    cl_uint seq_chunk = (arr_len + par_work - 1) / par_work;
 
     // size of the padded array obtained after (padded) transposition
-    unsigned int arr_len_pad = par_work * seq_chunk;
+    cl_uint arr_len_pad = par_work * seq_chunk;
 
     if(num_blocks > block_size) {
         printf( "ERROR: number of blocks %d greater than block size %d!\n\n", 
@@ -192,7 +194,7 @@ void scanInc(
     // thread-level summary in tmp1..3, block-level summary in blk1..3!
     {
         cl_kernel ker = inc_scan_inchunk_ker;
-        unsigned int counter = 0;
+        cl_uint counter = 0;
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&tmp1);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&tmp2);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&tmp3);
@@ -202,8 +204,8 @@ void scanInc(
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_tr1);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_tr2);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_tr3);
-        ciErr |= clSetKernelArg(ker, counter++, sizeof(unsigned int), (void*)&seq_chunk);
-        ciErr |= clSetKernelArg(ker, counter++, sizeof(unsigned int), (void*)&arr_len_pad);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_uint), (void*)&seq_chunk);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_uint), (void*)&arr_len_pad);
         // shared memory declarations:
         ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_uchar) , NULL);
         ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_ulong), NULL);
@@ -234,7 +236,7 @@ void scanInc(
     // Scan the remaining block in one go!
     if(num_blocks > 1) {
         cl_kernel ker = inc_scan_block_ker;
-        unsigned int counter = 0;
+        cl_uint counter = 0;
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&tmp1);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&tmp2);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&tmp3);
@@ -242,7 +244,7 @@ void scanInc(
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&tmp2);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&tmp3);
 
-        ciErr |= clSetKernelArg(ker, counter++, sizeof(unsigned int), (void*)&num_blocks);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_uint), (void*)&num_blocks);
 
         ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_uchar) , NULL);
         ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_ulong), NULL);
@@ -273,7 +275,7 @@ void scanInc(
     // redo the computation based on the scanned block-level (partial) results
     {
         cl_kernel ker = inc_scan_outchunk_ker;
-        unsigned int counter = 0;
+        cl_uint counter = 0;
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_tr1);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_tr2);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_tr3);
@@ -286,12 +288,9 @@ void scanInc(
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&blk2);
         ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&blk3);
 
-        ciErr |= clSetKernelArg(ker, counter++, sizeof(unsigned int), (void*)&seq_chunk);
-        ciErr |= clSetKernelArg(ker, counter++, sizeof(unsigned int), (void*)&arr_len_pad);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_uint), (void*)&seq_chunk);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_uint), (void*)&arr_len_pad);
 
-//        ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_uchar) , NULL);
-//        ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_ulong), NULL);
-//        ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_float), NULL);
         oclCheckError(ciErr, CL_SUCCESS);
         
         {
@@ -343,4 +342,95 @@ void scanInc(
     }
 }
 
+
+////////////////////////////////////////
+/// Segmented Inclusive Scan Wrapper
+////////////////////////////////////////
+
+int nextMultOf(cl_uint x, cl_uint m) {
+    if( x % m ) return x - (x % m) + m;
+    else        return x;
+}
+
+int getBlockSizeForSegm(cl_uint ss, cl_uint& iddle) {
+    cl_uint blocksz, blocksz0 = 0;
+    if(ss > PREF_BLOCK_SIZE) {
+        blocksz0 = ss;
+    } else {
+        blocksz0 = (PREF_BLOCK_SIZE / ss) * ss;
+    }
+    blocksz = nextMultOf(blocksz0, WARP);
+    iddle   = blocksz - blocksz0;
+
+    bool is_valid = (blocksz <= MAX_BLOCK_SIZE) && 
+                    (blocksz % WARP == 0)       && 
+                    (iddle < WARP);
+    assert( is_valid && "INVALID WORK SIZE!!!");
+
+    return blocksz;
+}
+
+void smallSgmScanInc(
+    cl_command_queue    cqCommandQueue,
+    cl_kernel           inc_small_sgm_scan_ker,
+    cl_uint             arr_len,
+    cl_uint             sgm_len,
+    cl_mem              arr_in1,
+    cl_mem              arr_in2,
+    cl_mem              arr_out1,
+    cl_mem              arr_out2
+) {
+    struct timeval t_beg, t_end, t_diff;
+    unsigned long int elapsed = 0, elapsed_all = 0;
+
+    cl_int ciErr = 0, ciErr_tmp;
+
+    assert( sgm_len <= MAX_BLOCK_SIZE &&
+            "Segment Size is NOT Small, i.e., greater than maximal block size!");
+
+    cl_uint iddle;
+    cl_uint block_size = getBlockSizeForSegm(sgm_len, iddle);
+
+    printf("Small Sgm Scan block size: %d, iddle: %d, N:%d\n\n", block_size, iddle, arr_len);
+
+    gettimeofday(&t_beg, NULL);
+
+    { // Scan the remaining block in one go!
+        cl_kernel ker = inc_small_sgm_scan_ker;
+        cl_uint counter = 0;
+
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_out1);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_out2);
+
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_in1);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_mem), (void*)&arr_in2);
+
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_uint), (void*)&arr_len);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_uint), (void*)&sgm_len);
+        ciErr |= clSetKernelArg(ker, counter++, sizeof(cl_uint), (void*)&iddle);
+
+        ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_uchar) , NULL);
+        ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_ulong), NULL);
+        ciErr |= clSetKernelArg(ker, counter++, block_size*sizeof(ftk_float), NULL);
+        oclCheckError(ciErr, CL_SUCCESS);
+        
+        {
+            size_t  num_blocks     = ((arr_len + (block_size-iddle) -1) / (block_size-iddle));
+            size_t  globalWorkSize = num_blocks * block_size;
+            size_t  localWorkSize  = block_size;
+            ciErr |= clEnqueueNDRangeKernel(
+                        cqCommandQueue, ker, 1, NULL,
+                        &globalWorkSize, &localWorkSize, 0, NULL, NULL
+                    );
+        }
+
+        oclCheckError(ciErr, CL_SUCCESS);
+        ciErr |= clFinish(cqCommandQueue);        
+    }
+
+    gettimeofday(&t_end, NULL);
+    timeval_subtract(&t_diff, &t_end, &t_beg);
+    elapsed = (t_diff.tv_sec*1e6+t_diff.tv_usec); 
+    printf("Small Segmented Inclusive Scan Time: %lu microsecs.\n", elapsed);
+}
 #endif //ParBB_Wrappers

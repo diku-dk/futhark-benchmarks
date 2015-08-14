@@ -13,7 +13,7 @@ typedef uchar ftk_uchar;
 /////////////////////////////////////
 
 // store to fast memory
-inline void storeMyRec( MyRec* src, unsigned int ind
+inline void storeMyRec( MyRec* src, uint ind
                       , volatile __local ftk_uchar* cacheC
                       , volatile __local ftk_ulong* cacheL
                       , volatile __local ftk_float* cacheF
@@ -24,7 +24,7 @@ inline void storeMyRec( MyRec* src, unsigned int ind
 }
  
 // load from fast memory
-inline void loadMyRec ( MyRec* dst, unsigned int ind
+inline void loadMyRec ( MyRec* dst, uint ind
                       , volatile __local ftk_uchar* cacheC
                       , volatile __local ftk_ulong* cacheL
                       , volatile __local ftk_float* cacheF
@@ -57,7 +57,7 @@ inline void scanIncWarpMyRec( MyRec* dst, MyRec* src1, MyRec* src2, const uint i
                             , volatile __local ftk_ulong* cacheL
                             , volatile __local ftk_float* cacheF
 ) {
-    const unsigned int lane = idx  & (WARP-1);
+    const uint lane = idx  & (WARP-1);
 
     if( lane >= 1 ) applyMyRecSHM( dst, src1, src2, idx, 1, cacheC, cacheL, cacheF );
     if( lane >= 2 ) applyMyRecSHM( dst, src1, src2, idx, 2, cacheC, cacheL, cacheF );
@@ -74,8 +74,8 @@ inline void scanIncBlockMyRec(  MyRec* dst, MyRec* src, const uint idx
                              ,  volatile __local ftk_ulong* cacheL
                              ,  volatile __local ftk_float* cacheF
 ) {
-    const unsigned int lane   = idx &  (WARP-1);
-    const unsigned int warpid = idx >> lgWARP;
+    const uint lane   = idx &  (WARP-1);
+    const uint warpid = idx >> lgWARP;
     MyRec tmp1, tmp2; 
 
     // Assumes data already in `src' => copy `src' to shared memory
@@ -103,6 +103,59 @@ inline void scanIncBlockMyRec(  MyRec* dst, MyRec* src, const uint idx
     applyMyRecOP(dst, &tmp1, src);
 }
 
+
+
+// Block-Level
+inline void sgmScanIncBlockMyRec
+            (  MyRec* dst, MyRec* src, const uint idx
+            ,  volatile __local ftk_uchar* cacheC
+            ,  volatile __local ftk_ulong* cacheL
+            ,  volatile __local ftk_float* cacheF
+) {
+    const uint lane   = idx &  (WARP-1);
+    const uint warpid = idx >> lgWARP;
+    MyRec tmp1, tmp2; 
+
+    // Assumes data already in `src' => copy `src' to shared memory
+    storeMyRec( src, idx,  cacheC, cacheL, cacheF);
+
+    // 1a: record whether this warp begins with an ``open'' segment.
+    bool warp_is_open = (cacheC[(warpid << 5)] == 0);
+
+    // 1b: intra-warp segmented scan for each warp
+    //     warp-level result in src
+    scanIncWarpMyRec(src, &tmp1, &tmp2, idx, cacheC, cacheL, cacheF);
+
+    // 2a: warp_flag is the OR-reduction of the flags 
+    //     in a warp, and is computed indirectly from
+    //     the mindex in hd[]
+    bool will_accum= warp_is_open && src->c == 0; //(cacheC[idx] == 0);
+    barrier( CLK_LOCAL_MEM_FENCE );
+
+    // 2b  Place the end-of-warp results in the first warp. 
+    //     For CUDA works: warp size = 32, and max block size = 32^2 = 1024!
+    //     For AMD, WARP==16 => requires block size to be \leq 16^2 = 256!
+    if (lane == WARP-1) {
+        bool warp_flag = (src->c!=0) || (!warp_is_open);
+        cacheC[warpid] = warp_flag;
+        cacheL[warpid] = src->i;
+        cacheF[warpid] = src->f;
+    }
+    barrier( CLK_LOCAL_MEM_FENCE );
+
+    // 2c scan the first warp 
+    if (warpid == 0) {
+        scanIncWarpMyRec(dst, &tmp1, &tmp2, idx, cacheC, cacheL, cacheF);
+    }
+    barrier( CLK_LOCAL_MEM_FENCE );
+
+    // 3  Finally, add the inter-warp scan results to each element.
+    if (warpid > 0 && will_accum) { 
+         loadMyRec  (&tmp1, warpid-1, cacheC, cacheL, cacheF);
+    } else loadNeutral(&tmp1);
+
+    applyMyRecOP(dst, &tmp1, src);
+}
 ///////////////////////////////
 // Inclusive Scan Kernels:
 ///////////////////////////////
@@ -113,14 +166,14 @@ __kernel void scanIncBlockMyRecKer(
         __global ftk_uchar* idata1,
         __global ftk_ulong* idata2,
         __global ftk_float* idata3,
-        unsigned int arr_len,
+        uint                arr_len,
         volatile __local  ftk_uchar* cacheC,
         volatile __local  ftk_ulong* cacheL,
         volatile __local  ftk_float* cacheF
 ) {
     MyRec dst, src;
-    unsigned int lid = get_local_id(0);
-    unsigned int gid = get_global_id(0);
+    uint lid = get_local_id(0);
+    uint gid = get_global_id(0);
 
     if(gid < arr_len) {
         src.c = idata1[gid];
@@ -149,22 +202,22 @@ __kernel void scanIncShrinkMyRecKer(
         __global ftk_uchar* idata1,
         __global ftk_ulong* idata2,
         __global ftk_float* idata3, 
-        unsigned int seq_chunk, 
-//        unsigned int par_deg,
-        unsigned int arr_len,
+        uint                seq_chunk, 
+//        uint                par_deg,
+        uint                arr_len,
 
         volatile __local  ftk_uchar* cacheC,
         volatile __local  ftk_ulong* cacheL,
         volatile __local  ftk_float* cacheF
 ) { 
-    const unsigned int gid = get_global_id(0); 
-    const unsigned int glen= get_global_size(0);
-    const unsigned int lid = get_local_id(0);
-    unsigned int i   = 0;
+    const uint gid = get_global_id(0); 
+    const uint glen= get_global_size(0);
+    const uint lid = get_local_id(0);
+    uint i   = 0;
     MyRec dst, src; 
     loadNeutral(&src);
 
-    unsigned int ind = gid;
+    uint ind = gid;
     for(i=0; i<seq_chunk; i++) {
         MyRec tmp;
         dst.c = idata1[ind]; dst.i = idata2[ind]; dst.f = idata3[ind];
@@ -184,7 +237,7 @@ __kernel void scanIncShrinkMyRecKer(
 
     // save the scanned summary of a block
     if ( lid == (get_local_size(0)-1) ) { // write an element per block!
-        unsigned int bind = gid / get_local_size(0);
+        uint bind = gid / get_local_size(0);
         odata1[bind] = dst.c; 
         odata2[bind] = dst.i; 
         odata3[bind] = dst.f;
@@ -205,16 +258,16 @@ __kernel void scanIncExpandMyRecKer(
         __global ftk_ulong* blksum2,
         __global ftk_float* blksum3,  
 
-        unsigned int seq_chunk, 
-//        unsigned int par_deg,
-        unsigned int arr_len
+        uint                seq_chunk, 
+//        uint                par_deg,
+        uint                arr_len
 
 //        __local  ftk_uchar* cacheC,
 //        __local  ftk_ulong* cacheL,
 //        __local  ftk_float* cacheF
 ) { 
-    unsigned int gid = get_global_id(0);
-    unsigned int glen= get_global_size(0);
+    uint gid = get_global_id(0);
+    uint glen= get_global_size(0);
     int group_id = gid / get_local_size(0);
     MyRec dst, src1, src2;
 
@@ -236,8 +289,8 @@ __kernel void scanIncExpandMyRecKer(
 
     applyMyRecOP(&dst, &src1, &src2); 
 
-    unsigned int ind = gid;
-    unsigned int i = 0;
+    uint ind = gid;
+    uint i = 0;
     for(i=0; i<seq_chunk; i++) {
         src2.c = odata1[ind]; src2.i = odata2[ind]; src2.f = odata3[ind];
         src1.c = dst.c;       src1.i = dst.i;       src1.f = dst.f;
@@ -246,6 +299,40 @@ __kernel void scanIncExpandMyRecKer(
 
         odata1[ind] = dst.c;  odata2[ind] = dst.i;  odata3[ind] = dst.f;
         ind += glen;
+    }
+}
+
+
+__kernel void smallSgmIncScanMyRecKer(
+        __global ftk_ulong* odata1,
+        __global ftk_float* odata2,
+        __global ftk_ulong* idata1,
+        __global ftk_float* idata2,
+        uint                arr_len,
+        uint                sgm_len,
+        uint                iddle,
+        volatile __local ftk_uchar* cacheC,
+        volatile __local ftk_ulong* cacheL,
+        volatile __local ftk_float* cacheF
+) {
+    MyRec dst, src;
+    uint lid   = get_local_id(0);
+    uint gid   = get_group_id(0)*(get_local_size(0)-iddle) + lid;
+    bool valid = (lid < get_local_size(0) - iddle) && (gid < arr_len);
+    if(valid) {
+        uint r = gid % sgm_len;
+        src.c = (r == 0) ? 1 : 0;
+        src.i = idata1[gid];
+        src.f = idata2[gid];
+    } else {
+        loadNeutral(&src);
+    }
+
+    sgmScanIncBlockMyRec(&dst, &src, lid, cacheC, cacheL, cacheF);
+
+    if (valid) {
+        odata1[gid] = dst.i; 
+        odata2[gid] = dst.f;
     }
 }
 
@@ -260,9 +347,9 @@ void transposeToPad(
         __global ftk_uchar* idata1,
         __global ftk_ulong* idata2,
         __global ftk_float* idata3,
-        unsigned int        width, 
-        unsigned int        height,
-        unsigned int        orig_size 
+        uint                width, 
+        uint                height,
+        uint                orig_size 
         // For some reason it does not seem to work
         // if one allocates ONE sh mem and uses pointer
         // arithmetic and casts to partition it into 3 parts!
@@ -270,7 +357,7 @@ void transposeToPad(
 //        __local ulong* shmem_ulong,
 //        __local float* shmem_float
 ) {
-    unsigned int xIndex, yIndex;
+    uint xIndex, yIndex;
     __local ftk_uchar shmem_uchar[TILE*TILE+TILE];
     __local ftk_ulong shmem_ulong[TILE*TILE+TILE];
     __local ftk_float shmem_float[TILE*TILE+TILE];
@@ -280,8 +367,8 @@ void transposeToPad(
     yIndex = get_global_id(1); 
 
     if((xIndex < width) && (yIndex < height)) {
-        unsigned int  glob_ind  = yIndex * width + xIndex;
-        unsigned int  cache_ind = get_local_id(1)*(TILE+1)+get_local_id(0);
+        uint  glob_ind  = yIndex * width + xIndex;
+        uint  cache_ind = get_local_id(1)*(TILE+1)+get_local_id(0);
 #if 0
         MyRec ne; loadNeutral(&ne);
         shmem_uchar[cache_ind] = (glob_ind < orig_size) ? idata1[glob_ind] : ne.c;
@@ -307,8 +394,8 @@ void transposeToPad(
     xIndex = get_group_id(1) * TILE + get_local_id(0);
     yIndex = get_group_id(0) * TILE + get_local_id(1);
     if((xIndex < height) && (yIndex < width)) {
-        unsigned int index_out = yIndex * height + xIndex;
-        unsigned int cache_ind = get_local_id(0)*(TILE+1)+get_local_id(1);
+        uint index_out = yIndex * height + xIndex;
+        uint cache_ind = get_local_id(0)*(TILE+1)+get_local_id(1);
         
         odata1[index_out] = shmem_uchar[cache_ind];
         odata2[index_out] = shmem_ulong[cache_ind];
@@ -324,9 +411,9 @@ void transposeFromPad(
         __global ftk_uchar* idata1,
         __global ftk_ulong* idata2,
         __global ftk_float* idata3, 
-        unsigned int        width, 
-        unsigned int        height,
-        unsigned int        orig_size
+        uint                width, 
+        uint                height,
+        uint                orig_size
         // For some reason it does not seem to work
         // if one allocates ONE sh mem and uses pointer
         // arithmetic and casts to partition it into 3 parts!
@@ -334,7 +421,7 @@ void transposeFromPad(
 //        __local ulong* shmem_ulong,
 //        __local float* shmem_float
 ) {
-    unsigned int xIndex, yIndex;
+    uint xIndex, yIndex;
     __local ftk_uchar shmem_uchar[TILE*TILE+TILE];
     __local ftk_ulong shmem_ulong[TILE*TILE+TILE];
     __local ftk_float shmem_float[TILE*TILE+TILE];
@@ -345,8 +432,8 @@ void transposeFromPad(
   
     if((xIndex < width) && (yIndex < height))
     {
-        unsigned int  glob_ind = yIndex * width + xIndex;
-        unsigned int cache_ind = get_local_id(1)*(TILE+1)+get_local_id(0);
+        uint  glob_ind = yIndex * width + xIndex;
+        uint cache_ind = get_local_id(1)*(TILE+1)+get_local_id(0);
 
         shmem_uchar[cache_ind] = idata1[glob_ind];
         shmem_ulong[cache_ind] = idata2[glob_ind];
@@ -360,8 +447,8 @@ void transposeFromPad(
     yIndex = get_group_id(0) * TILE + get_local_id(1);
     if((xIndex < height) && (yIndex < width))
     {
-        unsigned int index_out = yIndex * height + xIndex;
-        unsigned int cache_ind = get_local_id(0)*(TILE+1)+get_local_id(1);
+        uint index_out = yIndex * height + xIndex;
+        uint cache_ind = get_local_id(0)*(TILE+1)+get_local_id(1);
 
         if(index_out < orig_size) {
             odata1[index_out] = shmem_uchar[cache_ind];

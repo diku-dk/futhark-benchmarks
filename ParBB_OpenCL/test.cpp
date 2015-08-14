@@ -8,7 +8,9 @@
 //#include <cstdlib>
 
 
-const unsigned int N = 32*1024*1024 - 23;
+const cl_uint N       = 32*1024*1024 - 23;
+const cl_uint SGM_LEN = 5;
+
 ftk_uchar arr_char[N];
 ftk_ulong arr_lint[N];
 ftk_float arr_flot[N];
@@ -329,6 +331,130 @@ void testScanInc (
 }
 
 
+void testSmallSgmScanInc (
+        cl_command_queue&   cqCommandQueue,
+        cl_program          cpProgram,
+        cl_context&         cxGPUContext
+) {
+    cl_int ciErr = 0, ciErr_tmp;
+    cl_mem  gpu_inp_char, gpu_inp_lint, gpu_inp_flot,
+            gpu_out_char, gpu_out_lint, gpu_out_flot;
+    { // copy arrays from host
+        gpu_inp_lint = clCreateBuffer (
+            cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 
+            N*sizeof(ftk_ulong), arr_lint, &ciErr_tmp );
+        ciErr |= ciErr_tmp;
+
+        gpu_inp_flot = clCreateBuffer (
+            cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 
+            N*sizeof(ftk_float), arr_flot, &ciErr_tmp );
+        ciErr |= ciErr_tmp;
+
+        gpu_out_lint = clCreateBuffer (
+            cxGPUContext, CL_MEM_READ_WRITE, 
+            N*sizeof(ftk_ulong), NULL, &ciErr_tmp );
+        ciErr |= ciErr_tmp;
+        oclCheckError(ciErr, CL_SUCCESS);
+        gpu_out_flot = clCreateBuffer (
+            cxGPUContext, CL_MEM_READ_WRITE, 
+            N*sizeof(ftk_float), NULL, &ciErr_tmp );
+        ciErr |= ciErr_tmp;
+
+        oclCheckError(ciErr, CL_SUCCESS);
+    }
+
+    // make kernels
+    cl_kernel small_sgm_inc_scan_ker;
+    {
+        small_sgm_inc_scan_ker = clCreateKernel(cpProgram, "smallSgmIncScanMyRecKer", &ciErr);
+        oclCheckError(ciErr, CL_SUCCESS);
+    }
+    
+    smallSgmScanInc ( cqCommandQueue
+                    , small_sgm_inc_scan_ker
+                    , N, SGM_LEN
+                    , gpu_inp_lint, gpu_inp_flot
+                    , gpu_out_lint, gpu_out_flot
+                    );
+
+    smallSgmScanInc ( cqCommandQueue
+                    , small_sgm_inc_scan_ker
+                    , N, SGM_LEN
+                    , gpu_inp_lint, gpu_inp_flot
+                    , gpu_out_lint, gpu_out_flot
+                    );
+
+
+    { // copy back!
+        ciErr = clEnqueueReadBuffer(
+                            cqCommandQueue, gpu_out_lint, CL_TRUE, 0,
+                            N*sizeof(ftk_ulong), out_lint, 0, NULL, NULL
+                    );
+        oclCheckError(ciErr, CL_SUCCESS);
+
+        ciErr = clEnqueueReadBuffer(
+                            cqCommandQueue, gpu_out_flot, CL_TRUE, 0,
+                            N*sizeof(ftk_float), out_flot, 0, NULL, NULL
+                    );
+        ciErr |= clFinish(cqCommandQueue);
+        oclCheckError(ciErr, CL_SUCCESS);
+    }
+
+    // release kernels:
+    clReleaseKernel(small_sgm_inc_scan_ker);
+
+    // release memory:    
+    clReleaseMemObject(gpu_inp_lint);
+    clReleaseMemObject(gpu_out_lint);
+    clReleaseMemObject(gpu_inp_flot);
+    clReleaseMemObject(gpu_out_flot);
+
+    { // Seqential execution:
+        struct timeval t_beg, t_end, t_diff;
+        unsigned long int elapsed = 0;
+        gettimeofday(&t_beg, NULL);
+
+        MyRec dst, src1, src2;
+        loadNeutral(&dst);
+        for(unsigned int i=0; i<N; i++) {
+            src2.c = ((i % SGM_LEN) == 0) ? 1 : 0;
+            src2.i = arr_lint[i]; src2.f = arr_flot[i];
+            src1.c = dst.c;       src1.i = dst.i;       src1.f = dst.f;
+            applyMyRecOP(&dst, &src1, &src2);
+            arr_lint[i] = dst.i;  arr_flot[i] = dst.f;
+        }
+
+        gettimeofday(&t_end, NULL);
+        timeval_subtract(&t_diff, &t_end, &t_beg);
+        elapsed = (t_diff.tv_sec*1e6+t_diff.tv_usec); 
+        printf("\nGolden Sequential Segmented Scan Time: %lu microsecs.\n\n\n", elapsed);
+    }
+
+    // Validation:
+    unsigned int i, ok = N;
+    for(i=0; i<N; i++) {
+        if( arr_lint[i] != out_lint[i] || 
+            fabs(arr_flot[i] - out_flot[i]) >= 0.00001 
+        ) {
+            if(ok == N) {
+                ok = i;
+                printf( "ERROR at ind %d, is: (%lu,%f), ", i
+                      , out_lint[ok], out_flot[ok] );
+                printf( "should be: (%lu,%f)\n\n"
+                      , arr_lint[i], arr_flot[i] );
+                break;
+            }
+        }
+    }
+
+    if(ok == N) {
+        printf("\n\nVALID   YEY RESULT FOR SEGMENTED INCLUSIVE SCAN!!!\n\n");
+    } else {
+        printf("\n\nINVALID NAY RESULT FOR SEGMENTED INCLUSIVE SCAN!!!\n\n");
+    }
+}
+
+
 int main() {
     cl_context cxGPUContext;                        // OpenCL context
     cl_command_queue cqCommandQueue[16];            // OpenCL command que
@@ -348,8 +474,9 @@ int main() {
     }
     
     initArrays();
-    testPaddedTransposition(cqCommandQueue[dev_id], cpProgram, cxGPUContext);
-    testScanInc            (cqCommandQueue[dev_id], cpProgram, cxGPUContext);
+//    testPaddedTransposition(cqCommandQueue[dev_id], cpProgram, cxGPUContext);
+//    testScanInc            (cqCommandQueue[dev_id], cpProgram, cxGPUContext);
+    testSmallSgmScanInc (cqCommandQueue[dev_id], cpProgram, cxGPUContext);
 
     // release resources
     clReleaseProgram(cpProgram);
