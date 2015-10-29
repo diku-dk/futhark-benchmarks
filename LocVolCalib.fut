@@ -70,16 +70,14 @@ updateParams( [real] myX, [real] myY, [real] myTimeline,
 fun *[real] tridagSeq( [real] a, *[real] b, [real] c, *[real] y ) =
     let n     = size(0, a)            in
     loop ({y, b}) =
-      for i < n-1 do
-        let i    = i + 1              in
+      for 1 <= i < n do
 	let beta = a[i] / b[i-1]      in
 	let b[i] = b[i] - beta*c[i-1] in
 	let y[i] = y[i] - beta*y[i-1] 
 	in  {y, b} 
     in
     let y[n-1] = y[n-1]/b[n-1] in
-    loop (y) = for j < n - 1 do
-                 let i    = n - 2 - j in
+    loop (y) = for n-1 > i >= 0 do
                  let y[i] = (y[i] - c[i]*y[i+1]) / b[i] 
 		 in  y
     in  y
