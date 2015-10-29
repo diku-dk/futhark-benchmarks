@@ -1,13 +1,13 @@
 -- LocVolCalib
 -- ==
--- compiled input @ CalibVolDiff-data/small.in
--- output @ CalibVolDiff-data/small.out
+-- compiled input @ LocVolCalib-data/small.in
+-- output @ LocVolCalib-data/small.out
 --
--- compiled input @ CalibVolDiff-data/medium.in
--- output @ CalibVolDiff-data/medium.out
+-- compiled input @ LocVolCalib-data/medium.in
+-- output @ LocVolCalib-data/medium.out
 --
--- compiled input @ CalibVolDiff-data/large.in
--- output @ CalibVolDiff-data/large.out
+-- compiled input @ LocVolCalib-data/large.in
+-- output @ LocVolCalib-data/large.out
 
 
 fun {int,int,[real,numX],[real,numY],[real,numT]}
@@ -254,8 +254,7 @@ fun real value(int numX, int numY, int numT, real s0, real strike, real t, real 
     let myResult = setPayoff(strike, myX, myY) in
     
     loop (myResult) =
-        for i < numT - 1 do
-            let i = numT-2-i in
+        for numT-1 > i do
             let {myMuX, myVarX, myMuY, myVarY} =
                 updateParams(myX, myY, myTimeline, i, alpha, beta, nu) in
             let myResult = rollback(myX, myY, myTimeline, myResult,
