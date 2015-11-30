@@ -23,8 +23,7 @@ fun {int,int,[real,numX],[real,numY],[real,numT]}
     {myXindex, myYindex, myX, myY, myTimeline}
 
 -- make the innermost dimension of the result of size 4 instead of 3?
-fun {[[real]],[[real]]} initOperator([real] x) =
-    let n      = size(0, x)  in
+fun {[[real],n],[[real],n]} initOperator([real,n] x) =
     let dxu    = x[1] - x[0] in
     let dxl    = 0.0         in
     let Dxlow  = [[0.0, -1.0 / dxu, 1.0 / dxu]] in
