@@ -287,8 +287,11 @@ mkPrices(   [real,num_und]            md_starts,
     let e_rows = map( fn [real] ([real] x) => map(exp, x)
                     , c_rows --map( combineVs, zip(noises, md_vols, md_drifts) )
                     )
-    in  scan( fn [real] ([real] x, [real] y) => zipWith(*, x, y)
-            , md_starts, e_rows )
+    in  map(fn [real,num_und] ([real] x) =>
+              zipWith(*, md_starts, x)
+           , scan( fn [real] ([real] x, [real] y) => zipWith(*, x, y)
+                 , replicate(num_und, 1.0)
+                 , e_rows))
 
 fun [[real,num_und],num_dates] blackScholes(
                 [[real,num_und],num_und  ] md_c,
