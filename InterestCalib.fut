@@ -1,13 +1,13 @@
 -- Interest rate calibration
 -- ==
--- compiled input @ CalibGA-data/small.in
--- output @ CalibGA-data/small.out
+-- compiled input @ InterestCalib-data/small.in
+-- output @ InterestCalib-data/small.out
 --
--- compiled input @ CalibGA-data/medium.in
--- output @ CalibGA-data/medium.out
+-- compiled input @ InterestCalib-data/medium.in
+-- output @ InterestCalib-data/medium.out
 --
--- compiled input @ CalibGA-data/large.in
--- output @ CalibGA-data/large.out
+-- compiled input @ InterestCalib-data/large.in
+-- output @ InterestCalib-data/large.out
 
 --------------------------------------------------/
 --/ ENTRY POINT 
