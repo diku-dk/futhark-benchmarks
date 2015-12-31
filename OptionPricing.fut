@@ -284,7 +284,8 @@ mkPrices(   [real,num_und]            md_starts,
            [[real,num_und],num_dates] noises
 ) =
     let c_rows = map( combineVs, zip(noises, md_vols, md_drifts) ) in
-    let e_rows = map( fn [real] ([real] x) => map(exp, x)
+    let e_rows = map( fn [real,num_und] ([real] x) =>
+                        map(exp, x)
                     , c_rows --map( combineVs, zip(noises, md_vols, md_drifts) )
                     )
     in  map(fn [real,num_und] ([real] x) =>
@@ -306,7 +307,7 @@ fun [[real,num_und],num_dates] blackScholes(
 ----------------------------------------
 -- MAIN
 ----------------------------------------
-fun [real] mainInd(
+fun [real] main(
                int                                    contract_number,
                int                                    num_mc_it,
              [[int,num_bits]]                         dir_vs_nosz,
@@ -329,19 +330,19 @@ fun [real] mainInd(
 
   let bb_mat    = map ( brownianBridge( num_und, bb_inds, bb_data ), gauss_mat ) in
 
-  let payoffs   = map ( fn [real] ([[real]] bb_row) =>
-			                let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
-			                let bd_row = map (fn [[real]] ({[[real]],[[real]],[[real]],[real]} m) =>
-				                                let {c,vol,drift,st} = m in
-					                            blackScholes(c, vol, drift, st, bb_row)
-					                         , market_params) 
-                            in
-			                let payoff_params = zip(md_discts, md_detvals, bd_row) in  
-                            map (fn real ({[real],[real],[[real]]} p) =>
-				                    let {disct, detval, bd} = p in
-				                    genericPayoff(contract_number, disct, detval, bd)
-				                , payoff_params)
-		              , bb_mat)
+  let payoffs   = map ( fn [real,num_models] ([[real]] bb_row) =>
+			  let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
+			  let bd_row =
+                            map (fn [[real,num_und],num_dates] ({[[real]],[[real]],[[real]],[real]} m) =>
+				   let {c,vol,drift,st} = m in
+				   blackScholes(c, vol, drift, st, bb_row)
+				, market_params) in
+                          let payoff_params = zip(md_discts, md_detvals, bd_row) in
+                          map (fn real ({[real],[real],[[real]]} p) =>
+				 let {disct, detval, bd} = p in
+				 genericPayoff(contract_number, disct, detval, bd)
+			      , payoff_params)
+		      , bb_mat)
   in
   let payoff    = reduce ( fn [real] ([real] x, [real] y) => 
 			     zipWith(+, x, y)
@@ -351,7 +352,7 @@ fun [real] mainInd(
 
 
 
-fun [real] main(
+fun [real] mainRec(
                int                                    contract_number,
                int                                    num_mc_it,
              [[int,num_bits]]                         dir_vs_nosz,
