@@ -30,10 +30,10 @@ fun int xorInds(int n, [int,num_bits] dir_vs) =
                         , zip(dir_vs,iota(num_bits)) ) in
     reduce( ^, 0, reldv_vals )
 
-fun [int] sobolIndI ( [[int]] dir_vs, int n ) =
+fun [int,m] sobolIndI ( [[int,num_bits],m] dir_vs, int n ) =
     map( xorInds(n), dir_vs )
 
-fun [real] sobolIndR( [[int,num_bits]] dir_vs, int n ) =
+fun [real,m] sobolIndR( [[int,num_bits],m] dir_vs, int n ) =
     let divisor = 2.0 ** toFloat (num_bits) in
     let arri    = sobolIndI( dir_vs, n )     in
         map( fn real (int x) => toFloat(x) / divisor, arri )
@@ -198,7 +198,7 @@ fun real ugaussianEl( real p ) =
 
 -- Transforms a uniform distribution [0,1) 
 -- into a gaussian distribution (-inf, +inf)
-fun [real] ugaussian([real] ps) = map(ugaussianEl, ps)
+fun [real,n] ugaussian([real,n] ps) = map(ugaussianEl, ps)
 
 
 ---------------------------------
@@ -259,7 +259,7 @@ fun [[real,num_und],num_dates] brownianBridge (
 ---------------------------------
 --- Black-Scholes
 ---------------------------------
-fun [real] take(int n, [real] a) = let {first, rest} = split((n), a) in first
+fun [real,n] take(int n, [real] a) = let {first, rest} = split((n), a) in first
 
 fun [[real,num_und],num_dates] 
 correlateDeltas( [[real,num_und],num_und  ] md_c, 
