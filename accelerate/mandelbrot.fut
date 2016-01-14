@@ -21,7 +21,7 @@ fun {real,real} addComplex({real,real} x, {real,real} y) =
    b + d}
 
 fun int divergence(int depth, {real,real} c0) =
-  loop ({c, i} = {c0, 1}) = while i < depth && dot(c) < 4.0 do
+  loop ({c, i} = {c0, 0}) = while i < depth && dot(c) < 4.0 do
     {addComplex(c0, multComplex(c, c)),
      i + 1} in
   i
@@ -41,7 +41,7 @@ fun [[int,screenX],screenY] mandelbrot(int screenX, int screenY, int depth, {rea
 fun [[[int,3],screenX],screenY] main(int screenX, int screenY, int depth, {real,real,real,real} view) =
   let escapes = mandelbrot(screenX, screenY, depth, view) in
   map(fn [[int,3],screenX] ([int] row) =>
-        map(escapeToColour(depth), row),
+        map(escapeToColour(depth), map(+1, row)),
       escapes)
 
 -- Returns RGB (no alpha channel).
