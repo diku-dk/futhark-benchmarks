@@ -5,10 +5,10 @@ import png
 import numpy
 
 def test_write():
-    width=1000
-    height=1000
-    image=mandelbrot.main(width, height, 50, -2.5, -1.5, 1.5, 1.5)
-    name='mandelbrot.png'
+    width=1200
+    height=900
+    image=mandelbrot.main(width, height, 256, -2.5, -1.5, 1.5, 1.5)
+    name='mandelbrot2.png'
     f = open(name, 'wb')
     w = png.Writer(width, height, greyscale=False, alpha=False, bitdepth=8)
     w.write(f, numpy.reshape(image, (height, width*3)))

@@ -41,13 +41,18 @@ fun [[int,screenX],screenY] mandelbrot(int screenX, int screenY, int depth, {rea
 fun [[[int,3],screenX],screenY] main(int screenX, int screenY, int depth, {real,real,real,real} view) =
   let escapes = mandelbrot(screenX, screenY, depth, view) in
   map(fn [[int,3],screenX] ([int] row) =>
-        map(escapeToColour(depth), row),
+        map(escapeToColour(depth), map(+1, row)),
       escapes)
 
 -- Returns RGB (no alpha channel).
 fun [int,3] escapeToColour(int depth, int divergence) =
   if depth == divergence
-  then [0x00, 0x00, 0x00]
-  else let closeness = real(divergence) / real(depth) in
-       let c = trunc(255.0 * closeness) in
-       [c, c, c]
+  then [0xFF, 0x00, 0x00]
+  else let closeness = sqrt(toFloat(divergence)) / sqrt(toFloat(depth)) in
+       let rcloseness = closeness in
+       let gcloseness = exp(log(closeness) / log(2.0)) in
+       let bcloseness = exp(log(closeness) / log(4.0)) in
+       let r = trunc(255.0 * rcloseness) in
+       let g = trunc(255.0 * gcloseness) in
+       let b = trunc(255.0 * bcloseness) in
+       [r, g, b]
