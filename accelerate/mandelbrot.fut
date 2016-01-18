@@ -32,8 +32,8 @@ fun [[int,screenX],screenY] mandelbrot(int screenX, int screenY, int depth, {rea
   let sizey = ymax - ymin in
   map(fn [int,screenX] (int y) =>
         map (fn int (int x) =>
-               let c0 = {xmin + (toFloat(x) * sizex) / toFloat(screenX),
-                         ymin + (toFloat(y) * sizey) / toFloat(screenY)} in
+               let c0 = {xmin + (real(x) * sizex) / real(screenX),
+                         ymin + (real(y) * sizey) / real(screenY)} in
                divergence(depth, c0)
             , iota(screenX)),
         iota(screenY))
@@ -48,6 +48,6 @@ fun [[[int,3],screenX],screenY] main(int screenX, int screenY, int depth, {real,
 fun [int,3] escapeToColour(int depth, int divergence) =
   if depth == divergence
   then [0x00, 0x00, 0x00]
-  else let closeness = toFloat(divergence) / toFloat(depth) in
+  else let closeness = real(divergence) / real(depth) in
        let c = trunc(255.0 * closeness) in
        [c, c, c]

@@ -34,9 +34,9 @@ fun [int,m] sobolIndI ( [[int,num_bits],m] dir_vs, int n ) =
     map( xorInds(n), dir_vs )
 
 fun [real,m] sobolIndR( [[int,num_bits],m] dir_vs, int n ) =
-    let divisor = 2.0 ** toFloat (num_bits) in
+    let divisor = 2.0 ** real(num_bits) in
     let arri    = sobolIndI( dir_vs, n )     in
-        map( fn real (int x) => toFloat(x) / divisor, arri )
+        map( fn real (int x) => real(x) / divisor, arri )
 
 --------------------------------
 ---- STRENGTH-REDUCED FORMULA
@@ -75,7 +75,7 @@ fun [[real]] sobolRecMap( real  sob_fact, [[int]] dir_vs, {int,int} lu_bds ) =
 		     )
   in  map( fn [real] ([int] xs) => 
 	     map ( fn real (int x) => 
-		     toFloat(x) * sob_fact 
+		     real(x) * sob_fact 
 		 , xs)
 	 , vct_ints)
 
@@ -88,7 +88,7 @@ fun [int] recM( [[int,num_bits]] sob_dirs, int i ) =
 
 -- computes sobol numbers: n,..,n+chunk-1
 fun [[real],chunk] sobolChunk([[int,num_bits],len] dir_vs, int n, int chunk) =
-  let sob_fact= 1.0 / toFloat(1 << num_bits)       in
+  let sob_fact= 1.0 / real(1 << num_bits)       in
   let sob_beg = sobolIndI(dir_vs, n+1)             in
   let contrbs = map( fn [int] (int k) =>
                         let sob = k + n in
@@ -100,7 +100,7 @@ fun [[real],chunk] sobolChunk([[int,num_bits],len] dir_vs, int n, int chunk) =
                     , replicate(len, 0), contrbs ) in
   map( fn [real] ([int] xs) => 
 	     map ( fn real (int x) => 
-		     toFloat(x) * sob_fact 
+		     real(x) * sob_fact 
 		 , xs)
 	 , vct_ints)
   
@@ -348,7 +348,7 @@ fun [real] main(
 			     zipWith(+, x, y)
 			 , replicate(num_models, 0.0)
 			 , payoffs )
-  in  map (fn real (real price) => price / toFloat(num_mc_it), payoff)
+  in  map (fn real (real price) => price / real(num_mc_it), payoff)
 
 
 
@@ -393,7 +393,7 @@ fun [real] mainRec(
 			                    zipWith(+, x, y)
 			            , replicate(num_models, 0.0)
 			            , payoffs )
-  in  map (fn real (real price) => price / toFloat(num_mc_it), payoff)
+  in  map (fn real (real price) => price / real(num_mc_it), payoff)
 
 
 ----------------------------------------
