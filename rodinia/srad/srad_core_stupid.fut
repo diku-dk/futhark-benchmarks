@@ -37,7 +37,7 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
   let image = map(fn [real,cols] ([int] row) =>
                     map(fn real (int pixel) =>
-                          exp(toFloat(pixel)/255.0),
+                          exp(real(pixel)/255.0),
                         row),
                     image) in
   loop (image) = for i < niter do
@@ -45,9 +45,9 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
     let sum = reduce(+, 0.0, reshape((Ne), image)) in
     let sum2 = reduce(+, 0.0, map(**2.0, reshape((Ne), image))) in
     -- get mean (average) value of element in ROI
-    let meanROI = sum / toFloat(NeROI) in
+    let meanROI = sum / real(NeROI) in
     -- gets variance of ROI
-    let varROI = (sum2 / toFloat(NeROI)) - meanROI*meanROI in
+    let varROI = (sum2 / real(NeROI)) - meanROI*meanROI in
     -- gets standard deviation of ROI
     let q0sqr = varROI / (meanROI*meanROI) in
 
