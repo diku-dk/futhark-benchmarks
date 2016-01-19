@@ -48,7 +48,7 @@ fun [[[int,3],screenX],screenY] main(int screenX, int screenY, int depth, {real,
 fun [int,3] escapeToColour(int depth, int divergence) =
   if depth == divergence
   then [0xFF, 0x00, 0x00]
-  else let closeness = sqrt(toFloat(divergence)) / sqrt(toFloat(depth)) in
+  else let closeness = sqrt(real(divergence)) / sqrt(real(depth)) in
        let rcloseness = closeness in
        let gcloseness = exp(log(closeness) / log(2.0)) in
        let bcloseness = exp(log(closeness) / log(4.0)) in

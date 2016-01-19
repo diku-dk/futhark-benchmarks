@@ -10,7 +10,7 @@
 -- compiled input @ data/100.in
 -- output @ data/100.out
 -- compiled input @ data/kdd_cup.in
--- out @ data/kdd_cup.out
+-- output @ data/kdd_cup.out
 
 fun real euclid_dist_2([real,numdims] pt1, [real,numdims] pt2) =
   reduce(+, 0.0, map(**2.0, zipWith(-, pt1, pt2)))
