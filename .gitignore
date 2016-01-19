@@ -7,3 +7,7 @@
 *.compilerout
 *.interpreterout
 *.c
+
+# Ignore Emacs gunk
+*~
+.#*
