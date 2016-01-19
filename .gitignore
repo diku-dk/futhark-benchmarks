@@ -1,3 +1,7 @@
+# Ignore non-directories in root, so you can use it as scratch space.
+/*
+!/*/
+
 # Ignore gunk from Futhark test suite runner.
 *.bin
 *.compilerout
