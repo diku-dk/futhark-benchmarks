@@ -34,13 +34,13 @@ fun *[[real,nfeatures],nclusters]
   centroids_of(int nclusters, [[real,nfeatures],npoints] feature, [int,npoints] membership) =
   let count_incrs =
     zipWith(fn [int,nclusters] ([real,nfeatures] feature, int cluster) =>
-              let a = copy(replicate(nclusters,0)) in
+              let a = replicate(nclusters,0) in
               let a[cluster] = 1 in
               a,
             feature, membership) in
   let sum_incrs =
     zipWith(fn [[real,nfeatures],nclusters] ([real,nfeatures] feature, int cluster) =>
-              let a = copy(replicate(nclusters,replicate(nfeatures,0.0))) in
+              let a = replicate(nclusters,replicate(nfeatures,0.0)) in
               let a[cluster] = feature in
               a,
             feature, membership) in
@@ -57,7 +57,7 @@ fun *[[real,nfeatures],nclusters]
                                           [real,nfeatures] y) =>
                        add_centroids(x, map(/real(features_in_cluster), y)),
                      features_in_clusters, acc, elem),
-           copy(replicate(nclusters,replicate(nfeatures,0.0))), sum_incrs) in
+           replicate(nclusters,replicate(nfeatures,0.0)), sum_incrs) in
   cluster_sums
 
 fun {[[real]], [int], int}
