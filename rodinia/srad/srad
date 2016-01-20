@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+import numpy as np
+import pyopencl as cl
+import getopt
+import sys
+import srad_core
+import ast
+from ctypes import *
+
+
+def fut2pgm(data, path):
+  rows = len(data)
+  cols = len(data[0])
+
+  with open(path, 'w') as f:
+    f.write("P2\n")
+    f.write("{} {}\n".format(cols, rows))
+    f.write("255\n")
+
+    for row in data:
+      for pixel in row:
+        f.write(str(pixel) + ' ')
+
+      f.write('\n')
+
+
+def pgm2fut(input):
+  words = input.split()
+  cols = int(words[1])
+  rows = int(words[2])
+  data = map(int, words[4:])
+  x = map(list, zip(*[iter(data)]*cols))
+  arr = np.array(list(x), dtype=c_int)
+  return arr
+
+def fut(input):
+  data = ast.literal_eval(input)
+  arr = np.array(data, dtype=c_int)
+  return arr
+
+
+def main():
+  if len(sys.argv) != 3:
+    exit('Usage: %s <infile> <outfile>' % sys.argv[0])
+
+  context = cl.create_some_context(interactive=False)
+  queue = cl.CommandQueue(context)
+  srad_core.setup_opencl(context, queue)
+
+  inname = sys.argv[1]
+  outname = sys.argv[2]
+  with open(inname, 'r') as f:
+    data = f.read()
+    image = pgm2fut(data)
+
+    fut2pgm(srad_core.main(pgm2fut(data)), outname)
+
+  #image will always be stored as futhark format.
+  image = 0
+
+if __name__ == "__main__":
+  main()
