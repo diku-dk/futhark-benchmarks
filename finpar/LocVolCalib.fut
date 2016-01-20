@@ -48,7 +48,7 @@ fun int maxInt(int x, int y) = if y < x then x else y
 
 fun *[[real,numX],numY] setPayoff(real strike, [real,numX] myX, [real,numY] myY) =
   let myres = map(fn [real] (real xi) => replicate(numY, max(xi-strike,0.0)), myX) in
-  copy(transpose(myres))
+  transpose(myres)
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
 fun {[[real]] , [[real]] , [[real]] , [[real]]}
@@ -146,7 +146,7 @@ fun *[real] tridagPar( [real] a, *[real] b, [real] c, *[real] y ) =
                          a + b*yn
                    , cfuns ) in
     let y    = map (fn real (int i) => y[n-i-1], iota(n)) in
-    copy(y)
+    y
 
 ------------------------------------------/
 -- myD,myDD          : [[real,3],m]
@@ -157,23 +157,21 @@ fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD,
                               [[real]] myMu, [[real]] myVar, [[real]] result ) =
   -- 0 <= i < m AND 0 <= j < n
   let m = size(0,myD) in
-  copy( map( fn [real] ( {[real],[real],[real]} tup ) =>
-               let {mu_row, var_row, result_row} = tup in
-               map( fn real ({[real], [real], real, real, int} tup) =>
-                      let { dx, dxx, mu, var, j } = tup in
-                      let c1 = if 0 < j
-                               then ( mu*dx[0] + 0.5*var*dxx[0] ) * result_row[j-1]
-                               else 0.0 in
-                      let c3 = if j < (m-1)
-                               then ( mu*dx[2] + 0.5*var*dxx[2] ) * result_row[j+1]
-                               else 0.0 in
-                      let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * result_row[j  ]
-                      in  c1 + c2 + c3
-                  , zip( myD, myDD, mu_row, var_row, iota(m) )
-                  )
-           , zip( myMu, myVar, result )
-           )
-      )
+  map( fn [real] ( {[real],[real],[real]} tup ) =>
+         let {mu_row, var_row, result_row} = tup in
+         map( fn real ({[real], [real], real, real, int} tup) =>
+                let { dx, dxx, mu, var, j } = tup in
+                let c1 = if 0 < j
+                         then ( mu*dx[0] + 0.5*var*dxx[0] ) * result_row[j-1]
+                         else 0.0 in
+                let c3 = if j < (m-1)
+                         then ( mu*dx[2] + 0.5*var*dxx[2] ) * result_row[j+1]
+                         else 0.0 in
+                let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * result_row[j  ]
+                in  c1 + c2 + c3
+            , zip( myD, myDD, mu_row, var_row, iota(m) )
+            )
+     , zip( myMu, myVar, result ))
 
 ------------------------------------------/
 -- myD,myDD     : [[real,3],m]
@@ -195,8 +193,8 @@ fun *[[real]] implicitMethod( [[real]] myD,  [[real]] myDD,
                       , zip(mu_row, var_row, myD, myDD)
                       ) in
          let {a,b,c} = unzip(abc) in
-         if 1==1 then tridagSeq( a, copy(b), c, u_row )
-                 else tridagPar( a, copy(b), c, u_row )
+         if 1==1 then tridagSeq( a, b, c, u_row )
+                 else tridagPar( a, b, c, u_row )
      , zip(myMu,myVar,u)
      )
 
@@ -227,15 +225,14 @@ fun *[[real,numX],numY] rollback
     -- implicitX
     let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv ) in
     -- implicitY
-    let y = copy( map( fn [real] ({[real],[real]} uv_row) =>
-                         let {u_row, v_row} = uv_row in
-                         map( fn real ({real,real} uv) =>
-                                let {u_el,v_el} = uv
-                                in  dtInv*u_el - 0.5*v_el
-                            , zip(u_row,v_row)
-                            )
-                     , zip(transpose(u),v)
-                     ) )
+    let y = map( fn [real] ({[real],[real]} uv_row) =>
+                   let {u_row, v_row} = uv_row in
+                   map( fn real ({real,real} uv) =>
+                          let {u_el,v_el} = uv
+                          in  dtInv*u_el - 0.5*v_el
+                      , zip(u_row,v_row)
+                      )
+               , zip(transpose(u),v))
     in
     let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
     in  transpose(myResultTR)
