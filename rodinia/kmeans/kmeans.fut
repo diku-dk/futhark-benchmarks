@@ -66,7 +66,7 @@ fun {[[real]], [int], int}
        int max_iterations,
        [[real,nfeatures],npoints] feature) =
   -- Assign arbitrary initial cluster centres.
-  let cluster_centres = map(fn [real] (int i) =>
+  let cluster_centres = map(fn [real,nfeatures] (int i) =>
                               feature[i],
                             iota(nclusters)) in
   -- Also assign points arbitrarily to clusters.
