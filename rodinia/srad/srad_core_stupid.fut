@@ -94,7 +94,7 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
   let image = map(fn [int,cols] ([real] row) =>
                     map(fn int (real pixel) =>
                           -- take logarithm of image, log compress
-                          trunc(log(pixel)*255.0),
+                          int(log(pixel)*255.0),
                         row),
                     image) in
   image
