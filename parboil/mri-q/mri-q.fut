@@ -47,20 +47,16 @@ fun {[f32,numX], [f32,numX]} main([f32,numK] kx, [f32,numK] ky, [f32,numK] kz,
   let phiMag = zipWith(fn f32 (f32 r, f32 i) =>
                          r*r + i*i
                       , phiR, phiI) in
-  let {cosArgs, sinArgs} =
-    unzip(
-      zipWith(fn {[f32,numK], [f32,numK]} (f32 x_e, f32 y_e, f32 z_e) =>
-                let expArg =
-                  map(pi2()*,
-                      zipWith(fn f32 (f32 kx_e, f32 ky_e, f32 kz_e) =>
-                                kx_e * x_e + ky_e * y_e + kz_e * z_e
-                             , kx, ky, kz)) in
-                {map(cos32, expArg), map(sin32, expArg)}
-             , x, y, z)) in
-  let Qr = map(fn f32 ([f32,numK] cosRow) =>
-                 reduce(+, 0.0f, zipWith(*, phiMag, cosRow))
-              , cosArgs) in
-  let Qi = map(fn f32 ([f32,numK] sinRow) =>
-                 reduce(+, 0.0f, zipWith(*, phiMag, sinRow))
-              , sinArgs) in
+  let expArgs = zipWith(fn [f32,numK] (f32 x_e, f32 y_e, f32 z_e) =>
+                          map(pi2()*,
+                              zipWith(fn f32 (f32 kx_e, f32 ky_e, f32 kz_e) =>
+                                        kx_e * x_e + ky_e * y_e + kz_e * z_e
+                                     , kx, ky, kz))
+                       , x, y, z) in
+  let Qr = map(fn f32 ([f32,numK] row) =>
+                 reduce(+, 0.0f, zipWith(*, phiMag, map(cos32, row)))
+              , expArgs) in
+  let Qi = map(fn f32 ([f32,numK] row) =>
+                 reduce(+, 0.0f, zipWith(*, phiMag, map(sin32, row)))
+              , expArgs) in
   {Qr, Qi}
