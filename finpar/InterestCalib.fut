@@ -85,7 +85,7 @@ fun {{real,real,real,real,real,real},[[real]]}
 	else 
         if (move_type == 2) -- move_type == DIMS_ONE
 	then let s1  = sobolInd( sobDirVct, sob_offs )  in
-	     let dim_j = trunc( s1 * real(5) )        in
+	     let dim_j = int( s1 * real(5) )        in
 	     let sob_mat = 
 	         map( fn [real] (int i) =>
 			let k   = 5*i + sob_offs + 1    in
@@ -103,13 +103,13 @@ fun {{real,real,real,real,real,real},[[real]]}
 	         map( fn *[real] (int i) =>
 			let kk  = 8*i + sob_offs            in
 			let s1  = sobolInd( sobDirVct, kk ) in
-			let k = trunc( s1 * real(POP-1) ) in -- random in [0,POP-1)
+			let k = int( s1 * real(POP-1) ) in -- random in [0,POP-1)
 			let {k,cand_UB} = if k == i 
 			                  then {POP-1, POP-2}
 					  else {k,     POP-1} 
 			in
 			let s2  = sobolInd(sobDirVct, kk+1) in
-			let l = trunc( s2*real(cand_UB) ) in -- random in [0,cand_UB -1)
+			let l = int( s2*real(cand_UB) ) in -- random in [0,cand_UB -1)
 			let l = if (l == i) || (l == k)
 			        then cand_UB
 				else l
@@ -204,7 +204,7 @@ fun {real,real} evalGenomeOnSwap (
   let {a,b,rho,nu,sigma} = {genomea[0],genomea[1],genomea[2],genomea[3],genomea[4]} in
   let swap_freq  = swaption[1] in
   let maturity   = add_years( today(), swaption[0] ) in
-  let n_schedi   = trunc(12.0 * swaption[2] / swap_freq) in
+  let n_schedi   = int(12.0 * swaption[2] / swap_freq) in
 
   let tmat0      = date_act_365( maturity, today() ) in
 
@@ -631,7 +631,7 @@ fun {real,[{real,real}],{real,real}}
 extended_swaption_of_swaption({real,real,real} swaption)  =  -- swaption = (sw_mat, freq, sw_ty)
     let {sw_mat, freq, sw_ty} = swaption          in
     let maturity   = add_years( today(), sw_mat ) in
-    let nschedule  = trunc(12.0 * sw_ty / freq)   in
+    let nschedule  = int(12.0 * sw_ty / freq)   in
 
     let a12s = map ( fn {real,real,real} (int i) =>
 		     let a1 = add_months( maturity, freq*real(i) ) in
@@ -987,8 +987,8 @@ fun real mainOLD([{{real,real,real} , real}] swaptionQuotes,
                         -- printing
                         let {mat_year, swap_freq, term_year} = swaption                in
                         --let tmp = trace("\n")                                        in
-                        --let tmp = trace(trunc( mat_year)) in let tmp = trace("Y")    in
-                        --let tmp = trace(trunc(term_year)) in let tmp = trace("Y")    in
+                        --let tmp = trace(int( mat_year)) in let tmp = trace("Y")    in
+                        --let tmp = trace(int(term_year)) in let tmp = trace("Y")    in
                         --let tmp = trace(" Swaption Calibrated Price: ") in let tmp = trace(10000.0*g2pp_price) in
                         --let tmp = trace(" Market Price: ") in let tmp = trace(10000.0*market_price) in
 
@@ -1096,8 +1096,8 @@ fun int end_of_month(int year, int month) =
 
 
 fun real add_months ( real date, real rnbmonths ) =
-    let nbmonths          = trunc(rnbmonths)                 in
-    let {y, m, d, h, min} = gregorian_of_date( trunc(date) ) in
+    let nbmonths          = int(rnbmonths)                 in
+    let {y, m, d, h, min} = gregorian_of_date( int(date) ) in
     let m = m + nbmonths                                     in
     let {y, m} = {y + (m-1) / 12, MOD(m-1, 12) + 1}          in
     let {y, m} = if (m <= 0) then {y - 1, m + 12} else {y, m} in
@@ -1137,7 +1137,7 @@ fun real today    () = real( date_of_gregorian( {2012, 1, 1, 12, 0} ) )
 --assert "%.6f" % days_between(max_date,min_date) == "116877.499306"
 --assert "%.6f" % act_365(max_date,min_date) == "320.212327"
 fun int main_dates() =
-    let tmp = trace("Today: ") in let tmp = trace(trunc(today())) in let tmp = trace("\n") in
+    let tmp = trace("Today: ") in let tmp = trace(int(today())) in let tmp = trace("\n") in
     let tmp = trace("add_months(min_date,1)==48240")            in
     let tmp = add_months(min_date(), 1.0)                       in
     let bbb = if( equal(tmp, 48240.0) ) then trace("SUCCESS ")

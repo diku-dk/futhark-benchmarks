@@ -17,7 +17,7 @@ fun {int,int,[real,numX],[real,numY],[real,numT]}
     let {stdX, stdY} = {20.0 * alpha * s0 * sqrt(t),
                         10.0 * nu         * sqrt(t)} in
     let {dx, dy} = {stdX / real(numX), stdY / real(numY)} in
-    let {myXindex, myYindex} = {trunc(s0 / dx), numY / 2} in
+    let {myXindex, myYindex} = {int(s0 / dx), numY / 2} in
     let myX = map(fn real (int i) => real(i) * dx - real(myXindex) * dx + s0,       iota(numX)) in
     let myY = map(fn real (int i) => real(i) * dy - real(myYindex) * dy + logAlpha, iota(numY)) in
     {myXindex, myYindex, myX, myY, myTimeline}

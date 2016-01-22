@@ -52,7 +52,7 @@ fun [int,3] escapeToColour(int depth, int divergence) =
        let rcloseness = closeness in
        let gcloseness = exp(log(closeness) / log(2.0)) in
        let bcloseness = exp(log(closeness) / log(4.0)) in
-       let r = trunc(255.0 * rcloseness) in
-       let g = trunc(255.0 * gcloseness) in
-       let b = trunc(255.0 * bcloseness) in
+       let r = int(255.0 * rcloseness) in
+       let g = int(255.0 * gcloseness) in
+       let b = int(255.0 * bcloseness) in
        [r, g, b]
