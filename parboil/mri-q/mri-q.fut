@@ -42,8 +42,8 @@ fun f32 pi() = 3.1415926535897932384626433832795029f
 fun f32 pi2() = pi() * 2.0f
 
 fun {[f32,numX], [f32,numX]} main([f32,numK] kx, [f32,numK] ky, [f32,numK] kz,
-                         [f32,numX] x, [f32,numX] y, [f32,numX] z,
-                         [f32,numK] phiR, [f32,numK] phiI) =
+                                  [f32,numX] x, [f32,numX] y, [f32,numX] z,
+                                  [f32,numK] phiR, [f32,numK] phiI) =
   let phiMag = zipWith(fn f32 (f32 r, f32 i) =>
                          r*r + i*i
                       , phiR, phiI) in
