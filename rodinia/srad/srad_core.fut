@@ -1,4 +1,4 @@
-<-- Many of these names are taken directly from srad_v1 in the Rodinia
+-- Many of these names are taken directly from srad_v1 in the Rodinia
 -- suite.  It looks like some Fortran remnant (sorry, I mean
 -- "FORTRAN").
 --
