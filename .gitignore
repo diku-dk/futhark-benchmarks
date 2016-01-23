@@ -7,6 +7,8 @@
 *.compilerout
 *.interpreterout
 *.c
+*.actual-*
+*.expected-*
 
 # Ignore Emacs gunk
 *~
