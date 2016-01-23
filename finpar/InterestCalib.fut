@@ -1,5 +1,6 @@
 -- Interest rate calibration
 -- ==
+-- tags { notravis }
 -- compiled input @ InterestCalib-data/small.in
 -- output @ InterestCalib-data/small.out
 --

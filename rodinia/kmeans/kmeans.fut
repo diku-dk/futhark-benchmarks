@@ -9,7 +9,7 @@
 -- output @ data/trivial.out
 -- compiled input @ data/100.in
 -- output @ data/100.out
--- compiled input @ data/kdd_cup.in
+-- notravis input @ data/kdd_cup.in
 -- output @ data/kdd_cup.out
 
 fun real euclid_dist_2([real,numdims] pt1, [real,numdims] pt2) =
