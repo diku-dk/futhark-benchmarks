@@ -71,7 +71,7 @@ void outputData(char* fName, uint32_t* numX, float** outR, float** outI) {
 void print_array(const char *name, float* data, int num) {
   printf("-- %s\n[", name);
   for (int i = 0; i < num; i++) {
-    printf("%ff", data[i]);
+    printf("%ff32", data[i]);
     if (i != num - 1) {
       printf(", ");
     }
