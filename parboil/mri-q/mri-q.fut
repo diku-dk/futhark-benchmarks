@@ -33,8 +33,8 @@
 -- compiled input @ data/large.in
 -- output @ data/large.out
 
-fun f32 pi() = 3.1415926535897932384626433832795029f
-fun f32 pi2() = pi() * 2.0f
+fun f32 pi() = 3.1415926535897932384626433832795029f32
+fun f32 pi2() = pi() * 2.0f32
 
 fun {[f32,numX], [f32,numX]} main([f32,numK] kx, [f32,numK] ky, [f32,numK] kz,
                                   [f32,numX] x, [f32,numX] y, [f32,numX] z,
@@ -49,9 +49,9 @@ fun {[f32,numX], [f32,numX]} main([f32,numK] kx, [f32,numK] ky, [f32,numK] kz,
                                      , kx, ky, kz))
                        , x, y, z) in
   let Qr = map(fn f32 ([f32,numK] row) =>
-                 reduce(+, 0.0f, zipWith(*, phiMag, map(cos32, row)))
+                 reduce(+, 0.0f32, zipWith(*, phiMag, map(cos32, row)))
               , expArgs) in
   let Qi = map(fn f32 ([f32,numK] row) =>
-                 reduce(+, 0.0f, zipWith(*, phiMag, map(sin32, row)))
+                 reduce(+, 0.0f32, zipWith(*, phiMag, map(sin32, row)))
               , expArgs) in
   {Qr, Qi}
