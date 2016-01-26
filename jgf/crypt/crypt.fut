@@ -1,5 +1,9 @@
 -- Implementation of Bruce Schneiers IDEA block cipher.  Based on
 -- IDEATest.jomp from the JGF benchmark suite.  Comments too.
+--
+-- ==
+-- input @ crypt-data/small.in
+-- output @ crypt-data/small.out
 
 -- We represent 16-bit blocks as 32-bit integers so they can be more
 -- easily treated as unsigned.
@@ -7,6 +11,8 @@ fun i32 mk16b(i8 upper, i8 lower) =
   (i32(upper) & 0xFFi32) << 8 | (i32(lower) & 0xFFi32)
 
 fun [i8,8] cipher_idea_block([i16,52] key, [i8,8] block) =
+  -- Translate key to i32 for convenience.
+  let key = map(&0xFFFF, map(i32, key)) in
   let x1 = mk16b(block[1], block[0]) in
   let x2 = mk16b(block[3], block[2]) in
   let x3 = mk16b(block[5], block[4]) in
@@ -15,18 +21,18 @@ fun [i8,8] cipher_idea_block([i16,52] key, [i8,8] block) =
     let ik = i * 6 in
     -- 1) Multiply (modulo 0x10001), 1st text sub-block with 1st key
     -- sub-block.
-    let x1 = i32((i64(x1) * i64(key[ik+0])) %% i64(0x10001i64) & 0xFFFFi64) in
+    let x1 = i32(i64(x1) * i64(key[ik+0]) %% i64(0x10001i64) & 0xFFFFi64) in
     -- 2) Add (modulo 0x10000), 2nd text sub-block with 2nd key
     -- sub-block.
-    let x2 = x2 + i32(key[ik+1]) & 0xffff in
+    let x2 = x2 + key[ik+1] & 0xFFFF in
     -- 3) Add (modulo 0x10000), 3rd text sub-block with 3rd key
     -- sub-block.
-    let x3 = x3 + i32(key[ik+2]) & 0xffff in
+    let x3 = x3 + key[ik+2] & 0xFFFF in
     -- 4) Multiply (modulo 0x10001), 4th text sub-block
     -- with 4th key sub-block.
-    let x4 = i32((i64(x4) * i64(key[ik+3])) %% i64(0x10001i64) & 0xFFFFi64) in
+    let x4 = i32(i64(x4) * i64(key[ik+3]) %% i64(0x10001i64) & 0xFFFFi64) in
     -- 5) XOR results from steps 1 and 3.
-    let t2 = x1 ^ x2 in
+    let t2 = x1 ^ x3 in
     -- 6) XOR results from steps 2 and 4.  Included in step 8.
 
     -- 7) Multiply (modulo 0x10001), result of step 5 with 5th key
@@ -54,7 +60,7 @@ fun [i8,8] cipher_idea_block([i16,52] key, [i8,8] block) =
 
   -- 1) Multiply (modulo 0x10001), 1st text-block
   -- with 1st key sub-block.
-  let x1 = i32(i64(x1) * i64(key[ik+0]) % 0x10001i64 & 0xFFFFi64) in
+  let x1 = i32(i64(x1) * i64(key[ik+0]) %% 0x10001i64 & 0xFFFFi64) in
   -- 2) Add (modulo 0x10000), 2nd text sub-block
   -- with 2nd key sub-block. It says x3, but that is to undo swap
   -- of subblocks 2 and 3 in 8th processing round.
@@ -65,11 +71,11 @@ fun [i8,8] cipher_idea_block([i16,52] key, [i8,8] block) =
   let x2 = x2 + i32(key[ik+2]) & 0xFFFF in
   -- 4) Multiply (modulo 0x10001), 4th text-block with 4th key
   -- sub-block.
-  let x4 = i32(i64(x4) * i64(key[ik+3]) % 0x10001i64 & 0xFFFFi64) in
+  let x4 = i32(i64(x4) * i64(key[ik+3]) %% 0x10001i64 & 0xFFFFi64) in
   -- Repackage from 16-bit sub-blocks to 8-bit byte array text2.
   [ i8(x1), i8(x1>>>8)
-  , i8(x2), i8(x2>>>8)
   , i8(x3), i8(x3>>>8)
+  , i8(x2), i8(x2>>>8)
   , i8(x4), i8(x4>>>8)
   ]
 
@@ -77,5 +83,6 @@ fun [i8,n] cipher_idea([i16,52] key, [i8,n] text) =
   let blocks = reshape((n//8,8), text) in
   reshape((n), map(cipher_idea_block(key), blocks))
 
-fun [i8] main([i16,52] Z, [i16,52] DK, [i8,n] text) =
-  cipher_idea(Z, text)
+fun {[i8,n], [i8,n]} main([i16,52] Z, [i16,52] DK, [i8,n] text) =
+  let text_encrypted = cipher_idea(Z, text) in
+  {text_encrypted, cipher_idea(DK, text_encrypted)}

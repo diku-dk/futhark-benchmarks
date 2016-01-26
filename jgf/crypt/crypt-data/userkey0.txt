@@ -1,0 +1,4 @@
+-- This is the userkey generated with the default seed in the Java implementation.
+[ 0x8407i16, 0xad20i16, 0xd46di16, 0x69dai16
+, 0x6bd9i16, 0x49cdi16, 0x4d8ci16, 0x5c0di16
+]
