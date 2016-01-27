@@ -1,0 +1,3 @@
+#!/bin/sh
+
+futhark-c --real-as-single  "$@"
