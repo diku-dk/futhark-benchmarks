@@ -27,37 +27,38 @@ fun int find_nearest_point([[real,nfeatures],npoints] pts, [real,nfeatures] pt) 
                           map(euclid_dist_2(pt), pts))) in
   i
 
-fun [real,nfeatures] add_centroids([real,nfeatures] x, [real,nfeatures] y) =
+fun *[real,nfeatures] add_centroids([real,nfeatures] x, [real,nfeatures] y) =
   zipWith(+, x, y)
 
 fun *[[real,nfeatures],nclusters]
   centroids_of(int nclusters, [[real,nfeatures],npoints] feature, [int,npoints] membership) =
-  let count_incrs =
-    zipWith(fn [int,nclusters] ([real,nfeatures] feature, int cluster) =>
-              let a = replicate(nclusters,0) in
-              let a[cluster] = 1 in
-              a,
-            feature, membership) in
-  let sum_incrs =
-    zipWith(fn [[real,nfeatures],nclusters] ([real,nfeatures] feature, int cluster) =>
-              let a = replicate(nclusters,replicate(nfeatures,0.0)) in
-              let a[cluster] = feature in
-              a,
-            feature, membership) in
-   let features_in_clusters =
-     reduce(fn [int,nclusters] ([int,nclusters] acc,
-                                [int,nclusters] x) =>
-              zipWith(+, acc, x),
-            replicate(nclusters,0), count_incrs) in
+  let features_in_clusters =
+     streamRedPerMax(fn *[int,nclusters] ([int,nclusters] acc,
+                                          [int,nclusters] x) =>
+                       zipWith(+, acc, x),
+                     fn [int,nclusters] (int chunk,
+                                         *[int,ncluster] acc,
+                                         [int] inp) =>
+                       loop (acc) = for i < chunk do
+                         let c = inp[i] in
+                         let acc[c] = acc[c] + 1 in
+                         acc in
+                       acc,
+                     replicate(nclusters,0), membership) in
   let cluster_sums =
-    reduce(fn *[[real,nfeatures],nclusters] (*[[real,nfeatures],nclusters] acc,
-                                             *[[real,nfeatures],nclusters] elem) =>
-             zipWith(fn [real,nfeatures] (int features_in_cluster,
-                                          [real,nfeatures] x,
-                                          [real,nfeatures] y) =>
-                       add_centroids(x, map(/real(features_in_cluster), y)),
-                     features_in_clusters, acc, elem),
-           replicate(nclusters,replicate(nfeatures,0.0)), sum_incrs) in
+    streamRedPerMax(fn *[[real,nfeatures],nclusters] (*[[real,nfeatures],nclusters] acc,
+                                                      *[[real,nfeatures],nclusters] elem) =>
+                      zipWith(add_centroids, acc, elem),
+                    fn *[[real,nfeatures],nclusters] (int chunk,
+                                                      *[[real,nfeatures],nclusters] acc,
+                                                      [{[real,nfeatures], int}] inp) =>
+                      loop (acc) = for i < chunk do
+                        let {point, c} = inp[i] in
+                        let acc[c] = add_centroids(acc[c], map(/real(features_in_clusters[c]), point)) in
+                        acc in
+                      acc,
+                    replicate(nclusters,replicate(nfeatures,0.0)),
+                    zip(feature, membership)) in
   cluster_sums
 
 fun {[[real]], [int], int}
