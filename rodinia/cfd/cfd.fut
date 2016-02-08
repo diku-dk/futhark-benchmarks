@@ -4,7 +4,7 @@
 -- ==
 --
 -- notravis input @ data/fvcorr.domn.097K.toa
--- output @ data/fvcorr.domn.097K.out
+-- output @ data/fvcorr.domn.097K.5its.out
 
 -- The other datasets (not for now...)
 -- compiled input @ data/fvcorr.domn.193K.toa
@@ -14,7 +14,7 @@
 -- output @ data/missile.domn.0.2M.out
 
 fun real GAMMA() = 1.4
-fun int  iterations() = 2000
+fun int  iterations() = 1 --2000
 
 --#define NDIM 3
 --#define NNB 4
@@ -292,7 +292,7 @@ fun [[real,nel],5] time_step( int j,
 --------------------------
 ---- MAIN ENTRY POINT ----
 --------------------------
-fun [[real,5],nel] main(  [real,nel] areas, 
+fun [[real,nel],5] main(  [real,nel] areas, 
                     [[int,nel],4] elements_surrounding_elements, 
                     [[[real,nel],4],3] normals ) =
     let NDIM = 3 in
