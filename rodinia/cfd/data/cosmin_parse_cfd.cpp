@@ -169,7 +169,7 @@ int main(int argc, char** argv)
         std::ofstream file(out_file_name);
         //file << nel << " -- number of elements\n\n";
 
-        // areas
+        // areas[nelr]
         file << "[\t" << areas[0];
         for(int i=1; i<nelr; i+=8) {
             file << "\n\t";
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
         }
         file << "\n] -- END ARRAY areas[nel]!\n\n";
 
-        // elements_surrounding_elements
+        // elements_surrounding_elements[NNB, nelr]
         int* int_arr = elements_surrounding_elements;
         file << "[\t";
         print1Darray<int>(file, nelr, int_arr);
@@ -188,19 +188,19 @@ int main(int argc, char** argv)
             file << "\n\t, ";
             print1Darray<int>(file, nelr, int_arr);
         }
-        file << "\n] -- END ARRAY elements_surrounding_elements[nel,NNB]!\n\n";
+        file << "\n] -- END ARRAY elements_surrounding_elements[NNB,nel]!\n\n";
 
 
-        // normals
+        // normals[NDIM, NNB, nelr]
         float* float_arr = normals;
         file << "[ ";
-        print2Darray<float>(file, NDIM, nelr, float_arr);
-        for(int i=1; i<NNB; i++) {
-            float_arr += NDIM*nelr;
+        print2Darray<float>(file, NNB, nelr, float_arr);
+        for(int i=1; i<NDIM; i++) {
+            float_arr += NNB*nelr;
             file << "\n\t, ";
-            print2Darray<float>(file, NDIM, nelr, float_arr);
+            print2Darray<float>(file, NNB, nelr, float_arr);
         }
-        file << "\n] -- END ARRAY normals[nel,NNB, NDIM]!\n\n";
+        file << "\n] -- END ARRAY normals[NDIM, NNB, nel]!\n\n";
     }
 
     return 1;
