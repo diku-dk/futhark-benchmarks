@@ -367,9 +367,9 @@ fun [real] mainRec(
 ) =
   let sobvctsz  = num_dates*num_und in
   let dir_vs    = reshape( (sobvctsz,num_bits), dir_vs_nosz ) in
-  let sobol_mat = streamMapMax ( fn [[real,sobvctsz]] (int chunk, [int] ns) =>
-                                    sobolChunk(dir_vs, ns[0], chunk)
-                               , iota(num_mc_it) ) in
+  let sobol_mat = streamMap( fn [[real,sobvctsz]] (int chunk, [int] ns) =>
+                                sobolChunk(dir_vs, ns[0], chunk)
+                           , iota(num_mc_it) ) in
 
   let gauss_mat = map ( ugaussian, sobol_mat )                                   in
 
