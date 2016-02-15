@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <math.h>
 
 #define GAMMA 1.4
 #define iterations 2000
@@ -13,6 +14,8 @@
 #define deg_angle_of_attack 0.0f
 
 struct float3 { float x, y, z; };
+
+//#define DEBUG
 
 /*
  * not options
@@ -126,6 +129,10 @@ int main(int argc, char** argv)
 		std::ifstream file(inp_file_name);
 
 		file >> nel;
+#ifdef DEBUG
+        nel  = 32; // cosmin: for debug purposes
+#endif
+
 		nelr = nel; //block_length*((nel / block_length )+ std::min(1, nel % block_length));
 
 		areas = new float[nelr];                           // [nelr]          -> [nelr]
@@ -141,6 +148,13 @@ int main(int argc, char** argv)
 				file >> elements_surrounding_elements[i + j*nelr];
 				if(elements_surrounding_elements[i+j*nelr] < 0) elements_surrounding_elements[i+j*nelr] = -1;
 				elements_surrounding_elements[i + j*nelr]--; //it's coming in with Fortran numbering
+
+#ifdef DEBUG
+                if(elements_surrounding_elements[i+j*nelr] > 0) {
+                    elements_surrounding_elements[i+j*nelr] = 
+                        elements_surrounding_elements[i+j*nelr] % nel;
+                }
+#endif
 
 				for(int k = 0; k < NDIM; k++) // COSMIN: NDIM == 3
 				{
