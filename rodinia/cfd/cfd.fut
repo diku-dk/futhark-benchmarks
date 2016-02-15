@@ -4,6 +4,9 @@
 -- ==
 --
 -- notravis input @ data/fvcorr.domn.097K.toa
+-- output @ data/fvcorr.domn.097K.out
+
+-- notravis input @ data/fvcorr.domn.097K.toa
 -- output @ data/fvcorr.domn.097K.5its.out
 
 -- The other datasets (not for now...)
@@ -14,7 +17,7 @@
 -- output @ data/missile.domn.0.2M.out
 
 fun real GAMMA() = 1.4
-fun int  iterations() = 1 --2000
+fun int  iterations() = 1300 --2000
 
 --#define NDIM 3
 --#define NNB 4
@@ -147,12 +150,14 @@ fun [[real,nel],5]
             let loop_res = {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z} in
             loop(loop_res) =
               for j < NNB do
+                let {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z} = loop_res in
                 let nb = elements_surrounding_elements[j, i] in
                 let normal_x = normals[0, j, i] in
                 let normal_y = normals[1, j, i] in
                 let normal_z = normals[2, j, i] in
                 let normal_len = sqrt(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z) in
                 if (0 <= nb) -- a legitimate neighbor
+                -- if (10000 <= nb) -- DEBUG COSMIN
                 then let density_nb    = variables[VAR_DENSITY(),    nb] in
 				     let momentum_nb_x = variables[VAR_MOMENTUM()+0, nb] in
                      let momentum_nb_y = variables[VAR_MOMENTUM()+1, nb] in
@@ -187,14 +192,20 @@ fun [[real,nel],5]
 
                      -- accumulate cell-centered fluxes
                      let factor = 0.5*normal_x in
-                     let flux_i_density = flux_i_density + factor*(momentum_nb_x+momentum_i_x) in
+                     let flux_i_density = flux_i_density + 
+                           --factor*(momentum_nb.x+momentum_i.x);
+                             factor*(momentum_nb_x+momentum_i_x) in
                      let flux_i_density_energy = flux_i_density_energy + 
+                           --factor*(flux_contribution_nb_density_energy.x+flux_contribution_i_density_energy.x);
                              factor*(flux_contribution_nb_density_energy_x+flux_contribution_i_density_energy_x) in
                      let flux_i_momentum_x = flux_i_momentum_x + 
+                           --factor*(flux_contribution_nb_momentum_x.x+flux_contribution_i_momentum_x.x);
                              factor*(flux_contribution_nb_momentum_x_x+flux_contribution_i_momentum_x_x) in
                      let flux_i_momentum_y = flux_i_momentum_y + 
+                           --factor*(flux_contribution_nb_momentum_y.x+flux_contribution_i_momentum_y.x);
                              factor*(flux_contribution_nb_momentum_y_x+flux_contribution_i_momentum_y_x) in
                      let flux_i_momentum_z = flux_i_momentum_z + 
+                           --factor*(flux_contribution_nb_momentum_z.x+flux_contribution_i_momentum_z.x);
                              factor*(flux_contribution_nb_momentum_z_x+flux_contribution_i_momentum_z_x) in
 
                      let factor = 0.5 * normal_y in
@@ -225,11 +236,11 @@ fun [[real,nel],5]
                      let flux_i_density = flux_i_density + factor*(ff_variable[VAR_MOMENTUM()+0]+momentum_i_x) in
                      let flux_i_density_energy = flux_i_density_energy + 
                              factor*(ff_flux_contribution_density_energy_x+flux_contribution_i_density_energy_x) in
-                     let flux_i_momentum_x = flux_i_momentum_x +
+                     let flux_i_momentum_x = flux_i_momentum_x + 
                              factor*(ff_flux_contribution_momentum_x_x + flux_contribution_i_momentum_x_x) in
-                     let flux_i_momentum_y = flux_i_momentum_y +
+                     let flux_i_momentum_y = flux_i_momentum_y + 
                              factor*(ff_flux_contribution_momentum_y_x + flux_contribution_i_momentum_y_x) in
-                     let flux_i_momentum_z = flux_i_momentum_z +
+                     let flux_i_momentum_z = flux_i_momentum_z + 
                              factor*(ff_flux_contribution_momentum_z_x + flux_contribution_i_momentum_z_x) in
                      
                      let factor = 0.5*normal_y in
@@ -255,14 +266,17 @@ fun [[real,nel],5]
                              factor*(ff_flux_contribution_momentum_z_z + flux_contribution_i_momentum_z_z) in
                      {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z}
 
-                else -- (nb == -1)
-                     let flux_i_momentum_x = flux_i_momentum_x + normal_x*pressure_i in
+                else if (nb == -1)
+                then let flux_i_momentum_x = flux_i_momentum_x + normal_x*pressure_i in
                      let flux_i_momentum_y = flux_i_momentum_y + normal_y*pressure_i in
                      let flux_i_momentum_z = flux_i_momentum_z + normal_z*pressure_i in
                      {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z}
+                else -- not reachable
+                     {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z}
             in
             let {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z} = loop_res
-            in [flux_i_density, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z, flux_i_density_energy]
+            in  [flux_i_density, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z, flux_i_density_energy]
+            --in [real(NNB),real(NNB),real(NNB),real(NNB),real(NNB)]
             --fluxes[i + VAR_DENSITY*nelr] = flux_i_density;
             --fluxes[i + (VAR_MOMENTUM+0)*nelr] = flux_i_momentum.x;
             --fluxes[i + (VAR_MOMENTUM+1)*nelr] = flux_i_momentum.y;
@@ -292,9 +306,10 @@ fun [[real,nel],5] time_step( int j,
 --------------------------
 ---- MAIN ENTRY POINT ----
 --------------------------
-fun [[real,nel],5] main(  [real,nel] areas, 
-                    [[int,nel],4] elements_surrounding_elements, 
-                    [[[real,nel],4],3] normals ) =
+fun [[real,nel],5] 
+main(  [real,nel]       areas, 
+      [[int,nel],4]     elements_surrounding_elements, 
+     [[[real,nel],4],3] normals ) =
     let NDIM = 3 in
     let NNB  = 4 in
     let angle_of_attack = (3.1415926535897931 / 180.0) * deg_angle_of_attack() in
@@ -324,8 +339,19 @@ fun [[real,nel],5] main(  [real,nel] areas,
         compute_flux_contribution(  ff_variable[VAR_DENSITY()],        ff_momentum, 
                                     ff_variable[VAR_DENSITY_ENERGY()], ff_pressure, ff_velocity    ) 
     in
-    let variables = initialize_variables(nel, ff_variable) in
-    
+    let variables = initialize_variables(nel, ff_variable) 
+    in
+
+--    let step_factors = compute_step_factor(variables, areas) in
+--    let new_variables= variables in
+--    let fluxes = compute_flux(  elements_surrounding_elements, 
+--                                normals, new_variables, ff_variable, 
+--                                ff_flux_contribution_momentum_x, 
+--                                ff_flux_contribution_momentum_y, 
+--                                ff_flux_contribution_momentum_z, 
+--                                ff_flux_contribution_density_energy )
+--    in  time_step(0, variables, step_factors, fluxes)
+
     loop (variables) =
       for i < iterations() do
         let step_factors = compute_step_factor(variables, areas) in
