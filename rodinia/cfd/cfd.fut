@@ -157,7 +157,6 @@ fun [[real,nel],5]
                 let normal_z = normals[2, j, i] in
                 let normal_len = sqrt(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z) in
                 if (0 <= nb) -- a legitimate neighbor
-                -- if (10000 <= nb) -- DEBUG COSMIN
                 then let density_nb    = variables[VAR_DENSITY(),    nb] in
 				     let momentum_nb_x = variables[VAR_MOMENTUM()+0, nb] in
                      let momentum_nb_y = variables[VAR_MOMENTUM()+1, nb] in
@@ -193,19 +192,14 @@ fun [[real,nel],5]
                      -- accumulate cell-centered fluxes
                      let factor = 0.5*normal_x in
                      let flux_i_density = flux_i_density + 
-                           --factor*(momentum_nb.x+momentum_i.x);
                              factor*(momentum_nb_x+momentum_i_x) in
                      let flux_i_density_energy = flux_i_density_energy + 
-                           --factor*(flux_contribution_nb_density_energy.x+flux_contribution_i_density_energy.x);
                              factor*(flux_contribution_nb_density_energy_x+flux_contribution_i_density_energy_x) in
                      let flux_i_momentum_x = flux_i_momentum_x + 
-                           --factor*(flux_contribution_nb_momentum_x.x+flux_contribution_i_momentum_x.x);
                              factor*(flux_contribution_nb_momentum_x_x+flux_contribution_i_momentum_x_x) in
                      let flux_i_momentum_y = flux_i_momentum_y + 
-                           --factor*(flux_contribution_nb_momentum_y.x+flux_contribution_i_momentum_y.x);
                              factor*(flux_contribution_nb_momentum_y_x+flux_contribution_i_momentum_y_x) in
                      let flux_i_momentum_z = flux_i_momentum_z + 
-                           --factor*(flux_contribution_nb_momentum_z.x+flux_contribution_i_momentum_z.x);
                              factor*(flux_contribution_nb_momentum_z_x+flux_contribution_i_momentum_z_x) in
 
                      let factor = 0.5 * normal_y in
@@ -276,7 +270,6 @@ fun [[real,nel],5]
             in
             let {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z} = loop_res
             in  [flux_i_density, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z, flux_i_density_energy]
-            --in [real(NNB),real(NNB),real(NNB),real(NNB),real(NNB)]
             --fluxes[i + VAR_DENSITY*nelr] = flux_i_density;
             --fluxes[i + (VAR_MOMENTUM+0)*nelr] = flux_i_momentum.x;
             --fluxes[i + (VAR_MOMENTUM+1)*nelr] = flux_i_momentum.y;
@@ -342,6 +335,7 @@ main(  [real,nel]       areas,
     let variables = initialize_variables(nel, ff_variable) 
     in
 
+----  BEGIN DEBUG COSMIN
 --    let step_factors = compute_step_factor(variables, areas) in
 --    let new_variables= variables in
 --    let fluxes = compute_flux(  elements_surrounding_elements, 
@@ -351,6 +345,7 @@ main(  [real,nel]       areas,
 --                                ff_flux_contribution_momentum_z, 
 --                                ff_flux_contribution_density_energy )
 --    in  time_step(0, variables, step_factors, fluxes)
+---- END   DEBUG COSMIN
 
     loop (variables) =
       for i < iterations() do
