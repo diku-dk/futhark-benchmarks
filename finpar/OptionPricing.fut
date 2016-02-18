@@ -221,6 +221,7 @@ fun [real,num_dates] brownianBridgeDates (
 
     loop (bbrow) =
         for i < num_dates-1 do  -- use i+1 since i in 1 .. num_dates-1
+            unsafe
             let j  = li[i+1] - 1 in
             let k  = ri[i+1] - 1 in
             let l  = bi[i+1] - 1 in
@@ -405,15 +406,13 @@ fun real genericPayoff(int contract, [real] md_disct, [real] md_detval, [[real]]
     else if (contract == 3) then payoff3(md_disct, xss)
     else 0.0                
 
-fun real payoff1([real] md_disct, [real] md_detval, [[real]] xss) = 
--- invariant: xss is a 1x1 matrix
-    let detval = md_detval[0]                   in
+fun real payoff1([real] md_disct, [real] md_detval, [[real,1],1] xss) = 
+    let detval = unsafe md_detval[0] in
     let amount = ( xss[0,0] - 4000.0 ) * detval in
     let amount0= if (0.0 < amount) then amount else 0.0
     in  trajInner(amount0, 0, md_disct)
 
-fun real payoff2 ([real] md_disc, [[real]] xss) =
--- invariant: xss is a 5x3 matrix
+fun real payoff2 ([real] md_disc, [[real,3],5] xss) =
   let {date, amount} = 
     if      (1.0 <= fminPayoff(xss[0])) then {0, 1150.0}
     else if (1.0 <= fminPayoff(xss[1])) then {1, 1300.0}
@@ -426,8 +425,7 @@ fun real payoff2 ([real] md_disc, [[real]] xss) =
 	 in {4, val}
   in  trajInner(amount, date, md_disc) 
 
-fun real payoff3([real] md_disct, [[real]] xss) =
--- invariant: xss is a 367x3 matrix
+fun real payoff3([real] md_disct, [[real,3],367] xss) =
     let conds  = map (fn bool ([real] x) => (x[0] <= 2630.6349999999998) || 
 	 	                            (x[1] <= 8288.0)             || 
 		                            (x[2] <=  840.0)
@@ -455,4 +453,4 @@ fun real MIN([real] arr) =
 
 fun int MINint(int x, int y) = if x < y then x else y
 
-fun real trajInner(real amount, int ind, [real] disc) = amount * disc[ind]
+fun real trajInner(real amount, int ind, [real] disc) = amount * unsafe disc[ind]
