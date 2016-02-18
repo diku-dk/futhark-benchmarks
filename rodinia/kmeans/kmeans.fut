@@ -41,20 +41,22 @@ fun *[[real,nfeatures],nclusters]
                                       [int] inp) =>
                     loop (acc) = for i < chunk do
                       let c = inp[i] in
-                      let acc[c] = acc[c] + 1 in
+                      unsafe let acc[c] = acc[c] + 1 in
                       acc in
                     acc,
                   replicate(nclusters,0), membership) in
   let cluster_sums =
     streamRedPer(fn *[[real,nfeatures],nclusters] (*[[real,nfeatures],nclusters] acc,
                                                    *[[real,nfeatures],nclusters] elem) =>
-                   zipWith(add_centroids, acc, elem),
+                   zipWith(fn [real,nfeatures] ([real] x, [real] y) =>
+                             add_centroids(x, y),
+                           acc, elem),
                  fn *[[real,nfeatures],nclusters] (int chunk,
                                                    *[[real,nfeatures],nclusters] acc,
                                                    [{[real,nfeatures], int}] inp) =>
                    loop (acc) = for i < chunk do
                      let {point, c} = inp[i] in
-                     let acc[c] = add_centroids(acc[c], map(/real(features_in_clusters[c]), point)) in
+                     unsafe let acc[c] = add_centroids(acc[c], map(/real(features_in_clusters[c]), point)) in
                      acc in
                    acc,
                  replicate(nclusters,replicate(nfeatures,0.0)),
@@ -68,7 +70,7 @@ fun {[[real]], [int], int}
        [[real,nfeatures],npoints] feature) =
   -- Assign arbitrary initial cluster centres.
   let cluster_centres = map(fn [real,nfeatures] (int i) =>
-                              feature[i],
+                              unsafe feature[i],
                             iota(nclusters)) in
   -- Also assign points arbitrarily to clusters.
   let membership = map(% nclusters, iota(npoints)) in
