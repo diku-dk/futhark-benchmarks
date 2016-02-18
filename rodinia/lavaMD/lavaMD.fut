@@ -48,8 +48,8 @@ ComputKernel( real alpha
   map( fn [ {real,real,real,real}, PAR_PER_BOX] (int l) =>
         let { bl_x, bl_y, bl_bz, bl_number } = box_coefs[l] in
         let rA = rv[l] in
-        map (fn {real,real,real,real} (int i) => --( {real,real,real,real} rA_el ) =>
-                let {rai_v, rai_x, rai_y, rai_z} = rA[i] in -- rA_el
+        map (fn {real,real,real,real} ( {real,real,real,real} rA_el ) => --(int i) =>
+                let {rai_v, rai_x, rai_y, rai_z} = rA_el in -- rA[i] in
                 let psums =
                   map ( fn {real,real,real,real} (int k) =>
                           let pointer = if (k > 0)
@@ -64,6 +64,10 @@ ComputKernel( real alpha
                           let {_,_,_,first_j} = box_coefs[pointer] in
                           let rB = rv[first_j] in
 			              let qB = qv[first_j] in
+                          ---------------------------------------------------------
+                          -- Important note: rB and qB are invariant to the      --
+                          -- second map on rA => can be blocked in shared memory --
+                          ---------------------------------------------------------
                           let pres = 
                             map( fn {real,real,real,real} ( { {real,real,real,real}, real } tup) =>
                                     if ( invalid_neighb ) -- means no neighbor, should not accumulate!
@@ -93,7 +97,7 @@ ComputKernel( real alpha
                                 let {a1,a2,a3,a4} = a in let {b1,b2,b3,b4} = b in {a1+b1, a2+b2, a3+b3, a4+b4}
                          , {0.0,0.0,0.0,0.0}, psums)
                           
-            , iota(PAR_PER_BOX) ) --, rA )
+            , rA )  -- iota(PAR_PER_BOX) )
      , iota(number_boxes) )
 
 -----------------------
