@@ -57,10 +57,10 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
         zipWith(fn [{real,real,real,real,real},cols]
                   (int i, [real] row) =>
                     zipWith(fn {real,real,real,real,real} (int j, real Jc) =>
-                              let dN_k = image[indexN(rows,i),j] - Jc in
-                              let dS_k = image[indexS(rows,i),j] - Jc in
-                              let dW_k = image[i, indexW(cols,j)] - Jc in
-                              let dE_k = image[i, indexE(cols,j)] - Jc in
+                              let dN_k = unsafe image[indexN(rows,i),j] - Jc in
+                              let dS_k = unsafe image[indexS(rows,i),j] - Jc in
+                              let dW_k = unsafe image[i, indexW(cols,j)] - Jc in
+                              let dE_k = unsafe image[i, indexE(cols,j)] - Jc in
                               let G2 = (dN_k*dN_k + dS_k*dS_k +
                                         dW_k*dW_k + dE_k*dE_k) / (Jc*Jc) in
                               let L = (dN_k + dS_k + dW_k + dE_k) / Jc in
@@ -82,9 +82,9 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
                 (int i, [real] image_row, [real] c_row, [real] dN_row, [real] dS_row, [real] dW_row, [real] dE_row) =>
                 zipWith(fn real (int j, real pixel, real c_k, real dN_k, real dS_k, real dW_k, real dE_k) =>
                           let cN = c_k in
-                          let cS = c[indexS(rows, i), j] in
+                          let cS = unsafe c[indexS(rows, i), j] in
                           let cW = c_k in
-                          let cE = c[i, indexE(cols,j)] in
+                          let cE = unsafe c[i, indexE(cols,j)] in
                           let D = cN*dN_k + cS*dS_k + cW*dW_k + cE*dE_k in
                           pixel + 0.25 * lambda * D
                        , iota(cols), image_row, c_row, dN_row, dS_row, dW_row, dE_row),
