@@ -53,7 +53,7 @@ ComputKernel( real alpha
                 let psums =
                   map ( fn {real,real,real,real} (int k) =>
                           let pointer = if (k > 0)
-                                        then let {_,_,_,num} = box_nnghs[k-1, l] in num
+                                        then let {_,_,_,num} = unsafe box_nnghs[k-1, l] in num
                                         else l
                           in
                           let {pointer, invalid_neighb} = 
@@ -62,8 +62,8 @@ ComputKernel( real alpha
                             else {pointer, False}
                           in
                           let {_,_,_,first_j} = box_coefs[pointer] in
-                          let rB = rv[first_j] in
-			              let qB = qv[first_j] in
+                          let rB = unsafe rv[first_j] in
+                          let qB = unsafe qv[first_j] in
                           ---------------------------------------------------------
                           -- Important note: rB and qB are invariant to the      --
                           -- second map on rA => can be blocked in shared memory --
