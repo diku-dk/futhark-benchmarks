@@ -47,7 +47,8 @@ fun [[real]] single_iteration([[real,col],row] temp, [[real,col],row] power,
          map(fn real (int c) =>
                let delta =
                  (step / Cap) *
-                 (power[r,c] +
+               (power[r,c] +
+                unsafe
                   (if r == 0 && c == 0 then -- Corner 1
                      (temp[r,c+1] - temp[r,c]) / Rx +
                      (temp[r+1,c] - temp[r,c]) / Ry
