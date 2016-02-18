@@ -12,26 +12,26 @@
 -- notravis input @ data/kdd_cup.in
 -- output @ data/kdd_cup.out
 
-fun real euclid_dist_2([real,numdims] pt1, [real,numdims] pt2) =
-  reduce(+, 0.0, map(**2.0, zipWith(-, pt1, pt2)))
+fun f32 euclid_dist_2([f32,numdims] pt1, [f32,numdims] pt2) =
+  reduce(+, 0.0f32, map(**2.0f32, zipWith(-, pt1, pt2)))
 
-fun {int,real} closest_point({int,real} p1, {int,real} p2) =
+fun {int,f32} closest_point({int,f32} p1, {int,f32} p2) =
   let {_,d1} = p1 in
   let {_,d2} = p2 in
   if d1 < d2 then p1 else p2
 
-fun int find_nearest_point([[real,nfeatures],npoints] pts, [real,nfeatures] pt) =
+fun int find_nearest_point([[f32,nfeatures],npoints] pts, [f32,nfeatures] pt) =
   let {i, _} = reduce(closest_point,
                       {0, euclid_dist_2(pt,pts[0])},
                       zip(iota(npoints),
                           map(euclid_dist_2(pt), pts))) in
   i
 
-fun *[real,nfeatures] add_centroids([real,nfeatures] x, [real,nfeatures] y) =
+fun *[f32,nfeatures] add_centroids([f32,nfeatures] x, [f32,nfeatures] y) =
   zipWith(+, x, y)
 
-fun *[[real,nfeatures],nclusters]
-  centroids_of(int nclusters, [[real,nfeatures],npoints] feature, [int,npoints] membership) =
+fun *[[f32,nfeatures],nclusters]
+  centroids_of(int nclusters, [[f32,nfeatures],npoints] feature, [int,npoints] membership) =
   let features_in_clusters =
      streamRedPer(fn *[int,nclusters] ([int,nclusters] acc,
                                        [int,nclusters] x) =>
@@ -46,30 +46,30 @@ fun *[[real,nfeatures],nclusters]
                     acc,
                   replicate(nclusters,0), membership) in
   let cluster_sums =
-    streamRedPer(fn *[[real,nfeatures],nclusters] (*[[real,nfeatures],nclusters] acc,
-                                                   *[[real,nfeatures],nclusters] elem) =>
-                   zipWith(fn [real,nfeatures] ([real] x, [real] y) =>
+    streamRedPer(fn *[[f32,nfeatures],nclusters] (*[[f32,nfeatures],nclusters] acc,
+                                                  *[[f32,nfeatures],nclusters] elem) =>
+                   zipWith(fn [f32,nfeatures] ([f32] x, [f32] y) =>
                              add_centroids(x, y),
                            acc, elem),
-                 fn *[[real,nfeatures],nclusters] (int chunk,
-                                                   *[[real,nfeatures],nclusters] acc,
-                                                   [{[real,nfeatures], int}] inp) =>
+                 fn *[[f32,nfeatures],nclusters] (int chunk,
+                                                   *[[f32,nfeatures],nclusters] acc,
+                                                   [{[f32,nfeatures], int}] inp) =>
                    loop (acc) = for i < chunk do
                      let {point, c} = inp[i] in
-                     unsafe let acc[c] = add_centroids(acc[c], map(/real(features_in_clusters[c]), point)) in
+                     unsafe let acc[c] = add_centroids(acc[c], map(/f32(features_in_clusters[c]), point)) in
                      acc in
                    acc,
-                 replicate(nclusters,replicate(nfeatures,0.0)),
+                 replicate(nclusters,replicate(nfeatures,0.0f32)),
                  zip(feature, membership)) in
   cluster_sums
 
-fun {[[real]], [int], int}
+fun {[[f32]], [int], int}
   main(int threshold,
        int nclusters,
        int max_iterations,
-       [[real,nfeatures],npoints] feature) =
+       [[f32,nfeatures],npoints] feature) =
   -- Assign arbitrary initial cluster centres.
-  let cluster_centres = map(fn [real,nfeatures] (int i) =>
+  let cluster_centres = map(fn [f32,nfeatures] (int i) =>
                               unsafe feature[i],
                             iota(nclusters)) in
   -- Also assign points arbitrarily to clusters.
