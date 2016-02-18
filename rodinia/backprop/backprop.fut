@@ -40,7 +40,7 @@ bpnn_hidden_error([real,no] delta_o, [[real,no],nh] who, [real,nh] hidden) =
 fun {[[real,ndelta],nly], [[real,ndelta],nly]}
 bpnn_adjust_weights([real,ndelta] delta, [real,nlym1] ly, [[real,ndelta],nly] w, [[real,ndelta],nly] oldw) =
   let lyext = map( fn real (int k) =>
-                        if k < 1 then 1.0 else ly[k-1]
+                        if k < 1 then 1.0 else unsafe ly[k-1]
                  , iota(nly)) in
   unzip (
   map ( fn {[real],[real]} ([real] w_row, [real] oldw_row, real lyk) =>
@@ -183,7 +183,7 @@ fun [[real],m] consColumn([[real,n],m] mat, [real,m] col) =
     let np1 = n+1 in
     map ( fn [real] ([real] matrow, real colelm) =>
                 map ( fn real (int k) =>
-                        if k < 1 then colelm else matrow[k-1]
+                        if k < 1 then colelm else unsafe matrow[k-1]
                     , iota(n+1) )
         , zip(mat,col) )
 
