@@ -50,9 +50,9 @@ fun [int,cols] main(int cols, int rows) =
     loop (result) = for t < (rows-1) do
         map(fn int (int i) =>
                 let res = result[i] in
-                let res = if (i >  0)     then MIN(res, result[i-1]) else res
+                let res = if (i >  0)     then MIN(res, unsafe result[i-1]) else res
                 in
-                let res = if (i < cols-1) then MIN(res, result[i+1]) else res
+                let res = if (i < cols-1) then MIN(res, unsafe result[i+1]) else res
                 in
                 wall[t+1, i] + res 
            , iota(cols) )
