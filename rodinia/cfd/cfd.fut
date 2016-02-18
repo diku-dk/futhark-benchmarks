@@ -157,12 +157,12 @@ fun [[real,nel],5]
                 let normal_z = normals[2, j, i] in
                 let normal_len = sqrt(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z) in
                 if (0 <= nb) -- a legitimate neighbor
-                then let density_nb    = variables[VAR_DENSITY(),    nb] in
-				     let momentum_nb_x = variables[VAR_MOMENTUM()+0, nb] in
-                     let momentum_nb_y = variables[VAR_MOMENTUM()+1, nb] in
-                     let momentum_nb_z = variables[VAR_MOMENTUM()+2, nb] in
+                then let density_nb    = unsafe variables[VAR_DENSITY(),    nb] in
+		     let momentum_nb_x = unsafe variables[VAR_MOMENTUM()+0, nb] in
+                     let momentum_nb_y = unsafe variables[VAR_MOMENTUM()+1, nb] in
+                     let momentum_nb_z = unsafe variables[VAR_MOMENTUM()+2, nb] in
                      let momentum_nb   = {momentum_nb_x, momentum_nb_y, momentum_nb_z} in
-                     let density_energy_nb = variables[VAR_DENSITY_ENERGY(), nb] in
+                     let density_energy_nb = unsafe variables[VAR_DENSITY_ENERGY(), nb] in
                      let velocity_nb = compute_velocity(density_nb, momentum_nb) in
                      let speed_sqd_nb= compute_speed_sqd(velocity_nb) in
                      let pressure_nb = compute_pressure(density_nb, density_energy_nb, speed_sqd_nb) in
