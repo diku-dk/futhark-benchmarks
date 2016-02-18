@@ -64,8 +64,7 @@ updateParams( [real,numX] myX, [real,numY] myY, [real] myTimeline,
                   , myY )
   in  { myMuX, myVarX, myMuY, myVarY }
 
-fun *[real] tridagSeq( [real] a, *[real] b, [real] c, *[real] y ) =
-    let n     = size(0, a)            in
+fun *[real] tridagSeq( [real,n] a, *[real,n] b, [real,n] c, *[real,n] y ) =
     loop ({y, b}) =
       for 1 <= i < n do
         let beta = a[i] / b[i-1]      in
@@ -153,21 +152,21 @@ fun *[real] tridagPar( [real] a, *[real] b, [real] c, *[real] y ) =
 -- myMu,myVar,result : [[real,m],n]
 -- RETURN            : [[real,m],n]
 ------------------------------------------/
-fun *[[real]] explicitMethod( [[real]] myD,  [[real]] myDD,
-                              [[real]] myMu, [[real]] myVar, [[real]] result ) =
+fun *[[real,m],n] explicitMethod( [[real,3],m] myD,  [[real,3],m] myDD,
+                                  [[real,m],n] myMu, [[real,m],n] myVar,
+                                  [[real,m],n] result ) =
   -- 0 <= i < m AND 0 <= j < n
-  let m = size(0,myD) in
   map( fn [real] ( {[real],[real],[real]} tup ) =>
          let {mu_row, var_row, result_row} = tup in
          map( fn real ({[real], [real], real, real, int} tup) =>
                 let { dx, dxx, mu, var, j } = tup in
                 let c1 = if 0 < j
-                         then ( mu*dx[0] + 0.5*var*dxx[0] ) * result_row[j-1]
+                         then ( mu*dx[0] + 0.5*var*dxx[0] ) * unsafe result_row[j-1]
                          else 0.0 in
                 let c3 = if j < (m-1)
-                         then ( mu*dx[2] + 0.5*var*dxx[2] ) * result_row[j+1]
+                         then ( mu*dx[2] + 0.5*var*dxx[2] ) * unsafe result_row[j+1]
                          else 0.0 in
-                let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * result_row[j  ]
+                let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * unsafe result_row[j  ]
                 in  c1 + c2 + c3
             , zip( myD, myDD, mu_row, var_row, iota(m) )
             )
