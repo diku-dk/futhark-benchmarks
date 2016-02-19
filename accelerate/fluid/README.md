@@ -12,9 +12,13 @@ comparison is possible.
 
 ## Visuals
 
-Run `./fluid-make-images.sh <n steps> <output directory>`
+Run `./fluid-make-images.sh <n steps> <grid resolution> <output directory>` to
+make `<n steps>` images of size `<grid resolution> × <grid resolution>`.
 
-Python dependencies:
+After that, you can run `./fluid-images-to-video.sh <output directory>` to make
+a video with the filename `<output directory>.webm`.
+
+Python 3 dependencies:
 
   + numpy
   + pypng
