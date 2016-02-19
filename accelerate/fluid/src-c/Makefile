@@ -1,7 +1,7 @@
 .PHONY: clean
 
 CC=gcc
-CFLAGS=-O3 -Wall -Wextra -pedantic
+CFLAGS=-O3 -Wall -Wextra -pedantic -Werror
 GLFLAGS=-lglut -lGL -lGLU
 
 demo: demo.c solver.o
