@@ -25,20 +25,20 @@ def generate_input(n_steps=60, grid_resolution=64, time_step=0.1,
         V0 = np.zeros((size,))
         D0 = np.zeros((size,))
 
-        for k in range(3):
+        for k in range(size // 200):
             i0 = random.randrange(0, grid_resolution)
             j0 = random.randrange(0, grid_resolution)
-            for i in range(i0, i0 + random.randint(5, 15)):
-                for j in range(j0, j0 + random.randint(5, 15)):
+            for i in range(i0, i0 + random.randint(2, 4)):
+                for j in range(j0, j0 + random.randint(2, 4)):
                     t = index(i, j, grid_resolution)
                     if t >= size:
                         continue
                     D0[t] = 100.0 * random.random()
 
-        for i in range(20):
+        for i in range(size // 800):
             i = random.randrange(0, size) 
-            V0[i] = 50.0 * random.random()
-            U0[i] = 50.0 * random.random()
+            V0[i] = 500.0 * random.random()
+            U0[i] = 500.0 * random.random()
 
     print(U0.tolist())
     print(V0.tolist())
@@ -57,8 +57,17 @@ def main(args):
               file=sys.stderr)
         return 1
     n_steps = int(n_steps)
+
+    try:
+        grid_resolution = args[1]
+    except IndexError:
+        print('error: the grid resolution must be given as the second argument',
+              file=sys.stderr)
+        return 1
+    grid_resolution = int(grid_resolution)
     
-    generate_input(n_steps=n_steps)
+    generate_input(n_steps=n_steps,
+                   grid_resolution=grid_resolution)
     return 0
     
 
