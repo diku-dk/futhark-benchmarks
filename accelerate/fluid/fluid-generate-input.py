@@ -28,17 +28,17 @@ def generate_input(n_steps=60, grid_resolution=64, time_step=0.1,
         for k in range(3):
             i0 = random.randrange(0, grid_resolution)
             j0 = random.randrange(0, grid_resolution)
-            for i in range(i0, i0 + 7):
-                for j in range(j0, j0 + 7):
+            for i in range(i0, i0 + random.randint(5, 15)):
+                for j in range(j0, j0 + random.randint(5, 15)):
                     t = index(i, j, grid_resolution)
                     if t >= size:
                         continue
                     D0[t] = 100.0 * random.random()
 
-        for i in range(9):
+        for i in range(20):
             i = random.randrange(0, size) 
-            V0[i] = 100.0 * random.random()
-            U0[i] = 100.0 * random.random()
+            V0[i] = 50.0 * random.random()
+            U0[i] = 50.0 * random.random()
 
     print(U0.tolist())
     print(V0.tolist())
