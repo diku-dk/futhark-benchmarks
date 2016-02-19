@@ -206,7 +206,7 @@ static void get_from_UI ( float * d, float * u, float * v )
   ----------------------------------------------------------------------
 */
 
-static void key_func ( unsigned char key, int x, int y )
+static void key_func ( unsigned char key, __attribute__((unused)) int x, __attribute__((unused)) int y )
 {
 	switch ( key )
 	{
