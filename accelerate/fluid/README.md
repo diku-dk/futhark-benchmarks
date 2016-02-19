@@ -4,6 +4,24 @@ A port of Accelerate's version:
 https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/fluid
 
 
+## Other versions
+
+  + Accelerate's version:
+    https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/fluid/src-acc
+  + Gloss' Repa version:
+    https://github.com/benl23x5/gloss/tree/master/gloss-examples/raster/Fluid/src-repa
+  + Accelerate's C version:
+    https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/fluid/src-c
+    -- apparently from the original paper
+  + Gloss' alternative C version:
+    https://github.com/benl23x5/gloss/tree/master/gloss-examples/raster/Fluid/src-c
+    -- clearly based on the one in Accelerate's repository
+  + Our C version: the `src-c` directory -- based on the one in Accelerate's
+    repository, but with focus on batch processing instead of interactivity
+    (like Gloss' C version, but less extreme and hopefully easier to follow
+    wrt. the Futhark version)
+
+
 ## Measurements
 
 TODO: Make a non-interactive version of Accelerate's code, so that a basic speed
