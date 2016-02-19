@@ -7,7 +7,7 @@ GLFLAGS=-lglut -lGL -lGLU
 demo: demo.c solver.o
 	$(CC) $(CFLAGS) $(GLFLAGS) -o demo demo.c solver.o
 
-solver.o: solver.c
+solver.o: solver.c solver.h
 	$(CC) $(CFLAGS) -c solver.c
 
 clean:
