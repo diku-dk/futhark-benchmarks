@@ -39,7 +39,7 @@ def main(args):
     for image, i in zip(images, range(len(images))):
         filename = os.path.join(
             out_dir,
-            ('fluid_{:0' + str(n_digits(len(images))) + 'd}.png').format(i))
+            ('fluid_{:0' + str(max(8, n_digits(len(images)))) + 'd}.png').format(i))
         with open(filename, 'wb') as f:
             w = png.Writer(image.shape[1], image.shape[0], greyscale=True, bitdepth=8)
             w.write(f, image)
