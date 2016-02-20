@@ -6,9 +6,6 @@
 --
 -- This port stays true to the slightly weird indexing of the original C program
 -- (at least for now) to avoid indexing-related bugs.
---
--- This port does not perform quite like the original; a few bugs will have to
--- be ironed out.
 
 fun int n_elems_expected(int grid_resolution) =
   (grid_resolution + 2) * (grid_resolution + 2)
@@ -50,22 +47,19 @@ fun *[real, n_elems]
   let S[index(g + 1, g + 1, g)] = 0.5 * (S[index(g, g + 1, g)]
                                          + S[index(g + 1, g, g)]) in
   S
-  
+
 -- A stencil.
 fun *[real, n_elems]
   lin_solve([real, n_elems] S0,
-            [real, n_elems] S,
             int b,
             real a,
             real c,
             int grid_resolution) =
-  -- Not quite as it is in solver.c, which uses garbage x (here S00) in its
-  -- first run (here set to S0).  The thing in solver.c is probably a bug.
-  loop (S00 = copy(S)) = for k < 20 do
-    let S01 = for_each_cell_lin_solve(S0, S00, a, c, grid_resolution) in
-    let S02 = set_bnd(S01, b, grid_resolution) in
-    S02
-  in S00
+  loop (S1 = replicate(n_elems, 0.0)) = for k < 20 do
+    let T0 = for_each_cell_lin_solve(S0, S1, a, c, grid_resolution) in
+    let T1 = set_bnd(T0, b, grid_resolution) in
+    T1
+  in S1
 
 fun *[real, n_elems]
   for_each_cell_lin_solve([real, n_elems] S0,
@@ -74,8 +68,8 @@ fun *[real, n_elems]
                           real c,
                           int grid_resolution) =
     map(fn real (int k) =>
-          let i = k / (grid_resolution + 2) in
-          let j = k % (grid_resolution + 2) in
+          let i = k % (grid_resolution + 2) in
+          let j = k / (grid_resolution + 2) in
           -- This, and the other places where this pattern occurs, should go
           -- away.  The problem is that the original implementation depends on a
           -- "frame" of width 1 in all corners (see `n_elems_expected'), but it
@@ -83,7 +77,7 @@ fun *[real, n_elems]
           if (i == 0 || i == grid_resolution + 1 ||
               j == 0 || j == grid_resolution + 1)
           then -- Keep the old value for now.
-            S0[index(i, j, grid_resolution)] 
+            S0[index(i, j, grid_resolution)]
           else -- Find the new value.
             let middle = index(i, j, grid_resolution) in
             let left = index(i - 1, j, grid_resolution) in
@@ -93,7 +87,7 @@ fun *[real, n_elems]
             (S0[middle] + a * (S[left] + S[right] + S[top] + S[bottom]))
             / c,
         iota(n_elems_expected(grid_resolution)))
-  
+
 fun *[real, n_elems]
   diffuse([real, n_elems] S,
           int b,
@@ -102,7 +96,7 @@ fun *[real, n_elems]
           real time_step) =
   let a = (time_step * diffusion_rate_or_viscosity
            * real(grid_resolution) * real(grid_resolution)) in
-  lin_solve(S, S, b, a, 1.0 + 4.0 * a, grid_resolution)
+  lin_solve(S, b, a, 1.0 + 4.0 * a, grid_resolution)
 
 fun *[real, n_elems]
   advect([real, n_elems] S0,
@@ -124,12 +118,12 @@ fun *[real, n_elems]
                        int grid_resolution) =
     let g = grid_resolution in
     map(fn real (int k) =>
-          let i = k / (grid_resolution + 2) in
-          let j = k % (grid_resolution + 2) in
+          let i = k % (grid_resolution + 2) in
+          let j = k / (grid_resolution + 2) in
           if (i == 0 || i == grid_resolution + 1 ||
               j == 0 || j == grid_resolution + 1)
           then -- Keep the old value for now.
-            S0[index(i, j, grid_resolution)] 
+            S0[index(i, j, grid_resolution)]
           else -- Find the new value.
             let x = real(i) - time_step0 * U[index(i, j, g)] in
             let y = real(j) - time_step0 * V[index(i, j, g)] in
@@ -158,13 +152,11 @@ fun {*[real, n_elems],
   project([real, n_elems] U0,
           [real, n_elems] V0,
           int grid_resolution) =
-  let P0 = replicate(n_elems, 0.0) in
   let Div0 = for_each_cell_project_top(U0, V0, grid_resolution) in
   let Div1 = set_bnd(Div0, 0, grid_resolution) in
-  let P1 = set_bnd(P0, 0, grid_resolution) in
-  let P2 = lin_solve(Div1, P1, 0, 1.0, 4.0, grid_resolution) in
-  let U1 = for_each_cell_project_bottom_u(P2, U0, grid_resolution) in
-  let V1 = for_each_cell_project_bottom_v(P2, V0, grid_resolution) in
+  let P0 = lin_solve(Div1, 0, 1.0, 4.0, grid_resolution) in
+  let U1 = for_each_cell_project_bottom_u(P0, U0, grid_resolution) in
+  let V1 = for_each_cell_project_bottom_v(P0, V0, grid_resolution) in
   let U2 = set_bnd(U1, 1, grid_resolution) in
   let V2 = set_bnd(V1, 2, grid_resolution) in
   {U2, V2}
@@ -175,12 +167,12 @@ fun *[real, n_elems]
                             int grid_resolution) =
     let g = grid_resolution in
     map(fn real (int k) =>
-          let i = k / (grid_resolution + 2) in
-          let j = k % (grid_resolution + 2) in
+          let i = k % (grid_resolution + 2) in
+          let j = k / (grid_resolution + 2) in
           if (i == 0 || i == grid_resolution + 1 ||
               j == 0 || j == grid_resolution + 1)
           then -- Keep an old value for now.
-            U0[index(i, j, grid_resolution)] 
+            U0[index(i, j, grid_resolution)]
           else -- Find the new value.
             (-0.5 * (U0[index(i + 1, j, g)]
                      - U0[index(i - 1, j, g)]
@@ -194,12 +186,12 @@ fun *[real, n_elems]
                                  int grid_resolution) =
     let g = grid_resolution in
     map(fn real (int k) =>
-          let i = k / (grid_resolution + 2) in
-          let j = k % (grid_resolution + 2) in
+          let i = k % (grid_resolution + 2) in
+          let j = k / (grid_resolution + 2) in
           if (i == 0 || i == grid_resolution + 1 ||
               j == 0 || j == grid_resolution + 1)
           then -- Keep the old value for now.
-            P0[index(i, j, grid_resolution)] 
+            P0[index(i, j, grid_resolution)]
           else -- Find the new value.
             (U0[index(i, j, g)] - 0.5 * real(g)
              * (P0[index(i + 1, j, g)] - P0[index(i - 1, j, g)])),
@@ -211,12 +203,12 @@ fun *[real, n_elems]
                                  int grid_resolution) =
     let g = grid_resolution in
     map(fn real (int k) =>
-          let i = k / (grid_resolution + 2) in
-          let j = k % (grid_resolution + 2) in
+          let i = k % (grid_resolution + 2) in
+          let j = k / (grid_resolution + 2) in
           if (i == 0 || i == grid_resolution + 1 ||
               j == 0 || j == grid_resolution + 1)
           then -- Keep the old value for now.
-            P0[index(i, j, grid_resolution)] 
+            P0[index(i, j, grid_resolution)]
           else -- Find the new value.
             (V0[index(i, j, g)] - 0.5 * real(g)
              * (P0[index(i, j + 1, g)] - P0[index(i, j - 1, g)])),
@@ -229,11 +221,10 @@ fun *[real, n_elems]
             int grid_resolution,
             real diffusion_rate,
             real time_step) =
-  let D1 = D0 in
-  let D2 = diffuse(D1, 0, grid_resolution, diffusion_rate, time_step) in
-  let D3 = advect(D2, U0, V0, 0, grid_resolution, time_step) in
-  D3
-                                                                 
+  let D1 = diffuse(D0, 0, grid_resolution, diffusion_rate, time_step) in
+  let D2 = advect(D1, U0, V0, 0, grid_resolution, time_step) in
+  D2
+
 fun {*[real, n_elems],
      *[real, n_elems]}
   vel_step([real, n_elems] U0,
@@ -241,15 +232,13 @@ fun {*[real, n_elems],
            int grid_resolution,
            real viscosity,
            real time_step) =
-  let U1 = U0 in
-  let V1 = V0 in
-  let U2 = diffuse(U1, 1, grid_resolution, viscosity, time_step) in
-  let V2 = diffuse(V1, 2, grid_resolution, viscosity, time_step) in
-  let {U3, V3} = project(U2, V2, grid_resolution) in
-  let U4 = advect(U3, U3, V3, 1, grid_resolution, time_step) in
-  let V4 = advect(V3, U3, V3, 2, grid_resolution, time_step) in
-  let {U5, V5} = project(U4, V4, grid_resolution) in
-  {U5, V5}
+  let U1 = diffuse(U0, 1, grid_resolution, viscosity, time_step) in
+  let V1 = diffuse(V0, 2, grid_resolution, viscosity, time_step) in
+  let {U2, V2} = project(U1, V1, grid_resolution) in
+  let U3 = advect(U2, U2, V2, 1, grid_resolution, time_step) in
+  let V3 = advect(V2, U2, V2, 2, grid_resolution, time_step) in
+  let {U4, V4} = project(U3, V3, grid_resolution) in
+  {U4, V4}
 
 fun {*[real, n_elems],
      *[real, n_elems],
@@ -273,7 +262,7 @@ fun [[int, grid_resolution], grid_resolution]
         map (fn int (int j) =>
                int(255.0 * D[index(i, j, grid_resolution)]), ks),
         ks)
-  
+
 fun {[real, n_elems],
      [real, n_elems],
      [real, n_elems]}
