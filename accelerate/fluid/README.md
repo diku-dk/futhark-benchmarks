@@ -3,6 +3,9 @@
 A port of Accelerate's version:
 https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/fluid
 
+Original paper ("Real-Time Fluid Dynamics for Games"):
+http://www.dgp.toronto.edu/people/stam/reality/Research/pdf/GDC03.pdf
+
 
 ## Other versions
 
@@ -19,7 +22,7 @@ https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/fluid
   + Our C version: the `src-c` directory -- based on the one in Accelerate's
     repository, but with focus on batch processing instead of interactivity
     (like Gloss' C version, but less extreme and hopefully easier to follow
-    wrt. the Futhark version)
+    wrt. the related Futhark version)
 
 
 ## Measurements
