@@ -25,13 +25,21 @@
 -- are done twice.  The alternative would be to first calculate all the inner
 -- values, and then write the outer values afterwards.
 
+------------------------------------------------------------
+-- General functions.
+------------------------------------------------------------
+
 fun int n_elems_expected(int g) =
   (g + 2) * (g + 2)
 
 fun int index(int i, int j, int g) =
   i + (g + 2) * j
-       
--- A stencil.
+
+
+------------------------------------------------------------
+-- lin_solve.
+------------------------------------------------------------
+
 fun *[real, n_elems]
   lin_solve([real, n_elems] S0,
             int b,
@@ -59,6 +67,7 @@ fun real
                   real a,
                   real c,
                   int g) =
+  -- A stencil.
   let middle = index(i, j, g) in
   let left = index(i - 1, j, g) in
   let right = index(i + 1, j, g) in
@@ -104,7 +113,12 @@ fun real
        then -lin_solve_inner(i, g, S0, S1, a, c, g)
        else lin_solve_inner(i, g, S0, S1, a, c, g)
   else 0.0 -- This is not supposed to happen.
-  
+
+
+------------------------------------------------------------
+-- diffuse.
+------------------------------------------------------------
+
 fun *[real, n_elems]
   diffuse([real, n_elems] S,
           int b,
@@ -114,6 +128,11 @@ fun *[real, n_elems]
   let a = (time_step * diffusion_rate_or_viscosity
            * real(g) * real(g)) in
   lin_solve(S, b, a, 1.0 + 4.0 * a, g)
+
+
+------------------------------------------------------------
+-- advect.
+------------------------------------------------------------
 
 fun *[real, n_elems]
   advect([real, n_elems] S0,
@@ -144,7 +163,7 @@ fun real
                real time_step0) =
   let x = real(i) - time_step0 * U[index(i, j, g)] in
   let y = real(j) - time_step0 * V[index(i, j, g)] in
-  
+
   let x = if x < 0.5 then 0.5 else x in
   let x = if x > real(g) + 0.5 then real(g) + 0.5 else x in
   let i0 = int(x) in
@@ -201,7 +220,12 @@ fun real
        then -advect_inner(i, g, S0, U, V, g, time_step0)
        else advect_inner(i, g, S0, U, V, g, time_step0)
   else 0.0 -- This is not supposed to happen.
-  
+
+
+------------------------------------------------------------
+-- project.
+------------------------------------------------------------
+
 fun {*[real, n_elems],
      *[real, n_elems]}
   project([real, n_elems] U0,
@@ -266,7 +290,7 @@ fun real
   else if j == g + 1
   then project_top_inner(i, g, U0, V0, g)
   else 0.0 -- This is not supposed to happen.
-    
+
 fun *[real, n_elems]
   project_bottom([real, n_elems] P0,
                  [real, n_elems] S0,
@@ -341,6 +365,11 @@ fun real
        else project_bottom_inner(i, g, P0, S0, i0d, j0d, i1d, j1d, g)
   else 0.0 -- This is not supposed to happen.
 
+
+------------------------------------------------------------
+-- Step functions.
+------------------------------------------------------------
+
 fun *[real, n_elems]
   dens_step([real, n_elems] D0,
             [real, n_elems] U0,
@@ -380,6 +409,11 @@ fun {*[real, n_elems],
   let {U1, V1} = vel_step(U0, V0, g, viscosity, time_step) in
   let D1 = dens_step(D0, U0, V0, g, diffusion_rate, time_step) in
   {U1, V1, D1}
+
+
+------------------------------------------------------------
+-- Wrapper functions.
+------------------------------------------------------------
 
 fun [[int, g], g]
   draw_densities([real] D,
@@ -462,6 +496,11 @@ fun [[[int, g], g], n_steps]
                                     time_step, diffusion_rate, viscosity) in
   map(fn [[int, g], g]
         ([real, n_elems] D) => draw_densities(D, g), Ds)
+
+
+------------------------------------------------------------
+-- main.
+------------------------------------------------------------
 
 fun [[[int, g], g]]
   main([real, n_elems] U0,
