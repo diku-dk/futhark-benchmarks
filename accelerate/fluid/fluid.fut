@@ -48,6 +48,39 @@ fun *[real, n_elems]
                                          + S[index(g + 1, g, g)]) in
   S
 
+fun real
+  bound([real, n_elems] S,
+      int i,
+      int j,
+      int b,
+      int grid_resolution) =
+  let g = grid_resolution in
+  if i == 0 && j == 0
+  then 0.5 * (bound(S, 1, 0, b, g) + bound(S, 0, 1, b, g))
+  else if i == 0 && j == g + 1
+  then 0.5 * (bound(S, 1, g + 1, b, g) + bound(S, 0, g, b, g))
+  else if i == g + 1 && j == 0
+  then 0.5 * (bound(S, g, 0, b, g) + bound(S, g + 1, 1, b, g))
+  else if i == g + 1 && j == g + 1
+  then 0.5 * (bound(S, g, g + 1, b, g) + bound(S, g + 1, g, b, g))
+  else if i == 0
+  then if b == 1
+       then -S[index(1, j, g)]
+       else S[index(1, j, g)]
+  else if i == g + 1
+  then if b == 1
+       then -S[index(g, j, g)]
+       else S[index(g, j, g)]
+  else if j == 0
+  then if b == 2
+       then -S[index(i, 1, g)]
+       else S[index(i, 1, g)]
+  else if j == g + 1
+  then if b == 2
+       then -S[index(i, g, g)]
+       else S[index(i, g, g)]
+  else 0.0 -- This is not supposed to happen.
+       
 -- A stencil.
 fun *[real, n_elems]
   lin_solve([real, n_elems] S0,
@@ -56,37 +89,22 @@ fun *[real, n_elems]
             real c,
             int grid_resolution) =
   loop (S1 = replicate(n_elems, 0.0)) = for k < 20 do
-    let T0 = for_each_cell_lin_solve(S0, S1, a, c, grid_resolution) in
-    let T1 = set_bnd(T0, b, grid_resolution) in
-    T1
-  in S1
-
-fun *[real, n_elems]
-  for_each_cell_lin_solve([real, n_elems] S0,
-                          [real, n_elems] S,
-                          real a,
-                          real c,
-                          int grid_resolution) =
     map(fn real (int k) =>
           let i = k % (grid_resolution + 2) in
           let j = k / (grid_resolution + 2) in
-          -- This, and the other places where this pattern occurs, should go
-          -- away.  The problem is that the original implementation depends on a
-          -- "frame" of width 1 in all corners (see `n_elems_expected'), but it
-          -- can probably be circumvented.
-          if (i == 0 || i == grid_resolution + 1 ||
-              j == 0 || j == grid_resolution + 1)
-          then -- Keep the old value for now.
-            S0[index(i, j, grid_resolution)]
-          else -- Find the new value.
+          if (i >= 1 && i <= grid_resolution
+              && j >= 1 && j <= grid_resolution)
+          then
             let middle = index(i, j, grid_resolution) in
             let left = index(i - 1, j, grid_resolution) in
             let right = index(i + 1, j, grid_resolution) in
             let top = index(i, j - 1, grid_resolution) in
             let bottom = index(i, j + 1, grid_resolution) in
-            (S0[middle] + a * (S[left] + S[right] + S[top] + S[bottom]))
-            / c,
+            (S0[middle] + a * (S1[left] + S1[right] + S1[top] + S1[bottom])) / c
+          else
+            bound(S1, i, j, b, grid_resolution),
         iota(n_elems_expected(grid_resolution)))
+  in S1
 
 fun *[real, n_elems]
   diffuse([real, n_elems] S,
