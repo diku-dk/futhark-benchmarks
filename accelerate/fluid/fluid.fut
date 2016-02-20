@@ -64,38 +64,6 @@ fun *[real, n_elems]
   let S[index(g + 1, g + 1, g)] = 0.5 * (S[index(g, g + 1, g)]
                                          + S[index(g + 1, g, g)]) in
   S
-
-fun real
-  bound([real, n_elems] S,
-      int i,
-      int j,
-      int b,
-      int g) =
-  if i == 0 && j == 0
-  then 0.5 * (bound(S, 1, 0, b, g) + bound(S, 0, 1, b, g))
-  else if i == 0 && j == g + 1
-  then 0.5 * (bound(S, 1, g + 1, b, g) + bound(S, 0, g, b, g))
-  else if i == g + 1 && j == 0
-  then 0.5 * (bound(S, g, 0, b, g) + bound(S, g + 1, 1, b, g))
-  else if i == g + 1 && j == g + 1
-  then 0.5 * (bound(S, g, g + 1, b, g) + bound(S, g + 1, g, b, g))
-  else if i == 0
-  then if b == 1
-       then -S[index(1, j, g)]
-       else S[index(1, j, g)]
-  else if i == g + 1
-  then if b == 1
-       then -S[index(g, j, g)]
-       else S[index(g, j, g)]
-  else if j == 0
-  then if b == 2
-       then -S[index(i, 1, g)]
-       else S[index(i, 1, g)]
-  else if j == g + 1
-  then if b == 2
-       then -S[index(i, g, g)]
-       else S[index(i, g, g)]
-  else 0.0 -- This is not supposed to happen.
        
 -- A stencil.
 fun *[real, n_elems]
@@ -195,29 +163,78 @@ fun *[real, n_elems]
           if (i >= 1 && i <= g
               && j >= 1 && j <= g)
           then
-            let x = real(i) - time_step0 * U[index(i, j, g)] in
-            let y = real(j) - time_step0 * V[index(i, j, g)] in
-
-            let x = if x < 0.5 then 0.5 else x in
-            let x = if x > real(g) + 0.5 then real(g) + 0.5 else x in
-            let i0 = int(x) in
-            let i1 = i0 + 1 in
-
-            let y = if y < 0.5 then 0.5 else y in
-            let y = if y > real(g) + 0.5 then real(g) + 0.5 else y in
-            let j0 = int(y) in
-            let j1 = j0 + 1 in
-
-            let s1 = x - real(i0) in
-            let s0 = 1.0 - s1 in
-            let t1 = y - real(j0) in
-            let t0 = 1.0 - t1 in
-
-            (s0 * (t0 * S0[index(i0, j0, g)] + t1 * S0[index(i0, j1, g)])
-             + s1 * (t0 * S0[index(i1, j0, g)] + t1 * S0[index(i1, j1, g)]))
+            advect_inner(i, j, S0, U, V, g, time_step0)
           else
-            bound(S0, i, j, b, g),
+            advect_outer(i, j, S0, U, V, g, time_step0, b),
         iota(n_elems_expected(g)))
+
+fun real
+  advect_inner(int i,
+               int j,
+               [real, n_elems] S0,
+               [real, n_elems] U,
+               [real, n_elems] V,
+               int g,
+               real time_step0) =
+  let x = real(i) - time_step0 * U[index(i, j, g)] in
+  let y = real(j) - time_step0 * V[index(i, j, g)] in
+  
+  let x = if x < 0.5 then 0.5 else x in
+  let x = if x > real(g) + 0.5 then real(g) + 0.5 else x in
+  let i0 = int(x) in
+  let i1 = i0 + 1 in
+
+  let y = if y < 0.5 then 0.5 else y in
+  let y = if y > real(g) + 0.5 then real(g) + 0.5 else y in
+  let j0 = int(y) in
+  let j1 = j0 + 1 in
+
+  let s1 = x - real(i0) in
+  let s0 = 1.0 - s1 in
+  let t1 = y - real(j0) in
+  let t0 = 1.0 - t1 in
+
+  (s0 * (t0 * S0[index(i0, j0, g)] + t1 * S0[index(i0, j1, g)])
+   + s1 * (t0 * S0[index(i1, j0, g)] + t1 * S0[index(i1, j1, g)]))
+
+fun real
+  advect_outer(int i,
+               int j,
+               [real, n_elems] S0,
+               [real, n_elems] U,
+               [real, n_elems] V,
+               int g,
+               real time_step0,
+               int b) =
+  if i == 0 && j == 0
+  then 0.5 * (advect_outer(1, 0, S0, U, V, g, time_step0, b)
+              + advect_outer(0, 1, S0, U, V, g, time_step0, b))
+  else if i == 0 && j == g + 1
+  then 0.5 * (advect_outer(1, g + 1, S0, U, V, g, time_step0, b)
+              + advect_outer(0, g, S0, U, V, g, time_step0, b))
+  else if i == g + 1 && j == 0
+  then 0.5 * (advect_outer(g, 0, S0, U, V, g, time_step0, b)
+              + advect_outer(g + 1, 1, S0, U, V, g, time_step0, b))
+  else if i == g + 1 && j == g + 1
+  then 0.5 * (advect_outer(g, g + 1, S0, U, V, g, time_step0, b)
+              + advect_outer(g + 1, g, S0, U, V, g, time_step0, b))
+  else if i == 0
+  then if b == 1
+       then -advect_inner(1, j, S0, U, V, g, time_step0)
+       else advect_inner(1, j, S0, U, V, g, time_step0)
+  else if i == g + 1
+  then if b == 1
+       then -advect_inner(g, j, S0, U, V, g, time_step0)
+       else advect_inner(g, j, S0, U, V, g, time_step0)
+  else if j == 0
+  then if b == 2
+       then -advect_inner(i, 1, S0, U, V, g, time_step0)
+       else advect_inner(i, 1, S0, U, V, g, time_step0)
+  else if j == g + 1
+  then if b == 2
+       then -advect_inner(i, g, S0, U, V, g, time_step0)
+       else advect_inner(i, g, S0, U, V, g, time_step0)
+  else 0.0 -- This is not supposed to happen.
   
 fun {*[real, n_elems],
      *[real, n_elems]}
