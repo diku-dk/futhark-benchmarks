@@ -30,40 +30,6 @@ fun int n_elems_expected(int g) =
 
 fun int index(int i, int j, int g) =
   i + (g + 2) * j
-
-fun *[real, n_elems]
-  set_bnd(*[real, n_elems] S,
-          int b,
-          int g) =
-  -- This is probably parallelizable, but it's difficult with the existing
-  -- indexing scheme.
-  loop (S) = for 1 <= i < g + 1 do
-    let S[index(0, i, g)] =
-      if b == 1
-      then -S[index(1, i, g)]
-      else S[index(1, i, g)] in
-    let S[index(g + 1, i, g)] =
-      if b == 1
-      then -S[index(g, i, g)]
-      else S[index(g, i, g)] in
-    let S[index(i, 0, g)] =
-      if b == 2
-      then -S[index(i, 1, g)]
-      else S[index(i, 1, g)] in
-    let S[index(i, g + 1, g)] =
-      if b == 2
-      then -S[index(i, g, g)]
-      else S[index(i, g, g)] in
-    S in
-  let S[index(0, 0, g)] = 0.5 * (S[index(1, 0, g)]
-                                 + S[index(0, 1, g)]) in
-  let S[index(0, g + 1, g)] = 0.5 * (S[index(1, g + 1, g)]
-                                     + S[index(0, g, g)]) in
-  let S[index(g + 1, 0, g)] = 0.5 * (S[index(g, 0, g)] +
-                                     S[index(g + 1, 1, g)]) in
-  let S[index(g + 1, g + 1, g)] = 0.5 * (S[index(g, g + 1, g)]
-                                         + S[index(g + 1, g, g)]) in
-  S
        
 -- A stencil.
 fun *[real, n_elems]
@@ -241,64 +207,139 @@ fun {*[real, n_elems],
   project([real, n_elems] U0,
           [real, n_elems] V0,
           int g) =
-  let Div0 = for_each_cell_project_top(U0, V0, g) in
-  let Div1 = set_bnd(Div0, 0, g) in
-  let P0 = lin_solve(Div1, 0, 1.0, 4.0, g) in
-  let U1 = for_each_cell_project_bottom_u(P0, U0, g) in
-  let V1 = for_each_cell_project_bottom_v(P0, V0, g) in
-  let U2 = set_bnd(U1, 1, g) in
-  let V2 = set_bnd(V1, 2, g) in
-  {U2, V2}
+  let Div0 = project_top(U0, V0, g) in
+  let P0 = lin_solve(Div0, 0, 1.0, 4.0, g) in
+  let U1 = project_bottom(P0, U0, 1, 1, 0, -1, 0, g) in
+  let V1 = project_bottom(P0, V0, 2, 0, 1, 0, -1, g) in
+  {U1, V1}
 
 fun *[real, n_elems]
-  for_each_cell_project_top([real, n_elems] U0,
-                            [real, n_elems] V0,
-                            int g) =
-    map(fn real (int k) =>
-          let i = k % (g + 2) in
-          let j = k / (g + 2) in
-          if (i == 0 || i == g + 1 ||
-              j == 0 || j == g + 1)
-          then -- Keep an old value for now.
-            U0[index(i, j, g)]
-          else -- Find the new value.
-            (-0.5 * (U0[index(i + 1, j, g)]
-                     - U0[index(i - 1, j, g)]
-                     + V0[index(i, j + 1, g)]
-                     - V0[index(i, j - 1, g)]) / real(g)),
+  project_top([real, n_elems] U0,
+              [real, n_elems] V0,
+              int g) =
+  map(fn real (int k) =>
+        let i = k % (g + 2) in
+        let j = k / (g + 2) in
+        if (i >= 1 && i <= g
+            && j >= 1 && j <= g)
+        then
+          project_top_inner(i, j, U0, V0, g)
+        else
+          project_top_outer(i, j, U0, V0, g),
+      iota(n_elems_expected(g)))
+
+fun real
+  project_top_inner(int i,
+                    int j,
+                    [real, n_elems] U0,
+                    [real, n_elems] V0,
+                    int g) =
+  (-0.5 * (U0[index(i + 1, j, g)]
+           - U0[index(i - 1, j, g)]
+           + V0[index(i, j + 1, g)]
+           - V0[index(i, j - 1, g)]) / real(g))
+
+fun real
+  project_top_outer(int i,
+                    int j,
+                    [real, n_elems] U0,
+                    [real, n_elems] V0,
+                    int g) =
+  if i == 0 && j == 0
+  then 0.5 * (project_top_outer(1, 0, U0, V0, g)
+              + project_top_outer(0, 1, U0, V0, g))
+  else if i == 0 && j == g + 1
+  then 0.5 * (project_top_outer(1, g + 1, U0, V0, g)
+              + project_top_outer(0, g, U0, V0, g))
+  else if i == g + 1 && j == 0
+  then 0.5 * (project_top_outer(g, 0, U0, V0, g)
+              + project_top_outer(g + 1, 1, U0, V0, g))
+  else if i == g + 1 && j == g + 1
+  then 0.5 * (project_top_outer(g, g + 1, U0, V0, g)
+              + project_top_outer(g + 1, g, U0, V0, g))
+  else if i == 0
+  then project_top_inner(1, j, U0, V0, g)
+  else if i == g + 1
+  then project_top_inner(g, j, U0, V0, g)
+  else if j == 0
+  then project_top_inner(i, 1, U0, V0, g)
+  else if j == g + 1
+  then project_top_inner(i, g, U0, V0, g)
+  else 0.0 -- This is not supposed to happen.
+    
+fun *[real, n_elems]
+  project_bottom([real, n_elems] P0,
+                 [real, n_elems] S0,
+                 int b,
+                 int i0d,
+                 int j0d,
+                 int i1d,
+                 int j1d,
+                 int g) =
+  map(fn real (int k) =>
+        let i = k % (g + 2) in
+        let j = k / (g + 2) in
+        if (i >= 1 && i <= g
+            && j >= 1 && j <= g)
+        then
+          project_bottom_inner(i, j, P0, S0, i0d, j0d, i1d, j1d, g)
+        else
+          project_bottom_outer(i, j, P0, S0, i0d, j0d, i1d, j1d, g, b),
         iota(n_elems_expected(g)))
 
-fun *[real, n_elems]
-  for_each_cell_project_bottom_u([real, n_elems] P0,
-                                 [real, n_elems] U0,
-                                 int g) =
-    map(fn real (int k) =>
-          let i = k % (g + 2) in
-          let j = k / (g + 2) in
-          if (i == 0 || i == g + 1 ||
-              j == 0 || j == g + 1)
-          then -- Keep the old value for now.
-            P0[index(i, j, g)]
-          else -- Find the new value.
-            (U0[index(i, j, g)] - 0.5 * real(g)
-             * (P0[index(i + 1, j, g)] - P0[index(i - 1, j, g)])),
-        iota(n_elems_expected(g)))
+fun real
+  project_bottom_inner(int i,
+                       int j,
+                       [real, n_elems] P0,
+                       [real, n_elems] S0,
+                       int i0d,
+                       int j0d,
+                       int i1d,
+                       int j1d,
+                       int g) =
+  (S0[index(i, j, g)] - 0.5 * real(g)
+   * (P0[index(i + i0d, j + j0d, g)] - P0[index(i + i1d, j + j1d, g)]))
 
-fun *[real, n_elems]
-  for_each_cell_project_bottom_v([real, n_elems] P0,
-                                 [real, n_elems] V0,
-                                 int g) =
-    map(fn real (int k) =>
-          let i = k % (g + 2) in
-          let j = k / (g + 2) in
-          if (i == 0 || i == g + 1 ||
-              j == 0 || j == g + 1)
-          then -- Keep the old value for now.
-            P0[index(i, j, g)]
-          else -- Find the new value.
-            (V0[index(i, j, g)] - 0.5 * real(g)
-             * (P0[index(i, j + 1, g)] - P0[index(i, j - 1, g)])),
-        iota(n_elems_expected(g)))
+fun real
+  project_bottom_outer(int i,
+                       int j,
+                       [real, n_elems] P0,
+                       [real, n_elems] S0,
+                       int i0d,
+                       int j0d,
+                       int i1d,
+                       int j1d,
+                       int g,
+                       int b) =
+  if i == 0 && j == 0
+  then 0.5 * (project_bottom_outer(1, 0, P0, S0, i0d, j0d, i1d, j1d, g, b)
+              + project_bottom_outer(0, 1, P0, S0, i0d, j0d, i1d, j1d, g, b))
+  else if i == 0 && j == g + 1
+  then 0.5 * (project_bottom_outer(1, g + 1, P0, S0, i0d, j0d, i1d, j1d, g, b)
+              + project_bottom_outer(0, g, P0, S0, i0d, j0d, i1d, j1d, g, b))
+  else if i == g + 1 && j == 0
+  then 0.5 * (project_bottom_outer(g, 0, P0, S0, i0d, j0d, i1d, j1d, g, b)
+              + project_bottom_outer(g + 1, 1, P0, S0, i0d, j0d, i1d, j1d, g, b))
+  else if i == g + 1 && j == g + 1
+  then 0.5 * (project_bottom_outer(g, g + 1, P0, S0, i0d, j0d, i1d, j1d, g, b)
+              + project_bottom_outer(g + 1, g, P0, S0, i0d, j0d, i1d, j1d, g, b))
+  else if i == 0
+  then if b == 1
+       then -project_bottom_inner(1, j, P0, S0, i0d, j0d, i1d, j1d, g)
+       else project_bottom_inner(1, j, P0, S0, i0d, j0d, i1d, j1d, g)
+  else if i == g + 1
+  then if b == 1
+       then -project_bottom_inner(g, j, P0, S0, i0d, j0d, i1d, j1d, g)
+       else project_bottom_inner(g, j, P0, S0, i0d, j0d, i1d, j1d, g)
+  else if j == 0
+  then if b == 2
+       then -project_bottom_inner(i, 1, P0, S0, i0d, j0d, i1d, j1d, g)
+       else project_bottom_inner(i, 1, P0, S0, i0d, j0d, i1d, j1d, g)
+  else if j == g + 1
+  then if b == 2
+       then -project_bottom_inner(i, g, P0, S0, i0d, j0d, i1d, j1d, g)
+       else project_bottom_inner(i, g, P0, S0, i0d, j0d, i1d, j1d, g)
+  else 0.0 -- This is not supposed to happen.
 
 fun *[real, n_elems]
   dens_step([real, n_elems] D0,
