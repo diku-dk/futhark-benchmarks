@@ -10,11 +10,20 @@
 -- Variable naming conventions:
 --
 --   + `g`: The grid resolution.  The fluid simulation works on a square grid of
---          width and height `(g + 2)`.
+--          size `(g + 2) * (g + 2)`.
 --   + `S*`: Some array, purpose unknown.
 --   + `U*`: Array of horizontal forces.
 --   + `V*`: Array of vertical forces.
 --   + `D*`: Array of densities.
+--
+-- The simulation handles the 1-size border around the `g * g` grid differently
+-- from the inner content.  The border depends on the outermost inner values.
+-- The original C version writes this border after writing the inner values, by
+-- reading from the array.  We would like to handle this pattern with a single
+-- map, so the Futhark port instead *calculates* the outermost inner values when
+-- it needs them for the outer bound values, which means that a few calculations
+-- are done twice.  The alternative would be to first calculate all the inner
+-- values, and then write the outer values afterwards.
 
 fun int n_elems_expected(int g) =
   (g + 2) * (g + 2)
@@ -104,7 +113,7 @@ fun *[real, n_elems]
           then
             lin_solve_inner(i, j, S0, S1, a, c, g)
           else
-            bound(S1, i, j, b, g),
+            lin_solve_outer(i, j, S0, S1, a, c, g, b),
         iota(n_elems_expected(g)))
   in S1
 
@@ -122,6 +131,45 @@ fun real
   let top = index(i, j - 1, g) in
   let bottom = index(i, j + 1, g) in
   (S0[middle] + a * (S1[left] + S1[right] + S1[top] + S1[bottom])) / c
+
+fun real
+  lin_solve_outer(int i,
+                  int j,
+                  [real, n_elems] S0,
+                  [real, n_elems] S1,
+                  real a,
+                  real c,
+                  int g,
+                  int b) =
+  if i == 0 && j == 0
+  then 0.5 * (lin_solve_outer(1, 0, S0, S1, a, c, g, b)
+              + lin_solve_outer(0, 1, S0, S1, a, c, g, b))
+  else if i == 0 && j == g + 1
+  then 0.5 * (lin_solve_outer(1, g + 1, S0, S1, a, c, g, b)
+              + lin_solve_outer(0, g, S0, S1, a, c, g, b))
+  else if i == g + 1 && j == 0
+  then 0.5 * (lin_solve_outer(g, 0, S0, S1, a, c, g, b)
+              + lin_solve_outer(g + 1, 1, S0, S1, a, c, g, b))
+  else if i == g + 1 && j == g + 1
+  then 0.5 * (lin_solve_outer(g, g + 1, S0, S1, a, c, g, b)
+              + lin_solve_outer(g + 1, g, S0, S1, a, c, g, b))
+  else if i == 0
+  then if b == 1
+       then -lin_solve_inner(1, j, S0, S1, a, c, g)
+       else lin_solve_inner(1, j, S0, S1, a, c, g)
+  else if i == g + 1
+  then if b == 1
+       then -lin_solve_inner(g, j, S0, S1, a, c, g)
+       else lin_solve_inner(g, j, S0, S1, a, c, g)
+  else if j == 0
+  then if b == 2
+       then -lin_solve_inner(i, 1, S0, S1, a, c, g)
+       else lin_solve_inner(i, 1, S0, S1, a, c, g)
+  else if j == g + 1
+  then if b == 2
+       then -lin_solve_inner(i, g, S0, S1, a, c, g)
+       else lin_solve_inner(i, g, S0, S1, a, c, g)
+  else 0.0 -- This is not supposed to happen.
   
 fun *[real, n_elems]
   diffuse([real, n_elems] S,
