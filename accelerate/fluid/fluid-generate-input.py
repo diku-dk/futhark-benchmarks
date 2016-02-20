@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-import numpy as np
 import random
+import numpy as np
 
 
 def n_elems_expected(grid_resolution):
@@ -14,7 +14,7 @@ def index(i, j, grid_resolution):
 def generate_input(n_steps=60, grid_resolution=64, time_step=0.1,
                    diffusion_rate=0.00, viscosity=0.00,
                    initials=None):
-    
+
     size = n_elems_expected(grid_resolution)
 
     if initials is not None:
@@ -25,7 +25,7 @@ def generate_input(n_steps=60, grid_resolution=64, time_step=0.1,
         V0 = np.zeros((size,))
         D0 = np.zeros((size,))
 
-        for k in range(size // 200):
+        for k in range(size // 400):
             i0 = random.randrange(0, grid_resolution)
             j0 = random.randrange(0, grid_resolution)
             for i in range(i0, i0 + random.randint(2, 4)):
@@ -36,7 +36,7 @@ def generate_input(n_steps=60, grid_resolution=64, time_step=0.1,
                     D0[t] = 100.0 * random.random()
 
         for i in range(size // 800):
-            i = random.randrange(0, size) 
+            i = random.randrange(0, size)
             V0[i] = 500.0 * random.random()
             U0[i] = 500.0 * random.random()
 
@@ -65,11 +65,11 @@ def main(args):
               file=sys.stderr)
         return 1
     grid_resolution = int(grid_resolution)
-    
+
     generate_input(n_steps=n_steps,
                    grid_resolution=grid_resolution)
     return 0
-    
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
