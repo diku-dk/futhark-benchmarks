@@ -95,17 +95,27 @@ fun *[real, n_elems]
           if (i >= 1 && i <= grid_resolution
               && j >= 1 && j <= grid_resolution)
           then
-            let middle = index(i, j, grid_resolution) in
-            let left = index(i - 1, j, grid_resolution) in
-            let right = index(i + 1, j, grid_resolution) in
-            let top = index(i, j - 1, grid_resolution) in
-            let bottom = index(i, j + 1, grid_resolution) in
-            (S0[middle] + a * (S1[left] + S1[right] + S1[top] + S1[bottom])) / c
+            lin_solve_inner(i, j, S0, S1, a, c, grid_resolution)
           else
             bound(S1, i, j, b, grid_resolution),
         iota(n_elems_expected(grid_resolution)))
   in S1
 
+fun real
+  lin_solve_inner(int i,
+                  int j,
+                  [real, n_elems] S0,
+                  [real, n_elems] S1,
+                  real a,
+                  real c,
+                  int grid_resolution) =
+  let middle = index(i, j, grid_resolution) in
+  let left = index(i - 1, j, grid_resolution) in
+  let right = index(i + 1, j, grid_resolution) in
+  let top = index(i, j - 1, grid_resolution) in
+  let bottom = index(i, j + 1, grid_resolution) in
+  (S0[middle] + a * (S1[left] + S1[right] + S1[top] + S1[bottom])) / c
+  
 fun *[real, n_elems]
   diffuse([real, n_elems] S,
           int b,
