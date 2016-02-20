@@ -124,25 +124,13 @@ fun *[real, n_elems]
          int grid_resolution,
          real time_step) =
   let time_step0 = time_step * real(grid_resolution) in
-  let S1 = for_each_cell_advect(S0, U, V, time_step0, grid_resolution) in
-  let S2 = set_bnd(S1, b, grid_resolution) in
-  S2
-
-fun *[real, n_elems]
-  for_each_cell_advect([real, n_elems] S0,
-                       [real, n_elems] U,
-                       [real, n_elems] V,
-                       real time_step0,
-                       int grid_resolution) =
-    let g = grid_resolution in
+  let g = grid_resolution in
     map(fn real (int k) =>
           let i = k % (grid_resolution + 2) in
           let j = k / (grid_resolution + 2) in
-          if (i == 0 || i == grid_resolution + 1 ||
-              j == 0 || j == grid_resolution + 1)
-          then -- Keep the old value for now.
-            S0[index(i, j, grid_resolution)]
-          else -- Find the new value.
+          if (i >= 1 && i <= grid_resolution
+              && j >= 1 && j <= grid_resolution)
+          then
             let x = real(i) - time_step0 * U[index(i, j, g)] in
             let y = real(j) - time_step0 * V[index(i, j, g)] in
 
@@ -162,9 +150,11 @@ fun *[real, n_elems]
             let t0 = 1.0 - t1 in
 
             (s0 * (t0 * S0[index(i0, j0, g)] + t1 * S0[index(i0, j1, g)])
-             + s1 * (t0 * S0[index(i1, j0, g)] + t1 * S0[index(i1, j1, g)])),
+             + s1 * (t0 * S0[index(i1, j0, g)] + t1 * S0[index(i1, j1, g)]))
+          else
+            bound(S0, i, j, b, grid_resolution),
         iota(n_elems_expected(grid_resolution)))
-
+  
 fun {*[real, n_elems],
      *[real, n_elems]}
   project([real, n_elems] U0,
