@@ -7,7 +7,7 @@ import png
 import numpy as np
 
 
-def trunc(x):
+def clamp(x):
     if x > 255:
         return 255
     elif x < 0:
@@ -33,8 +33,8 @@ def main(args):
               file=sys.stderr)
         return 1
 
-    trunc_np = np.vectorize(trunc)
-    images = trunc_np(np.array(eval(sys.stdin.read().replace('i32', ''))))
+    clamp_np = np.vectorize(clamp)
+    images = clamp_np(np.array(eval(sys.stdin.read().replace('i32', ''))))
 
     for image, i in zip(images, range(len(images))):
         filename = os.path.join(

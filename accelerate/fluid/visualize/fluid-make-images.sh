@@ -28,13 +28,13 @@ if [ -d "$out_dir" ]; then
     exit 1
 fi
 
-if ! [ -e "fluid" ]; then
-    echo 'error: there is no fluid program' > /dev/stderr
+if ! [ -e "../src-futhark/fluid-visualize-densities" ]; then
+    echo 'error: there is no fluid-visualize-densities program' > /dev/stderr
     exit 1
 fi
 
-./fluid-generate-input.py "$n_steps" "$grid_resolution" \
-    | ./fluid \
+./fluid-generate-random-input.py "$n_steps" "$grid_resolution" \
+    | ../src-futhark/fluid-visualize-densities \
     | ./fluid-output-to-images.py "$out_dir"
 
 exit 0
