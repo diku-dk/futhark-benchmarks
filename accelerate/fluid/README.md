@@ -25,13 +25,20 @@ http://www.dgp.toronto.edu/people/stam/reality/Research/pdf/GDC03.pdf
     wrt. the related Futhark version)
 
 
+## The futhark code
+
+Please read `src-futhark/fluid-lib.fut`.  It describes the major choices.
+
+
 ## Measurements
 
 TODO: Make a non-interactive version of Accelerate's code, so that a basic speed
-comparison is possible.
+comparison is possible.  (This is almost done.)
 
 
-## Visuals
+## Visualizations
+
+Go to the `visualize` directory.
 
 Run `./fluid-make-images.sh <n steps> <grid resolution> <output directory>` to
 make `<n steps>` images of size `<grid resolution> × <grid resolution>`.
