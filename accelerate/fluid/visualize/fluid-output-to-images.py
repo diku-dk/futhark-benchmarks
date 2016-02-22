@@ -2,12 +2,12 @@
 
 import sys
 import os
+import math
 import png
 import numpy as np
-import math
 
 
-def trunc(x):
+def clamp(x):
     if x > 255:
         return 255
     elif x < 0:
@@ -25,16 +25,16 @@ def main(args):
         print('error: output directory must be given as the first argument',
               file=sys.stderr)
         return 1
-    
+
     try:
         os.makedirs(out_dir)
     except IOError:
         print('error: output directory already exists',
               file=sys.stderr)
         return 1
-    
-    trunc_np = np.vectorize(trunc)
-    images = trunc_np(np.array(eval(sys.stdin.read().replace('i32', ''))))
+
+    clamp_np = np.vectorize(clamp)
+    images = clamp_np(np.array(eval(sys.stdin.read().replace('i32', ''))))
 
     for image, i in zip(images, range(len(images))):
         filename = os.path.join(

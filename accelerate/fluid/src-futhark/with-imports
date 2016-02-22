@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+import sys
+import os.path
+import re
+import tempfile
+import subprocess
+
+def replace_imports(filename):
+    with open(filename, 'r') as f:
+        d = f.read()
+    d = re.sub(r'^--!import +(.+?) *$',
+               lambda m: replace_imports(m.group(1) + '.fut'),
+               d,
+               flags=re.MULTILINE)
+    return d
+
+def main():
+    args = sys.argv[1:]
+    if (args[0].startswith('futhark-')
+        and os.path.isfile(args[1])
+        and len(args) == 2):
+        program = args[0]
+        filename_in = args[1]
+        filename_compiled = re.sub(r'.fut$', '', filename_in)
+        new_text = replace_imports(filename_in)
+        with tempfile.NamedTemporaryFile() as tf:
+            with open(tf.name, 'w') as f:
+                f.write(new_text)
+            try:
+                subprocess.check_call([program, '-o', filename_compiled, tf.name])
+                return 0
+            except subprocess.CalledProcessError:
+                return 1
+    else:
+        print('error: wrong arguments', file=sys.stderr)
+        return 1
+
+if __name__ == '__main__':
+    sys.exit(main())
