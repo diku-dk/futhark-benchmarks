@@ -26,10 +26,12 @@ main(   int resultsCount, f32 lat, f32 lng,
     for i < resultsCount do
         let minLoc = i in
         let {minDist, minLoc} = 
-            reduce( fn {f32, int} ({f32,int} di1, {f32,int} di2) =>
-                        let{ {d1, i1}, {d2,i2} } = { di1, di2 } in
-                        if(d1 <= d2) then {d1, i1} else {d2, i2}
-                  , {infty(), 0}, zip(distances, iota(numRecords)) )
+            reduceComm( fn {f32, int} ({f32,int} di1, {f32,int} di2) =>
+                            let{ {d1, i1}, {d2,i2} } = { di1, di2 } in
+                            if(d1 < d2) then {d1, i1} 
+                            else if (d2 < d1) then {d2, i2}
+                                 else if (i1 < i2) then {d1, i1} else {d2, i2}
+                      , {infty(), 0}, zip(distances, iota(numRecords)) )
         in
         let distances[minLoc] = infty() in
         let results_ind[i] = minLoc     in
