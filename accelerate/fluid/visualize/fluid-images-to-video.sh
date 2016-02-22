@@ -16,7 +16,8 @@ if ! [ -d "$images_dir" ]; then
     exit 1
 fi
 
-ffmpeg -i "$images_dir/fluid_%08d.png" -r 25 \
+ffmpeg -hide_banner \
+       -i "$images_dir/fluid_%08d.png" -r 25 -n \
        "$(echo "$images_dir" | sed 's/\/$//').webm"
 
 exit 0
