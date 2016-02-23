@@ -10,7 +10,7 @@ def replace_imports(filename):
     with open(filename, 'r') as f:
         d = f.read()
     d = re.sub(r'^--!import +(.+?) *$',
-               lambda m: replace_imports(m.group(1) + '.fut'),
+               lambda m: replace_imports(m.group(1) + '.fut.module'),
                d,
                flags=re.MULTILINE)
     return d
