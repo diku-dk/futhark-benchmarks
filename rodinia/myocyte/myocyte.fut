@@ -1066,7 +1066,7 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
   -- initialize return and loop-variant params
   let failed = False in
   loop({failed, y_km1}) = for km1 < xmax do
-    if (failed) then {failed, y_km1}
+    if (failed) then {failed, reshape((EQUS), y_km1)}
     else
     -- reinitialize variables
     let h          = h_init in
@@ -1132,8 +1132,8 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
                    then 0.5f32 * h else h
       in {h,y_k,breakLoop,scale_fina}
     in
-    if breakLoop then {False, y_k}
-                 else {True,  y_k}
+    if breakLoop then {False, reshape((EQUS), y_k)}
+                 else {True,  reshape((EQUS), y_k)}
   in {!failed,y_km1}
 
 -----------------------
