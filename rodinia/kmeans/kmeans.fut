@@ -32,31 +32,36 @@ fun *[f32,nfeatures] add_centroids([f32,nfeatures] x, [f32,nfeatures] y) =
 
 fun *[[f32,nfeatures],nclusters]
   centroids_of(int nclusters, [[f32,nfeatures],npoints] feature, [int,npoints] membership) =
-  let cluster_sums_and_sizes =
-    streamRedPer(fn *[{*[f32,nfeatures],int},nclusters] (*[{[f32,nfeatures],int},nclusters] acc,
-                                                        *[{[f32,nfeatures],int},nclusters] elem) =>
-                   zipWith(fn {*[f32,nfeatures],int} ({[f32], int} x, {[f32], int} y) =>
-                             let {x_sum, x_n} = x in
-                             let {y_sum, y_n} = y in
-                             {add_centroids(x_sum, y_sum),
-                              x_n + y_n},
+  let features_in_clusters =
+     streamRedPer(fn *[int,nclusters] ([int,nclusters] acc,
+                                       [int,nclusters] x) =>
+                    zipWith(+, acc, x),
+                  fn [int,nclusters] (int chunk,
+                                      *[int,ncluster] acc,
+                                      [int] inp) =>
+                    loop (acc) = for i < chunk do
+                      let c = inp[i] in
+                      unsafe let acc[c] = acc[c] + 1 in
+                      acc in
+                    acc,
+                  replicate(nclusters,0), membership) in
+  let cluster_sums =
+    streamRedPer(fn *[[f32,nfeatures],nclusters] (*[[f32,nfeatures],nclusters] acc,
+                                                  *[[f32,nfeatures],nclusters] elem) =>
+                   zipWith(fn [f32,nfeatures] ([f32] x, [f32] y) =>
+                             add_centroids(x, y),
                            acc, elem),
-                   fn *[{[f32,nfeatures],int},nclusters] (int chunk,
-                                                          *[{*[f32,nfeatures],int},nclusters] acc,
-                                                          [{[f32,nfeatures], int}] inp) =>
-                     loop (acc) = for i < chunk do
-                       let {point, c} = inp[i] in
-                       let {centre, n} = unsafe acc[c] in
-                       unsafe let acc[c] = {add_centroids(centre, point), n+1} in
-                       acc in
-                     acc,
-                 replicate(nclusters,{replicate(nfeatures,0.0f32),0}),
+                 fn *[[f32,nfeatures],nclusters] (int chunk,
+                                                   *[[f32,nfeatures],nclusters] acc,
+                                                   [{[f32,nfeatures], int}] inp) =>
+                   loop (acc) = for i < chunk do
+                     let {point, c} = inp[i] in
+                     unsafe let acc[c] = add_centroids(acc[c], map(/f32(features_in_clusters[c]), point)) in
+                     acc in
+                   acc,
+                 replicate(nclusters,replicate(nfeatures,0.0f32)),
                  zip(feature, membership)) in
-  let cluster_centres = map(fn [f32,nfeatures] ({[f32,nfeatures],int} cluster) =>
-                              let {sum, n} = cluster in
-                              map(/f32(n), sum),
-                            cluster_sums_and_sizes) in
-  cluster_centres
+  cluster_sums
 
 fun {[[f32]], [int], int}
   main(int threshold,
