@@ -99,18 +99,28 @@ fun f32
                   f32 c,
                   i32 b) =
   if i == 0 && j == 0
-  then 0.5f32 * (lin_solve_outer(1, 0, S0, S1, a, c, b)
-              + lin_solve_outer(0, 1, S0, S1, a, c, b))
+  then 0.5f32 * (lin_solve_outer_base(1, 0, S0, S1, a, c, b)
+              + lin_solve_outer_base(0, 1, S0, S1, a, c, b))
   else if i == 0 && j == g - 1
-  then 0.5f32 * (lin_solve_outer(1, g - 1, S0, S1, a, c, b)
-              + lin_solve_outer(0, g - 2, S0, S1, a, c, b))
+  then 0.5f32 * (lin_solve_outer_base(1, g - 1, S0, S1, a, c, b)
+              + lin_solve_outer_base(0, g - 2, S0, S1, a, c, b))
   else if i == g - 1 && j == 0
-  then 0.5f32 * (lin_solve_outer(g - 2, 0, S0, S1, a, c, b)
-              + lin_solve_outer(g - 1, 1, S0, S1, a, c, b))
+  then 0.5f32 * (lin_solve_outer_base(g - 2, 0, S0, S1, a, c, b)
+              + lin_solve_outer_base(g - 1, 1, S0, S1, a, c, b))
   else if i == g - 1 && j == g - 1
-  then 0.5f32 * (lin_solve_outer(g - 2, g - 1, S0, S1, a, c, b)
-              + lin_solve_outer(g - 1, g - 2, S0, S1, a, c, b))
-  else if i == 0
+  then 0.5f32 * (lin_solve_outer_base(g - 2, g - 1, S0, S1, a, c, b)
+              + lin_solve_outer_base(g - 1, g - 2, S0, S1, a, c, b))
+  else lin_solve_outer_base(i, j, S0, S1, a, c, b)
+
+fun f32
+  lin_solve_outer_base(i32 i,
+                       i32 j,
+                       [[f32, g], g] S0,
+                       [[f32, g], g] S1,
+                       f32 a,
+                       f32 c,
+                       i32 b) =
+  if i == 0
   then if b == 1
        then -lin_solve_inner(1, j, S0, S1, a, c)
        else lin_solve_inner(1, j, S0, S1, a, c)
@@ -201,18 +211,28 @@ fun f32
                f32 time_step0,
                i32 b) =
   if i == 0 && j == 0
-  then 0.5f32 * (advect_outer(1, 0, S0, U, V, time_step0, b)
-              + advect_outer(0, 1, S0, U, V, time_step0, b))
+  then 0.5f32 * (advect_outer_base(1, 0, S0, U, V, time_step0, b)
+              + advect_outer_base(0, 1, S0, U, V, time_step0, b))
   else if i == 0 && j == g - 1
-  then 0.5f32 * (advect_outer(1, g - 1, S0, U, V, time_step0, b)
-              + advect_outer(0, g - 2, S0, U, V, time_step0, b))
+  then 0.5f32 * (advect_outer_base(1, g - 1, S0, U, V, time_step0, b)
+              + advect_outer_base(0, g - 2, S0, U, V, time_step0, b))
   else if i == g - 1 && j == 0
-  then 0.5f32 * (advect_outer(g - 2, 0, S0, U, V, time_step0, b)
-              + advect_outer(g - 1, 1, S0, U, V, time_step0, b))
+  then 0.5f32 * (advect_outer_base(g - 2, 0, S0, U, V, time_step0, b)
+              + advect_outer_base(g - 1, 1, S0, U, V, time_step0, b))
   else if i == g - 1 && j == g - 1
-  then 0.5f32 * (advect_outer(g - 2, g - 1, S0, U, V, time_step0, b)
-              + advect_outer(g - 1, g - 2, S0, U, V, time_step0, b))
-  else if i == 0
+  then 0.5f32 * (advect_outer_base(g - 2, g - 1, S0, U, V, time_step0, b)
+              + advect_outer_base(g - 1, g - 2, S0, U, V, time_step0, b))
+  else advect_outer_base(i, j, S0, U, V, time_step0, b)
+
+fun f32
+  advect_outer_base(i32 i,
+                    i32 j,
+                    [[f32, g], g] S0,
+                    [[f32, g], g] U,
+                    [[f32, g], g] V,
+                    f32 time_step0,
+                    i32 b) =
+  if i == 0
   then if b == 1
        then -advect_inner(1, j, S0, U, V, time_step0)
        else advect_inner(1, j, S0, U, V, time_step0)
@@ -274,18 +294,25 @@ fun f32
                     [[f32, g], g] U0,
                     [[f32, g], g] V0) =
   if i == 0 && j == 0
-  then 0.5f32 * (project_top_outer(1, 0, U0, V0)
-              + project_top_outer(0, 1, U0, V0))
+  then 0.5f32 * (project_top_outer_base(1, 0, U0, V0)
+              + project_top_outer_base(0, 1, U0, V0))
   else if i == 0 && j == g - 1
-  then 0.5f32 * (project_top_outer(1, g - 1, U0, V0)
-              + project_top_outer(0, g - 2, U0, V0))
+  then 0.5f32 * (project_top_outer_base(1, g - 1, U0, V0)
+              + project_top_outer_base(0, g - 2, U0, V0))
   else if i == g - 1 && j == 0
-  then 0.5f32 * (project_top_outer(g - 2, 0, U0, V0)
-              + project_top_outer(g - 1, 1, U0, V0))
+  then 0.5f32 * (project_top_outer_base(g - 2, 0, U0, V0)
+              + project_top_outer_base(g - 1, 1, U0, V0))
   else if i == g - 1 && j == g - 1
-  then 0.5f32 * (project_top_outer(g - 2, g - 1, U0, V0)
-              + project_top_outer(g - 1, g - 2, U0, V0))
-  else if i == 0
+  then 0.5f32 * (project_top_outer_base(g - 2, g - 1, U0, V0)
+              + project_top_outer_base(g - 1, g - 2, U0, V0))
+  else project_top_outer_base(i, j, U0, V0)
+
+fun f32
+  project_top_outer_base(i32 i,
+                         i32 j,
+                         [[f32, g], g] U0,
+                         [[f32, g], g] V0) =
+  if i == 0
   then project_top_inner(1, j, U0, V0)
   else if i == g - 1
   then project_top_inner(g - 2, j, U0, V0)
@@ -337,18 +364,30 @@ fun f32
                        i32 j1d,
                        i32 b) =
   if i == 0 && j == 0
-  then 0.5f32 * (project_bottom_outer(1, 0, P0, S0, i0d, j0d, i1d, j1d, b)
-              + project_bottom_outer(0, 1, P0, S0, i0d, j0d, i1d, j1d, b))
+  then 0.5f32 * (project_bottom_outer_base(1, 0, P0, S0, i0d, j0d, i1d, j1d, b)
+              + project_bottom_outer_base(0, 1, P0, S0, i0d, j0d, i1d, j1d, b))
   else if i == 0 && j == g - 1
-  then 0.5f32 * (project_bottom_outer(1, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
-              + project_bottom_outer(0, g - 2, P0, S0, i0d, j0d, i1d, j1d, b))
+  then 0.5f32 * (project_bottom_outer_base(1, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
+              + project_bottom_outer_base(0, g - 2, P0, S0, i0d, j0d, i1d, j1d, b))
   else if i == g - 1 && j == 0
-  then 0.5f32 * (project_bottom_outer(g - 2, 0, P0, S0, i0d, j0d, i1d, j1d, b)
-              + project_bottom_outer(g - 1, 1, P0, S0, i0d, j0d, i1d, j1d, b))
+  then 0.5f32 * (project_bottom_outer_base(g - 2, 0, P0, S0, i0d, j0d, i1d, j1d, b)
+              + project_bottom_outer_base(g - 1, 1, P0, S0, i0d, j0d, i1d, j1d, b))
   else if i == g - 1 && j == g - 1
-  then 0.5f32 * (project_bottom_outer(g - 2, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
-              + project_bottom_outer(g - 1, g - 2, P0, S0, i0d, j0d, i1d, j1d, b))
-  else if i == 0
+  then 0.5f32 * (project_bottom_outer_base(g - 2, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
+              + project_bottom_outer_base(g - 1, g - 2, P0, S0, i0d, j0d, i1d, j1d, b))
+  else project_bottom_outer_base(i, j, P0, S0, i0d, j0d, i1d, j1d, b)
+
+fun f32
+  project_bottom_outer_base(i32 i,
+                            i32 j,
+                            [[f32, g], g] P0,
+                            [[f32, g], g] S0,
+                            i32 i0d,
+                            i32 j0d,
+                            i32 i1d,
+                            i32 j1d,
+                            i32 b) =
+  if i == 0
   then if b == 1
        then -project_bottom_inner(1, j, P0, S0, i0d, j0d, i1d, j1d)
        else project_bottom_inner(1, j, P0, S0, i0d, j0d, i1d, j1d)
