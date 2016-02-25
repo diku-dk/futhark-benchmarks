@@ -1,3 +1,12 @@
+-- Rodinia's Myocyte benchmark translated to Futhark.
+-- Code and comments based on
+-- https://github.com/kkushagra/rodinia/blob/master/openmp/myocyte/
+--
+-- ==
+--
+-- notravis input @ data/small.in
+-- output @ data/small.out
+
 ----------------------
 ----- Ecc MODULE -----
 ----------------------
@@ -268,9 +277,9 @@ fun *[f32,EQUS] ecc( f32 timeinst, [f32,EQUS] initvalu, int initvalu_offset,
                                    0.3f32*exp32(-2.535e-7f32*initvalu_39)/(1.0f32+exp32(-0.1f32*(initvalu_39+32.0f32))) 
                                  }
                             else { 0.135f32*exp32((80.0f32+initvalu_39)/-6.8f32),
-                                   3.56f32*exp32(0.079f32*initvalu_39)+3.1e5f32*exp32(0.35f32*initvalu_39),
                                    ( -127140.0f32*exp32(0.2444f32*initvalu_39) - 3.474e-5f32*exp32(-0.04391f32*initvalu_39) ) *
                                         (initvalu_39+37.78f32)/(1.0f32+exp32(0.311f32*(initvalu_39+79.23f32))),
+                                   3.56f32*exp32(0.079f32*initvalu_39)+3.1e5f32*exp32(0.35f32*initvalu_39),
                                    0.1212f32 * exp32(-0.01052f32*initvalu_39) / (1.0f32 + exp32(-0.1378f32 * (initvalu_39+40.14f32)))
                                  }
   in
@@ -788,11 +797,13 @@ fun *[f32,EQUS] fin(    [f32,EQUS] initvalu, int initvalu_offset_ecc,
 ----- Master MODULE -----
 -------------------------
 
-fun f32 inf() = 1.0f32 / 0.0f32
-fun f32 nan() = inf() / inf()
+fun f32  inf() = 1.0f32 / 0.0f32
+fun f32 minf() = 0.0f32 - inf()
+fun f32  nan() = inf()  / inf()
+fun f32 mnan() = 0.0f32 - nan()
 
-fun bool isnan(f32 x) = x == nan()
-fun bool isinf(f32 x) = x == inf()
+fun bool isnan(f32 x) = pow(x,2.0f32) != (x*x) -- ( x == nan() || x == mnan() )
+fun bool isinf(f32 x) = ( x == inf() || x == minf() )
 
 fun *[f32,EQUS] master( f32 timeinst, [f32,EQUS] initvalu, [f32,PARS] parameter ) =
   let finavalu = replicate(EQUS, 0.0f32) in
@@ -817,9 +828,11 @@ fun *[f32,EQUS] master( f32 timeinst, [f32,EQUS] initvalu, [f32,PARS] parameter 
         let {res_val, finavalu} = cam(  timeinst, initvalu, initvalu_offset, parameter,
                                         parameter_offset, finavalu, inp_val )
         in
-        if      (ii == 0) then { res_val, JCaSL,   JCaCyt,  finavalu }
-        else if (ii == 1) then { JCaDyad, res_val, JCaCyt,  finavalu }
-        else                   { JCaDyad, JCaSL,   res_val, finavalu }
+        let { JCaDyad, JCaSL, JCaCyt } = 
+            if      (ii == 0) then { res_val, JCaSL,   JCaCyt }
+            else if (ii == 1) then { JCaDyad, res_val, JCaCyt }
+            else                   { JCaDyad, JCaSL,   res_val}
+        in  { JCaDyad, JCaSL, JCaCyt, finavalu}
   in
   -- final adjustments
   let finavalu = fin(  initvalu, initvalu_offset_ecc, 46, 61, 76, 
@@ -1023,6 +1036,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
   -- end loop --
   --------------
   in
+--  { finavalu_temp[5], replicate(EQUS, 0.0f32) } 
   let finavalu = map( fn f32 (int i) =>
                         initvalu[i] +  h * (c_1_11 * (finavalu_temp[0,i] + finavalu_temp[10,i]) +
                             c6 * finavalu_temp[5,i] + c_7_8 * (finavalu_temp[6,i] + finavalu_temp[7,i]) +
@@ -1065,38 +1079,36 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
   in
   -- initialize return and loop-variant params
   let failed = False in
-  loop({failed, y_km1}) = for km1 < xmax do
-    if (failed) then {failed, reshape((EQUS), y_km1)}
-    else
+  let km1    = 0     in
+  loop({km1, failed, y_km1}) = while ( (!failed) && (km1 < xmax) ) do -- for km1 < xmax do
     -- reinitialize variables
     let h          = h_init in
     let scale_fina = 1.0f32 in
-    let breakLoop  = False  in
-
     let y_k = replicate(EQUS, 0.0f32) in
     
     -- make attempts to minimize error
-    loop({h,y_k,breakLoop,scale_fina}) = for j < ATTEMPTS() do
-      if (breakLoop)
-      then {h,y_k,breakLoop,scale_fina}
-      else
-
+    let breakLoop  = False  in
+    let j = 0 in
+    loop({j,h,y_k,breakLoop,scale_fina}) = while ( (!breakLoop) && (j < ATTEMPTS()) ) do
       -- REINITIALIZE ALL VARIABLES
       let error   = 0 in
       let outside = 0 in
       let scale_min = MAX_SCALE_FACTOR() in
 
       -- EVALUATE ALL EQUATIONS
-      let {y_k, err} = embedded_fehlberg_7_8( f32(km1), h, y_km1, params) in
+      let {y_k, err} = reshape( (EQUS), embedded_fehlberg_7_8( f32(km1), h, y_km1, params) ) in
       
       -- IF THERE WAS NO ERROR FOR ANY OF EQUATIONS, SET SCALE AND LEAVE THE LOOP
       let errs = map( fn bool (f32 e) => if e > 0.0f32 then True else False, err ) in
       let error= reduce(||, False, errs) in
 
-      let {breakLoop, scale_fina} = if (!error)
-                                    then {True,  MAX_SCALE_FACTOR()}
-                                    else {False, scale_fina}
-      in
+--      let {breakLoop, scale_fina} = if(!error)
+--                                    then {True,  MAX_SCALE_FACTOR()}
+--                                    else {False, scale_fina}
+
+      if (!error)
+      then {j+1, h, y_k, True, MAX_SCALE_FACTOR()}
+      else 
       -- FIGURE OUT SCALE AS THE MINIMUM OF COMPONENT SCALES
       let yy = map( fn f32 (f32 x) =>
                         if (x == 0.0f32) then tolerance else fabs(x)
@@ -1130,10 +1142,8 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
       let h = if ( f32(km1) + h > f32(xmax) ) then f32(xmax - km1)
               else if ( f32(km1) + h + 0.5f32 * h > f32(xmax) )
                    then 0.5f32 * h else h
-      in {h,y_k,breakLoop,scale_fina}
-    in
-    if breakLoop then {False, reshape((EQUS), y_k)}
-                 else {True,  reshape((EQUS), y_k)}
+      in {j+1, h, y_k, breakLoop, scale_fina}
+    in { km1+1, !breakLoop, y_k }
   in {!failed,y_km1}
 
 -----------------------
@@ -1144,12 +1154,30 @@ fun int EQUATIONS () = 91
 fun int PARAMETERS() = 16
 
 fun {bool, [[f32,91],workload]}
-main(int xmax, [[f32,91],workload] y, [[f32,16],workload] params) =
+main(int repeat, f32 eps, int workload, int xmax, [f32,91] y0, [f32,16] params) =
   let {oks, y_res} = unzip (
-    map ( fn {bool,[f32,91]} ({[f32,16], [f32, 91]} par_ys) =>
-            let {pars, y_row} = par_ys in
-            solver(xmax, pars, y_row)
-        , zip(params, y) ) )
+    map ( fn {bool,[f32,91]} (int i) =>
+            let add_fact = f32(i % repeat)*eps in
+            let y_row = map(+add_fact, y0) in
+            solver(xmax, params, y_row)
+        , iota(workload) ) )
   in
-  { reduce(&&, True, oks), y }
+  { reduce(&&, True, oks), y_res }
 
+
+
+fun {[f32,91], [f32,91]}
+main_EMBEDDED(int xmax, [[f32,91],workload] y, [[f32,16],workload] params) =
+    embedded_fehlberg_7_8( 0.0f32, 1.0f32, y[0], params[0])
+
+fun {f32, [f32,91]}
+main_ECC_CAM(int xmax, [[f32,91],workload] y, [[f32,16],workload] params) =
+    let finavalu = replicate(91, 0.0f32) in
+    let finavalu = ecc( 0.0f32, y[0], 0, params[0], 0, finavalu ) in
+    let {res_val, finavalu} = cam(  0.0f32, y[0], 46, params[0],  
+                                    1, finavalu, y[0, 35]*1e3f32 )
+    in {res_val, finavalu}
+
+fun [f32,91]
+main_MASTER(int xmax, [[f32,91],workload] y, [[f32,16],workload] params) =
+    master( 0.0f32, y[0], params[0] ) 
