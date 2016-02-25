@@ -31,7 +31,7 @@
 --   + `fluid-visualize-densities.fut`: Generate `n_steps` frames with the
 --     evolving densities.
 --   + `fluid-measure.fut`: Calculate the resulting densities and forces after
---     `n_steps`, not spending memory to store the intermediate frames.
+--     `n_steps`, not spending memory to store the i32ermediate frames.
 --
 -- The different `main` functions take the same arguments.
 --
@@ -51,7 +51,7 @@
 -- General helper functions.
 ------------------------------------------------------------
 
-fun bool inside(int i, int j, int g) =
+fun bool inside(i32 i, i32 j, i32 g) =
   i >= 1 && i <= g - 2
   && j >= 1 && j <= g - 2
 
@@ -60,14 +60,14 @@ fun bool inside(int i, int j, int g) =
 -- lin_solve.
 ------------------------------------------------------------
 
-fun *[[real, g], g]
-  lin_solve([[real, g], g] S0,
-            int b,
-            real a,
-            real c) =
-  loop (S1 = replicate(g, replicate(g, 0.0))) = for k < 20 do
-    map(fn [real] (int i) =>
-          map (fn real (int j) =>
+fun *[[f32, g], g]
+  lin_solve([[f32, g], g] S0,
+            i32 b,
+            f32 a,
+            f32 c) =
+  loop (S1 = replicate(g, replicate(g, 0.0f32))) = for k < 20 do
+    map(fn [f32] (i32 i) =>
+          map (fn f32 (i32 j) =>
                  if inside(i, j, g)
                  then
                    lin_solve_inner(i, j, S0, S1, a, c)
@@ -77,38 +77,38 @@ fun *[[real, g], g]
           iota(g))
   in S1
 
-fun real
-  lin_solve_inner(int i,
-                  int j,
-                  [[real, g], g] S0,
-                  [[real, g], g] S1,
-                  real a,
-                  real c) =
+fun f32
+  lin_solve_inner(i32 i,
+                  i32 j,
+                  [[f32, g], g] S0,
+                  [[f32, g], g] S1,
+                  f32 a,
+                  f32 c) =
   -- A stencil.
   (S0[i, j] + a * (S1[i - 1, j]
                    + S1[i + 1, j]
                    + S1[i, j - 1]
                    + S1[i, j + 1])) / c
 
-fun real
-  lin_solve_outer(int i,
-                  int j,
-                  [[real, g], g] S0,
-                  [[real, g], g] S1,
-                  real a,
-                  real c,
-                  int b) =
+fun f32
+  lin_solve_outer(i32 i,
+                  i32 j,
+                  [[f32, g], g] S0,
+                  [[f32, g], g] S1,
+                  f32 a,
+                  f32 c,
+                  i32 b) =
   if i == 0 && j == 0
-  then 0.5 * (lin_solve_outer(1, 0, S0, S1, a, c, b)
+  then 0.5f32 * (lin_solve_outer(1, 0, S0, S1, a, c, b)
               + lin_solve_outer(0, 1, S0, S1, a, c, b))
   else if i == 0 && j == g - 1
-  then 0.5 * (lin_solve_outer(1, g - 1, S0, S1, a, c, b)
+  then 0.5f32 * (lin_solve_outer(1, g - 1, S0, S1, a, c, b)
               + lin_solve_outer(0, g - 2, S0, S1, a, c, b))
   else if i == g - 1 && j == 0
-  then 0.5 * (lin_solve_outer(g - 2, 0, S0, S1, a, c, b)
+  then 0.5f32 * (lin_solve_outer(g - 2, 0, S0, S1, a, c, b)
               + lin_solve_outer(g - 1, 1, S0, S1, a, c, b))
   else if i == g - 1 && j == g - 1
-  then 0.5 * (lin_solve_outer(g - 2, g - 1, S0, S1, a, c, b)
+  then 0.5f32 * (lin_solve_outer(g - 2, g - 1, S0, S1, a, c, b)
               + lin_solve_outer(g - 1, g - 2, S0, S1, a, c, b))
   else if i == 0
   then if b == 1
@@ -126,36 +126,36 @@ fun real
   then if b == 2
        then -lin_solve_inner(i, g - 2, S0, S1, a, c)
        else lin_solve_inner(i, g - 2, S0, S1, a, c)
-  else 0.0 -- This is not supposed to happen.
+  else 0.0f32 -- This is not supposed to happen.
 
 
 ------------------------------------------------------------
 -- diffuse.
 ------------------------------------------------------------
 
-fun [[real, g], g]
-  diffuse([[real, g], g] S,
-          int b,
-          real diffusion_rate_or_viscosity,
-          real time_step) =
+fun [[f32, g], g]
+  diffuse([[f32, g], g] S,
+          i32 b,
+          f32 diffusion_rate_or_viscosity,
+          f32 time_step) =
   let a = (time_step * diffusion_rate_or_viscosity
-           * real(g - 2) * real(g - 2)) in
-  lin_solve(S, b, a, 1.0 + 4.0 * a)
+           * f32(g - 2) * f32(g - 2)) in
+  lin_solve(S, b, a, 1.0f32 + 4.0f32 * a)
 
 
 ------------------------------------------------------------
 -- advect.
 ------------------------------------------------------------
 
-fun *[[real, g], g]
-  advect([[real, g], g] S0,
-         [[real, g], g] U,
-         [[real, g], g] V,
-         int b,
-         real time_step) =
-  let time_step0 = time_step * real(g - 2) in
-  map(fn [real, g] (int i) =>
-        map(fn real (int j) =>
+fun *[[f32, g], g]
+  advect([[f32, g], g] S0,
+         [[f32, g], g] U,
+         [[f32, g], g] V,
+         i32 b,
+         f32 time_step) =
+  let time_step0 = time_step * f32(g - 2) in
+  map(fn [f32, g] (i32 i) =>
+        map(fn f32 (i32 j) =>
               if inside(i, j, g)
               then
                 advect_inner(i, j, S0, U, V, time_step0)
@@ -164,53 +164,53 @@ fun *[[real, g], g]
             iota(g)),
         iota(g))
 
-fun real
-  advect_inner(int i,
-               int j,
-               [[real, g], g] S0,
-               [[real, g], g] U,
-               [[real, g], g] V,
-               real time_step0) =
-  let x = real(i) - time_step0 * U[i, j] in
-  let y = real(j) - time_step0 * V[i, j] in
+fun f32
+  advect_inner(i32 i,
+               i32 j,
+               [[f32, g], g] S0,
+               [[f32, g], g] U,
+               [[f32, g], g] V,
+               f32 time_step0) =
+  let x = f32(i) - time_step0 * U[i, j] in
+  let y = f32(j) - time_step0 * V[i, j] in
 
-  let x = if x < 0.5 then 0.5 else x in
-  let x = if x > real(g - 2) + 0.5 then real(g - 2) + 0.5 else x in
-  let i0 = int(x) in
+  let x = if x < 0.5f32 then 0.5f32 else x in
+  let x = if x > f32(g - 2) + 0.5f32 then f32(g - 2) + 0.5f32 else x in
+  let i0 = i32(x) in
   let i1 = i0 + 1 in
 
-  let y = if y < 0.5 then 0.5 else y in
-  let y = if y > real(g - 2) + 0.5 then real(g - 2) + 0.5 else y in
-  let j0 = int(y) in
+  let y = if y < 0.5f32 then 0.5f32 else y in
+  let y = if y > f32(g - 2) + 0.5f32 then f32(g - 2) + 0.5f32 else y in
+  let j0 = i32(y) in
   let j1 = j0 + 1 in
 
-  let s1 = x - real(i0) in
-  let s0 = 1.0 - s1 in
-  let t1 = y - real(j0) in
-  let t0 = 1.0 - t1 in
+  let s1 = x - f32(i0) in
+  let s0 = 1.0f32 - s1 in
+  let t1 = y - f32(j0) in
+  let t0 = 1.0f32 - t1 in
 
   (s0 * (t0 * S0[i0, j0] + t1 * S0[i0, j1])
    + s1 * (t0 * S0[i1, j0] + t1 * S0[i1, j1]))
 
-fun real
-  advect_outer(int i,
-               int j,
-               [[real, g], g] S0,
-               [[real, g], g] U,
-               [[real, g], g] V,
-               real time_step0,
-               int b) =
+fun f32
+  advect_outer(i32 i,
+               i32 j,
+               [[f32, g], g] S0,
+               [[f32, g], g] U,
+               [[f32, g], g] V,
+               f32 time_step0,
+               i32 b) =
   if i == 0 && j == 0
-  then 0.5 * (advect_outer(1, 0, S0, U, V, time_step0, b)
+  then 0.5f32 * (advect_outer(1, 0, S0, U, V, time_step0, b)
               + advect_outer(0, 1, S0, U, V, time_step0, b))
   else if i == 0 && j == g - 1
-  then 0.5 * (advect_outer(1, g - 1, S0, U, V, time_step0, b)
+  then 0.5f32 * (advect_outer(1, g - 1, S0, U, V, time_step0, b)
               + advect_outer(0, g - 2, S0, U, V, time_step0, b))
   else if i == g - 1 && j == 0
-  then 0.5 * (advect_outer(g - 2, 0, S0, U, V, time_step0, b)
+  then 0.5f32 * (advect_outer(g - 2, 0, S0, U, V, time_step0, b)
               + advect_outer(g - 1, 1, S0, U, V, time_step0, b))
   else if i == g - 1 && j == g - 1
-  then 0.5 * (advect_outer(g - 2, g - 1, S0, U, V, time_step0, b)
+  then 0.5f32 * (advect_outer(g - 2, g - 1, S0, U, V, time_step0, b)
               + advect_outer(g - 1, g - 2, S0, U, V, time_step0, b))
   else if i == 0
   then if b == 1
@@ -228,28 +228,28 @@ fun real
   then if b == 2
        then -advect_inner(i, g - 2, S0, U, V, time_step0)
        else advect_inner(i, g - 2, S0, U, V, time_step0)
-  else 0.0 -- This is not supposed to happen.
+  else 0.0f32 -- This is not supposed to happen.
 
 
 ------------------------------------------------------------
 -- project.
 ------------------------------------------------------------
 
-fun {*[[real, g], g],
-     *[[real, g], g]}
-  project([[real, g], g] U0,
-          [[real, g], g] V0) =
+fun {*[[f32, g], g],
+     *[[f32, g], g]}
+  project([[f32, g], g] U0,
+          [[f32, g], g] V0) =
   let Div0 = project_top(U0, V0) in
-  let P0 = lin_solve(Div0, 0, 1.0, 4.0) in
+  let P0 = lin_solve(Div0, 0, 1.0f32, 4.0f32) in
   let U1 = project_bottom(P0, U0, 1, 1, 0, -1, 0) in
   let V1 = project_bottom(P0, V0, 2, 0, 1, 0, -1) in
   {U1, V1}
 
-fun [[real, g], g]
-  project_top([[real, g], g] U0,
-              [[real, g], g] V0) =
-  map(fn [real, g] (int i) =>
-        map(fn real (int j) =>
+fun [[f32, g], g]
+  project_top([[f32, g], g] U0,
+              [[f32, g], g] V0) =
+  map(fn [f32, g] (i32 i) =>
+        map(fn f32 (i32 j) =>
               if inside(i, j, g)
               then
                 project_top_inner(i, j, U0, V0)
@@ -258,32 +258,32 @@ fun [[real, g], g]
             iota(g)),
         iota(g))
 
-fun real
-  project_top_inner(int i,
-                    int j,
-                    [[real, g], g] U0,
-                    [[real, g], g] V0) =
-  (-0.5 * (U0[i + 1, j]
+fun f32
+  project_top_inner(i32 i,
+                    i32 j,
+                    [[f32, g], g] U0,
+                    [[f32, g], g] V0) =
+  (-0.5f32 * (U0[i + 1, j]
            - U0[i - 1, j]
            + V0[i, j + 1]
-           - V0[i, j - 1]) / real(g))
+           - V0[i, j - 1]) / f32(g))
 
-fun real
-  project_top_outer(int i,
-                    int j,
-                    [[real, g], g] U0,
-                    [[real, g], g] V0) =
+fun f32
+  project_top_outer(i32 i,
+                    i32 j,
+                    [[f32, g], g] U0,
+                    [[f32, g], g] V0) =
   if i == 0 && j == 0
-  then 0.5 * (project_top_outer(1, 0, U0, V0)
+  then 0.5f32 * (project_top_outer(1, 0, U0, V0)
               + project_top_outer(0, 1, U0, V0))
   else if i == 0 && j == g - 1
-  then 0.5 * (project_top_outer(1, g - 1, U0, V0)
+  then 0.5f32 * (project_top_outer(1, g - 1, U0, V0)
               + project_top_outer(0, g - 2, U0, V0))
   else if i == g - 1 && j == 0
-  then 0.5 * (project_top_outer(g - 2, 0, U0, V0)
+  then 0.5f32 * (project_top_outer(g - 2, 0, U0, V0)
               + project_top_outer(g - 1, 1, U0, V0))
   else if i == g - 1 && j == g - 1
-  then 0.5 * (project_top_outer(g - 2, g - 1, U0, V0)
+  then 0.5f32 * (project_top_outer(g - 2, g - 1, U0, V0)
               + project_top_outer(g - 1, g - 2, U0, V0))
   else if i == 0
   then project_top_inner(1, j, U0, V0)
@@ -293,18 +293,18 @@ fun real
   then project_top_inner(i, 1, U0, V0)
   else if j == g - 1
   then project_top_inner(i, g - 2, U0, V0)
-  else 0.0 -- This is not supposed to happen.
+  else 0.0f32 -- This is not supposed to happen.
 
-fun *[[real, g], g]
-  project_bottom([[real, g], g] P0,
-                 [[real, g], g] S0,
-                 int b,
-                 int i0d,
-                 int j0d,
-                 int i1d,
-                 int j1d) =
-  map(fn [real, g] (int i) =>
-        map(fn real (int j) =>
+fun *[[f32, g], g]
+  project_bottom([[f32, g], g] P0,
+                 [[f32, g], g] S0,
+                 i32 b,
+                 i32 i0d,
+                 i32 j0d,
+                 i32 i1d,
+                 i32 j1d) =
+  map(fn [f32, g] (i32 i) =>
+        map(fn f32 (i32 j) =>
               if (i >= 1 && i <= g - 2
                   && j >= 1 && j <= g - 2)
               then
@@ -314,39 +314,39 @@ fun *[[real, g], g]
             iota(g)),
         iota(g))
 
-fun real
-  project_bottom_inner(int i,
-                       int j,
-                       [[real, g], g] P0,
-                       [[real, g], g] S0,
-                       int i0d,
-                       int j0d,
-                       int i1d,
-                       int j1d) =
-  (S0[i, j] - 0.5 * real(g - 2)
+fun f32
+  project_bottom_inner(i32 i,
+                       i32 j,
+                       [[f32, g], g] P0,
+                       [[f32, g], g] S0,
+                       i32 i0d,
+                       i32 j0d,
+                       i32 i1d,
+                       i32 j1d) =
+  (S0[i, j] - 0.5f32 * f32(g - 2)
    * (P0[i + i0d, j + j0d] - P0[i + i1d, j + j1d]))
 
-fun real
-  project_bottom_outer(int i,
-                       int j,
-                       [[real, g], g] P0,
-                       [[real, g], g] S0,
-                       int i0d,
-                       int j0d,
-                       int i1d,
-                       int j1d,
-                       int b) =
+fun f32
+  project_bottom_outer(i32 i,
+                       i32 j,
+                       [[f32, g], g] P0,
+                       [[f32, g], g] S0,
+                       i32 i0d,
+                       i32 j0d,
+                       i32 i1d,
+                       i32 j1d,
+                       i32 b) =
   if i == 0 && j == 0
-  then 0.5 * (project_bottom_outer(1, 0, P0, S0, i0d, j0d, i1d, j1d, b)
+  then 0.5f32 * (project_bottom_outer(1, 0, P0, S0, i0d, j0d, i1d, j1d, b)
               + project_bottom_outer(0, 1, P0, S0, i0d, j0d, i1d, j1d, b))
   else if i == 0 && j == g - 1
-  then 0.5 * (project_bottom_outer(1, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
+  then 0.5f32 * (project_bottom_outer(1, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
               + project_bottom_outer(0, g - 2, P0, S0, i0d, j0d, i1d, j1d, b))
   else if i == g - 1 && j == 0
-  then 0.5 * (project_bottom_outer(g - 2, 0, P0, S0, i0d, j0d, i1d, j1d, b)
+  then 0.5f32 * (project_bottom_outer(g - 2, 0, P0, S0, i0d, j0d, i1d, j1d, b)
               + project_bottom_outer(g - 1, 1, P0, S0, i0d, j0d, i1d, j1d, b))
   else if i == g - 1 && j == g - 1
-  then 0.5 * (project_bottom_outer(g - 2, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
+  then 0.5f32 * (project_bottom_outer(g - 2, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
               + project_bottom_outer(g - 1, g - 2, P0, S0, i0d, j0d, i1d, j1d, b))
   else if i == 0
   then if b == 1
@@ -364,29 +364,29 @@ fun real
   then if b == 2
        then -project_bottom_inner(i, g - 2, P0, S0, i0d, j0d, i1d, j1d)
        else project_bottom_inner(i, g - 2, P0, S0, i0d, j0d, i1d, j1d)
-  else 0.0 -- This is not supposed to happen.
+  else 0.0f32 -- This is not supposed to happen.
 
 
 ------------------------------------------------------------
 -- Step functions.
 ------------------------------------------------------------
 
-fun *[[real, g], g]
-  dens_step([[real, g], g] D0,
-            [[real, g], g] U0,
-            [[real, g], g] V0,
-            real diffusion_rate,
-            real time_step) =
+fun *[[f32, g], g]
+  dens_step([[f32, g], g] D0,
+            [[f32, g], g] U0,
+            [[f32, g], g] V0,
+            f32 diffusion_rate,
+            f32 time_step) =
   let D1 = diffuse(D0, 0, diffusion_rate, time_step) in
   let D2 = advect(D1, U0, V0, 0, time_step) in
   D2
 
-fun {*[[real, g], g],
-     *[[real, g], g]}
-  vel_step([[real, g], g] U0,
-           [[real, g], g] V0,
-           real viscosity,
-           real time_step) =
+fun {*[[f32, g], g],
+     *[[f32, g], g]}
+  vel_step([[f32, g], g] U0,
+           [[f32, g], g] V0,
+           f32 viscosity,
+           f32 time_step) =
   let U1 = diffuse(U0, 1, viscosity, time_step) in
   let V1 = diffuse(V0, 2, viscosity, time_step) in
   let {U2, V2} = project(U1, V1) in
@@ -395,15 +395,15 @@ fun {*[[real, g], g],
   let {U4, V4} = project(U3, V3) in
   {U4, V4}
 
-fun {*[[real, g], g],
-     *[[real, g], g],
-     *[[real, g], g]}
-     step([[real, g], g] U0,
-          [[real, g], g] V0,
-          [[real, g], g] D0,
-          real time_step,
-          real diffusion_rate,
-          real viscosity) =
+fun {*[[f32, g], g],
+     *[[f32, g], g],
+     *[[f32, g], g]}
+     step([[f32, g], g] U0,
+          [[f32, g], g] V0,
+          [[f32, g], g] D0,
+          f32 time_step,
+          f32 diffusion_rate,
+          f32 viscosity) =
   let {U1, V1} = vel_step(U0, V0, viscosity, time_step) in
   let D1 = dens_step(D0, U0, V0, diffusion_rate, time_step) in
   {U1, V1, D1}
@@ -413,31 +413,31 @@ fun {*[[real, g], g],
 -- Wrapper functions.
 ------------------------------------------------------------
 
-fun {[[real, g], g],
-     [[real, g], g],
-     [[real, g], g]}
-  get_end_frame([[real, g], g] U0,
-                [[real, g], g] V0,
-                [[real, g], g] D0,
-                int n_steps,
-                real time_step,
-                real diffusion_rate,
-                real viscosity) =
+fun {[[f32, g], g],
+     [[f32, g], g],
+     [[f32, g], g]}
+  get_end_frame([[f32, g], g] U0,
+                [[f32, g], g] V0,
+                [[f32, g], g] D0,
+                i32 n_steps,
+                f32 time_step,
+                f32 diffusion_rate,
+                f32 viscosity) =
   loop ({U0, V0, D0}) = for 1 <= i < n_steps do
     step(U0, V0, D0, time_step,
          diffusion_rate, viscosity)
   in {U0, V0, D0}
 
-fun {[[[real, g], g], n_steps],
-     [[[real, g], g], n_steps],
-     [[[real, g], g], n_steps]}
-  get_all_frames([[real, g], g] U0,
-                 [[real, g], g] V0,
-                 [[real, g], g] D0,
-                 int n_steps,
-                 real time_step,
-                 real diffusion_rate,
-                 real viscosity) =
+fun {[[[f32, g], g], n_steps],
+     [[[f32, g], g], n_steps],
+     [[[f32, g], g], n_steps]}
+  get_all_frames([[f32, g], g] U0,
+                 [[f32, g], g] V0,
+                 [[f32, g], g] D0,
+                 i32 n_steps,
+                 f32 time_step,
+                 f32 diffusion_rate,
+                 f32 viscosity) =
   let U_out = replicate(n_steps, U0) in
   let V_out = replicate(n_steps, V0) in
   let D_out = replicate(n_steps, D0) in
