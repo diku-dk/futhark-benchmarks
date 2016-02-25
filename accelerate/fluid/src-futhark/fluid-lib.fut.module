@@ -47,6 +47,14 @@
 -- This should work with all futhark-* programs.  It will be like this until
 -- such a time when Futhark gets a proper module system.
 
+------------------------------------------------------------
+-- General helper functions.
+------------------------------------------------------------
+
+fun bool inside(int i, int j, int g) =
+  i >= 1 && i <= g - 2
+  && j >= 1 && j <= g - 2
+
 
 ------------------------------------------------------------
 -- lin_solve.
@@ -60,8 +68,7 @@ fun *[[real, g], g]
   loop (S1 = replicate(g, replicate(g, 0.0))) = for k < 20 do
     map(fn [real] (int i) =>
           map (fn real (int j) =>
-                 if (i >= 1 && i <= g - 2
-                     && j >= 1 && j <= g - 2)
+                 if inside(i, j, g)
                  then
                    lin_solve_inner(i, j, S0, S1, a, c)
                  else
@@ -149,8 +156,7 @@ fun *[[real, g], g]
   let time_step0 = time_step * real(g - 2) in
   map(fn [real, g] (int i) =>
         map(fn real (int j) =>
-              if (i >= 1 && i <= g - 2
-                  && j >= 1 && j <= g - 2)
+              if inside(i, j, g)
               then
                 advect_inner(i, j, S0, U, V, time_step0)
               else
@@ -244,8 +250,7 @@ fun [[real, g], g]
               [[real, g], g] V0) =
   map(fn [real, g] (int i) =>
         map(fn real (int j) =>
-              if (i >= 1 && i <= g - 2
-                  && j >= 1 && j <= g - 2)
+              if inside(i, j, g)
               then
                 project_top_inner(i, j, U0, V0)
               else
