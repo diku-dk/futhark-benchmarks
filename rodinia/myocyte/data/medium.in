@@ -1,7 +1,7 @@
 13        -- repeat
 0.0001f32 -- eps
 65536     -- workload
-10        -- xmax
+3         -- xmax
 
 [
 1.3705539e-003f32,
