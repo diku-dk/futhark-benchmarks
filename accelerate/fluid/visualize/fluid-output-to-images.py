@@ -7,14 +7,6 @@ import png
 import numpy as np
 
 
-def clamp(x):
-    if x > 255:
-        return 255
-    elif x < 0:
-        return 0
-    else:
-        return x
-
 def n_digits(n_elems):
     return int(math.log(n_elems, 10)) + 1
 
@@ -33,8 +25,7 @@ def main(args):
               file=sys.stderr)
         return 1
 
-    clamp_np = np.vectorize(clamp)
-    images = clamp_np(np.array(eval(sys.stdin.read().replace('i32', ''))))
+    images = np.array(eval(sys.stdin.read().replace('i32', '')))
 
     for image, i in zip(images, range(len(images))):
         filename = os.path.join(
