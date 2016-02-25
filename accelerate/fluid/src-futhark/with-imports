@@ -22,7 +22,7 @@ def main():
         and len(args) == 2):
         program = args[0]
         filename_in = args[1]
-        filename_compiled = re.sub(r'.fut$', '', filename_in)
+        filename_compiled = re.sub(r'\.fut\.wip$', '', filename_in)
         new_text = replace_imports(filename_in)
         with tempfile.NamedTemporaryFile() as tf:
             with open(tf.name, 'w') as f:
