@@ -20,6 +20,7 @@ fun f32 fabs(f32 a) = if (a < 0.0f32) then -a else a
 
 fun *[f32,EQUS] ecc( f32 timeinst, [f32,EQUS] initvalu, int initvalu_offset,
                     [f32,PARS] parameter, int parameter_offset, *[f32,EQUS] finavalu ) =
+  unsafe 
   -- variable references
   let offset_1  = initvalu_offset in
   let offset_2  = initvalu_offset+1 in
@@ -531,6 +532,8 @@ fun {f32, *[f32,EQUS]} cam( f32 timeinst, [f32,EQUS] initvalu,
                             int initvalu_offset,
                             [f32,PARS] parameter, int parameter_offset, 
                             *[f32,EQUS] finavalu, f32 Ca ) =
+  unsafe 
+
   -- input data and output data variable references
   let offset_1  = initvalu_offset in
   let offset_2  = initvalu_offset+1 in
@@ -729,6 +732,8 @@ fun *[f32,EQUS] fin(    [f32,EQUS] initvalu, int initvalu_offset_ecc,
                         int initvalu_offset_Dyad, int initvalu_offset_SL,
                         int initvalu_offset_Cyt, [f32,PARS] parameter,
                         *[f32,EQUS] finavalu, f32 JCaDyad, f32 JCaSL, f32 JCaCyt ) =
+  unsafe
+
   let BtotDyad      = parameter[2] in
   let CaMKIItotDyad = parameter[3] 
   in
@@ -802,7 +807,7 @@ fun f32 minf() = 0.0f32 - inf()
 fun f32  nan() = inf()  / inf()
 fun f32 mnan() = 0.0f32 - nan()
 
-fun bool isnan(f32 x) = pow(x,2.0f32) != (x*x) -- ( x == nan() || x == mnan() )
+fun bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != sqrt32(xp)
 fun bool isinf(f32 x) = ( x == inf() || x == minf() )
 
 fun *[f32,EQUS] master( f32 timeinst, [f32,EQUS] initvalu, [f32,PARS] parameter ) =
@@ -824,7 +829,7 @@ fun *[f32,EQUS] master( f32 timeinst, [f32,EQUS] initvalu, [f32,PARS] parameter 
             else -- if (ii == 2) then -- cam function for Cyt
                 { 76, 11, 37 }
         in
-        let inp_val = initvalu[ind]*1e3f32 in
+        let inp_val = unsafe (initvalu[ind]*1e3f32) in
         let {res_val, finavalu} = cam(  timeinst, initvalu, initvalu_offset, parameter,
                                         parameter_offset, finavalu, inp_val )
         in
@@ -1029,14 +1034,13 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                                         b13_10*finavalu_temp[9,i] + finavalu_temp[11,i] )
                                    , iota(EQUS) ) in
             { timeinst_temp, initvalu_temp }
-    in
+    in unsafe 
     let finavalu_temp[ii] = master( timeinst_temp, initvalu_temp, parameter ) in
     finavalu_temp
   --------------
   -- end loop --
   --------------
   in
---  { finavalu_temp[5], replicate(EQUS, 0.0f32) } 
   let finavalu = map( fn f32 (int i) =>
                         initvalu[i] +  h * (c_1_11 * (finavalu_temp[0,i] + finavalu_temp[10,i]) +
                             c6 * finavalu_temp[5,i] + c_7_8 * (finavalu_temp[6,i] + finavalu_temp[7,i]) +
