@@ -1,7 +1,7 @@
 .PHONY: clean
 
 CC=gcc
-CFLAGS=-O3 -Wall -Wextra -pedantic -Werror
+CFLAGS=-O3 -Wall -Wextra -pedantic -Werror -std=c99
 GLFLAGS=-lglut -lGL -lGLU
 
 all: fluid-visualize-densities fluid-benchmark fluid-demo
