@@ -32,16 +32,19 @@ Please read `src-futhark/fluid-lib.fut`.  It describes the major choices.
 
 ## Measurements
 
-TODO: Make a non-interactive version of Accelerate's code, so that a basic speed
-comparison is possible.  (This is almost done.)
+The `benchmark` directory contains a script for timing the C version, the
+Futhark version, and Accelerate's version, each on pseudo-random data of a
+specific size, just to get a gist of the speed relations.
 
 
 ## Visualizations
 
 Go to the `visualize` directory.
 
-Run `./fluid-make-images.sh <n steps> <grid resolution> <output directory>` to
-make `<n steps>` images of size `<grid resolution> × <grid resolution>`.
+Run `./fluid-make-images.sh <n steps> <grid resolution> <backend> <output
+directory> <seed>` to make `<n steps>` images of size `<grid resolution> × <grid
+resolution>` with the `<backend>` `futhark` or `c`, and with the random seed
+`<seed>` as a predefined number or as `none`.
 
 After that, you can run `./fluid-images-to-video.sh <output directory>` to make
 a video with the filename `<output directory>.webm`.

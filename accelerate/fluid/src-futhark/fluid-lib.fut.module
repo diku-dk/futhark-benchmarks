@@ -55,6 +55,29 @@ fun bool inside(i32 i, i32 j, i32 g) =
   i >= 1 && i <= g - 2
   && j >= 1 && j <= g - 2
 
+fun bool in_outside_corner(i32 i, i32 j, i32 g) =
+  (i == 0 || i == g - 1) && (j == 0 || j == g - 1)
+  
+fun {i32, i32, i32, i32} corner_index_neighbors(i32 i, i32 j, i32 g) =
+  if i == 0 && j == 0
+  then {1, 0, 0, 1}
+  else if i == 0 && j == g - 1
+  then {1, g - 1, 0, g - 2}
+  else if i == g - 1 && j == 0
+  then {g - 2, 0, g - 1, 1}
+  else {g - 2, g - 1, g - 1, g - 2} -- if i == g - 1 && j == g - 1
+
+fun {i32, i32, f32} outermost_inner_index(i32 i, i32 j, i32 g, i32 b) =
+  if i == 0
+  then {1, j, if b == 1 then -1.0f32 else 1.0f32}
+  else if i == g - 1
+  then {g - 2, j, if b == 1 then -1.0f32 else 1.0f32}
+  else if j == 0
+  then {i, 1, if b == 2 then -1.0f32 else 1.0f32}
+  else if j == g - 1
+  then {i, g - 2, if b == 2 then -1.0f32 else 1.0f32}
+  else {0, 0, 0.0f32} -- This is not supposed to happen.
+
 
 ------------------------------------------------------------
 -- lin_solve.
@@ -85,10 +108,11 @@ fun f32
                   f32 a,
                   f32 c) =
   -- A stencil.
-  (S0[i, j] + a * (S1[i - 1, j]
-                   + S1[i + 1, j]
-                   + S1[i, j - 1]
-                   + S1[i, j + 1])) / c
+  unsafe ((S0[i, j] + a *
+           (S1[(i - 1), j]
+            + S1[(i + 1), j]
+            + S1[i, (j - 1)]
+            + S1[i, (j + 1)])) / c)
 
 fun f32
   lin_solve_outer(i32 i,
@@ -98,18 +122,10 @@ fun f32
                   f32 a,
                   f32 c,
                   i32 b) =
-  if i == 0 && j == 0
-  then 0.5f32 * (lin_solve_outer_base(1, 0, S0, S1, a, c, b)
-              + lin_solve_outer_base(0, 1, S0, S1, a, c, b))
-  else if i == 0 && j == g - 1
-  then 0.5f32 * (lin_solve_outer_base(1, g - 1, S0, S1, a, c, b)
-              + lin_solve_outer_base(0, g - 2, S0, S1, a, c, b))
-  else if i == g - 1 && j == 0
-  then 0.5f32 * (lin_solve_outer_base(g - 2, 0, S0, S1, a, c, b)
-              + lin_solve_outer_base(g - 1, 1, S0, S1, a, c, b))
-  else if i == g - 1 && j == g - 1
-  then 0.5f32 * (lin_solve_outer_base(g - 2, g - 1, S0, S1, a, c, b)
-              + lin_solve_outer_base(g - 1, g - 2, S0, S1, a, c, b))
+  if in_outside_corner(i, j, g)
+  then let {i1, j1, i2, j2} = corner_index_neighbors(i, j, g)
+       in 0.5f32 * (lin_solve_outer_base(i1, j1, S0, S1, a, c, b)
+                    + lin_solve_outer_base(i2, j2, S0, S1, a, c, b))
   else lin_solve_outer_base(i, j, S0, S1, a, c, b)
 
 fun f32
@@ -120,23 +136,8 @@ fun f32
                        f32 a,
                        f32 c,
                        i32 b) =
-  if i == 0
-  then if b == 1
-       then -lin_solve_inner(1, j, S0, S1, a, c)
-       else lin_solve_inner(1, j, S0, S1, a, c)
-  else if i == g - 1
-  then if b == 1
-       then -lin_solve_inner(g - 2, j, S0, S1, a, c)
-       else lin_solve_inner(g - 2, j, S0, S1, a, c)
-  else if j == 0
-  then if b == 2
-       then -lin_solve_inner(i, 1, S0, S1, a, c)
-       else lin_solve_inner(i, 1, S0, S1, a, c)
-  else if j == g - 1
-  then if b == 2
-       then -lin_solve_inner(i, g - 2, S0, S1, a, c)
-       else lin_solve_inner(i, g - 2, S0, S1, a, c)
-  else 0.0f32 -- This is not supposed to happen.
+  let {i1, j1, f} = outermost_inner_index(i, j, g, b)
+  in f * lin_solve_inner(i1, j1, S0, S1, a, c)
 
 
 ------------------------------------------------------------
@@ -181,8 +182,8 @@ fun f32
                [[f32, g], g] U,
                [[f32, g], g] V,
                f32 time_step0) =
-  let x = f32(i) - time_step0 * U[i, j] in
-  let y = f32(j) - time_step0 * V[i, j] in
+  let x = f32(i) - time_step0 * unsafe U[i, j] in
+  let y = f32(j) - time_step0 * unsafe V[i, j] in
 
   let x = if x < 0.5f32 then 0.5f32 else x in
   let x = if x > f32(g - 2) + 0.5f32 then f32(g - 2) + 0.5f32 else x in
@@ -199,8 +200,8 @@ fun f32
   let t1 = y - f32(j0) in
   let t0 = 1.0f32 - t1 in
 
-  (s0 * (t0 * S0[i0, j0] + t1 * S0[i0, j1])
-   + s1 * (t0 * S0[i1, j0] + t1 * S0[i1, j1]))
+  unsafe (s0 * (t0 * S0[i0, j0] + t1 * S0[i0, j1])
+          + s1 * (t0 * S0[i1, j0] + t1 * S0[i1, j1]))
 
 fun f32
   advect_outer(i32 i,
@@ -210,18 +211,10 @@ fun f32
                [[f32, g], g] V,
                f32 time_step0,
                i32 b) =
-  if i == 0 && j == 0
-  then 0.5f32 * (advect_outer_base(1, 0, S0, U, V, time_step0, b)
-              + advect_outer_base(0, 1, S0, U, V, time_step0, b))
-  else if i == 0 && j == g - 1
-  then 0.5f32 * (advect_outer_base(1, g - 1, S0, U, V, time_step0, b)
-              + advect_outer_base(0, g - 2, S0, U, V, time_step0, b))
-  else if i == g - 1 && j == 0
-  then 0.5f32 * (advect_outer_base(g - 2, 0, S0, U, V, time_step0, b)
-              + advect_outer_base(g - 1, 1, S0, U, V, time_step0, b))
-  else if i == g - 1 && j == g - 1
-  then 0.5f32 * (advect_outer_base(g - 2, g - 1, S0, U, V, time_step0, b)
-              + advect_outer_base(g - 1, g - 2, S0, U, V, time_step0, b))
+  if in_outside_corner(i, j, g)
+  then let {i1, j1, i2, j2} = corner_index_neighbors(i, j, g)
+       in 0.5f32 * (advect_outer_base(i1, j1, S0, U, V, time_step0, b)
+                    + advect_outer_base(i2, j2, S0, U, V, time_step0, b))
   else advect_outer_base(i, j, S0, U, V, time_step0, b)
 
 fun f32
@@ -232,23 +225,8 @@ fun f32
                     [[f32, g], g] V,
                     f32 time_step0,
                     i32 b) =
-  if i == 0
-  then if b == 1
-       then -advect_inner(1, j, S0, U, V, time_step0)
-       else advect_inner(1, j, S0, U, V, time_step0)
-  else if i == g - 1
-  then if b == 1
-       then -advect_inner(g - 2, j, S0, U, V, time_step0)
-       else advect_inner(g - 2, j, S0, U, V, time_step0)
-  else if j == 0
-  then if b == 2
-       then -advect_inner(i, 1, S0, U, V, time_step0)
-       else advect_inner(i, 1, S0, U, V, time_step0)
-  else if j == g - 1
-  then if b == 2
-       then -advect_inner(i, g - 2, S0, U, V, time_step0)
-       else advect_inner(i, g - 2, S0, U, V, time_step0)
-  else 0.0f32 -- This is not supposed to happen.
+  let {i1, j1, f} = outermost_inner_index(i, j, g, b)
+  in f * advect_inner(i1, j1, S0, U, V, time_step0)
 
 
 ------------------------------------------------------------
@@ -283,28 +261,20 @@ fun f32
                     i32 j,
                     [[f32, g], g] U0,
                     [[f32, g], g] V0) =
-  (-0.5f32 * (U0[i + 1, j]
-           - U0[i - 1, j]
-           + V0[i, j + 1]
-           - V0[i, j - 1]) / f32(g))
+  unsafe (-0.5f32 * (U0[i + 1, j]
+                     - U0[i - 1, j]
+                     + V0[i, j + 1]
+                     - V0[i, j - 1]) / f32(g))
 
 fun f32
   project_top_outer(i32 i,
                     i32 j,
                     [[f32, g], g] U0,
                     [[f32, g], g] V0) =
-  if i == 0 && j == 0
-  then 0.5f32 * (project_top_outer_base(1, 0, U0, V0)
-              + project_top_outer_base(0, 1, U0, V0))
-  else if i == 0 && j == g - 1
-  then 0.5f32 * (project_top_outer_base(1, g - 1, U0, V0)
-              + project_top_outer_base(0, g - 2, U0, V0))
-  else if i == g - 1 && j == 0
-  then 0.5f32 * (project_top_outer_base(g - 2, 0, U0, V0)
-              + project_top_outer_base(g - 1, 1, U0, V0))
-  else if i == g - 1 && j == g - 1
-  then 0.5f32 * (project_top_outer_base(g - 2, g - 1, U0, V0)
-              + project_top_outer_base(g - 1, g - 2, U0, V0))
+  if in_outside_corner(i, j, g)
+  then let {i1, j1, i2, j2} = corner_index_neighbors(i, j, g)
+       in 0.5f32 * (project_top_outer_base(i1, j1, U0, V0)
+                    + project_top_outer_base(i2, j2, U0, V0))
   else project_top_outer_base(i, j, U0, V0)
 
 fun f32
@@ -312,15 +282,8 @@ fun f32
                          i32 j,
                          [[f32, g], g] U0,
                          [[f32, g], g] V0) =
-  if i == 0
-  then project_top_inner(1, j, U0, V0)
-  else if i == g - 1
-  then project_top_inner(g - 2, j, U0, V0)
-  else if j == 0
-  then project_top_inner(i, 1, U0, V0)
-  else if j == g - 1
-  then project_top_inner(i, g - 2, U0, V0)
-  else 0.0f32 -- This is not supposed to happen.
+  let {i1, j1, f} = outermost_inner_index(i, j, g, 0)
+  in project_top_inner(i1, j1, U0, V0)
 
 fun *[[f32, g], g]
   project_bottom([[f32, g], g] P0,
@@ -332,8 +295,7 @@ fun *[[f32, g], g]
                  i32 j1d) =
   map(fn [f32, g] (i32 i) =>
         map(fn f32 (i32 j) =>
-              if (i >= 1 && i <= g - 2
-                  && j >= 1 && j <= g - 2)
+              if inside(i, j, g)
               then
                 project_bottom_inner(i, j, P0, S0, i0d, j0d, i1d, j1d)
               else
@@ -350,8 +312,8 @@ fun f32
                        i32 j0d,
                        i32 i1d,
                        i32 j1d) =
-  (S0[i, j] - 0.5f32 * f32(g - 2)
-   * (P0[i + i0d, j + j0d] - P0[i + i1d, j + j1d]))
+  unsafe (S0[i, j] - 0.5f32 * f32(g - 2)
+          * (P0[i + i0d, j + j0d] - P0[i + i1d, j + j1d]))
 
 fun f32
   project_bottom_outer(i32 i,
@@ -363,18 +325,10 @@ fun f32
                        i32 i1d,
                        i32 j1d,
                        i32 b) =
-  if i == 0 && j == 0
-  then 0.5f32 * (project_bottom_outer_base(1, 0, P0, S0, i0d, j0d, i1d, j1d, b)
-              + project_bottom_outer_base(0, 1, P0, S0, i0d, j0d, i1d, j1d, b))
-  else if i == 0 && j == g - 1
-  then 0.5f32 * (project_bottom_outer_base(1, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
-              + project_bottom_outer_base(0, g - 2, P0, S0, i0d, j0d, i1d, j1d, b))
-  else if i == g - 1 && j == 0
-  then 0.5f32 * (project_bottom_outer_base(g - 2, 0, P0, S0, i0d, j0d, i1d, j1d, b)
-              + project_bottom_outer_base(g - 1, 1, P0, S0, i0d, j0d, i1d, j1d, b))
-  else if i == g - 1 && j == g - 1
-  then 0.5f32 * (project_bottom_outer_base(g - 2, g - 1, P0, S0, i0d, j0d, i1d, j1d, b)
-              + project_bottom_outer_base(g - 1, g - 2, P0, S0, i0d, j0d, i1d, j1d, b))
+  if in_outside_corner(i, j, g)
+  then let {i1, j1, i2, j2} = corner_index_neighbors(i, j, g)
+       in 0.5f32 * (project_bottom_outer_base(i1, j1, P0, S0, i0d, j0d, i1d, j1d, b)
+                    + project_bottom_outer_base(i2, j2, P0, S0, i0d, j0d, i1d, j1d, b))
   else project_bottom_outer_base(i, j, P0, S0, i0d, j0d, i1d, j1d, b)
 
 fun f32
@@ -387,23 +341,8 @@ fun f32
                             i32 i1d,
                             i32 j1d,
                             i32 b) =
-  if i == 0
-  then if b == 1
-       then -project_bottom_inner(1, j, P0, S0, i0d, j0d, i1d, j1d)
-       else project_bottom_inner(1, j, P0, S0, i0d, j0d, i1d, j1d)
-  else if i == g - 1
-  then if b == 1
-       then -project_bottom_inner(g - 2, j, P0, S0, i0d, j0d, i1d, j1d)
-       else project_bottom_inner(g - 2, j, P0, S0, i0d, j0d, i1d, j1d)
-  else if j == 0
-  then if b == 2
-       then -project_bottom_inner(i, 1, P0, S0, i0d, j0d, i1d, j1d)
-       else project_bottom_inner(i, 1, P0, S0, i0d, j0d, i1d, j1d)
-  else if j == g - 1
-  then if b == 2
-       then -project_bottom_inner(i, g - 2, P0, S0, i0d, j0d, i1d, j1d)
-       else project_bottom_inner(i, g - 2, P0, S0, i0d, j0d, i1d, j1d)
-  else 0.0f32 -- This is not supposed to happen.
+  let {i1, j1, f} = outermost_inner_index(i, j, g, b)
+  in f * project_bottom_inner(i1, j1, P0, S0, i0d, j0d, i1d, j1d)
 
 
 ------------------------------------------------------------
