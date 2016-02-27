@@ -33,5 +33,37 @@ fun {*[[real,n],n], *[[real,n],n]} lu_inplace(*[[real,n],n] a) =
   in
   {l,u}
 
+-- transpose l
+fun {*[[real,n],n], *[[real,n],n]} lu_par(*[[real,n],n] a) =
+  loop ({a,l,u} = {a,
+                   copy(replicate(n,replicate(n,0.0))),
+                   copy(replicate(n,replicate(n,0.0)))}) =
+    for k < n do
+      let ukk    = a[k,k] in
+      let u[k,k] = ukk    in
+      let {l_k,u_k} = unzip( 
+            map (fn {real,real} (int i) =>
+                    if(i<k)
+                    then { l[k,i],     u[k,i] }
+                    else { a[i,k]/ukk, a[k,i] }
+                , iota(n) )
+        )
+      in
+      let l[k] = l_k in
+      let u[k] = u_k in
+      let a = 
+        map( fn [real,n] (int i) =>
+                map( fn real (int j) =>
+                        if(i<k) || (j<k)
+                        then a[i,j]
+                        else a[i,j] - l[k,i]*u[k,j]
+                   , iota(n) )
+           , iota(n) )
+
+      in {a,l,u}
+  in
+  {l,u}
+
 fun {[[real,n],n], [[real,n],n]} main(*[[real,n],n] a) =
-  lu_inplace(a)
+  -- lu_inplace(a)
+  let {l,u} = lu_par(a) in { transpose(l), u }
