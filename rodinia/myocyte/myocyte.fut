@@ -1078,7 +1078,7 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
   else if ( xmax == xmin ) then { True, y_km1 }
   else 
   let {h, last_interval} = if (h > f32(xmax - xmin) )
-                           then { f32(xmax - xmin), 1 }
+                           then { f32(xmax - xmin), 1.0f32 }
                            else { h, last_interval }
   in
   -- initialize return and loop-variant params
