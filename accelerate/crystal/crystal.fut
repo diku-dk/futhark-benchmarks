@@ -17,7 +17,10 @@ fun f64 waver(f64 th, f64 x, f64 y, i32 n, f64 acc) =
 fun f64 wrap(f64 n) =
   let n_ = i32(n) in
   let n' = n - f64(n_) in
-  if odd(n_) then 1.0 - n' else n'
+  -- if odd(n_) then 1.0 - n' else n'
+  let odd_in_int = n_ & 1 in
+  let even_in_int = 1 - odd_in_int in
+  f64(odd_in_int) * (1.0 - n') + f64(even_in_int) * n'
 
 fun f64 wave(f64 th, f64 x, f64 y) =
   let cth = cos(th) in
