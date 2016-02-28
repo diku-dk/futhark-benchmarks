@@ -1,4 +1,4 @@
-include fluid.fut.module
+include fluid
 
 fun {[[f32, g], g],
      [[f32, g], g],
