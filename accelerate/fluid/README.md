@@ -27,7 +27,8 @@ http://www.dgp.toronto.edu/people/stam/reality/Research/pdf/GDC03.pdf
 
 ## The futhark code
 
-Please read `src-futhark/fluid-lib.fut`.  It describes the major choices.
+Please read `src-futhark/fluid.fut.module` -- this is the library.  It describes
+the major choices.
 
 
 ## Measurements
