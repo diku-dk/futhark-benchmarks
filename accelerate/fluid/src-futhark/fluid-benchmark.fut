@@ -1,4 +1,4 @@
---!import fluid-lib
+include "fluid.fut.module"
 
 fun {[[f32, g], g],
      [[f32, g], g],
