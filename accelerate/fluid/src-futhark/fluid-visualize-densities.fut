@@ -1,4 +1,4 @@
-include "fluid.fut.module"
+include fluid.fut.module
 
 fun i32 clamp(f32 x) =
   if x < 0.0f32
