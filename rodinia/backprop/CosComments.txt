@@ -1,0 +1,42 @@
+# backprop
+
+Benchmark was modified to fill in datastructures internally using Sobol random numbers;
+It receives as arguments the Sobol direction vectors, and N_IN.
+
+For the small dataset N_IN is 128, but is the only dimension that scales.
+
+N_HID = 16 and N_OUT = 1 statically :-(
+
+The computational kernel consists of:
+
+1. first call to function bpnn_layerforward
+    nested map-redomap structure, with: 
+        - the outer map on N_HID, the redomap on N_IN
+          NOTE: we can make N_IN very large => we can
+                sequentialize the outer map (since N_HID is on 16)
+
+2. second call to function bpnn_layerforward
+    nested map-redomap structure, with: 
+        - the outer map on N_OUT, the redomap on N_HID
+          NOTE: as before, sequentialize the outer map 
+                (since N_OUT is on 1), keep the reduce parallel;
+                it's not going to give speedup but at least runs
+                on GPU.
+
+3. function bpnn_output_error => a redomap on N_OUT (pity it has size only 1)
+
+4. function bpnn_hidden_error => a map-redomap nest:
+        - the outer map is on N_HID (parallel)
+        - the inner redomap is on N_OUT (sequentialize, please)
+
+5. first call to function bpnn_adjust_weights: two nested maps
+        - outer map of size N_HID+1 (17)
+        - inner map of size N_OUT    (1)
+    
+6. second call to function bpnn_adjust_weights: two nested maps
+        - outer map of size N_IN+1 (129)
+        - inner map of size N_HID   (16)
+
+THAT's ALL!
+
+ 
