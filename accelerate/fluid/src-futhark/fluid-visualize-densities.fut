@@ -1,4 +1,8 @@
---!import fluid-lib
+--
+-- ==
+-- tags { notravis }
+
+include fluid
 
 fun i32 clamp(f32 x) =
   if x < 0.0f32

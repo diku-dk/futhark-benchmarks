@@ -6,10 +6,12 @@
 -- notravis input @ data/medium.in
 -- output @ data/medium.out
 
+default(f32)
+
 fun int NUM_NEIGHBORS()      = 27
 fun int NUMBER_PAR_PER_BOX() = 100 
 
-fun real DOT({real,real,real} A, {real,real,real} B) =
+fun f32 DOT({f32,f32,f32} A, {f32,f32,f32} B) =
     let {ax,ay,az} = A in
     let {bx,by,bz} = B in
     ax*bx + ay*by + az*bz
@@ -37,21 +39,21 @@ fun int sobolInd( [int,30] dirVct, int n ) =
 -----------------------------------------
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
-fun  [ [ {real,real,real,real}, PAR_PER_BOX], number_boxes ]  -- result fv
-ComputKernel( real alpha
+fun  [ [ {f32,f32,f32,f32}, PAR_PER_BOX], number_boxes ]  -- result fv
+ComputKernel( f32 alpha
             , [   {int, int, int, int}, number_boxes]       box_coefs
             , [ [ {int, int, int, int}, number_boxes] ]     box_nnghs  -- outer dim should be NUM_NEIGHBORS
-            , [ [ {real,real,real,real}, PAR_PER_BOX], number_boxes ] rv
-            , [ [ real,                  PAR_PER_BOX], number_boxes ] qv
+            , [ [ {f32,f32,f32,f32}, PAR_PER_BOX], number_boxes ] rv
+            , [ [ f32,                  PAR_PER_BOX], number_boxes ] qv
             ) =
   let a2 = 2.0*alpha*alpha in
-  map( fn [ {real,real,real,real}, PAR_PER_BOX] (int l) =>
+  map( fn [ {f32,f32,f32,f32}, PAR_PER_BOX] (int l) =>
         let { bl_x, bl_y, bl_bz, bl_number } = box_coefs[l] in
         let rA = rv[l] in
-        map (fn {real,real,real,real} ( {real,real,real,real} rA_el ) => --(int i) =>
+        map (fn {f32,f32,f32,f32} ( {f32,f32,f32,f32} rA_el ) => --(int i) =>
                 let {rai_v, rai_x, rai_y, rai_z} = rA_el in -- rA[i] in
                 let psums =
-                  map ( fn {real,real,real,real} (int k) =>
+                  map ( fn {f32,f32,f32,f32} (int k) =>
                           let pointer = if (k > 0)
                                         then let {_,_,_,num} = unsafe box_nnghs[k-1, l] in num
                                         else l
@@ -69,7 +71,7 @@ ComputKernel( real alpha
                           -- second map on rA => can be blocked in shared memory --
                           ---------------------------------------------------------
                           let pres = 
-                            map( fn {real,real,real,real} ( { {real,real,real,real}, real } tup) =>
+                            map( fn {f32,f32,f32,f32} ( { {f32,f32,f32,f32}, f32 } tup) =>
                                     if ( invalid_neighb ) -- means no neighbor, should not accumulate!
                                     then { 0.0, 0.0, 0.0, 0.0 }
                                     else 
@@ -87,13 +89,13 @@ ComputKernel( real alpha
                                       {qbj*vij, qbj*fxij, qbj*fyij, qbj*fzij}
                                , zip(rB,qB) )
 
-                          in reduce( fn {real,real,real,real} ({real,real,real,real} a, {real,real,real,real} b) =>
+                          in reduce( fn {f32,f32,f32,f32} ({f32,f32,f32,f32} a, {f32,f32,f32,f32} b) =>
                                         let {a1,a2,a3,a4} = a in let {b1,b2,b3,b4} = b in {a1+b1, a2+b2, a3+b3, a4+b4}
                                    , {0.0,0.0,0.0,0.0}, pres)
 
                       , iota(NUM_NEIGHBORS()+1) )
 
-                in reduce( fn {real,real,real,real} ({real,real,real,real} a, {real,real,real,real} b) =>
+                in reduce( fn {f32,f32,f32,f32} ({f32,f32,f32,f32} a, {f32,f32,f32,f32} b) =>
                                 let {a1,a2,a3,a4} = a in let {b1,b2,b3,b4} = b in {a1+b1, a2+b2, a3+b3, a4+b4}
                          , {0.0,0.0,0.0,0.0}, psums)
                           
@@ -102,7 +104,7 @@ ComputKernel( real alpha
 
 -----------------------
 -----------------------
-fun  {[[real]],[[real]],[[real]],[[real]]}  
+fun  {[[f32]],[[f32]],[[f32]],[[f32]]}  
 --fun [[{int,int,int,int}]]
 main(int boxes1d) =
     let number_boxes = boxes1d * boxes1d * boxes1d in
@@ -150,17 +152,17 @@ main(int boxes1d) =
     ----------------------------------------------
     -- 2. Initialize input distances and charge --
     ----------------------------------------------
-    let rqv = map ( fn [ {real, {real,real,real,real}}, PAR_PER_BOX] (int i) =>
-                        map( fn {real, {real,real,real,real}} (int j) =>
+    let rqv = map ( fn [ {f32, {f32,f32,f32,f32}}, PAR_PER_BOX] (int i) =>
+                        map( fn {f32, {f32,f32,f32,f32}} (int j) =>
                                 let n = (i*PAR_PER_BOX + j)*5 + 1 in
                                 let s1= sobolInd(dirVct, n  ) in 
                                 let s2= sobolInd(dirVct, n+1) in 
                                 let s3= sobolInd(dirVct, n+2) in
                                 let s4= sobolInd(dirVct, n+3) in 
                                 let s5= sobolInd(dirVct, n+4) in
-                                {   real(s5%10 + 1) / 10.0, 
-                                  { real(s1%10 + 1) / 10.0, real(s2%10 + 1) / 10.0
-                                  , real(s3%10 + 1) / 10.0, real(s4%10 + 1) / 10.0 }
+                                {   f32(s5%10 + 1) / 10.0, 
+                                  { f32(s1%10 + 1) / 10.0, f32(s2%10 + 1) / 10.0
+                                  , f32(s3%10 + 1) / 10.0, f32(s4%10 + 1) / 10.0 }
                                 }
                            , iota(PAR_PER_BOX))
                   , iota(number_boxes) )
