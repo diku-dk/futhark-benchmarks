@@ -2,43 +2,45 @@
 --
 -- Complicated a little bit by the fact that Futhark does not natively
 -- support complex numbers.  We will represent a complex number as a
--- tuple {real,real}.
+-- tuple {f32,f32}.
 
-fun real dot({real,real} c) =
+default(f32)
+
+fun f32 dot({f32,f32} c) =
   let {r, i} = c in
   r * r + i * i
 
-fun {real,real} multComplex({real,real} x, {real,real} y) =
+fun {f32,f32} multComplex({f32,f32} x, {f32,f32} y) =
   let {a, b} = x in
   let {c, d} = y in
   {a*c - b * d,
    a*d + b * c}
 
-fun {real,real} addComplex({real,real} x, {real,real} y) =
+fun {f32,f32} addComplex({f32,f32} x, {f32,f32} y) =
   let {a, b} = x in
   let {c, d} = y in
   {a + c,
    b + d}
 
-fun int divergence(int depth, {real,real} c0) =
+fun int divergence(int depth, {f32,f32} c0) =
   loop ({c, i} = {c0, 0}) = while i < depth && dot(c) < 4.0 do
     {addComplex(c0, multComplex(c, c)),
      i + 1} in
   i
 
-fun [[int,screenX],screenY] mandelbrot(int screenX, int screenY, int depth, {real,real,real,real} view) =
+fun [[int,screenX],screenY] mandelbrot(int screenX, int screenY, int depth, {f32,f32,f32,f32} view) =
   let {xmin, ymin, xmax, ymax} = view in
   let sizex = xmax - xmin in
   let sizey = ymax - ymin in
   map(fn [int,screenX] (int y) =>
         map (fn int (int x) =>
-               let c0 = {xmin + (real(x) * sizex) / real(screenX),
-                         ymin + (real(y) * sizey) / real(screenY)} in
+               let c0 = {xmin + (f32(x) * sizex) / f32(screenX),
+                         ymin + (f32(y) * sizey) / f32(screenY)} in
                divergence(depth, c0)
             , iota(screenX)),
         iota(screenY))
 
-fun [[[int,3],screenX],screenY] main(int screenX, int screenY, int depth, {real,real,real,real} view) =
+fun [[[int,3],screenX],screenY] main(int screenX, int screenY, int depth, {f32,f32,f32,f32} view) =
   let escapes = mandelbrot(screenX, screenY, depth, view) in
   map(fn [[int,3],screenX] ([int] row) =>
         map(escapeToColour(depth), map(+1, row)),
@@ -48,7 +50,7 @@ fun [[[int,3],screenX],screenY] main(int screenX, int screenY, int depth, {real,
 fun [int,3] escapeToColour(int depth, int divergence) =
   if depth == divergence
   then [0xFF, 0x00, 0x00]
-  else let closeness = sqrt(real(divergence)) / sqrt(real(depth)) in
+  else let closeness = sqrt(f32(divergence)) / sqrt(f32(depth)) in
        let rcloseness = closeness in
        let gcloseness = exp(log(closeness) / log(2.0)) in
        let bcloseness = exp(log(closeness) / log(4.0)) in

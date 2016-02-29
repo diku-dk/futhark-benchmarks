@@ -4,19 +4,21 @@
 -- compiled input @ backprop-data/small.in
 -- output @ backprop-data/small.out
 
-fun real ETA()       = 0.3
-fun real MOMENTUM()  = 0.3
+default(f32)
+
+fun f32 ETA()       = 0.3
+fun f32 MOMENTUM()  = 0.3
 fun bool INIT_ZERO() = False
 
-fun real squash(real x) = 1.0 / (1.0 + exp(-x))
-fun real ABS   (real x) = if x < 0.0 then 0.0 - x else x
+fun f32 squash(f32 x) = 1.0 / (1.0 + exp(-x))
+fun f32 ABS   (f32 x) = if x < 0.0 then 0.0 - x else x
 
 -- Computational kernels
 
-fun {real, [real,n]}
-bpnn_output_error([real,n] target, [real,n] output) =
+fun {f32, [f32,n]}
+bpnn_output_error([f32,n] target, [f32,n] output) =
     let {errs, delta} = unzip (
-        map ( fn {real,real} (real t, real o) =>
+        map ( fn {f32,f32} (f32 t, f32 o) =>
                 let d = o * (1.0 - o) * (t - o) in
                 { if d < 0.0 then 0.0-d else d, d }
             , zip(target,output) ) ) in
@@ -24,10 +26,10 @@ bpnn_output_error([real,n] target, [real,n] output) =
     in  { err, delta }
 
 
-fun {real, [real,nh]}
-bpnn_hidden_error([real,no] delta_o, [[real,no],nh] who, [real,nh] hidden) =
+fun {f32, [f32,nh]}
+bpnn_hidden_error([f32,no] delta_o, [[f32,no],nh] who, [f32,nh] hidden) =
     let {errs, delta_h} = unzip (
-        map ( fn {real,real} (real hidden_el, [real] who_row) =>
+        map ( fn {f32,f32} (f32 hidden_el, [f32] who_row) =>
                 let prods  = zipWith( *, delta_o, who_row )       in
                 let sumrow = reduce ( +, 0.0, prods )             in
                 let new_el = hidden_el * (1.0-hidden_el) * sumrow in
@@ -37,15 +39,15 @@ bpnn_hidden_error([real,no] delta_o, [[real,no],nh] who, [real,nh] hidden) =
     let err = reduce( +, 0.0, errs)
     in  { err, delta_h }
 
-fun {[[real,ndelta],nly], [[real,ndelta],nly]}
-bpnn_adjust_weights([real,ndelta] delta, [real,nlym1] ly, [[real,ndelta],nly] w, [[real,ndelta],nly] oldw) =
-  let lyext = map( fn real (int k) =>
+fun {[[f32,ndelta],nly], [[f32,ndelta],nly]}
+bpnn_adjust_weights([f32,ndelta] delta, [f32,nlym1] ly, [[f32,ndelta],nly] w, [[f32,ndelta],nly] oldw) =
+  let lyext = map( fn f32 (int k) =>
                         if k < 1 then 1.0 else unsafe ly[k-1]
                  , iota(nly)) in
   unzip (
-  map ( fn {[real],[real]} ([real] w_row, [real] oldw_row, real lyk) =>
+  map ( fn {[f32],[f32]} ([f32] w_row, [f32] oldw_row, f32 lyk) =>
           unzip (
-            map ( fn {real,real} (real w_el, real oldw_el, real delta_el, int j) =>
+            map ( fn {f32,f32} (f32 w_el, f32 oldw_el, f32 delta_el, int j) =>
                     let new_dw = ETA()*delta_el*lyk + MOMENTUM()*oldw_el in
                     { w_el+new_dw, new_dw }
                 , zip(w_row,oldw_row,delta,iota(ndelta)) )
@@ -54,29 +56,29 @@ bpnn_adjust_weights([real,ndelta] delta, [real,nlym1] ly, [[real,ndelta],nly] w,
   )  )
 
 
-fun [real,n2]
-bpnn_layerforward([real,n1] l1, [[real,n2],n1] conn, [real,n2] conn_fstrow) =
+fun [f32,n2]
+bpnn_layerforward([f32,n1] l1, [[f32,n2],n1] conn, [f32,n2] conn_fstrow) =
   let connT     = transpose(conn) in
-  let res_tmp   = map ( fn real ([real,n1] conn_tr_row) =>
+  let res_tmp   = map ( fn f32 ([f32,n1] conn_tr_row) =>
                             let prods = zipWith(*, conn_tr_row, l1) in
                             reduce(+, 0.0, prods)
                       , connT ) in
-  map ( fn real (real pr, real conn0) => squash(pr+conn0)
+  map ( fn f32 (f32 pr, f32 conn0) => squash(pr+conn0)
       , zip(res_tmp, conn_fstrow) )
 
 --squash(rowsum)
 --------------------------------------------------------/
 
-fun { real, real
-    , [[real,n_hid], n_inp1]
-    , [[real,n_out],n_hidp1]
+fun { f32, f32
+    , [[f32,n_hid], n_inp1]
+    , [[f32,n_out],n_hidp1]
     }
-bpnn_train_kernel( [real,n_in]             input_units
-                 , [real,n_out]            target
-                 , [[real,n_hid], n_inp1]  input_weights
-                 , [[real,n_out],n_hidp1] hidden_weights
-                 , [[real,n_hid], n_inp1]  input_prev_weights
-                 , [[real,n_out],n_hidp1] hidden_prev_weights
+bpnn_train_kernel( [f32,n_in]             input_units
+                 , [f32,n_out]            target
+                 , [[f32,n_hid], n_inp1]  input_weights
+                 , [[f32,n_out],n_hidp1] hidden_weights
+                 , [[f32,n_hid], n_inp1]  input_prev_weights
+                 , [[f32,n_out],n_hidp1] hidden_prev_weights
 ) =
     let {inpweightsP_row0,inpweightsP} = split((1),  input_weights)        in
     let hidden_units = bpnn_layerforward(input_units,  inpweightsP, inpweightsP_row0[0]) in
@@ -97,9 +99,9 @@ bpnn_train_kernel( [real,n_in]             input_units
 
 ----------------------------------------------------/
 
-fun real sobolIndR( [int,num_bits] dirVct, int n ) =
+fun f32 sobolIndR( [int,num_bits] dirVct, int n ) =
     -- placed norm_fact here to check that hoisting does its job!
-    let norm_fact = 1.0 / ( real(1 << num_bits) + 1.0 ) in
+    let norm_fact = 1.0 / ( f32(1 << num_bits) + 1.0 ) in
     let n_gray = (n >> 1) ^ n in
     let res = 0 in
     loop (res) =
@@ -108,66 +110,66 @@ fun real sobolIndR( [int,num_bits] dirVct, int n ) =
         if (n_gray & t) == t
             then res ^ dirVct[i]
             else res
-    in real(res) * norm_fact
+    in f32(res) * norm_fact
 
-fun {[[real,n],m],[real,m]} bpnn_randomize_weights(int m, int n, int offset, [int] dirVct) =
+fun {[[f32,n],m],[f32,m]} bpnn_randomize_weights(int m, int n, int offset, [int] dirVct) =
     --let linw = map(sobolIndR(dirVct), map(+offset, iota(m*n)))
     --in  reshape((m,n), linw)
     -- OR with better structure:
     let mat =
-      map( fn [real] (int i) =>
-             map( fn real (int j) =>
+      map( fn [f32] (int i) =>
+             map( fn f32 (int j) =>
                     -- (n+1) needed to create the sob num
                     -- as in the original Rodinia code.
                     let offs = i*(n+1) + offset + 1 in
                     sobolIndR( dirVct, offs + j )
                 , iota(n) )
          , iota(m) ) in
-    let vct =map( fn real (int i) =>
+    let vct =map( fn f32 (int i) =>
                     sobolIndR( dirVct, offset+i*(n+1) )
                 , iota(m) )
     in {mat, vct}
 
-fun [real,m] bpnn_randomize_row(int m, int offset, [int] dirVct) =
+fun [f32,m] bpnn_randomize_row(int m, int offset, [int] dirVct) =
     map ( sobolIndR(dirVct), map(+offset, iota(m)) )
 
-fun [real,m] bpnn_constant_row(int m, real val) =
+fun [f32,m] bpnn_constant_row(int m, f32 val) =
     replicate(m, val)
 
-fun [[real,n],m] bpnn_zero_weights(int m, int n) =
-    map (fn [real] (int i) => replicate(n, 0.0)
+fun [[f32,n],m] bpnn_zero_weights(int m, int n) =
+    map (fn [f32] (int i) => replicate(n, 0.0)
         , iota(m) )
     --reshape((m,n), replicate(m*n, 0.0))
 
 ----------------------------------------------------/
 
-fun { [real,n_in ]
-    , [real,n_out]
-    ,{[[real,n_hid], n_inp1], [real,n_inp1 ]}
-    ,{[[real,n_out],n_hidp1], [real,n_hidp1]}
-    , [[real,n_hid],n_inp1 ]
-    , [[real,n_out],n_hidp1]
+fun { [f32,n_in ]
+    , [f32,n_out]
+    ,{[[f32,n_hid], n_inp1], [f32,n_inp1 ]}
+    ,{[[f32,n_out],n_hidp1], [f32,n_hidp1]}
+    , [[f32,n_hid],n_inp1 ]
+    , [[f32,n_out],n_hidp1]
     }
 bpnn_create(int n_in, int n_inp1, int n_hid, int n_hidp1, int n_out, int offset, [int] dirVct) =
   -- [n_out]
   let target = bpnn_constant_row(n_out, 0.1) in
 
-  -- [[real,n_hidden],n_in]
+  -- [[f32,n_hidden],n_in]
   let {offset, {input_weights, input_weights_fstcol}} =
     if INIT_ZERO()
     then {  offset, {bpnn_zero_weights(n_inp1, n_hid), replicate(n_inp1, 0.0)} }
     else {  offset+n_inp1*n_hidp1,
             bpnn_randomize_weights(n_inp1, n_hid, offset, dirVct)  } in
 
-  -- [[real,n_out],n_hidden]
+  -- [[f32,n_out],n_hidden]
   let {hidden_weights, hidden_weights_fstcol} =
               bpnn_randomize_weights(n_hidp1, n_out, offset, dirVct) in
   let offset = offset + n_hidp1*(n_out+1)                            in
 
-  --[[real,n_hidden],n_in]
+  --[[f32,n_hidden],n_in]
   let input_prev_weights = bpnn_zero_weights(n_inp1,  n_hid) in
 
-  --[[real,n_out],n_hidden]
+  --[[f32,n_out],n_hidden]
   let hidden_prev_weights= bpnn_zero_weights(n_hidp1, n_out) in
 
   --[n_in]
@@ -179,15 +181,15 @@ bpnn_create(int n_in, int n_inp1, int n_hid, int n_hidp1, int n_out, int offset,
     input_prev_weights, hidden_prev_weights
   }
 
-fun [[real],m] consColumn([[real,n],m] mat, [real,m] col) =
+fun [[f32],m] consColumn([[f32,n],m] mat, [f32,m] col) =
     let np1 = n+1 in
-    map ( fn [real] ([real] matrow, real colelm) =>
-                map ( fn real (int k) =>
+    map ( fn [f32] ([f32] matrow, f32 colelm) =>
+                map ( fn f32 (int k) =>
                         if k < 1 then colelm else unsafe matrow[k-1]
                     , iota(n+1) )
         , zip(mat,col) )
 
-fun { real, real, [[real]], [[real]] }
+fun { f32, f32, [[f32]], [[f32]] }
 main(int n_in, [int,num_bits] dirVct) =
     let {n_inp1, n_hid, n_hidp1, n_out} = {n_in+1, 16, 16+1, 1} in
     let {   input_units, target,

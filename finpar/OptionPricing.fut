@@ -9,6 +9,8 @@
 -- compiled input @ OptionPricing-data/large.in
 -- output @ OptionPricing-data/large.out
 
+default(f32)
+
 fun int grayCode(int x) = (x >> 1) ^ x
 
 ----------------------------------------
@@ -33,10 +35,10 @@ fun int xorInds(int n, [int,num_bits] dir_vs) =
 fun [int,m] sobolIndI ( [[int,num_bits],m] dir_vs, int n ) =
     map( xorInds(n), dir_vs )
 
-fun [real,m] sobolIndR( [[int,num_bits],m] dir_vs, int n ) =
-    let divisor = 2.0 ** real(num_bits) in
+fun [f32,m] sobolIndR( [[int,num_bits],m] dir_vs, int n ) =
+    let divisor = 2.0 ** f32(num_bits) in
     let arri    = sobolIndI( dir_vs, n )     in
-        map( fn real (int x) => real(x) / divisor, arri )
+        map( fn f32 (int x) => f32(x) / divisor, arri )
 
 --------------------------------
 ---- STRENGTH-REDUCED FORMULA
@@ -59,7 +61,7 @@ fun [int] sobolRecI([[int,num_bits]] sob_dir_vs, [int] prev, int n) =
 	 vct_row[bit] ^ prev
       , zip(sob_dir_vs,prev))
 
-fun [[real]] sobolRecMap( real  sob_fact, [[int]] dir_vs, {int,int} lu_bds ) =
+fun [[f32]] sobolRecMap( f32  sob_fact, [[int]] dir_vs, {int,int} lu_bds ) =
   let {lb_inc, ub_exc} = lu_bds in 
   -- the if inside may be particularly ugly for
   -- flattening since it introduces control flow!
@@ -73,9 +75,9 @@ fun [[real]] sobolRecMap( real  sob_fact, [[int]] dir_vs, {int,int} lu_bds ) =
 	 	     , replicate( size(0,dir_vs), 0 ) 
 		     , contribs
 		     )
-  in  map( fn [real] ([int] xs) => 
-	     map ( fn real (int x) => 
-		     real(x) * sob_fact 
+  in  map( fn [f32] ([int] xs) => 
+	     map ( fn f32 (int x) => 
+		     f32(x) * sob_fact 
 		 , xs)
 	 , vct_ints)
 
@@ -87,8 +89,8 @@ fun [int] recM( [[int,num_bits]] sob_dirs, int i ) =
   map( fn int([int] row) => row[bit], sob_dirs )
 
 -- computes sobol numbers: n,..,n+chunk-1
-fun [[real],chunk] sobolChunk([[int,num_bits],len] dir_vs, int n, int chunk) =
-  let sob_fact= 1.0 / real(1 << num_bits)       in
+fun [[f32],chunk] sobolChunk([[int,num_bits],len] dir_vs, int n, int chunk) =
+  let sob_fact= 1.0 / f32(1 << num_bits)       in
   let sob_beg = sobolIndI(dir_vs, n+1)             in
   let contrbs = map( fn [int] (int k) =>
                         let sob = k + n in
@@ -98,25 +100,25 @@ fun [[real],chunk] sobolChunk([[int,num_bits],len] dir_vs, int n, int chunk) =
   let vct_ints= scan( fn [int] ([int] x, [int] y) => 
                         zipWith(^, x, y)
                     , replicate(len, 0), contrbs ) in
-  map( fn [real] ([int] xs) => 
-	     map ( fn real (int x) => 
-		     real(x) * sob_fact 
+  map( fn [f32] ([int] xs) => 
+	     map ( fn f32 (int x) => 
+		     f32(x) * sob_fact 
 		 , xs)
 	 , vct_ints)
   
 ----------------------------------------
 --- Inverse Gaussian
 ----------------------------------------
-fun real polyAppr(      real x,
-                        real a0, real a1, real a2, real a3,
-                        real a4, real a5, real a6, real a7,
-                        real b0, real b1, real b2, real b3,
-                        real b4, real b5, real b6, real b7
+fun f32 polyAppr(      f32 x,
+                        f32 a0, f32 a1, f32 a2, f32 a3,
+                        f32 a4, f32 a5, f32 a6, f32 a7,
+                        f32 b0, f32 b1, f32 b2, f32 b3,
+                        f32 b4, f32 b5, f32 b6, f32 b7
                     ) =
         (x*(x*(x*(x*(x*(x*(x*a7+a6)+a5)+a4)+a3)+a2)+a1)+a0) /
         (x*(x*(x*(x*(x*(x*(x*b7+b6)+b5)+b4)+b3)+b2)+b1)+b0)
 
-fun real smallcase(real q) =
+fun f32 smallcase(f32 q) =
         q * polyAppr( 0.180625 - q * q,
 
                       3.387132872796366608,
@@ -138,7 +140,7 @@ fun real smallcase(real q) =
                       5226.495278852854561
                     )
 
-fun real intermediate(real r) =
+fun f32 intermediate(f32 r) =
         polyAppr( r - 1.6,
 
                   1.42343711074968357734,
@@ -160,7 +162,7 @@ fun real intermediate(real r) =
                   1.05075007164441684324e-9
                 )
 
-fun real tail(real r) =
+fun f32 tail(f32 r) =
         polyAppr( r - 5.0,
 
                   6.6579046435011037772,
@@ -182,7 +184,7 @@ fun real tail(real r) =
                   2.04426310338993978564e-5
                 )
 
-fun real ugaussianEl( real p ) =
+fun f32 ugaussianEl( f32 p ) =
     let dp = p - 0.5
     in  --if  ( fabs(dp) <= 0.425 )
         if ( ( (dp < 0.0 ) && (0.0 - dp <= 0.425) ) || 
@@ -198,16 +200,16 @@ fun real ugaussianEl( real p ) =
 
 -- Transforms a uniform distribution [0,1) 
 -- into a gaussian distribution (-inf, +inf)
-fun [real,n] ugaussian([real,n] ps) = map(ugaussianEl, ps)
+fun [f32,n] ugaussian([f32,n] ps) = map(ugaussianEl, ps)
 
 
 ---------------------------------
 --- Brownian Bridge
 ---------------------------------
-fun [real,num_dates] brownianBridgeDates (
+fun [f32,num_dates] brownianBridgeDates (
                 [[int, num_dates],3] bb_inds,
-                [[real,num_dates],3] bb_data,
-                 [real,num_dates]    gauss
+                [[f32,num_dates],3] bb_data,
+                 [f32,num_dates]    gauss
             ) =
     let bi = bb_inds[0] in
     let li = bb_inds[1] in
@@ -244,11 +246,11 @@ fun [real,num_dates] brownianBridgeDates (
             in  bbrow
        in bbrow
 
-fun [[real,num_und],num_dates] brownianBridge (
+fun [[f32,num_und],num_dates] brownianBridge (
                 int                  num_und,
                 [[int, num_dates],3] bb_inds,
-                [[real,num_dates],3] bb_data,
-                 [real]  gaussian_arr
+                [[f32,num_dates],3] bb_data,
+                 [f32]  gaussian_arr
             ) =
     let gauss2d  = reshape((num_dates,num_und), gaussian_arr) in
     let gauss2dT = transpose(gauss2d) in
@@ -260,47 +262,47 @@ fun [[real,num_und],num_dates] brownianBridge (
 ---------------------------------
 --- Black-Scholes
 ---------------------------------
-fun [real,n] take(int n, [real] a) = let {first, rest} = split((n), a) in first
+fun [f32,n] take(int n, [f32] a) = let {first, rest} = split((n), a) in first
 
-fun [[real,num_und],num_dates] 
-correlateDeltas( [[real,num_und],num_und  ] md_c, 
-                 [[real,num_und],num_dates] zds  
+fun [[f32,num_und],num_dates] 
+correlateDeltas( [[f32,num_und],num_und  ] md_c, 
+                 [[f32,num_und],num_dates] zds  
 ) =
-    map( fn [real,num_und] ([real,num_und] zi) =>
-            map( fn real (int j) =>
+    map( fn [f32,num_und] ([f32,num_und] zi) =>
+            map( fn f32 (int j) =>
                     let x = zipWith( *, take(j+1,zi), take(j+1,md_c[j]) )
                     in  reduce( +, 0.0, x )
                , iota(num_und) )
        , zds )
 
-fun [real,num_und] combineVs(  [real,num_und] n_row, 
-                               [real,num_und] vol_row, 
-                               [real,num_und] dr_row ) =
+fun [f32,num_und] combineVs(  [f32,num_und] n_row, 
+                               [f32,num_und] vol_row, 
+                               [f32,num_und] dr_row ) =
     map(+, zip(dr_row, map(*, zip(n_row, vol_row ) )))
 
-fun [[real,num_und],num_dates] 
-mkPrices(   [real,num_und]            md_starts,
-           [[real,num_und],num_dates] md_vols,
-		   [[real,num_und],num_dates] md_drifts,
-           [[real,num_und],num_dates] noises
+fun [[f32,num_und],num_dates] 
+mkPrices(   [f32,num_und]            md_starts,
+           [[f32,num_und],num_dates] md_vols,
+		   [[f32,num_und],num_dates] md_drifts,
+           [[f32,num_und],num_dates] noises
 ) =
     let c_rows = map( combineVs, zip(noises, md_vols, md_drifts) ) in
-    let e_rows = map( fn [real,num_und] ([real] x) =>
+    let e_rows = map( fn [f32,num_und] ([f32] x) =>
                         map(exp, x)
                     , c_rows --map( combineVs, zip(noises, md_vols, md_drifts) )
                     )
-    in  map(fn [real,num_und] ([real] x) =>
+    in  map(fn [f32,num_und] ([f32] x) =>
               zipWith(*, md_starts, x)
-           , scan( fn [real] ([real] x, [real] y) => zipWith(*, x, y)
+           , scan( fn [f32] ([f32] x, [f32] y) => zipWith(*, x, y)
                  , replicate(num_und, 1.0)
                  , e_rows))
 
-fun [[real,num_und],num_dates] blackScholes(
-                [[real,num_und],num_und  ] md_c,
-                [[real,num_und],num_dates] md_vols,
-                [[real,num_und],num_dates] md_drifts,
-                 [real,num_und]            md_starts,
-                [[real,num_und],num_dates] bb_arr
+fun [[f32,num_und],num_dates] blackScholes(
+                [[f32,num_und],num_und  ] md_c,
+                [[f32,num_und],num_dates] md_vols,
+                [[f32,num_und],num_dates] md_drifts,
+                 [f32,num_und]            md_starts,
+                [[f32,num_und],num_dates] bb_arr
            ) =
     let noises = correlateDeltas(md_c, bb_arr)
     in  mkPrices(md_starts, md_vols, md_drifts, noises)
@@ -308,18 +310,18 @@ fun [[real,num_und],num_dates] blackScholes(
 ----------------------------------------
 -- MAIN
 ----------------------------------------
-fun [real] main(
+fun [f32] main(
                int                                    contract_number,
                int                                    num_mc_it,
              [[int,num_bits]]                         dir_vs_nosz,
-             [[[real,num_und],num_und  ],num_models]  md_cs,
-             [[[real,num_und],num_dates],num_models]  md_vols,
-             [[[real,num_und],num_dates],num_models]  md_drifts,
-             [[real,num_und],num_models]              md_sts,
-             [[real],num_models]                      md_detvals,
-             [[real],num_models]                      md_discts,
+             [[[f32,num_und],num_und  ],num_models]  md_cs,
+             [[[f32,num_und],num_dates],num_models]  md_vols,
+             [[[f32,num_und],num_dates],num_models]  md_drifts,
+             [[f32,num_und],num_models]              md_sts,
+             [[f32],num_models]                      md_detvals,
+             [[f32],num_models]                      md_discts,
              [[int, num_dates],3]                     bb_inds,
-             [[real,num_dates],3]                     bb_data
+             [[f32,num_dates],3]                     bb_data
 ) =
   let dir_vs    = reshape( (num_dates*num_und, num_bits), dir_vs_nosz ) in
  
@@ -331,44 +333,44 @@ fun [real] main(
 
   let bb_mat    = map ( brownianBridge( num_und, bb_inds, bb_data ), gauss_mat ) in
 
-  let payoffs   = map ( fn [real,num_models] ([[real]] bb_row) =>
+  let payoffs   = map ( fn [f32,num_models] ([[f32]] bb_row) =>
 			  let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
 			  let bd_row =
-                            map (fn [[real,num_und],num_dates] ({[[real]],[[real]],[[real]],[real]} m) =>
+                            map (fn [[f32,num_und],num_dates] ({[[f32]],[[f32]],[[f32]],[f32]} m) =>
 				   let {c,vol,drift,st} = m in
 				   blackScholes(c, vol, drift, st, bb_row)
 				, market_params) in
                           let payoff_params = zip(md_discts, md_detvals, bd_row) in
-                          map (fn real ({[real],[real],[[real]]} p) =>
+                          map (fn f32 ({[f32],[f32],[[f32]]} p) =>
 				 let {disct, detval, bd} = p in
 				 genericPayoff(contract_number, disct, detval, bd)
 			      , payoff_params)
 		      , bb_mat)
   in
-  let payoff    = reduce ( fn [real] ([real] x, [real] y) => 
+  let payoff    = reduce ( fn [f32] ([f32] x, [f32] y) => 
 			     zipWith(+, x, y)
 			 , replicate(num_models, 0.0)
 			 , payoffs )
-  in  map (fn real (real price) => price / real(num_mc_it), payoff)
+  in  map (fn f32 (f32 price) => price / f32(num_mc_it), payoff)
 
 
 
-fun [real] mainRec(
+fun [f32] mainRec(
                int                                    contract_number,
                int                                    num_mc_it,
              [[int,num_bits]]                         dir_vs_nosz,
-             [[[real,num_und],num_und  ],num_models]  md_cs,
-             [[[real,num_und],num_dates],num_models]  md_vols,
-             [[[real,num_und],num_dates],num_models]  md_drifts,
-             [[real,num_und],num_models]              md_sts,
-             [[real],num_models]                      md_detvals,
-             [[real],num_models]                      md_discts,
+             [[[f32,num_und],num_und  ],num_models]  md_cs,
+             [[[f32,num_und],num_dates],num_models]  md_vols,
+             [[[f32,num_und],num_dates],num_models]  md_drifts,
+             [[f32,num_und],num_models]              md_sts,
+             [[f32],num_models]                      md_detvals,
+             [[f32],num_models]                      md_discts,
              [[int, num_dates],3]                     bb_inds,
-             [[real,num_dates],3]                     bb_data
+             [[f32,num_dates],3]                     bb_data
 ) =
   let sobvctsz  = num_dates*num_und in
   let dir_vs    = reshape( (sobvctsz,num_bits), dir_vs_nosz ) in
-  let sobol_mat = streamMap( fn [[real,sobvctsz]] (int chunk, [int] ns) =>
+  let sobol_mat = streamMap( fn [[f32,sobvctsz]] (int chunk, [int] ns) =>
                                 sobolChunk(dir_vs, ns[0], chunk)
                            , iota(num_mc_it) ) in
 
@@ -376,43 +378,43 @@ fun [real] mainRec(
 
   let bb_mat    = map ( brownianBridge( num_und, bb_inds, bb_data ), gauss_mat ) in
 
-  let payoffs   = map ( fn [real] ([[real]] bb_row) =>
+  let payoffs   = map ( fn [f32] ([[f32]] bb_row) =>
 			                let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
-			                let bd_row = map (fn [[real]] ({[[real]],[[real]],[[real]],[real]} m) =>
+			                let bd_row = map (fn [[f32]] ({[[f32]],[[f32]],[[f32]],[f32]} m) =>
 				                                let {c,vol,drift,st} = m in
 					                            blackScholes(c, vol, drift, st, bb_row)
 					                         , market_params) 
                             in
 			                let payoff_params = zip(md_discts, md_detvals, bd_row) in  
-                            map (fn real ({[real],[real],[[real]]} p) =>
+                            map (fn f32 ({[f32],[f32],[[f32]]} p) =>
 				                    let {disct, detval, bd} = p in
 				                    genericPayoff(contract_number, disct, detval, bd)
 				                , payoff_params)
 		              , bb_mat)
   in
-  let payoff    = reduce( fn [real] ([real] x, [real] y) => 
+  let payoff    = reduce( fn [f32] ([f32] x, [f32] y) => 
 			                    zipWith(+, x, y)
 			            , replicate(num_models, 0.0)
 			            , payoffs )
-  in  map (fn real (real price) => price / real(num_mc_it), payoff)
+  in  map (fn f32 (f32 price) => price / f32(num_mc_it), payoff)
 
 
 ----------------------------------------
 -- PAYOFF FUNCTIONS
 ----------------------------------------
-fun real genericPayoff(int contract, [real] md_disct, [real] md_detval, [[real]] xss) = 
+fun f32 genericPayoff(int contract, [f32] md_disct, [f32] md_detval, [[f32]] xss) = 
     if      (contract == 1) then payoff1(md_disct, md_detval, xss)
     else if (contract == 2) then payoff2(md_disct, xss)
     else if (contract == 3) then payoff3(md_disct, xss)
     else 0.0                
 
-fun real payoff1([real] md_disct, [real] md_detval, [[real,1],1] xss) = 
+fun f32 payoff1([f32] md_disct, [f32] md_detval, [[f32,1],1] xss) = 
     let detval = unsafe md_detval[0] in
     let amount = ( xss[0,0] - 4000.0 ) * detval in
     let amount0= if (0.0 < amount) then amount else 0.0
     in  trajInner(amount0, 0, md_disct)
 
-fun real payoff2 ([real] md_disc, [[real,3],5] xss) =
+fun f32 payoff2 ([f32] md_disc, [[f32,3],5] xss) =
   let {date, amount} = 
     if      (1.0 <= fminPayoff(xss[0])) then {0, 1150.0}
     else if (1.0 <= fminPayoff(xss[1])) then {1, 1300.0}
@@ -425,8 +427,8 @@ fun real payoff2 ([real] md_disc, [[real,3],5] xss) =
 	 in {4, val}
   in  trajInner(amount, date, md_disc) 
 
-fun real payoff3([real] md_disct, [[real,3],367] xss) =
-    let conds  = map (fn bool ([real] x) => (x[0] <= 2630.6349999999998) || 
+fun f32 payoff3([f32] md_disct, [[f32,3],367] xss) =
+    let conds  = map (fn bool ([f32] x) => (x[0] <= 2630.6349999999998) || 
 	 	                            (x[1] <= 8288.0)             || 
 		                            (x[2] <=  840.0)
 		     , xss)                    in
@@ -442,15 +444,15 @@ fun real payoff3([real] md_disct, [[real,3],367] xss) =
     let price2 = trajInner(amount, 1, md_disct) in
     price1 + price2
 
-fun real fminPayoff([real] xs) = 
+fun f32 fminPayoff([f32] xs) = 
 --    MIN( zipWith(/, xss, {3758.05, 11840.0, 1200.0}) )
     let {a,b,c} = { xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0} in
     if a < b then if a < c then a else c
 	     else if b < c then b else c
 
-fun real MIN([real] arr) =
-  reduce( fn real (real x, real y) => if(x<y) then x else y, arr[0], arr )
+fun f32 MIN([f32] arr) =
+  reduce( fn f32 (f32 x, f32 y) => if(x<y) then x else y, arr[0], arr )
 
 fun int MINint(int x, int y) = if x < y then x else y
 
-fun real trajInner(real amount, int ind, [real] disc) = amount * unsafe disc[ind]
+fun f32 trajInner(f32 amount, int ind, [f32] disc) = amount * unsafe disc[ind]
