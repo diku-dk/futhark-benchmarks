@@ -3,7 +3,7 @@
 -- for fusion - it is 25% slower than srad_core.fut.
 --
 -- ==
--- compiled input @ data/image.in
+-- notravis input @ data/image.in
 -- output @ data/image.out
 
 default(f32)
