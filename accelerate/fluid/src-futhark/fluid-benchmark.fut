@@ -1,4 +1,8 @@
---!import fluid-lib
+--
+-- ==
+-- tags { notravis }
+
+include fluid
 
 fun {[[f32, g], g],
      [[f32, g], g],

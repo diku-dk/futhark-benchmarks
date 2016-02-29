@@ -11,6 +11,8 @@
 -- compiled input @ data/image.in
 -- output @ data/image.out
 
+default(f32)
+
 fun int indexN(int rows, int i) =
   if i == 0 then i else i - 1
 
@@ -36,9 +38,9 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
   let NeROI = (r2-r1+1)*(c2-c1+1) in
 
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
-  let image = map(fn [real,cols] ([int] row) =>
-                    map(fn real (int pixel) =>
-                          exp(real(pixel)/255.0),
+  let image = map(fn [f32,cols] ([int] row) =>
+                    map(fn f32 (int pixel) =>
+                          exp(f32(pixel)/255.0),
                         row),
                     image) in
   loop (image) = for i < niter do
@@ -46,17 +48,17 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
     let sum = reduce(+, 0.0, reshape((Ne), image)) in
     let sum2 = reduce(+, 0.0, map(**2.0, reshape((Ne), image))) in
     -- get mean (average) value of element in ROI
-    let meanROI = sum / real(NeROI) in
+    let meanROI = sum / f32(NeROI) in
     -- gets variance of ROI
-    let varROI = (sum2 / real(NeROI)) - meanROI*meanROI in
+    let varROI = (sum2 / f32(NeROI)) - meanROI*meanROI in
     -- gets standard deviation of ROI
     let q0sqr = varROI / (meanROI*meanROI) in
 
     let {dN, dS, dW, dE, c} =
       unzip(
-        zipWith(fn [{real,real,real,real,real},cols]
-                  (int i, [real] row) =>
-                    zipWith(fn {real,real,real,real,real} (int j, real Jc) =>
+        zipWith(fn [{f32,f32,f32,f32,f32},cols]
+                  (int i, [f32] row) =>
+                    zipWith(fn {f32,f32,f32,f32,f32} (int j, f32 Jc) =>
                               let dN_k = unsafe image[indexN(rows,i),j] - Jc in
                               let dS_k = unsafe image[indexS(rows,i),j] - Jc in
                               let dW_k = unsafe image[i, indexW(cols,j)] - Jc in
@@ -78,9 +80,9 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
                , iota(rows), image)) in
 
     let image =
-      zipWith(fn [real,cols]
-                (int i, [real] image_row, [real] c_row, [real] dN_row, [real] dS_row, [real] dW_row, [real] dE_row) =>
-                zipWith(fn real (int j, real pixel, real c_k, real dN_k, real dS_k, real dW_k, real dE_k) =>
+      zipWith(fn [f32,cols]
+                (int i, [f32] image_row, [f32] c_row, [f32] dN_row, [f32] dS_row, [f32] dW_row, [f32] dE_row) =>
+                zipWith(fn f32 (int j, f32 pixel, f32 c_k, f32 dN_k, f32 dS_k, f32 dW_k, f32 dE_k) =>
                           let cN = c_k in
                           let cS = unsafe c[indexS(rows, i), j] in
                           let cW = c_k in
@@ -92,8 +94,8 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
     image in
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
-  let image = map(fn [int,cols] ([real] row) =>
-                    map(fn int (real pixel) =>
+  let image = map(fn [int,cols] ([f32] row) =>
+                    map(fn int (f32 pixel) =>
                           -- take logarithm of image, log compress
                           int(log(pixel)*255.0),
                         row),

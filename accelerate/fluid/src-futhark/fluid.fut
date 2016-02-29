@@ -31,21 +31,11 @@
 --   + `fluid-visualize-densities.fut`: Generate `n_steps` frames with the
 --     evolving densities.
 --   + `fluid-measure.fut`: Calculate the resulting densities and forces after
---     `n_steps`, not spending memory to store the i32ermediate frames.
+--     `n_steps`, not spending memory to store the intermediate frames.
 --
 -- The different `main` functions take the same arguments.
---
--- To accomodate this library approach, an ad hoc import-mechanism is used.  For
--- example, while one would usually run
---
---   $ futhark-c fluid-visualize-densities.fut
---
--- to compile the file, one should currently instead run
---
---   $ ./with-imports futhark-c fluid-visualize-densities.fut
---
--- This should work with all futhark-* programs.  It will be like this until
--- such a time when Futhark gets a proper module system.
+-- ==
+-- tags { disable }
 
 ------------------------------------------------------------
 -- General helper functions.

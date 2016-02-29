@@ -13,7 +13,9 @@
 -- compiled input @ data/2048.in
 -- output @ data/2048.out
 
-fun {*[[real,n],n], *[[real,n],n]} lu_inplace(*[[real,n],n] a) =
+default(f64)
+
+fun {*[[f64,n],n], *[[f64,n],n]} lu_inplace(*[[f64,n],n] a) =
   loop ({a,l,u} = {a,
                    copy(replicate(n,replicate(n,0.0))),
                    copy(replicate(n,replicate(n,0.0)))}) =
@@ -34,7 +36,7 @@ fun {*[[real,n],n], *[[real,n],n]} lu_inplace(*[[real,n],n] a) =
   {l,u}
 
 -- transpose l
-fun {*[[real,n],n], *[[real,n],n]} lu_par(*[[real,n],n] a) =
+fun {*[[f64,n],n], *[[f64,n],n]} lu_par(*[[f64,n],n] a) =
   loop ({a,l,u} = {a,
                    copy(replicate(n,replicate(n,0.0))),
                    copy(replicate(n,replicate(n,0.0)))}) =
@@ -42,7 +44,7 @@ fun {*[[real,n],n], *[[real,n],n]} lu_par(*[[real,n],n] a) =
       let ukk    = a[k,k] in
       let u[k,k] = ukk    in
       let {l_k,u_k} = unzip( 
-            map (fn {real,real} (int i) =>
+            map (fn {f64,f64} (int i) =>
                     if(i<k)
                     then { l[k,i],     u[k,i] }
                     else { a[i,k]/ukk, a[k,i] }
@@ -52,8 +54,8 @@ fun {*[[real,n],n], *[[real,n],n]} lu_par(*[[real,n],n] a) =
       let l[k] = l_k in
       let u[k] = u_k in
       let a = 
-        map( fn [real,n] (int i) =>
-                map( fn real (int j) =>
+        map( fn [f64,n] (int i) =>
+                map( fn f64 (int j) =>
                         if(i<k) || (j<k)
                         then a[i,j]
                         else a[i,j] - l[k,i]*u[k,j]
@@ -64,6 +66,6 @@ fun {*[[real,n],n], *[[real,n],n]} lu_par(*[[real,n],n] a) =
   in
   {l,u}
 
-fun {[[real,n],n], [[real,n],n]} main(*[[real,n],n] a) =
+fun {[[f64,n],n], [[f64,n],n]} main(*[[f64,n],n] a) =
   -- lu_inplace(a)
-  let {l,u} = lu_par(a) in { transpose(l), u }
+  let {l,u} = lu_inplace(a) in { transpose(l), u }
