@@ -57,7 +57,7 @@ lud_diagonal([[f32,b],b] a0) =
                          loop (sum) = for k < (i+1) do
                             sum + a2[k,i+1] * row[k]
                          in sum
-                    else 0.0
+                    else 0.0f32
                     in
                     let row[i+1] = row[i+1] - sum
                     in row
