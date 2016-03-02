@@ -11,6 +11,18 @@ N_HID = 16 and N_OUT = 1 statically :-(
 
 The computational kernel consists of:
 
+0. function bpnn_layerforward is defined as:
+
+            fun [f32,n2]
+            bpnn_layerforward([f32,n1] l1, [[f32,n2],n1] conn, [f32,n2] conn_fstrow) =
+                let connT     = transpose(conn) in
+                let res_tmp   = map ( fn f32 ([f32,n1] conn_tr_row) =>
+                                        let prods = zipWith(*, conn_tr_row, l1) in
+                                        reduce(+, 0.0, prods)
+                                  , connT ) in
+                map ( fn f32 (f32 pr, f32 conn0) => squash(pr+conn0)
+                    , zip(res_tmp, conn_fstrow) )
+
 1. first call to function bpnn_layerforward
     nested map-redomap structure, with: 
         - the outer map on N_HID, the inner redomap on N_IN

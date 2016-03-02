@@ -160,7 +160,7 @@ fun [[f32,nel],5]
                 let normal_len = sqrt(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z) in
                 if (0 <= nb) -- a legitimate neighbor
                 then let density_nb    = unsafe variables[VAR_DENSITY(),    nb] in
-		     let momentum_nb_x = unsafe variables[VAR_MOMENTUM()+0, nb] in
+		             let momentum_nb_x = unsafe variables[VAR_MOMENTUM()+0, nb] in
                      let momentum_nb_y = unsafe variables[VAR_MOMENTUM()+1, nb] in
                      let momentum_nb_z = unsafe variables[VAR_MOMENTUM()+2, nb] in
                      let momentum_nb   = {momentum_nb_x, momentum_nb_y, momentum_nb_z} in
@@ -308,21 +308,25 @@ main(  [f32,nel]       areas,
     let NDIM = 3 in
     let NNB  = 4 in
     let angle_of_attack = (3.1415926535897931 / 180.0) * deg_angle_of_attack() in
-    let ff_variable     = copy( replicate(NVAR(), 0.0) ) in
-    let ff_variable[VAR_DENSITY()] = 1.4 in
-    let ff_pressure = 1.0 in
-    let ff_speed_of_sound = sqrt( GAMMA()*ff_pressure / ff_variable[VAR_DENSITY()] ) in
+
+    let var_of_density = 1.4f32 in
+    let ff_pressure = 1.0f32 in
+    let ff_speed_of_sound = sqrt( GAMMA()*ff_pressure / var_of_density ) in
     let ff_speed = ff_mach() * ff_speed_of_sound in
     let { ff_velocity_x, ff_velocity_y, ff_velocity_z } = 
-            { ff_speed * 1.0   -- .x   ... cos(angle_of_attack()) = 1
-            , ff_speed * 0.0   -- .y   ... sin(angle_of_attack()) = 0
-            , 0.0 } in         -- .z
-    let ff_velocity = { ff_velocity_x, ff_velocity_y, ff_velocity_z } in
-    let ff_variable[VAR_MOMENTUM()+0] = ff_variable[VAR_DENSITY()] * ff_velocity_x in
-    let ff_variable[VAR_MOMENTUM()+1] = ff_variable[VAR_DENSITY()] * ff_velocity_y in
-    let ff_variable[VAR_MOMENTUM()+2] = ff_variable[VAR_DENSITY()] * ff_velocity_z in
-    let ff_variable[VAR_DENSITY_ENERGY()] = ff_variable[VAR_DENSITY()] * (0.5*(ff_speed*ff_speed)) + 
-                                            (ff_pressure / (GAMMA()-1.0)) in
+            { ff_speed * cos32(angle_of_attack) -- .x   ... cos(angle_of_attack()) = 1
+            , ff_speed * sin32(angle_of_attack) -- .y   ... sin(angle_of_attack()) = 0
+            , 0.0f32 } in                       -- .z
+    let ff_velocity = { ff_velocity_x, ff_velocity_y, ff_velocity_z }
+    in
+    let ff_variable = [ var_of_density 
+                      , var_of_density * ff_velocity_x 
+                      , var_of_density * ff_velocity_y
+                      , var_of_density * ff_velocity_z
+                      , var_of_density * (0.5*(ff_speed*ff_speed)) + 
+                            (ff_pressure / (GAMMA()-1.0))
+                      ]
+    in
     let ff_momentum = 
             { ff_variable[VAR_MOMENTUM()+0]
             , ff_variable[VAR_MOMENTUM()+1]
