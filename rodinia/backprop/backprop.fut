@@ -1,8 +1,8 @@
 -- Rodinia's Back-Propagation benchmark translated to Futhark.
 --
 -- ==
--- compiled input @ backprop-data/small.in
--- output @ backprop-data/small.out
+-- compiled input @ data/small.in
+-- output @ data/small.out
 
 default(f32)
 
