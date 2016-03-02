@@ -1,5 +1,7 @@
 # backprop
 
+# Description of Parallelism
+
 Benchmark was modified to fill in datastructures internally using Sobol random numbers;
 It receives as arguments the Sobol direction vectors, and N_IN.
 
@@ -11,13 +13,13 @@ The computational kernel consists of:
 
 1. first call to function bpnn_layerforward
     nested map-redomap structure, with: 
-        - the outer map on N_HID, the redomap on N_IN
+        - the outer map on N_HID, the inner redomap on N_IN
           NOTE: we can make N_IN very large => we can
                 sequentialize the outer map (since N_HID is on 16)
 
 2. second call to function bpnn_layerforward
     nested map-redomap structure, with: 
-        - the outer map on N_OUT, the redomap on N_HID
+        - the outer map on N_OUT, the inner redomap on N_HID
           NOTE: as before, sequentialize the outer map 
                 (since N_OUT is on 1), keep the reduce parallel;
                 it's not going to give speedup but at least runs
@@ -39,4 +41,20 @@ The computational kernel consists of:
 
 THAT's ALL!
 
- 
+#########################
+# Approximate Runtimes: #
+#########################
+
+Sequential Total Runtime Rodinia: 1.68 sec
+Sequential Total Runtime Futhark: 2.26 sec
+
+OpenCL Training Runtime Rodinia (without initialization): 0.292 sec, from which
+    Device<->Host Transfer time: 0.218 sec
+    Kernel time:                 0.074 sec
+
+OpenCL Total    Runtime Futhark: 0.245 sec (total runtime, including initialization) 
+        (These are still poor results are because of bpnn_layerforward,
+         where the segmented reduction, i.e., outer map -- inner redomap,
+         is parallelizing the map (which has small size) and is 
+         sequentializing the inner redomap, which has large size.
+
