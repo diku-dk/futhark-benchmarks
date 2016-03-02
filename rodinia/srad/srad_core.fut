@@ -8,7 +8,7 @@
 -- column-major storage, whereas we use row-major storage here.
 --
 -- ==
--- compiled input @ data/image.in
+-- notravis input @ data/image.in
 -- output @ data/image.out
 
 default(f32)
