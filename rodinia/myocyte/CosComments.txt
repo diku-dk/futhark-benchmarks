@@ -14,6 +14,19 @@ Myocyte application models cardiac myocyte (heart muscle cell) and simulates its
        but main problem is how to hoist allocations out of
        the function declaration ...
 
+    -- We have a size-invariant too conservative analysis problem,
+       shown by the example below:
+         fun int main([bool,m] b) =
+            let x = 1 in
+            loop (y = x) = for j < m do
+            if b[j] then y else x
+            in y
+        due to which some sizes were not detected invariant to loop
+        and as such allocations were not hoisted.
+
+    The fix was to use a reshape (to force it):
+        let {y_k, err} = reshape( (EQUS), embedded_fehlberg_7_8( f32(km1), h, y_km1, params) ) in
+
 
 ##############################
 # Description of Parallelism #
@@ -70,6 +83,6 @@ OpenCL Total Runtime Rodinia:  6.110030174255 secs, from which
 
     WAS Run with ./myocyte.out 3 65536 1
 
-OpenCL Total Runtime Futhark: 1.613695 secs (from which 1.616203 secs in one kernel)
+OpenCL Total Runtime Futhark: 1.613695 secs (one kernel dominates the cost)
 
 
