@@ -1,0 +1,33 @@
+# hotspot
+
+##############################
+# Description of Parallelism #
+##############################
+
+I. Main Convergence Loop:
+
+    loop (temp) = for i < num_iterations do
+        single_iteration(temp, power, Cap, Rx, Ry, Rz, step)
+    in temp
+
+"single_iteration" is a 2-d stencil computation, i.e., two nested 
+    maps: one on the rows and one for the columns.
+
+#########################
+# Approximate Runtimes: #
+#########################
+
+On dataset: 1024x1024 size of matrix and convergence loop of size 360:
+
+Sequential Total Runtime Rodinia: 7.13 secs
+    ./hotspot 1024 1024 360 1 ../../data/hotspot/temp_1024 ../../data/hotspot/power_1024 output.out
+
+Sequential Total Runtime Futhark: 7.15 secs
+    ./hotspot -t time_cpu < data/1024.in > Res.txt
+
+OpenCL Total Runtime Rodinia:  0.096 secs from which Kernel time: 0.092 seconds
+    ./hotspot 1024 2 360 ../../data/hotspot/temp_1024 ../../data/hotspot/power_1024 output.out
+
+OpenCL Total Runtime Futhark: 0.097 secs from which Kernel time: 0.081 (?)
+    ./hotspot -t time_gpu < data/1024.in > Res.txt
+
