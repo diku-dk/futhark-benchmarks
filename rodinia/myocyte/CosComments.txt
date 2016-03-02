@@ -1,0 +1,75 @@
+# myocyte
+
+Myocyte application models cardiac myocyte (heart muscle cell) and simulates its behavior according to the work by Saucerman and Bers [8]. The model integrates cardiac myocyte electrical activity with the calcineurin pathway, which is a key aspect of the development of heart failure. The model spans large number of temporal scales to reflect how changes in heart rate as observed during exercise or stress contribute to calcineurin pathway activation, which ultimately leads to the expression of numerous genes that remodel the hearts structure. It can be used to identify potential therapeutic targets that may be useful for the treatment of heart failure. 
+
+########################################
+# Problems not related to parallelism: #
+########################################
+
+    -- horrible written -- one huge function called 13 times;
+       compilation runs out of space because of inlining.
+    -- the above was rewritten in a loop so that the function
+       is only called in one place.
+    -- future: inter-procedural analysis should solve this,
+       but main problem is how to hoist allocations out of
+       the function declaration ...
+
+
+##############################
+# Description of Parallelism #
+##############################
+
+Structure of the Main Code:
+
+  One big "redomap" in function "main", but the mapped function, named "solver"
+    has many loops over multi-dimensional arrays. Name of the game is achieve
+    coalesced memory and efficient scalar simplification (copy prop, hoisitng, etc.)
+
+
+let {oks, y_res} = unzip (
+    map ( fn {bool,[f32,91]} (int i) =>
+            let add_fact = f32(i % repeat)*eps in
+            let y_row = map(+add_fact, y0) in
+            solver(xmax, params, y_row)
+        , iota(workload) ) )
+  in
+  { reduce(&&, True, oks), y_res }
+        
+
+#########################
+# Approximate Runtimes: #
+#########################
+
+Sequential versions measured on dataset small:
+
+Sequential Total Runtime Rodinia:  0.046427998692 secs, from which
+    0.000074000003 s, 0.159386575222 % : SETUP VARIABLES, READ COMMAND LINE ARGUMENTS
+    0.000024000001 s, 0.051692944020 % : ALLOCATE MEMORY
+    0.000176000001 s, 0.379081577063 % : READ DATA FROM FILES
+    0.046149998903 s, 99.401222229004 % : RUN COMPUTATION
+    0.000004000000 s, 0.008615490049 % : FREE MEMORY
+
+    run with ./myocyte.out 100 1 1 1
+
+
+Sequential Total Runtime Futhark:  0.076 secs
+
+-----------------------------------
+-----------------------------------
+
+OpenCL versions measured on dataset medium:
+
+OpenCL Total Runtime Rodinia:  6.110030174255 secs, from which
+    CUDA error: no error
+    0.000001000000 s, 0.000016366532 % : SETUP VARIABLES
+    0.056409001350 s, 0.923219680786 % : ALLOCATE CPU MEMORY AND GPU MEMORY
+    0.042830001563 s, 0.700978577137 % : READ DATA FROM FILES, COPY TO GPU MEMORY
+    5.939155101776 s, 97.203369140625 % : RUN GPU KERNEL
+    0.069577999413 s, 1.138750553131 % : COPY GPU DATA TO CPU MEMORY
+    0.002057000063 s, 0.033665955067 % : FREE MEMORY
+
+    WAS Run with ./myocyte.out 3 65536 1
+
+OpenCL Total Runtime Futhark: 1.613695 secs (from which 1.616203 secs in one kernel)
+
+
