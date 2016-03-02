@@ -1,0 +1,78 @@
+# lavaMD
+
+The code calculates particle potential and relocation due to mutual forces between particles within a large 3D space. This space is 
+divided into cubes, or large boxes, that are allocated to individual cluster nodes. The large box at each node is further divided into 
+cubes, called boxes. 26 neighbor boxes surround each box (the home box). Home boxes at the boundaries of the particle space have fewer neighbors. 
+Particles only interact with those other particles that are within a cutoff radius since ones at larger distances exert negligible forces. Thus the box size s chosen so that cutoff radius does not span beyond any neighbor box for any particle in a home box, thus limiting the reference space to a finite number of boxes.
+
+
+##############################
+# Description of Parallelism #
+##############################
+
+Structure of the Main Code:
+
+
+  map( fn [ {f32,f32,f32,f32}, PAR_PER_BOX] (int l) =>
+        let { bl_x, bl_y, bl_bz, bl_number } = box_coefs[l] in
+        let rA = rv[l] in
+        map (fn {f32,f32,f32,f32} ( {f32,f32,f32,f32} rA_el ) => --(int i) =>
+                let {rai_v, rai_x, rai_y, rai_z} = rA_el in -- rA[i] in
+                let psums =
+                  map ( fn {f32,f32,f32,f32} (int k) =>
+                          let pointer = if (k > 0)
+                                        then let {_,_,_,num} = unsafe box_nnghs[k-1, l] in num
+                                        else l
+                          in
+                          let {pointer, invalid_neighb} = 
+                            if (pointer < 0) 
+                            then {0,       True } 
+                            else {pointer, False}
+                          in
+                          let {_,_,_,first_j} = box_coefs[pointer] in
+                          let rB = unsafe rv[first_j] in
+                          let qB = unsafe qv[first_j] in
+                          ---------------------------------------------------------
+                          -- Important note: rB and qB are invariant to the      --
+                          -- second map on rA => can be blocked in shared memory --
+                          ---------------------------------------------------------
+                          let pres = redomap ...
+ 
+                      , iota(NUM_NEIGHBORS()+1) )
+
+                in reduce( fn {f32,f32,f32,f32} ({f32,f32,f32,f32} a, {f32,f32,f32,f32} b) =>
+                                let {a1,a2,a3,a4} = a in let {b1,b2,b3,b4} = b in {a1+b1, a2+b2, a3+b3, a4+b4}
+                         , {0.0,0.0,0.0,0.0}, psums)
+                          
+            , rA )  -- iota(PAR_PER_BOX) )
+     , iota(number_boxes) )
+
+This should be a two level grid map nest + one level BLOCK redomap (128 threads).
+Moreover, the "rB" and "qB" arrays are invariant to the second map and hence
+they can be blocked, i.e., stored in shared memory ... which would account for 
+the 2x speedup the Rodinia OpenCL version has on us. 
+        
+
+#########################
+# Approximate Runtimes: #
+#########################
+
+On dataset: number-of-boxes = 10
+
+Sequential Total Runtime Rodinia: 23.5 secs
+Sequential Total Runtime Futhark: 18.8 secs
+
+OpenCL Total Runtime Rodinia:  0.015, from which:
+ 0.003924999852 s,  4.545559883118 % : GPU MEM: COPY IN
+ 0.009766999632 s, 11.311205863953 % : GPU: KERNEL
+ 0.001403999981 s,  1.625978589058 % : GPU MEM: COPY OUT
+
+If I use global instead of shared memory, I get:
+    0.058949999511 s, 45.622695922852 % : GPU: KERNEL
+
+
+OpenCL Total Runtime Futhark: 0.020 secs from which 0.019 in seven kernels,
+    which is much better (2.5x) than the rodinia version which does not uses
+    shared memory.
+
+
