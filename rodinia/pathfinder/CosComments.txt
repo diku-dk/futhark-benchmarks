@@ -1,0 +1,32 @@
+# pathfinder
+
+##############################
+# Description of Parallelism #
+##############################
+
+~ 1d stencil in a time loop
+
+Dataset is too small to measure anything ...
+        
+
+#########################
+# Approximate Runtimes: #
+#########################
+
+Dataset medium:
+
+Sequential Total Runtime Rodinia:   2.726 sec
+    run with ./pathfinder 100000 100
+
+
+Sequential Total Runtime Futhark:  1.175 secs
+
+-----------------------------------
+-----------------------------------
+
+OpenCL Kernel Runtime Rodinia: 0.015966000035 s
+    WAS RUN with ./pathfinder 100000 100 20 > result.txt
+
+OpenCL Total Runtime Futhark:  0.008386 (kernel time: ~ 0.003300)
+
+
