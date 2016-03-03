@@ -78,16 +78,16 @@ fun *[[f32, g], g]
             i32 b,
             f32 a,
             f32 c) =
+  let one = (g*g+2*g+1)/(g+1) - g in
   loop (S1 = replicate(g, replicate(g, 0.0f32))) = for k < 20 do
-    map(fn [f32] (i32 i) =>
-          map (fn f32 (i32 j) =>
-                 if inside(i, j, g)
-                 then
-                   lin_solve_inner(i, j, S0, S1, a, c)
-                 else
-                   lin_solve_outer(i, j, S0, S1, a, c, b),
-               iota(g)),
-          iota(g))
+    reshape( (g,g), 
+     map(fn f32 (i32 ij) =>
+          let i = ij / g in
+          let j = ij % g in
+          if inside(i, j, g)
+          then lin_solve_inner(i, j, S0, S1, a, c)
+          else lin_solve_outer(i/one, j/one, S0, S1, a, c, b/one) -- lin_solve_outer(i, j, S0, S1, a, c, b)
+        , iota(g*g)) )
   in S1
 
 fun f32
@@ -155,15 +155,14 @@ fun *[[f32, g], g]
          i32 b,
          f32 time_step) =
   let time_step0 = time_step * f32(g - 2) in
-  map(fn [f32, g] (i32 i) =>
-        map(fn f32 (i32 j) =>
-              if inside(i, j, g)
-              then
-                advect_inner(i, j, S0, U, V, time_step0)
-              else
-                advect_outer(i, j, S0, U, V, time_step0, b),
-            iota(g)),
-        iota(g))
+      reshape( (g,g), 
+       map(fn f32 (i32 ij) =>
+         let i = ij / g in
+         let j = ij % g in
+         if inside(i, j, g)
+         then advect_inner(i, j, S0, U, V, time_step0)
+         else advect_outer(i, j, S0, U, V, time_step0, b)
+      , iota(g*g)) )
 
 fun f32
   advect_inner(i32 i,
@@ -236,15 +235,14 @@ fun {*[[f32, g], g],
 fun [[f32, g], g]
   project_top([[f32, g], g] U0,
               [[f32, g], g] V0) =
-  map(fn [f32, g] (i32 i) =>
-        map(fn f32 (i32 j) =>
-              if inside(i, j, g)
-              then
-                project_top_inner(i, j, U0, V0)
-              else
-                project_top_outer(i, j, U0, V0),
-            iota(g)),
-        iota(g))
+      reshape( (g,g), 
+       map(fn f32 (i32 ij) =>
+          let i = ij / g in
+          let j = ij % g in
+          if inside(i, j, g)
+              then project_top_inner(i, j, U0, V0)
+              else project_top_outer(i, j, U0, V0)
+          , iota(g*g)) )
 
 fun f32
   project_top_inner(i32 i,
@@ -283,15 +281,14 @@ fun *[[f32, g], g]
                  i32 j0d,
                  i32 i1d,
                  i32 j1d) =
-  map(fn [f32, g] (i32 i) =>
-        map(fn f32 (i32 j) =>
-              if inside(i, j, g)
-              then
-                project_bottom_inner(i, j, P0, S0, i0d, j0d, i1d, j1d)
-              else
-                project_bottom_outer(i, j, P0, S0, i0d, j0d, i1d, j1d, b),
-            iota(g)),
-        iota(g))
+      reshape( (g,g), 
+        map(fn f32 (i32 ij) =>
+          let i = ij / g in
+          let j = ij % g in
+          if inside(i, j, g)
+              then project_bottom_inner(i, j, P0, S0, i0d, j0d, i1d, j1d)
+              else project_bottom_outer(i, j, P0, S0, i0d, j0d, i1d, j1d, b)
+           , iota(g*g)) )
 
 fun f32
   project_bottom_inner(i32 i,
