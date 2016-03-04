@@ -1,6 +1,6 @@
 --
 -- ==
--- tags { notravis }
+-- input @ fluid.input
 
 include fluid
 
