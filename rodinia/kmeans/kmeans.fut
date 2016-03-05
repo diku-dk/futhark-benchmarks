@@ -23,7 +23,7 @@ fun {int,f32} closest_point({int,f32} p1, {int,f32} p2) =
 fun int find_nearest_point([[f32,nfeatures],nclusters] pts, [f32,nfeatures] pt) =
   let {i, _} = reduce(closest_point,
                       {0, euclid_dist_2(pt,pts[0])},
-                      zip(iota(npoints),
+                      zip(iota(nclusters),
                           map(euclid_dist_2(pt), pts))) in
   i
 
