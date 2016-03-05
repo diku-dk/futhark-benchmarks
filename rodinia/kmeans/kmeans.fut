@@ -20,23 +20,23 @@ fun {int,f32} closest_point({int,f32} p1, {int,f32} p2) =
   let {_,d2} = p2 in
   if d1 < d2 then p1 else p2
 
-fun int find_nearest_point([[f32,nfeatures],nclusters] pts, [f32,nfeatures] pt) =
+fun int find_nearest_point([[f32,d],k] pts, [f32,d] pt) =
   let {i, _} = reduce(closest_point,
                       {0, euclid_dist_2(pt,pts[0])},
-                      zip(iota(nclusters),
+                      zip(iota(k),
                           map(euclid_dist_2(pt), pts))) in
   i
 
-fun *[f32,nfeatures] add_centroids([f32,nfeatures] x, [f32,nfeatures] y) =
+fun *[f32,d] add_centroids([f32,d] x, [f32,d] y) =
   zipWith(+, x, y)
 
-fun *[[f32,nfeatures],nclusters]
-  centroids_of(int nclusters, [[f32,nfeatures],npoints] feature, [int,npoints] membership) =
+fun *[[f32,d],k]
+  centroids_of(int k, [[f32,d],n] feature, [int,n] membership) =
   let features_in_clusters =
-     streamRedPer(fn *[int,nclusters] ([int,nclusters] acc,
-                                       [int,nclusters] x) =>
+     streamRedPer(fn *[int,k] ([int,k] acc,
+                                       [int,k] x) =>
                     zipWith(+, acc, x),
-                  fn [int,nclusters] (int chunk,
+                  fn [int,k] (int chunk,
                                       *[int,ncluster] acc,
                                       [int] inp) =>
                     loop (acc) = for i < chunk do
@@ -44,43 +44,43 @@ fun *[[f32,nfeatures],nclusters]
                       unsafe let acc[c] = acc[c] + 1 in
                       acc in
                     acc,
-                  replicate(nclusters,0), membership) in
+                  replicate(k,0), membership) in
   let cluster_sums =
-    streamRedPer(fn *[[f32,nfeatures],nclusters] (*[[f32,nfeatures],nclusters] acc,
-                                                  *[[f32,nfeatures],nclusters] elem) =>
-                   zipWith(fn [f32,nfeatures] ([f32] x, [f32] y) =>
+    streamRedPer(fn *[[f32,d],k] (*[[f32,d],k] acc,
+                                                  *[[f32,d],k] elem) =>
+                   zipWith(fn [f32,d] ([f32] x, [f32] y) =>
                              add_centroids(x, y),
                            acc, elem),
-                 fn *[[f32,nfeatures],nclusters] (int chunk,
-                                                   *[[f32,nfeatures],nclusters] acc,
-                                                   [{[f32,nfeatures], int}] inp) =>
+                 fn *[[f32,d],k] (int chunk,
+                                                   *[[f32,d],k] acc,
+                                                   [{[f32,d], int}] inp) =>
                    loop (acc) = for i < chunk do
                      let {point, c} = inp[i] in
                      unsafe let acc[c] = add_centroids(acc[c], map(/f32(features_in_clusters[c]), point)) in
                      acc in
                    acc,
-                 replicate(nclusters,replicate(nfeatures,0.0f32)),
+                 replicate(k,replicate(d,0.0f32)),
                  zip(feature, membership)) in
   cluster_sums
 
 fun {[[f32]], [int], int}
   main(int threshold,
-       int nclusters,
+       int k,
        int max_iterations,
-       [[f32,nfeatures],npoints] feature) =
+       [[f32,d],n] feature) =
   -- Assign arbitrary initial cluster centres.
-  let cluster_centres = map(fn [f32,nfeatures] (int i) =>
+  let cluster_centres = map(fn [f32,d] (int i) =>
                               unsafe feature[i],
-                            iota(nclusters)) in
+                            iota(k)) in
   -- Also assign points arbitrarily to clusters.
-  let membership = map(% nclusters, iota(npoints)) in
+  let membership = map(% k, iota(n)) in
   let delta = threshold + 1 in
   let i = 0 in
   loop ({membership, cluster_centres, delta, i}) = while delta > threshold && i < max_iterations do
     -- For each point, find the cluster with the closest centroid.
     let new_membership = map(find_nearest_point(cluster_centres), feature) in
     -- Then, find the new centres of the clusters.
-    let new_centres = centroids_of(nclusters, feature, new_membership) in
+    let new_centres = centroids_of(k, feature, new_membership) in
     let delta = reduce(+, 0, map(fn int (bool b) =>
                                    if b then 0 else 1,
                                  zipWith(==, membership, new_membership))) in
