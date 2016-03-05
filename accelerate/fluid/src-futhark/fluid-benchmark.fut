@@ -1,6 +1,6 @@
 --
 -- ==
--- input @ fluid.input
+-- compiled input @ fluid.input
 
 include fluid
 
