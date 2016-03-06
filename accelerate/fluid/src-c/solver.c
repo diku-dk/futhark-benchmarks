@@ -35,7 +35,8 @@ void set_bnd(size_t N, int b, float* x) {
   x[IX(N+1,N+1)] = 0.5f*(x[IX(N,N+1)]+x[IX(N+1,N)]);
 }
 
-void lin_solve(size_t N, int b, float* x, float* x_prev, float a, float c) {
+void lin_solve(size_t N, int b, float* x, float* x_prev, float a, float c,
+               int n_solver_steps) {
   /* BEGIN FIX.  In the original C version, the x array in the first iteration
      contains the interactively added sources, which doesn't make really sense.
      This happens because a lot of arrays are reused, and probably because it
@@ -46,7 +47,7 @@ void lin_solve(size_t N, int b, float* x, float* x_prev, float a, float c) {
   }
   /* END FIX. */
     
-  for (int k = 0; k < 20; k++) {
+  for (int k = 0; k < n_solver_steps; k++) {
     FOR_EACH_CELL {
       x[IX(i, j)] = ((x_prev[IX(i, j)]
                       + a * (x[IX(i - 1, j)]
@@ -58,9 +59,10 @@ void lin_solve(size_t N, int b, float* x, float* x_prev, float a, float c) {
   }
 }
 
-void diffuse(size_t N, int b, float* x, float* x_prev, float diff, float dt) {
+void diffuse(size_t N, int b, float* x, float* x_prev, float diff, float dt,
+             int n_solver_steps) {
   float a=dt*diff*N*N;
-  lin_solve(N, b, x, x_prev, a, 1+4*a);
+  lin_solve(N, b, x, x_prev, a, 1+4*a, n_solver_steps);
 }
 
 void advect(size_t N, int b, float* d, float* d0, float* u, float* v, float dt) {
@@ -101,7 +103,7 @@ void advect(size_t N, int b, float* d, float* d0, float* u, float* v, float dt) 
 }
 
 void project(size_t N, float* u, float* v, float* u0, float* v0,
-             float* tmp0, float* tmp1) {
+             float* tmp0, float* tmp1, int n_solver_steps) {
   float* div = tmp0;
   float* p = tmp1;
   
@@ -110,7 +112,7 @@ void project(size_t N, float* u, float* v, float* u0, float* v0,
   } END_FOR;
   set_bnd(N, 0, div);
 
-  lin_solve(N, 0, p, div, 1, 4);
+  lin_solve(N, 0, p, div, 1, 4, n_solver_steps);
 
   FOR_EACH_CELL {
     u[IX(i,j)] = u0[IX(i,j)] - 0.5f*N*(p[IX(i+1,j)]-p[IX(i-1,j)]);
@@ -121,7 +123,7 @@ void project(size_t N, float* u, float* v, float* u0, float* v0,
 }
 
 void dens_step_naive(size_t N, float* d_dest, float* d, float* u, float* v,
-                     float diff, float dt) {
+                     float diff, float dt, int n_solver_steps) {
   int s = size(N);
   float* d0 = (float*) malloc(sizeof(float) * s);
   float* d1 = (float*) malloc(sizeof(float) * s);
@@ -129,7 +131,7 @@ void dens_step_naive(size_t N, float* d_dest, float* d, float* u, float* v,
   
   memcpy(d0, d, sizeof(float) * s);
   
-  diffuse(N, 0, d1, d0, diff, dt);
+  diffuse(N, 0, d1, d0, diff, dt, n_solver_steps);
   advect(N, 0, d2, d1, u, v, dt);
 
   memcpy(d_dest, d2, sizeof(float) * s);
@@ -140,7 +142,7 @@ void dens_step_naive(size_t N, float* d_dest, float* d, float* u, float* v,
 }
 
 void vel_step_naive(size_t N, float* u_dest, float* v_dest, float* u, float* v,
-                    float visc, float dt) {
+                    float visc, float dt, int n_solver_steps) {
   int s = size(N);
   float* u0 = (float*) malloc(sizeof(float) * s);
   float* v0 = (float*) malloc(sizeof(float) * s);
@@ -158,15 +160,15 @@ void vel_step_naive(size_t N, float* u_dest, float* v_dest, float* u, float* v,
   memcpy(u0, u, sizeof(float) * s);
   memcpy(v0, v, sizeof(float) * s);
 
-  diffuse(N, 1, u1, u0, visc, dt);
-  diffuse(N, 2, v1, v0, visc, dt);
+  diffuse(N, 1, u1, u0, visc, dt, n_solver_steps);
+  diffuse(N, 2, v1, v0, visc, dt, n_solver_steps);
 
-  project(N, u2, v2, u1, v1, tmp0, tmp1);
+  project(N, u2, v2, u1, v1, tmp0, tmp1, n_solver_steps);
 
   advect(N, 1, u3, u2, u2, v2, dt);
   advect(N, 2, v3, v2, u2, v2, dt);
 
-  project(N, u4, v4, u3, v3, tmp0, tmp1);
+  project(N, u4, v4, u3, v3, tmp0, tmp1, n_solver_steps);
 
   memcpy(u_dest, u4, sizeof(float) * s);
   memcpy(v_dest, v4, sizeof(float) * s);
@@ -186,7 +188,7 @@ void vel_step_naive(size_t N, float* u_dest, float* v_dest, float* u, float* v,
 }
 
 void dens_step_light(size_t N, float* d, float* tmp, float* u, float* v,
-                     float diff, float dt) {
+                     float diff, float dt, int n_solver_steps) {
   float* d0;
   float* d1;
   float* d2;
@@ -194,13 +196,13 @@ void dens_step_light(size_t N, float* d, float* tmp, float* u, float* v,
   d0 = d;
 
   d1 = tmp;
-  diffuse(N, 0, d1, d0, diff, dt);
+  diffuse(N, 0, d1, d0, diff, dt, n_solver_steps);
   d2 = d;
   advect(N, 0, d2, d1, u, v, dt);
 }
 
 void vel_step_light(size_t N, float* u, float* v, float* tmp0, float* tmp1,
-                    float visc, float dt) {
+                    float visc, float dt, int n_solver_steps) {
   float* u0;
   float* v0;
   float* u1;
@@ -219,14 +221,14 @@ void vel_step_light(size_t N, float* u, float* v, float* tmp0, float* tmp1,
 
   u1 = tmp0;
   v1 = tmp1;
-  diffuse(N, 1, u1, u0, visc, dt);
-  diffuse(N, 2, v1, v0, visc, dt);
+  diffuse(N, 1, u1, u0, visc, dt, n_solver_steps);
+  diffuse(N, 2, v1, v0, visc, dt, n_solver_steps);
 
   u2 = tmp0;
   v2 = tmp1;
   tmp0_cur = u;
   tmp1_cur = v;
-  project(N, u2, v2, u1, v1, tmp0_cur, tmp1_cur);
+  project(N, u2, v2, u1, v1, tmp0_cur, tmp1_cur, n_solver_steps);
 
   u3 = u;
   v3 = v;
@@ -235,5 +237,5 @@ void vel_step_light(size_t N, float* u, float* v, float* tmp0, float* tmp1,
 
   u4 = u;
   v4 = v;
-  project(N, u4, v4, u3, v3, tmp0, tmp1);
+  project(N, u4, v4, u3, v3, tmp0, tmp1, n_solver_steps);
 }

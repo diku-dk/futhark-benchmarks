@@ -15,10 +15,10 @@ size_t size(size_t N);
  */
 
 void dens_step_light(size_t N, float* d, float* tmp, float* u, float* v,
-                     float diff, float dt);
+                     float diff, float dt, int n_solver_steps);
 
 void vel_step_light(size_t N, float* u, float* v, float* tmp0, float* tmp1,
-                    float visc, float dt);
+                    float visc, float dt, int n_solver_steps);
 
 
 /*
@@ -28,10 +28,10 @@ void vel_step_light(size_t N, float* u, float* v, float* tmp0, float* tmp1,
  */
 
 void dens_step_naive(size_t N, float* d_dest, float* d, float* u, float* v,
-                     float diff, float dt);
+                     float diff, float dt, int n_solver_steps);
 
 void vel_step_naive(size_t N, float* u_dest, float* v_dest, float* u, float* v,
-                    float visc, float dt);
+                    float visc, float dt, int n_solver_steps);
 
 
 #endif

@@ -74,12 +74,13 @@ fun {i32, i32, f32} outermost_inner_index(i32 i, i32 j, i32 g, i32 b) =
 ------------------------------------------------------------
 
 fun *[[f32, g], g]
-  lin_solve([[f32, g], g] S0,
+  lin_solve(i32 n_solver_steps,
+            [[f32, g], g] S0,
             i32 b,
             f32 a,
             f32 c) =
   let one = (g*g+2*g+1)/(g+1) - g in
-  loop (S1 = replicate(g, replicate(g, 0.0f32))) = for k < 20 do
+  loop (S1 = replicate(g, replicate(g, 0.0f32))) = for k < n_solver_steps do
     reshape((g, g),
       map(fn f32 (i32 ij) =>
             let i = ij / g in
@@ -138,11 +139,12 @@ fun f32
 fun [[f32, g], g]
   diffuse([[f32, g], g] S,
           i32 b,
+          i32 n_solver_steps,
           f32 diffusion_rate_or_viscosity,
           f32 time_step) =
   let a = (time_step * diffusion_rate_or_viscosity
            * f32(g - 2) * f32(g - 2)) in
-  lin_solve(S, b, a, 1.0f32 + 4.0f32 * a)
+  lin_solve(n_solver_steps, S, b, a, 1.0f32 + 4.0f32 * a)
 
 
 ------------------------------------------------------------
@@ -226,10 +228,11 @@ fun f32
 
 fun {*[[f32, g], g],
      *[[f32, g], g]}
-  project([[f32, g], g] U0,
+  project(i32 n_solver_steps,
+          [[f32, g], g] U0,
           [[f32, g], g] V0) =
   let Div0 = project_top(U0, V0) in
-  let P0 = lin_solve(Div0, 0, 1.0f32, 4.0f32) in
+  let P0 = lin_solve(n_solver_steps, Div0, 0, 1.0f32, 4.0f32) in
   let U1 = project_bottom(P0, U0, 1, 1, 0, -1, 0) in
   let V1 = project_bottom(P0, V0, 2, 0, 1, 0, -1) in
   {U1, V1}
@@ -345,9 +348,10 @@ fun *[[f32, g], g]
   dens_step([[f32, g], g] D0,
             [[f32, g], g] U0,
             [[f32, g], g] V0,
+            i32 n_solver_steps,
             f32 diffusion_rate,
             f32 time_step) =
-  let D1 = diffuse(D0, 0, diffusion_rate, time_step) in
+  let D1 = diffuse(D0, 0, n_solver_steps, diffusion_rate, time_step) in
   let D2 = advect(D1, U0, V0, 0, time_step) in
   D2
 
@@ -355,14 +359,15 @@ fun {*[[f32, g], g],
      *[[f32, g], g]}
   vel_step([[f32, g], g] U0,
            [[f32, g], g] V0,
+           i32 n_solver_steps,
            f32 viscosity,
            f32 time_step) =
-  let U1 = diffuse(U0, 1, viscosity, time_step) in
-  let V1 = diffuse(V0, 2, viscosity, time_step) in
-  let {U2, V2} = project(U1, V1) in
+  let U1 = diffuse(U0, 1, n_solver_steps, viscosity, time_step) in
+  let V1 = diffuse(V0, 2, n_solver_steps, viscosity, time_step) in
+  let {U2, V2} = project(n_solver_steps, U1, V1) in
   let U3 = advect(U2, U2, V2, 1, time_step) in
   let V3 = advect(V2, U2, V2, 2, time_step) in
-  let {U4, V4} = project(U3, V3) in
+  let {U4, V4} = project(n_solver_steps, U3, V3) in
   {U4, V4}
 
 fun {*[[f32, g], g],
@@ -371,11 +376,14 @@ fun {*[[f32, g], g],
      step([[f32, g], g] U0,
           [[f32, g], g] V0,
           [[f32, g], g] D0,
+          i32 n_solver_steps,
           f32 time_step,
           f32 diffusion_rate,
           f32 viscosity) =
-  let {U1, V1} = vel_step(U0, V0, viscosity, time_step) in
-  let D1 = dens_step(D0, U0, V0, diffusion_rate, time_step) in
+  let {U1, V1} = vel_step(U0, V0, n_solver_steps,
+                          viscosity, time_step) in
+  let D1 = dens_step(D0, U0, V0, n_solver_steps,
+                     diffusion_rate, time_step) in
   {U1, V1, D1}
 
 
@@ -390,11 +398,12 @@ fun {[[f32, g], g],
                 [[f32, g], g] V0,
                 [[f32, g], g] D0,
                 i32 n_steps,
+                i32 n_solver_steps,
                 f32 time_step,
                 f32 diffusion_rate,
                 f32 viscosity) =
-  loop ({U0, V0, D0}) = for 1 <= i < n_steps do
-    step(U0, V0, D0, time_step,
+  loop ({U0, V0, D0}) = for i < n_steps do
+    step(U0, V0, D0, n_solver_steps, time_step,
          diffusion_rate, viscosity)
   in {U0, V0, D0}
 
@@ -405,6 +414,7 @@ fun {[[[f32, g], g], n_steps],
                  [[f32, g], g] V0,
                  [[f32, g], g] D0,
                  i32 n_steps,
+                 i32 n_solver_steps,
                  f32 time_step,
                  f32 diffusion_rate,
                  f32 viscosity) =
@@ -413,7 +423,7 @@ fun {[[[f32, g], g], n_steps],
   let D_out = replicate(n_steps, D0) in
   loop ({U_out, V_out, D_out}) = for 1 <= i < n_steps do
     let {U0, V0, D0} = {U_out[i - 1], V_out[i - 1], D_out[i - 1]} in
-    let {U1, V1, D1} = step(U0, V0, D0, time_step,
+    let {U1, V1, D1} = step(U0, V0, D0, n_solver_steps, time_step,
                             diffusion_rate, viscosity) in
     let U_out[i] = U1 in
     let V_out[i] = V1 in

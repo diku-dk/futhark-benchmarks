@@ -8,13 +8,14 @@ cd "$(dirname "$0")"
 
 run_c_benchmark() {
     n_steps="$1"
-    grid_resolution="$2"
+    n_solver_steps="$2"
+    grid_resolution="$3"
 
-    echo "Running benchmark with n_steps=$n_steps and grid_resolution=$grid_resolution."
+    echo "Running benchmark with n_steps=$n_steps, n_solver_steps=$n_solver_steps, and grid_resolution=$grid_resolution."
 
-    ../fluid-generate-random-input.py "$n_steps" "$grid_resolution" c none \
+    ../fluid-generate-random-input.py "$n_steps" "$grid_resolution" "$n_solver_steps" c none \
         | ../src-c/fluid-benchmark 1>/dev/null
 }
 
-run_c_benchmark 40 100
-run_c_benchmark 40 1000
+run_c_benchmark 1 40 100
+run_c_benchmark 1 40 1000

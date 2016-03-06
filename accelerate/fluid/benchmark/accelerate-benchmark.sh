@@ -6,14 +6,14 @@
 set -e # Exit on first error.
 
 run_accelerate_benchmark() {
-    n_steps="$1"
+    n_solver_steps="$1"
     grid_resolution="$2"
 
-    echo "Running benchmark with n_steps=$n_steps and grid_resolution=$grid_resolution."
+    echo "Running benchmark with n_solver_steps=$n_solver_steps and grid_resolution=$grid_resolution."
     
     accelerate-fluid --benchmark=True \
         --viscosity=0.00001 --diffusion=0.0001 --delta=0.1 \
-        --iterations="$n_steps" \
+        --iterations="$n_solver_steps" \
         --width="$grid_resolution" --height="$grid_resolution"
 }
 

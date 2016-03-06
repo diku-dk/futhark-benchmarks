@@ -26,11 +26,12 @@ fun [[[i32, g_minus_two], g_minus_two], n_steps]
                   [[f32, g], g] V0,
                   [[f32, g], g] D0,
                   i32 n_steps,
+                  i32 n_solver_steps,
                   f32 time_step,
                   f32 diffusion_rate,
                   f32 viscosity,
                   i32 g_minus_two) =
-  let {Us, Vs, Ds} = get_all_frames(U0, V0, D0, n_steps,
+  let {Us, Vs, Ds} = get_all_frames(U0, V0, D0, n_steps, n_solver_steps
                                     time_step, diffusion_rate, viscosity) in
   map(fn [[i32, g_minus_two], g_minus_two] ([[f32, g], g] D) =>
         draw_densities(D, g - 2), Ds)
@@ -42,7 +43,8 @@ fun [[[i32]], n_steps]
        [[f32, g], g] D0,
        i32 n_steps,
        f32 time_step,
+       i32 n_solver_steps,
        f32 diffusion_rate,
        f32 viscosity) =
-  draw_all_frames(U0, V0, D0, n_steps, time_step, diffusion_rate, viscosity,
-                  g - 2)
+  draw_all_frames(U0, V0, D0, n_steps, n_solver_steps,
+                  time_step, diffusion_rate, viscosity, g - 2)

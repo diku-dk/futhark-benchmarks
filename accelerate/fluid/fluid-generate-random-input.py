@@ -11,9 +11,9 @@ def print_list_flat(g, xs):
             print(xs[i, j], end=' ')
     print('')
 
-def generate_input(n_steps=60, grid_resolution=128, time_step=0.1,
-                   diffusion_rate=0.0001, viscosity=0.00001, initials=None,
-                   backend_format='futhark'):
+def generate_input(n_steps=60, grid_resolution=128, n_solver_steps=20,
+                   time_step=0.1, diffusion_rate=0.0001, viscosity=0.00001,
+                   initials=None, backend_format='futhark'):
     g = grid_resolution + 2
     size = g * g
     
@@ -45,6 +45,7 @@ def generate_input(n_steps=60, grid_resolution=128, time_step=0.1,
         print(V0.tolist())
         print(D0.tolist())
         print(n_steps)
+        print(n_solver_steps)
         print(time_step)
         print(diffusion_rate)
         print(viscosity)
@@ -54,6 +55,7 @@ def generate_input(n_steps=60, grid_resolution=128, time_step=0.1,
         print_list_flat(g, V0)
         print_list_flat(g, D0)
         print(n_steps)
+        print(n_solver_steps)
         print(time_step)
         print(diffusion_rate)
         print(viscosity)
@@ -76,9 +78,17 @@ def main(args):
     grid_resolution = int(grid_resolution)
 
     try:
-        backend_format = args[2]
+        n_solver_steps = args[2]
     except IndexError:
-        print('error: the backend format ("futhark" or "c") must be given as the third argument',
+        print('error: the number of lin_solve steps must be given as the third argument',
+              file=sys.stderr)
+        return 1
+    n_solver_steps = int(n_solver_steps)
+
+    try:
+        backend_format = args[3]
+    except IndexError:
+        print('error: the backend format ("futhark" or "c") must be given as the fourth argument',
               file=sys.stderr)
         return 1
     if backend_format not in ['futhark', 'c']:
@@ -87,17 +97,18 @@ def main(args):
         return 1
     
     try:
-        seed = args[3]
+        seed = args[4]
     except IndexError:
-        print('error: the seed (number or "none") must be given as the fourth argument',
+        print('error: the seed (number or "none") must be given as the fifth argument',
               file=sys.stderr)
         return 1
 
-    if seed != "none":
+    if seed != 'none':
         random.seed(int(seed))
     
     generate_input(n_steps=n_steps,
                    grid_resolution=grid_resolution,
+                   n_solver_steps=n_solver_steps,
                    backend_format=backend_format)
     return 0
 
