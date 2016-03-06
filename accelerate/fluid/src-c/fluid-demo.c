@@ -240,22 +240,24 @@ static void idle_func (void) {
   add_source(v, v_prev, dt);
   add_source(dens, dens_prev, dt);
 
+  uint32_t n_solver_steps = 20;
+
   if (memory_naive) {
-    vel_step_naive(N, u, v, u, v, visc, dt);
+    vel_step_naive(N, u, v, u, v, visc, dt, n_solver_steps);
   }
   else {
     /* u_prev and v_prev are overwritten on next GUI read anyway, so we use them
        as temporary arrays. */
-    vel_step_light(N, u, v, u_prev, v_prev, visc, dt);
+    vel_step_light(N, u, v, u_prev, v_prev, visc, dt, n_solver_steps);
   }
 
   if (memory_naive) {
-    dens_step_naive(N, dens, dens, u, v, diff, dt);
+    dens_step_naive(N, dens, dens, u, v, diff, dt, n_solver_steps);
   }
   else {
     /* dens_prev is overwritten on next GUI read anyway, so we use it as a
        temporary array. */
-    dens_step_light(N, dens, dens_prev, u, v, diff, dt);
+    dens_step_light(N, dens, dens_prev, u, v, diff, dt, n_solver_steps);
   }
 
   glutSetWindow(win_id);

@@ -5,7 +5,7 @@
 #include "timing.h"
 
 void get_end_frame(size_t N, float* U, float* V, float* D,
-                   uint32_t n_steps, float time_step,
+                   uint32_t n_steps, uint32_t n_solver_steps, float time_step,
                    float diffusion_rate, float viscosity) {
   float* tmp0 = (float*) malloc(sizeof(float) * size(N));
   float* tmp1 = (float*) malloc(sizeof(float) * size(N));
@@ -13,8 +13,8 @@ void get_end_frame(size_t N, float* U, float* V, float* D,
 
   timing_start(&t);
   for (size_t i = 1; i < n_steps; i++) {
-    vel_step_light(N, U, V, tmp0, tmp1, viscosity, time_step);
-    dens_step_light(N, D, tmp0, U, V, diffusion_rate, time_step);
+    vel_step_light(N, U, V, tmp0, tmp1, viscosity, time_step, n_solver_steps);
+    dens_step_light(N, D, tmp0, U, V, diffusion_rate, time_step, n_solver_steps);
   }
   timing_end(&t);
   fprintf(stderr, "Elapsed milliseconds: %zd\n", t.usecs / 1000);
@@ -45,6 +45,7 @@ int main() {
   float* V0 = (float*) malloc(sizeof(float) * s);
   float* D0 = (float*) malloc(sizeof(float) * s);
   int32_t n_steps;
+  int32_t n_solver_steps;
   float time_step;
   float diffusion_rate;
   float viscosity;
@@ -66,11 +67,13 @@ int main() {
     }
   }
   scanf("%d", &n_steps);
+  scanf("%d", &n_solver_steps);
   scanf("%f", &time_step);
   scanf("%f", &diffusion_rate);
   scanf("%f", &viscosity);
 
-  get_end_frame(N, U0, V0, D0, n_steps, time_step, diffusion_rate, viscosity);
+  get_end_frame(N, U0, V0, D0, n_steps, n_solver_steps,
+                time_step, diffusion_rate, viscosity);
   
   return EXIT_SUCCESS;
 }
