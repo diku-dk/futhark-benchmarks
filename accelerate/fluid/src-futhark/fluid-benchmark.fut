@@ -1,6 +1,7 @@
 --
 -- ==
--- compiled input @ fluid.input
+-- tags { notravis }
+-- compiled input @ fluid-n_steps40-grid_res100.input
 
 include fluid
 
