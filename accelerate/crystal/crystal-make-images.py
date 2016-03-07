@@ -38,8 +38,13 @@ Example:
     outp = outp.replace(b'i32', b'').decode()
     images = eval(outp)
     size = int(field_size)
-    for image, i in zip(images, range(len(images))):
-        image = np.array(image).reshape((size, size * 3))
+    for fut_image, i in zip(images, range(len(images))):
+        image = np.empty((size,size*3))
+        for x in range(size):
+            for y in range(size):
+                image[x][y*3+0] = 0xFF & (fut_image[x][y] >> 16)
+                image[x][y*3+1] = 0xFF & (fut_image[x][y] >> 8)
+                image[x][y*3+2] = 0xFF & (fut_image[x][y] >> 0)
 
         filename = os.path.join(
             output_directory,
