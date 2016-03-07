@@ -30,7 +30,7 @@ fun f32 pi() = 3.14159265358979323846264338327950288419716939937510
 
 fun bool odd(i32 n) = (n & 1) == 1
 
-fun {i8,i8,i8} quasicrystal(f32 scale, i32 degree, f32 time, f32 x, f32 y) =
+fun i32 quasicrystal(f32 scale, i32 degree, f32 time, f32 x, f32 y) =
   let phi = 1.0 + (time ** 1.5) * 0.005 in
   let {x', y'} = point(scale, x, y) in
   intColour(rampColour(waves(degree, phi, x', y')))
@@ -61,9 +61,9 @@ fun {f32, f32} point(f32 scale, f32 x, f32 y) =
 fun {f32, f32, f32} rampColour(f32 v) =
   {1.0, 0.4 + (v * 0.6), v} -- rgb
 
-fun {i8,i8,i8} intColour({f32, f32, f32} rgb) =
+fun i32 intColour({f32, f32, f32} rgb) =
   let {r, g, b} = rgb in
-  {intPixel(r), intPixel(g), intPixel(b)}
+  i32(intPixel(r)) << 16 + i32(intPixel(g)) << 8 + i32(intPixel(b))
 
 fun i8 intPixel(f32 t) =
   i8(255.0 * t)
@@ -71,14 +71,14 @@ fun i8 intPixel(f32 t) =
 fun f32 normalize_index(i32 i, i32 field_size) =
   f32(i) / f32(field_size)
   
-fun [[[{i8, i8,i8}, field_size], field_size], n_steps]
+fun [[[i32, field_size], field_size], n_steps]
   main(i32 field_size, f32 scale, i32 degree,
        i32 n_steps, f32 time_delta) =
   let ks = iota(field_size) in
-  map(fn [[{i8,i8,i8}, field_size], field_size] (i32 step_i) =>
+  map(fn [[i32, field_size], field_size] (i32 step_i) =>
         let time = f32(step_i) * time_delta in
-        map(fn [{i8,i8,i8}, field_size] (i32 y) =>
-              map(fn {i8,i8,i8} (i32 x) =>
+        map(fn [i32, field_size] (i32 y) =>
+              map(fn i32 (i32 x) =>
                     quasicrystal(scale, degree, time,
                                  normalize_index(x, field_size),
                                  normalize_index(y, field_size)),
