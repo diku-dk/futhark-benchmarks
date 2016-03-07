@@ -63,7 +63,7 @@ fun *[[f32,d],k]
                  zip(points, membership)) in
   cluster_sums
 
-fun {[[f32]], [int], int}
+fun {[[f32]], int}
   main(int threshold,
        int k,
        int max_iterations,
@@ -85,4 +85,4 @@ fun {[[f32]], [int], int}
                                    if b then 0 else 1,
                                  zipWith(==, membership, new_membership))) in
     {new_membership, new_centres, delta, i+1} in
-  {cluster_centres, membership, i}
+  {cluster_centres, i}
