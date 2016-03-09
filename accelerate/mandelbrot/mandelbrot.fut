@@ -3,6 +3,12 @@
 -- Complicated a little bit by the fact that Futhark does not natively
 -- support complex numbers.  We will represent a complex number as a
 -- tuple {f32,f32}.
+--
+-- ==
+-- notravis input {  800  600 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
+-- notravis input { 1000 1000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
+-- notravis input { 2000 2000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
+-- notravis input { 4000 4000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
 
 default(f32)
 
