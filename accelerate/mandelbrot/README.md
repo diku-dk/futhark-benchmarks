@@ -31,4 +31,6 @@ follows, on `napoleon`:
       Accelerate: 37.130ms
       Futhark:    13.679ms
 
-All with an iteration limit of 255.
+All with an iteration limit of 255.  Try it yourself:
+
+    futhark-bench --compiler=futhark-opencl mandelbrot.fut
