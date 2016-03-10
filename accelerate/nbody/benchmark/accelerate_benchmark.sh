@@ -14,3 +14,5 @@ accelerate_benchmark() {
 
 accelerate_benchmark 100 1.0 50.0
 accelerate_benchmark 1000 1.0 50.0
+accelerate_benchmark 10000 1.0 50.0
+accelerate_benchmark 100000 1.0 50.0
