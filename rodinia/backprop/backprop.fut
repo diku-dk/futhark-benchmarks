@@ -10,7 +10,7 @@ fun f32 ETA()       = 0.3
 fun f32 MOMENTUM()  = 0.3
 fun bool INIT_ZERO() = False
 
-fun f32 squash(f32 x) = 1.0 / (1.0 + exp(-x))
+fun f32 squash(f32 x) = 1.0 / (1.0 + exp32(-x))
 fun f32 ABS   (f32 x) = if x < 0.0 then 0.0 - x else x
 
 -- Computational kernels

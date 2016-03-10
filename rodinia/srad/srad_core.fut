@@ -40,7 +40,7 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
   let image = map(fn [f32,cols] ([int] row) =>
                     map(fn f32 (int pixel) =>
-                          exp(f32(pixel)/255.0),
+                          exp32(f32(pixel)/255.0),
                         row),
                     image) in
   loop (image) = for i < niter do
@@ -97,7 +97,7 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
   let image = map(fn [int,cols] ([f32] row) =>
                     map(fn int (f32 pixel) =>
                           -- take logarithm of image, log compress
-                          int(log(pixel)*255.0),
+                          int(log32(pixel)*255.0),
                         row),
                     image) in
   image

@@ -51,9 +51,9 @@ fun f32 wrap(f32 n) =
   f32(odd_in_int) * (1.0 - n') + f32(even_in_int) * n'
 
 fun f32 wave(f32 th, f32 x, f32 y) =
-  let cth = cos(th) in
-  let sth = sin(th) in
-  (cos (cth * x + sth * y) + 1.0) / 2.0
+  let cth = cos32(th) in
+  let sth = sin32(th) in
+  (cos32(cth * x + sth * y) + 1.0) / 2.0
 
 fun {f32, f32} point(f32 scale, f32 x, f32 y) =
   {x * scale, y * scale}
