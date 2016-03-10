@@ -83,7 +83,7 @@ fun {f32, f32, f32}
   let accels = map(fn {f32, f32, f32} ({f32, f32, f32, f32, f32, f32, f32, f32, f32, f32} body_other) =>
                      accel_wrap(epsilon, body, body_other),
                    bodies)
-  in reduce(vec_add, {0f32, 0f32, 0f32}, accels)
+  in reduceComm(vec_add, {0f32, 0f32, 0f32}, accels)
 
 fun [{f32, f32, f32}]
   calc_accels(f32 epsilon,
