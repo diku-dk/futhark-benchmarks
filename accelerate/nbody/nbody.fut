@@ -61,7 +61,7 @@ fun {f32, f32, f32}
         f32 mj) =
   let r = vec_subtract(pj, pi)
   let rsqr = dot(r, r) + epsilon * epsilon
-  let invr = 1.0f32 / f32(sqrt(f64(rsqr)))
+  let invr = 1.0f32 / sqrt32(rsqr)
   let invr3 = invr * invr * invr
   let s = mj * invr3
   in vec_mult_factor(s, r)
