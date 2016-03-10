@@ -68,4 +68,4 @@ fun {*[[f64,n],n], *[[f64,n],n]} lu_par(*[[f64,n],n] a) =
 
 fun {[[f64,n],n], [[f64,n],n]} main(*[[f64,n],n] a) =
   -- lu_inplace(a)
-  let {l,u} = lu_inplace(a) in { transpose(l), u }
+  let {l,u} = lu_inplace(a) in { l, u }
