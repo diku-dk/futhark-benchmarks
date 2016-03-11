@@ -21,4 +21,4 @@ Run `./crystal-make-images.py` to make some pretty pictures.
     size=4000, scale=30.0, degree=50, n_steps=1, time_delta=1.0:
       Accelerate: 126700.0us
       Futhark:     60564.4us
-      Futhark speedup: 2.0
+      Futhark speedup: 2.0x
