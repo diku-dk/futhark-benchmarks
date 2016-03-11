@@ -1,6 +1,14 @@
--- The last data set is equal to the Accelerate default.
+-- The first data set is equal to the Accelerate default.
 --
 -- ==
+-- compiled input {
+--   200
+--   30.0f32
+--   5
+--   1
+--   1.0f32
+-- }
+--
 -- compiled input {
 --   20
 --   30.0f32
@@ -26,9 +34,17 @@
 -- }
 --
 -- compiled input {
---   200
+--   2000
 --   30.0f32
---   5
+--   50
+--   1
+--   1.0f32
+-- }
+--
+-- compiled input {
+--   4000
+--   30.0f32
+--   50
 --   1
 --   1.0f32
 -- }
