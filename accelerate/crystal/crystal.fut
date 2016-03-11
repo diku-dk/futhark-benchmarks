@@ -33,7 +33,7 @@
 --   0.5f32
 -- }
 --
--- compiled input {
+-- notravis input {
 --   2000
 --   30.0f32
 --   50
@@ -41,7 +41,7 @@
 --   1.0f32
 -- }
 --
--- compiled input {
+-- notravis input {
 --   4000
 --   30.0f32
 --   50
