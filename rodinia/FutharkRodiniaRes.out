@@ -24,3 +24,7 @@ Myocyte Seq:
 dataset data/medium.in: 36073877.35us (average; relative standard deviation: 0.01)
 Myocyte GPU: 
 dataset data/medium.in: 917709.90us (average; relative standard deviation: 0.00)
+NN Seq: 
+dataset data/medium.in: 117518.80us (average; relative standard deviation: 0.00)
+NN GPU: 
+dataset data/medium.in: 11631.35us (average; relative standard deviation: 0.02)
