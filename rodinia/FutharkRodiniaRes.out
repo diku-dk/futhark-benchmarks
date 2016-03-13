@@ -1,0 +1,26 @@
+Backprop Seq: 
+dataset data/medium.in: 1611671.15us (average; relative standard deviation: 0.01)
+Backprop GPU: 
+dataset data/medium.in: 20164.55us (average; relative standard deviation: 0.00)
+CFD Seq: 
+dataset data/fvcorr.domn.193K.toa: 193600025.55us (average; relative standard deviation: 0.03)
+CFD GPU:
+dataset data/fvcorr.domn.193K.toa: 1622414.6 us
+HOTSPOT Seq: 
+dataset data/1024.in: 2986539.45us (average; relative standard deviation: 0.01)
+HOTSPOT GPU: 
+dataset data/1024.in: 53404.35us (average; relative standard deviation: 0.01);
+    kernel time ~45304.0 us
+
+K-MEANS Seq: 
+dataset data/kdd_cup.in: 8137550.80us (average; relative standard deviation: 0.00)
+K-MEANS GPU: 
+dataset data/kdd_cup.in: 449524.10us (average; relative standard deviation: 0.01)
+LavaMD Seq: 
+dataset data/medium.in: 8551117.40us (average; relative standard deviation: 0.00)
+LavaMD GPU: 
+dataset data/medium.in: 11908.25us (average; relative standard deviation: 0.01)
+Myocyte Seq: 
+dataset data/medium.in: 36073877.35us (average; relative standard deviation: 0.01)
+Myocyte GPU: 
+dataset data/medium.in: 917709.90us (average; relative standard deviation: 0.00)
