@@ -52,6 +52,9 @@ Moreover, the "rB" and "qB" arrays are invariant to the second map and hence
 they can be blocked, i.e., stored in shared memory ... which would account for 
 the 2x speedup the Rodinia OpenCL version has on us. 
         
+-- WE HAVE REPLACE rand() with SobolIndependent computation!
+   For OpenCL: in Futhark we measure everything including Sobol number generation,
+               but in Rodinia we exclude it and measure transfer time.
 
 #########################
 # Approximate Runtimes: #

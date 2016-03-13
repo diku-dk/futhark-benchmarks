@@ -59,7 +59,7 @@ bpnn_adjust_weights([f32,ndelta] delta, [f32,nlym1] ly, [[f32,ndelta],nly] w, [[
 
 
 fun [f32,n2]
-bpnn_layerforward([f32,n1] l1, [[f32,n2],n1] conn, [f32,n2] conn_fstrow) =
+bpnn_layerforward_GOOD([f32,n1] l1, [[f32,n2],n1] conn, [f32,n2] conn_fstrow) =
   let connT     = transpose(conn) in
   let res_tmp   = map ( fn f32 ([f32,n1] conn_tr_row) =>
                             let prods = zipWith(*, conn_tr_row, l1) in
@@ -68,7 +68,23 @@ bpnn_layerforward([f32,n1] l1, [[f32,n2],n1] conn, [f32,n2] conn_fstrow) =
   map ( fn f32 (f32 pr, f32 conn0) => squash(pr+conn0)
       , zip(res_tmp, conn_fstrow) )
 
---squash(rowsum)
+
+fun [f32,n2]
+bpnn_layerforward([f32,n1] l1, [[f32,n2],n1] conn, [f32,n2] conn_fstrow) =
+  let connT     = transpose(conn) in
+  let res_map   = map ( fn [f32,n1] ([f32,n1] conn_tr_row) =>
+                        zipWith(*, conn_tr_row, l1)
+                      , connT)
+  in
+  let res_map_cpy = copy(res_map) 
+  in
+  let res_tmp   = map ( fn f32 ([f32,n1] res_map_row) =>
+                            reduce(+, 0.0, res_map_row)
+                      , res_map_cpy ) 
+  in
+  map ( fn f32 (f32 pr, f32 conn0) => squash(pr+conn0)
+      , zip(res_tmp, conn_fstrow) )
+
 --------------------------------------------------------/
 
 fun { f32, f32

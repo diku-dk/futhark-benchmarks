@@ -43,7 +43,7 @@ Structure of the Main Code:
 # Approximate Runtimes: #
 #########################
 
-Dataset medium:
+Dataset medium: extended Rodinia dataset by a factor of 20 and similarly the number of nearest neighbors
 
 Sequential Total Runtime Rodinia:  0.706 sec
     run with ./nn filelist_4 100 30 90
@@ -54,7 +54,7 @@ Sequential Total Runtime Futhark:  0.287 secs
 -----------------------------------
 -----------------------------------
 
-OpenCL Total Runtime Rodinia:  0.437456995249
+CUDA Total Runtime Rodinia:  0.437456995249
     WAS RUN with ./nn filelist_4 -r 100 -lat 30 -lng 90
 
 OpenCL Total Runtime Futhark:  0.017553 secs (one kernel dominates the cost)
