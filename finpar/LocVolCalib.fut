@@ -13,10 +13,10 @@ default(f32)
 
 fun {int,int,[f32,numX],[f32,numY],[f32,numT]}
   initGrid(f32 s0, f32 alpha, f32 nu, f32 t, int numX, int numY, int numT) =
-    let logAlpha = log(alpha) in
+    let logAlpha = log32(alpha) in
     let myTimeline = map(fn f32 (int i) => t * f32(i) / (f32(numT) - 1.0), iota(numT)) in
-    let {stdX, stdY} = {20.0 * alpha * s0 * sqrt(t),
-                        10.0 * nu         * sqrt(t)} in
+    let {stdX, stdY} = {20.0 * alpha * s0 * sqrt32(t),
+                        10.0 * nu         * sqrt32(t)} in
     let {dx, dy} = {stdX / f32(numX), stdY / f32(numY)} in
     let {myXindex, myYindex} = {int(s0 / dx), numY / 2} in
     let myX = map(fn f32 (int i) => f32(i) * dx - f32(myXindex) * dx + s0,       iota(numX)) in
@@ -60,7 +60,7 @@ updateParams( [f32,numX] myX, [f32,numY] myY, [f32] myTimeline,
   let myMuX  = replicate(numY, replicate(numX, 0.0  )) in
   let myVarX = map( fn [f32] (f32 yj) =>
                       map ( fn f32 (f32 xi) =>
-                              exp(2.0*(beta*log(xi) + yj - 0.5*nu*nu*myTimeline[g]))
+                              exp32(2.0*(beta*log32(xi) + yj - 0.5*nu*nu*myTimeline[g]))
                           , myX )
                   , myY )
   in  { myMuX, myVarX, myMuY, myVarY }

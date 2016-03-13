@@ -1,27 +1,52 @@
+-- The first data set is equal to the Accelerate default.
 --
 -- ==
 -- compiled input {
+--   200
+--   30.0f32
+--   5
+--   1
+--   1.0f32
+-- }
+--
+-- compiled input {
 --   20
---   30.0
+--   30.0f32
 --   5
 --   50
---   0.5
+--   0.5f32
 -- }
 --
 -- compiled input {
 --   40
---   30.0
+--   30.0f32
 --   5
 --   50
---   0.5
+--   0.5f32
 -- }
 --
 -- compiled input {
 --   40
---   30.0
+--   30.0f32
 --   50
 --   50
---   0.5
+--   0.5f32
+-- }
+--
+-- notravis input {
+--   2000
+--   30.0f32
+--   50
+--   1
+--   1.0f32
+-- }
+--
+-- notravis input {
+--   4000
+--   30.0f32
+--   50
+--   1
+--   1.0f32
 -- }
 
 default (f32)
@@ -51,9 +76,9 @@ fun f32 wrap(f32 n) =
   f32(odd_in_int) * (1.0 - n') + f32(even_in_int) * n'
 
 fun f32 wave(f32 th, f32 x, f32 y) =
-  let cth = cos(th) in
-  let sth = sin(th) in
-  (cos (cth * x + sth * y) + 1.0) / 2.0
+  let cth = cos32(th) in
+  let sth = sin32(th) in
+  (cos32(cth * x + sth * y) + 1.0) / 2.0
 
 fun {f32, f32} point(f32 scale, f32 x, f32 y) =
   {x * scale, y * scale}

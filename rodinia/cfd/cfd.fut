@@ -47,7 +47,7 @@ fun f32 compute_pressure(f32 density, f32 density_energy, f32 speed_sqd) =
     (GAMMA()-1.0) * (density_energy - 0.5*density*speed_sqd)
 
 fun f32 compute_speed_of_sound(f32 density, f32 pressure) =
-    sqrt( GAMMA() * pressure / density )
+    sqrt32( GAMMA() * pressure / density )
 
 --
 fun [[f32,nelr],5] initialize_variables(int nelr, [f32,5] ff_variable) = --[float,NVAR] ff_variable
@@ -96,7 +96,7 @@ fun [f32,nelr] compute_step_factor([[f32,nelr],5] variables, [f32,nelr] areas) =
             let speed_sqd  = compute_speed_sqd(velocity)    in
             let pressure   = compute_pressure(density, density_energy, speed_sqd) in
             let speed_of_sound = compute_speed_of_sound( density, pressure ) in
-                ( 0.5 / (sqrt(areas[i]) * (sqrt(speed_sqd) + speed_of_sound) ) )
+                ( 0.5 / (sqrt32(areas[i]) * (sqrt32(speed_sqd) + speed_of_sound) ) )
        , iota(nelr))
     
 --5 == NVAR
@@ -129,7 +129,7 @@ fun [[f32,nel],5]
             let density_energy_i = variables[VAR_DENSITY_ENERGY(), i]     in
             let velocity_i   = compute_velocity(density_i, momentum_i)    in
             let speed_sqd_i  = compute_speed_sqd(velocity_i)              in
-            let speed_i      = sqrt(speed_sqd_i) in
+            let speed_i      = sqrt32(speed_sqd_i) in
             let pressure_i   = compute_pressure(density_i, density_energy_i, speed_sqd_i) in
             let speed_of_sound_i = compute_speed_of_sound(density_i, pressure_i) in
             let { flux_contribution_i_momentum_x, flux_contribution_i_momentum_y, 
@@ -157,7 +157,7 @@ fun [[f32,nel],5]
                 let normal_x = normals[0, j, i] in
                 let normal_y = normals[1, j, i] in
                 let normal_z = normals[2, j, i] in
-                let normal_len = sqrt(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z) in
+                let normal_len = sqrt32(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z) in
                 if (0 <= nb) -- a legitimate neighbor
                 then let density_nb    = unsafe variables[VAR_DENSITY(),    nb] in
 		             let momentum_nb_x = unsafe variables[VAR_MOMENTUM()+0, nb] in
@@ -184,7 +184,7 @@ fun [[f32,nel],5]
 
                      -- artificial viscosity
                      let factor = -normal_len*smoothing_coefficient*0.5*
-                                    ( speed_i + sqrt(speed_sqd_nb) + speed_of_sound_i + speed_of_sound_nb ) in
+                                    ( speed_i + sqrt32(speed_sqd_nb) + speed_of_sound_i + speed_of_sound_nb ) in
                      let flux_i_density = flux_i_density + factor*(density_i-density_nb) in
                      let flux_i_density_energy = flux_i_density_energy + factor*(density_energy_i-density_energy_nb) in
                      let flux_i_momentum_x = flux_i_momentum_x + factor*(momentum_i_x-momentum_nb_x) in
@@ -311,7 +311,7 @@ main(  [f32,nel]       areas,
 
     let var_of_density = 1.4f32 in
     let ff_pressure = 1.0f32 in
-    let ff_speed_of_sound = sqrt( GAMMA()*ff_pressure / var_of_density ) in
+    let ff_speed_of_sound = sqrt32( GAMMA()*ff_pressure / var_of_density ) in
     let ff_speed = ff_mach() * ff_speed_of_sound in
     let { ff_velocity_x, ff_velocity_y, ff_velocity_z } = 
             { ff_speed * cos32(angle_of_attack) -- .x   ... cos(angle_of_attack()) = 1
