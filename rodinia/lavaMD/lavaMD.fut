@@ -78,7 +78,7 @@ ComputKernel( f32 alpha
                                       let { {rbj_v,rbj_x,rbj_y,rbj_z}, qbj } = tup in
                                       let r2   = rai_v + rbj_v - DOT({rai_x,rai_y,rai_z}, {rbj_x,rbj_y,rbj_z}) in
                                       let u2   = a2*r2          in
-                                      let vij  = exp(-u2)       in
+                                      let vij  = exp32(-u2)       in
                                       let fs   = 2.0 * vij      in
                                       let d_x  = rai_x  - rbj_x in 
                                       let d_y  = rai_y  - rbj_y in 

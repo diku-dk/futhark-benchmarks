@@ -192,7 +192,7 @@ fun f32 ugaussianEl( f32 p ) =
         then smallcase(dp)
         else let pp = if(dp < 0.0) then dp + 0.5 
 				   else 0.5 - dp       in
-             let r  = sqrt( - log(pp) )                in
+             let r  = sqrt32( - log32(pp) )            in
              let x = if(r <= 5.0) then intermediate(r) 
 				  else tail(r)         in
              if(dp < 0.0) then 0.0 - x 
@@ -288,7 +288,7 @@ mkPrices(   [f32,num_und]            md_starts,
 ) =
     let c_rows = map( combineVs, zip(noises, md_vols, md_drifts) ) in
     let e_rows = map( fn [f32,num_und] ([f32] x) =>
-                        map(exp, x)
+                        map(exp32, x)
                     , c_rows --map( combineVs, zip(noises, md_vols, md_drifts) )
                     )
     in  map(fn [f32,num_und] ([f32] x) =>
