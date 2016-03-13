@@ -71,8 +71,11 @@ Sequential Total Runtime Futhark:  0.076 secs
 -----------------------------------
 
 OpenCL versions measured on dataset medium:
+(copy-in time not measured for Rodinia, neither initialization for the enlarged dataset;
+do not report copy-out time either, only compute time, because the result array is bigger 
+than what Futhark version computes with a factor of xmax+1).
 
-OpenCL Total Runtime Rodinia:  6.110030174255 secs, from which
+CUDA Total Runtime Rodinia:  6.110030174255 secs, from which
     CUDA error: no error
     0.000001000000 s, 0.000016366532 % : SETUP VARIABLES
     0.056409001350 s, 0.923219680786 % : ALLOCATE CPU MEMORY AND GPU MEMORY

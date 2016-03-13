@@ -80,6 +80,7 @@ fun *[f32] tridagSeq( [f32,n] a, *[f32,n] b, [f32,n] c, *[f32,n] y ) =
     in  y
 
 fun *[f32] tridagPar( [f32] a, *[f32] b, [f32] c, *[f32] y ) =
+    unsafe
     let n    = size(0, a) in
     ----------------------------------------------------
     -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --

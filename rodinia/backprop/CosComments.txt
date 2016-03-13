@@ -64,7 +64,12 @@ OpenCL Training Runtime Rodinia (without initialization): 0.292 sec, from which
     Device<->Host Transfer time: 0.218 sec
     Kernel time:                 0.074 sec
 
-OpenCL Total    Runtime Futhark: 0.245 sec (total runtime, including initialization) 
+OpenCL Total    Runtime Futhark: 
+        NEW VERSION: 0.031429 total time
+            (still the segmented reduction is naively implemented via segmented scan)
+
+        OLD VERSION
+        0.245 sec (total runtime, including initialization) 
         (These are still poor results are because of bpnn_layerforward,
          where the segmented reduction, i.e., outer map -- inner redomap,
          is parallelizing the map (which has small size) and is 
