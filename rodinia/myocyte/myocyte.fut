@@ -802,13 +802,13 @@ fun *[f32,EQUS] fin(    [f32,EQUS] initvalu, int initvalu_offset_ecc,
 ----- Master MODULE -----
 -------------------------
 
-fun f32  inf() = 1.0f32 / 0.0f32
-fun f32 minf() = 0.0f32 - inf()
-fun f32  nan() = inf()  / inf()
-fun f32 mnan() = 0.0f32 - nan()
+--fun f32  inf() = 1.0f32 / 0.0f32
+--fun f32 minf() = 0.0f32 - inf()
+--fun f32  nan() = inf()  / inf()
+--fun f32 mnan() = 0.0f32 - nan()
 
-fun bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != sqrt32(xp)
-fun bool isinf(f32 x) = ( x == inf() || x == minf() )
+--fun bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != sqrt32(xp)
+--fun bool isinf(f32 x) = ( x == inf() || x == minf() )
 
 fun *[f32,EQUS] master( f32 timeinst, [f32,EQUS] initvalu, [f32,PARS] parameter ) =
   let finavalu = replicate(EQUS, 0.0f32) in
@@ -844,7 +844,7 @@ fun *[f32,EQUS] master( f32 timeinst, [f32,EQUS] initvalu, [f32,PARS] parameter 
                        parameter, finavalu, JCaDyad, JCaSL, JCaCyt ) 
   in
   map(fn f32 (f32 x) => 
-        if ( isnan(x) || isinf(x) ) 
+        if ( isnan32(x) || isinf32(x) ) 
         then 0.0001f32
         else x 
      , finavalu)
