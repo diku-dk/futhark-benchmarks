@@ -1,6 +1,8 @@
 -- Rodinia's Back-Propagation benchmark translated to Futhark.
 --
 -- ==
+-- compiled input @ data/medium.in
+
 -- compiled input @ data/small.in
 -- output @ data/small.out
 
