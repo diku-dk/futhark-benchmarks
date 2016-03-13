@@ -5,13 +5,12 @@ dataset data/medium.in: 20164.55us (average; relative standard deviation: 0.00)
 CFD Seq: 
 dataset data/fvcorr.domn.193K.toa: 193600025.55us (average; relative standard deviation: 0.03)
 CFD GPU:
-dataset data/fvcorr.domn.193K.toa: 1622414.6 us
+dataset data/fvcorr.domn.193K.toa: 1622414.6 us (average; relative standard deviation: 0.01)
 HOTSPOT Seq: 
 dataset data/1024.in: 2986539.45us (average; relative standard deviation: 0.01)
 HOTSPOT GPU: 
 dataset data/1024.in: 53404.35us (average; relative standard deviation: 0.01);
     kernel time ~45304.0 us
-
 K-MEANS Seq: 
 dataset data/kdd_cup.in: 8137550.80us (average; relative standard deviation: 0.00)
 K-MEANS GPU: 
@@ -28,3 +27,11 @@ NN Seq:
 dataset data/medium.in: 117518.80us (average; relative standard deviation: 0.00)
 NN GPU: 
 dataset data/medium.in: 11631.35us (average; relative standard deviation: 0.02)
+Pathfinder Seq: 
+dataset data/medium.in: 720744.30us (average; relative standard deviation: 0.00)
+Pathfinder GPU: 
+dataset data/medium.in: 7437.50us (average; relative standard deviation: 0.01)
+SRAD Seq: 
+dataset data/image.in: 563938.75us (average; relative standard deviation: 0.01)
+SRAD GPU: 
+dataset data/image.in: 15636.50us (average; relative standard deviation: 0.01)
