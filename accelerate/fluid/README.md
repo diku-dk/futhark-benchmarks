@@ -88,7 +88,7 @@ variance introduced by outliers: 19% (moderately inflated)
 
 Average runtimes:
 
-| Number of steps | Grid resolution | Futhark | Accelerate |
+| Number of steps for the linear solver | Grid resolution | Futhark | Accelerate |
 | --- | --- | --- | --- |
 | 40 |  100 |  11605.20us |  53480.00us |
 | 40 | 1000 |  54392.30us | 194600.00us |
