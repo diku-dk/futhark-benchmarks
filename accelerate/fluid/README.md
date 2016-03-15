@@ -130,3 +130,10 @@ Python 3 dependencies:
 
   + numpy
   + pypng
+
+## Runtime results on gpu01-diku-apl (GTX 780 Ti)
+
+  resolution=3000, n_steps=1, n_solver_steps=20:
+     Accelerate:      154.5ms
+     Futhark:         107.9ms
+     Futhark speedup:   1.43x

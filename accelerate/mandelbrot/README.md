@@ -1,5 +1,4 @@
-Mandelbrot
-==========
+# Mandelbrot
 
 Port of Accelerate's
 [mandelbrot](https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/mandelbrot)
@@ -9,36 +8,32 @@ into images.  For example:
     futhark-pyopencl --module mandelbrot.fut -o mandelbrot.py
     ./mandelbrot-run.py --width 1024 --height 768 mandelbrot.png
 
-Performance
------------
-
-Performance of `futhark-opencl` compared with Accelerate is as
-follows, on `napoleon`:
+## Runtime results on gpu01-diku-apl (GTX 780 Ti)
 
     width 800, height 600:
-      Accelerate:  2.979ms
-      Futhark:     0.996ms
-      Speedup:        2.9x
+      Accelerate:  1.289ms
+      Futhark:     0.453ms
+      Speedup:       2.84x
 
     width 1000, height 1000:
-      Accelerate:  4.635ms
-      Futhark:     1.467ms
-      Speedup:        3.1x
+      Accelerate:  2.345ms
+      Futhark:     0.664ms
+      Speedup:       3.53x
 
     width 2000, height 2000:
-      Accelerate: 11.080ms
-      Futhark:     4.017ms
-      Speedup:       2.75x
+      Accelerate:  8.006ms
+      Futhark:     1.835ms
+      Speedup:       4.36x
 
     width 4000, height 4000:
-      Accelerate: 37.130ms
-      Futhark:    13.679ms
-      Speedup:       2.71x
+      Accelerate: 29.26ms
+      Futhark:    6.426ms
+      Speedup:      4.55x
 
     width 8000, height 8000:
-      Accelerate:  140.6ms
-      Futhark:      51.8ms
-      Speedup:       2.71x
+      Accelerate:  142.000ms
+      Futhark:      24.174ms
+      Speedup:      5.87x
 
 All with an iteration limit of 255.  Try it yourself:
 
