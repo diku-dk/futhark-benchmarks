@@ -97,3 +97,25 @@ Average runtimes:
 | 1000   | 710.60us | 2909.00us |
 | 10000  | 5311.40us | 19920.00us |
 | 100000 | 447308.30us | 1457000.00us |
+
+## Runtime results on gpu01-diku-apl (GTX 780 Ti)
+
+  n=100:
+    Accelerate: 0.455ms
+    Futhark:    0.029ms
+    Speedup:     15.9x
+
+  n=1000:
+    Futhark:    0.671ms
+    Accelerate: 1.115ms
+    Speedup:     1.551x
+
+  n=10000:
+    Futhark:    5.407ms
+    Accelerate: 8.238ms
+    Speedup:    1.5x
+
+  n=100000:
+    Futhark:    253.6ms
+    Accelerate: 622.3ms
+    Speedup:    2.45x
