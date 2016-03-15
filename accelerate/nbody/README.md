@@ -9,6 +9,8 @@ Accelerate on different input sizes.
 
 ## Results
 
+**Run on napoleon.**
+
 ### Raw Futhark results
 
 ```
