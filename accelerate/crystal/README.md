@@ -3,7 +3,27 @@
 Based on Accelerate's version at
 https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/crystal
 
-Run `./crystal-make-images.py` to make some pretty pictures.
+
+## Program structure
+
+The crystal benchmark has a fairly simple structure:
+
+```
+map
+    reduce
+        map
+```
+
+In Futhark this is turned into
+
+```
+map
+    redomap
+```
+
+The Accelerate benchmark does not recognize the reduce and instead implements it
+as a recursive function.
+
 
 ## Runtime results on gpu01-diku-apl (GTX 780 Ti)
 
@@ -22,3 +42,8 @@ Run `./crystal-make-images.py` to make some pretty pictures.
       Accelerate: 126700.0us
       Futhark:     60564.4us
       Futhark speedup: 2.0x
+
+
+## Visualization
+
+Run `./crystal-make-images.py` to make some pretty pictures.
