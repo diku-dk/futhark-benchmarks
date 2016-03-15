@@ -27,8 +27,26 @@ http://www.dgp.toronto.edu/people/stam/reality/Research/pdf/GDC03.pdf
 
 ## The futhark code
 
-Please read `src-futhark/fluid.fut.module` -- this is the library.  It describes
-the major choices.
+Please read `src-futhark/fluid.fut` -- this is the library.  It describes the
+major choices.
+
+
+## Program structure
+
+The benchmark consists of an outer sequential loop which steps through the
+simulation.  However, Accelerate only ever benchmarks a single step, so the
+measurements below always run just one iteration of this loop.
+
+The loop body consists of a number of maps with inner sequential loops.  These
+sequential loops make up a linear solver, whose body is a map.
+
+Apart from the common `map-loop` structure, the other nontrivial part of the
+fluid benchmark is that several parts of its step function acts differently
+based on whether an element lies on a one-width border around the grid, or it
+lies inside the grid.  When the benchmark is run with a grid size of `N`, the full
+size of the grid is actually `(N + 2) * (N + 2)` to accomodate a border around
+the inner grid.  To handle the edge conditions, the step function parts in
+question have an `if-then-else` body.
 
 
 ## Measurements
