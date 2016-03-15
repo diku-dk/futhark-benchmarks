@@ -21,10 +21,10 @@ fun {int,f32} closest_point({int,f32} p1, {int,f32} p2) =
   if d1 < d2 then p1 else p2
 
 fun int find_nearest_point([[f32,d],k] pts, [f32,d] pt) =
-  let {i, _} = reduce(closest_point,
-                      {0, euclid_dist_2(pt,pts[0])},
-                      zip(iota(k),
-                          map(euclid_dist_2(pt), pts))) in
+  let {i, _} = reduceComm(closest_point,
+                          {0, euclid_dist_2(pt,pts[0])},
+                          zip(iota(k),
+                              map(euclid_dist_2(pt), pts))) in
   i
 
 fun *[f32,d] add_centroids([f32,d] x, [f32,d] y) =
