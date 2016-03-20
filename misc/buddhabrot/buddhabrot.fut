@@ -33,13 +33,16 @@ fun {[[[{f32,f32},depth],xprec],yprec],
   let {xmin, ymin, xmax, ymax} = field
   let sizex = xmax - xmin
   let sizey = ymax - ymin
-  in unzip(map(fn [{[{f32,f32},depth],bool},xprec] (int y) =>
-                 map (fn {[{f32,f32},depth],bool} (int x) =>
-                        let c0 = {xmin + (f32(x) * sizex) / f32(xprec),
-                                  ymin + (f32(y) * sizey) / f32(yprec)}
-                        in divergence(depth, c0)
-                     , iota(xprec))
-              , iota(yprec)))
+  let {trajectories, escapes} =
+    unzip(map (fn {[{f32,f32},depth],bool} (int i) =>
+                 let x = i % xprec
+                 let y = i / yprec
+                 let c0 = {xmin + (f32(x) * sizex) / f32(xprec),
+                           ymin + (f32(y) * sizey) / f32(yprec)}
+                 in divergence(depth, c0)
+              , iota(xprec*yprec)))
+  in {reshape((yprec,xprec,depth), trajectories),
+      reshape((xprec,yprec), escapes)}
 
 fun int toI(int n, {f32,f32,f32,f32} view, f32 y) =
   let {xmin, ymin, xmax, ymax} = view
@@ -66,8 +69,8 @@ fun [[int,m],n] visualise(int n, int m, {f32,f32,f32,f32} view,
   let {xmin, ymin, xmax, ymax} = view
   let sizex = xmax - xmin
   let sizey = ymax - ymin
-  let trajectories' = reshape((yprec*xprec,depth), trajectories)
-  let escapes' = reshape((yprec*xprec), escapes)
+  let trajectories' = reshape((xprec*yprec,depth), trajectories)
+  let escapes' = reshape((xprec*yprec), escapes)
   let visits_per_pixel =
     reshape((n*m),
             streamRedPer(fn [[int,m],n] ([[int,m],n] ass, [[int,m],n] bss) =>
