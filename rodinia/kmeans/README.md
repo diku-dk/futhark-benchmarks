@@ -13,10 +13,8 @@ There are some changes compared to Rodinia:
 
 Both of the above values are set on a per-dataset basis.
 
-The implementation outputs three values:
+The implementation outputs two values:
 
   0) The cluster centres.
 
-  1) A membership vector mapping points to cluster numbers.
-
-  2) The number of iterations done by the convergence loop.
+  1) The number of iterations done by the convergence loop.
