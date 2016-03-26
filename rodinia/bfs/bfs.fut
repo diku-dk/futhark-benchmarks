@@ -20,6 +20,7 @@
 --
 -- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
+-- tags { notravis }
 
 -- FIXME: Parallelize.
 include bfs_step_sequential
