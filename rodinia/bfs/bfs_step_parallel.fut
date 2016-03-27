@@ -61,8 +61,8 @@ fun {[i32, e_max], [i32, e_max], [bool, e_max]}
   let edge_indices = map(+ start_index, iota(e_max))
   let node_ids = map(fn i32 (i32 i) =>
                        if i < start_index + n_edges
-                       then let node_id = edges_dest[i]
-                            in if ! graph_visited[node_id]
+                       then let node_id = unsafe edges_dest[i]
+                            in if ! unsafe graph_visited[node_id]
                                then node_id
                                else -1
                        else -1,
