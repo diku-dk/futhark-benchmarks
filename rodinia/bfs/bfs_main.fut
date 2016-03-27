@@ -15,14 +15,8 @@
 --   h_graph_nodes[i].starting -> nodes_start_index
 --   h_graph_nodes[i].no_of_edges -> nodes_n_edges
 --   h_graph_edges[i] -> edges_dest
---
 -- ==
---
--- tags { notravis }
--- input @ data/4096nodes.in
--- output @ data/4096nodes.out
-
-include bfs_step_parallel
+-- tags { disable }
 
 fun [i32, n] main([i32, n] nodes_start_index,
                   [i32, n] nodes_n_edges,
