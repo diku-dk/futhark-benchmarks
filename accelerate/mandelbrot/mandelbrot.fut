@@ -5,6 +5,7 @@
 -- tuple {f32,f32}.
 --
 -- ==
+-- tags { futhark-c futhark-opencl }
 -- notravis input {  800  600 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
 -- notravis input { 1000 1000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
 -- notravis input { 2000 2000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }

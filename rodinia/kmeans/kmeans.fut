@@ -4,7 +4,7 @@
 -- Hackage.
 --
 -- ==
---
+-- tags { futhark-opencl futhark-c }
 -- compiled input @ data/trivial.in
 -- output @ data/trivial.out
 -- compiled input @ data/100.in
