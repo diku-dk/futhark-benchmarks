@@ -14,6 +14,7 @@
 --               f32, f32, f32} -- acceleration
 --
 -- ==
+-- tags { futhark-opencl futhark-c }
 --
 -- input @ nbody-acc-t0.in
 -- output @ nbody-acc-t0.out

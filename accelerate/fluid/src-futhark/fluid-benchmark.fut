@@ -1,6 +1,6 @@
 --
 -- ==
--- tags { notravis }
+-- tags { notravis futhark-opencl futhark-c }
 -- compiled input @ fluid-n_steps=1-n_solver_steps=40-grid_res=100.input
 
 include fluid
