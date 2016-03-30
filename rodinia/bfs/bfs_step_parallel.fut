@@ -1,5 +1,7 @@
 -- A parallel step function for BFS.  It's a bit more roundabout that the
 -- sequential one.
+-- ==
+-- tags { disable }
 
 fun i32 max(i32 a, i32 b) =
   if a > b then a else b
