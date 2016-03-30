@@ -1,5 +1,7 @@
 -- A naive, sequential step function for BFS.  Its purpose is to exist as a
 -- simple, working solution.
+-- ==
+-- tags { disable }
   
 fun {*[i32, n], *[bool, n], *[bool, n]}
   step(*[i32, n] cost,
