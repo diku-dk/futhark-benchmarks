@@ -5,7 +5,7 @@
 
 fun i32 max(i32 a, i32 b) =
   if a > b then a else b
-  
+
 fun {*[i32, n], *[bool, n], *[bool, n]}
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
@@ -46,7 +46,7 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
 
   let updating_graph_mask' =
     write(node_ids, updating_graph_masks, updating_graph_mask)
-      
+
   in {cost', graph_mask', updating_graph_mask'}
 
 fun {[i32, e_max], [i32, e_max], [bool, e_max]}

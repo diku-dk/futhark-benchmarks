@@ -2,7 +2,7 @@
 -- simple, working solution.
 -- ==
 -- tags { disable }
-  
+
 fun {*[i32, n], *[bool, n], *[bool, n]}
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
@@ -23,7 +23,7 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
       in node_work(i, cost, nodes_start_index, nodes_n_edges,
                    edges_dest, graph_visited,
                    graph_mask, updating_graph_mask)
-  
+
   in {cost, graph_mask, updating_graph_mask}
 
 fun {*[i32, n], *[bool, n], *[bool, n]}

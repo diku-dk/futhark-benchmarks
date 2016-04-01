@@ -26,7 +26,7 @@ fun [i32, n] main([i32, n] nodes_start_index,
   let graph_visited = replicate(n, False)
   let source = 0
   let graph_mask[source] = True
-  let graph_visited[source] = True 
+  let graph_visited[source] = True
   let cost = replicate(n, -1)
   let cost[source] = 0 in
   loop ({cost, updating_graph_mask, graph_mask, graph_visited, continue} =
