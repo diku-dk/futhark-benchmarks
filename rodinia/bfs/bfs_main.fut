@@ -18,6 +18,8 @@
 -- ==
 -- tags { disable }
 
+include bfs_lib
+
 fun [i32, n] main([i32, n] nodes_start_index,
                   [i32, n] nodes_n_edges,
                   [i32, e] edges_dest) =
@@ -41,8 +43,7 @@ fun [i32, n] main([i32, n] nodes_start_index,
              graph_mask,
              updating_graph_mask)
       let updating_indices =
-        filter(fn bool (i32 i) => updating_graph_mask'[i],
-               iota(n))
+        i32_filter(updating_graph_mask', iota(n))
       let n_indices = size(0, updating_indices)
 
       let graph_mask'' =
