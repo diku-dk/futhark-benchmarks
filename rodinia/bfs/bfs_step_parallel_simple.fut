@@ -15,8 +15,7 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
        *[bool, n] graph_mask,
        *[bool, n] updating_graph_mask) =
   let active_indices =
-    filter(fn bool (i32 i) => graph_mask[i],
-           iota(n))
+    i32_filter(graph_mask, iota(n))
   let n_indices = size(0, active_indices)
 
   -- We calculate the maximum number of edges for a node.  This is necessary,
