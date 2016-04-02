@@ -1,4 +1,6 @@
 -- Library functions.
+-- ==
+-- tags { disable }
 
 -- FIXME: It *would* be nice to have a proper write-using filter built-in in
 -- Futhark instead of an ordinary function (which cannot take an anonymous
