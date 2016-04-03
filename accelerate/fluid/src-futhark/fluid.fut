@@ -73,7 +73,7 @@ fun {i32, i32, f32} outermost_inner_index(i32 i, i32 j, i32 g, i32 b) =
 -- lin_solve.
 ------------------------------------------------------------
 
-fun *[[f32, g], g]
+fun [[f32, g], g]
   lin_solve(i32 n_solver_steps,
             [[f32, g], g] S0,
             i32 b,
