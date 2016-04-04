@@ -1,6 +1,5 @@
--- A naive, sequential step function for BFS.  Its purpose is to exist as a
--- simple, working solution.
--- ==
+-- A naive, sequential version of BFS.  Its purpose is to exist as a simple,
+-- working solution.  ==
 --
 -- tags { notravis }
 -- input @ data/4096nodes.in

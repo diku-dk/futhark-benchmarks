@@ -1,4 +1,5 @@
--- A segmented parallel step function for BFS.
+-- A segmented parallel version of BFS.  It creates helper arrays for each step,
+-- contrary to `bfs_parallel_segmented_alternate`.
 -- ==
 --
 -- tags { notravis }
