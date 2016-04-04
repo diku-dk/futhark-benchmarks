@@ -18,7 +18,7 @@
 -- ==
 -- tags { disable }
 
-include bfs_lib
+include lib.bfs_lib
 
 fun [i32, n] main([i32, n] nodes_start_index,
                   [i32, n] nodes_n_edges,

@@ -3,6 +3,8 @@
 -- ==
 -- tags { disable }
 
+include lib.bfs_lib
+
 fun i32 max(i32 a, i32 b) =
   if a > b then a else b
 
