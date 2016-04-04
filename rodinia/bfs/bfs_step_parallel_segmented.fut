@@ -18,12 +18,12 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
 
   let graph_mask' =
     write(active_indices, replicate(n_indices, False), graph_mask)
-  
+
   let nodes_start_index' = map(fn i32 (i32 i) => nodes_start_index[i],
                                active_indices)
   let nodes_n_edges' = map(fn i32 (i32 i) => nodes_n_edges[i],
                            active_indices)
-  
+
   let offsets0 = scan(+, 0, nodes_n_edges')
   let full_length = offsets0[n_indices - 1]
   let offsets = i32_excl_scan_from_incl_scan(offsets0, 0)
@@ -48,5 +48,5 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
   let cost' = write(write_indices, costs_new, cost)
   let updating_graph_mask' =
     write(write_indices, replicate(full_length, True), updating_graph_mask)
-  
+
   in {cost', graph_mask', updating_graph_mask'}

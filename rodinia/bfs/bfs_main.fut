@@ -34,7 +34,7 @@ fun [i32, n] main([i32, n] nodes_start_index,
   loop ({cost, updating_graph_mask, graph_mask, graph_visited, continue} =
         {cost, updating_graph_mask, graph_mask, graph_visited, True}) =
     while continue do
-      let {cost', graph_mask', updating_graph_mask'} = 
+      let {cost', graph_mask', updating_graph_mask'} =
         step(cost,
              nodes_start_index,
              nodes_n_edges,
