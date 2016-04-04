@@ -36,11 +36,16 @@ fun [i32, n] main([i32, n] nodes_start_index,
 
   let node_ids = map(fn i32 (i32 i) => edges_dest[i], is2)
 
+  let some_binding = node_ids -- FIXME: This binding should not be necessary,
+                              -- but futhark -s spews this out without it:
+                              -- "Annotation of "binding of variable lstel_1868"
+                              -- type of expression is i32, but derived to be
+                              -- bool."
+
   let tids0 = replicate(e, 0)
   let tids1 = write(offsets, iota(n), tids0)
   let tids = i32_plus_scan_segm(tids1, mask)
-
-
+  
   loop ({cost, updating_graph_mask, graph_mask, graph_visited, continue} =
         {cost, updating_graph_mask, graph_mask, graph_visited, True}) =
     while continue do
@@ -52,11 +57,7 @@ fun [i32, n] main([i32, n] nodes_start_index,
              graph_visited,
              graph_mask,
              updating_graph_mask,
-             copy(node_ids), -- FIXME: This copy should not be necessary, but
-                             -- futhark -s spews this out without it:
-                             -- "Annotation of "binding of variable lstel_1868"
-                             -- type of expression is i32, but derived to be
-                             -- bool."
+             node_ids,
              tids)
       let updating_indices =
         i32_filter(updating_graph_mask', iota(n))
