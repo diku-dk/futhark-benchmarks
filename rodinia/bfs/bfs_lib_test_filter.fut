@@ -1,4 +1,4 @@
--- Test the library functions.
+-- Test the library filter functions.
 -- ==
 -- tags { disable }
 -- input {
