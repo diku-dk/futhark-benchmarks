@@ -1,4 +1,4 @@
--- A parallel step function for BFS.  It's a bit more roundabout that the
+-- A basic, parallel version of BFS.  It's a bit more roundabout that the
 -- sequential one.
 -- ==
 --
