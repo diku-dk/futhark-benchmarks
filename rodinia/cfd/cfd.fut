@@ -356,9 +356,17 @@ main(  [f32,nel]       areas,
     loop (variables) =
       for i < iterations() do
         let step_factors = compute_step_factor(variables, areas) in
-        let new_variables= variables in
+        -- FIXME: to get around a variant allocation, we unroll the
+        -- first iteration of the loop..
+        let fluxes = compute_flux(  elements_surrounding_elements,
+                                        normals, variables, ff_variable,
+                                        ff_flux_contribution_momentum_x,
+                                        ff_flux_contribution_momentum_y,
+                                        ff_flux_contribution_momentum_z,
+                                    ff_flux_contribution_density_energy )
+        let new_variables = time_step(0, variables, step_factors, fluxes)
         loop(new_variables) =
-          for j < RK() do
+          for 1 <= j < RK() do
             let fluxes = compute_flux(  elements_surrounding_elements, 
                                         normals, new_variables, ff_variable, 
                                         ff_flux_contribution_momentum_x, 
