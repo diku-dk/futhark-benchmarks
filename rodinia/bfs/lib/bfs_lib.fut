@@ -21,7 +21,7 @@ fun *[i32] i32_filter([bool, k] bs, [i32, k] ns) =
 -- Convert an inclusive scan into an exclusive scan, although without the last
 -- element.
 fun [i32, k] i32_excl_scan_from_incl_scan([i32, k] scanned, i32 ne) =
-  map(fn i32 (i32 i) => if i == 0 then ne else scanned[i - 1], iota(k))
+  map(fn i32 (i32 i) => if i == 0 then ne else unsafe scanned[i - 1], iota(k))
 
 -- Like scanSegm(+, 0, array, mask).
 fun [i32, k] i32_plus_scan_segm([i32, k] array, [bool, k] mask) =
