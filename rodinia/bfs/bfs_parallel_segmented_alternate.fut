@@ -59,9 +59,7 @@ fun [i32, n] main([i32, n] nodes_start_index,
              updating_graph_mask,
              node_ids,
              tids)
-      let updating_indices =
-        i32_filter(updating_graph_mask', iota(n))
-      let n_indices = size(0, updating_indices)
+      let {updating_indices, n_indices} = get_updating_indices(updating_graph_mask')
 
       let graph_mask'' =
         write(updating_indices, replicate(n_indices, True), graph_mask')
@@ -79,7 +77,7 @@ fun [i32, n] main([i32, n] nodes_start_index,
         write(updating_indices, replicate(n_indices, False),
               updating_graph_mask')
 
-      let continue' = size(0, updating_indices) > 0
+      let continue' = n_indices > 0
       in {cost', updating_graph_mask'', graph_mask'', graph_visited', continue'}
   in cost
 
