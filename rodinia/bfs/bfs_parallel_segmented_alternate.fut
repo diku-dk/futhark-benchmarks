@@ -34,7 +34,7 @@ fun [i32, n] main([i32, n] nodes_start_index,
   let is1 = write(offsets, nodes_start_index, is0)
   let is2 = i32_plus_scan_segm(is1, mask)
 
-  let node_ids = map(fn i32 (i32 i) => edges_dest[i], is2)
+  let node_ids = map(fn i32 (i32 i) => unsafe edges_dest[i], is2)
 
   let some_binding = node_ids -- FIXME: This binding should not be necessary,
                               -- but futhark -s spews this out without it:
@@ -97,19 +97,19 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
        [i32, e] node_ids,
        [i32, e] tids) =
   let write_indices = map(fn i32 (i32 id, i32 tid) =>
-                            if graph_visited[id] || ! graph_mask[tid]
+                            if unsafe graph_visited[id] || ! unsafe graph_mask[tid]
                             then -1
                             else id,
                           zip(node_ids, tids))
 
-  let costs_new = map(fn i32 (i32 tid) => cost[tid] + 1, tids)
+  let costs_new = map(fn i32 (i32 tid) => unsafe cost[tid] + 1, tids)
 
   let cost' = write(write_indices, costs_new, cost)
   let updating_graph_mask' =
     write(write_indices, replicate(e, True), updating_graph_mask)
 
   let graph_mask' =
-    write(map(fn i32 (i32 i) => if graph_mask[i] then i else -1, iota(n)),
+    write(map(fn i32 (i32 i) => if unsafe graph_mask[i] then i else -1, iota(n)),
           replicate(n, False), graph_mask)
 
   in {cost', graph_mask', updating_graph_mask'}

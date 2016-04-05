@@ -25,9 +25,9 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
   let graph_mask' =
     write(active_indices, replicate(n_indices, False), graph_mask)
 
-  let nodes_start_index' = map(fn i32 (i32 i) => nodes_start_index[i],
+  let nodes_start_index' = map(fn i32 (i32 i) => unsafe nodes_start_index[i],
                                active_indices)
-  let nodes_n_edges' = map(fn i32 (i32 i) => nodes_n_edges[i],
+  let nodes_n_edges' = map(fn i32 (i32 i) => unsafe nodes_n_edges[i],
                            active_indices)
 
   let offsets0 = scan(+, 0, nodes_n_edges')
@@ -41,14 +41,14 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
   let is1 = write(offsets, nodes_start_index', is0)
   let is2 = i32_plus_scan_segm(is1, mask)
 
-  let node_ids = map(fn i32 (i32 i) => edges_dest[i], is2)
+  let node_ids = map(fn i32 (i32 i) => unsafe edges_dest[i], is2)
   let write_indices = map(fn i32 (i32 id) =>
-                            if graph_visited[id] then -1 else id,
+                            if unsafe graph_visited[id] then -1 else id,
                           node_ids)
 
   let costs_new0 = replicate(full_length, 0)
   let costs_new1 = write(
-    offsets, map(fn i32 (i32 id) => cost[id] + 1, active_indices), costs_new0)
+    offsets, map(fn i32 (i32 id) => unsafe cost[id] + 1, active_indices), costs_new0)
   let costs_new = i32_plus_scan_segm(costs_new1, mask)
 
   let cost' = write(write_indices, costs_new, cost)
