@@ -4,10 +4,9 @@ import life
 import numpy
 import pygame
 import time
+import pyopencl as cl
 
 STEPS_PER_RUN=20
-i = 0
-outdir='out'
 width=800
 height=600
 size=(width,height)
@@ -35,4 +34,9 @@ def main():
             last_frame = time.time()
 
 if __name__ == '__main__':
+    # FIXME: this setup should be implied or something.
+    c = cl.create_some_context(interactive=False)
+    q = cl.CommandQueue(c)
+    life.setup_opencl(c, q)
+
     main()
