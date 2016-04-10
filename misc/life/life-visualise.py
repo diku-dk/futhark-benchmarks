@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import life
+import life as futlife
 import numpy
 import pygame
 import time
@@ -12,6 +12,7 @@ height=600
 size=(width,height)
 frame_every=1.0/30.0
 def main():
+    life=futlife.life()
     screen = pygame.display.set_mode(size)
     initworld = numpy.random.choice([True, False], size=size)
     world, history = life.init(initworld)
@@ -34,9 +35,4 @@ def main():
             last_frame = time.time()
 
 if __name__ == '__main__':
-    # FIXME: this setup should be implied or something.
-    c = cl.create_some_context(interactive=False)
-    q = cl.CommandQueue(c)
-    life.setup_opencl(c, q)
-
     main()
