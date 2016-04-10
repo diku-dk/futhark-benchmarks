@@ -45,13 +45,13 @@ fun int min(int x, int y) =
 entry {[[bool,m],n], [[int,m],n]} init([[bool,m],n] world) =
   {world, replicate(n, replicate(m, 255))}
 
-entry [[int,m],n] render_frame([[int,m],n] history) =
-  map(fn [int,m] ([int] ages) =>
-        map(fn int (int age) =>
+entry [[[i8,3],m],n] render_frame([[int,m],n] history) =
+  map(fn [[i8,3],m] ([int] ages) =>
+        map(fn [i8,3] (int age) =>
               if age == 0
-              then 0
-              else let c = 128 + min(127, age)
-                   in c << 16 | c << 8 | c
+              then [0i8, 0i8, 0i8]
+              else let c = 127i8 + i8(min(age,127))
+                   in [255i8, c, c]
            , ages)
      , history)
 
