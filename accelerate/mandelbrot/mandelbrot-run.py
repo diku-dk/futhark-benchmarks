@@ -7,9 +7,10 @@ import time
 import argparse
 
 def main(filename, width, height, limit, minx, miny, maxx, maxy):
+    m = mandelbrot.mandelbrot()
 
     start=time.time()
-    fut_image=mandelbrot.main(width, height, limit, minx, miny, maxx, maxy)
+    fut_image=m.main(width, height, limit, minx, miny, maxx, maxy)
     end=time.time()
     print('Computed fractal in %.2fs' % (end-start,))
 
