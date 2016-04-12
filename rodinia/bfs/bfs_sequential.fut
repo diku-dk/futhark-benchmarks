@@ -4,8 +4,8 @@
 -- tags { notravis }
 -- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
--- input @ data/4096nodes_high_edge_variance.in
--- output @ data/4096nodes_high_edge_variance.out
+-- input @ data/512nodes_high_edge_variance.in
+-- output @ data/512nodes_high_edge_variance.out
 
 include bfs_main
 
