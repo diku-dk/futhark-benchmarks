@@ -33,7 +33,8 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
 
         source = 0
         print(source, file=f)
-
+        print(total_edges, file=f)
+        
         for i in range(n_nodes):
             for j in range(len(nodes[i])):
                 dest = nodes[i][j]
@@ -42,7 +43,7 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
 
 
 def gen_all_datasets():
-    gen_dataset(4096, 5, 200, 'high_edge_variance_4096')
+    gen_dataset(512, 5, 200, 'high_edge_variance_512')
 
 if __name__ == '__main__':
     gen_all_datasets()
