@@ -22,7 +22,7 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
             node.append(node_dest)
             nodes[node_dest].append(i)
 
-    fname = 'graph_' + name + '.txt'
+    fname = name + '.in.rodiniaformat'
     with open(fname, 'w') as f:
         print(len(nodes), file=f)
         total_edges = 0
@@ -34,7 +34,7 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
         source = 0
         print(source, file=f)
         print(total_edges, file=f)
-        
+
         for i in range(n_nodes):
             for j in range(len(nodes[i])):
                 dest = nodes[i][j]
@@ -43,7 +43,7 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
 
 
 def gen_all_datasets():
-    gen_dataset(512, 5, 200, 'high_edge_variance_512')
+    gen_dataset(512, 5, 200, '512nodes_high_edge_variance')
 
 if __name__ == '__main__':
     gen_all_datasets()
