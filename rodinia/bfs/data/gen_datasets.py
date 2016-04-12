@@ -9,6 +9,7 @@
 
 import random
 
+
 def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
     tmp_indices = list(range(n_nodes))
     nodes = [[] for i in range(n_nodes)]
@@ -32,12 +33,16 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
 
         source = 0
         print(source, file=f)
-            
+
         for i in range(n_nodes):
             for j in range(len(nodes[i])):
                 dest = nodes[i][j]
-                weight = 0 # dummy, required by Rodinia, but unused
+                weight = 0  # dummy, required by Rodinia, but unused
                 print(dest, weight, file=f)
 
-gen_dataset(4096, 5, 200, 'high_edge_variance_4096')
-# gen_dataset(1000000, 5, 200, 'high_edge_variance_1M')
+
+def gen_all_datasets():
+    gen_dataset(4096, 5, 200, 'high_edge_variance_4096')
+
+if __name__ == '__main__':
+    gen_all_datasets()
