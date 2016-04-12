@@ -106,8 +106,10 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
   let updating_graph_mask' =
     write(write_indices, replicate(e, True), updating_graph_mask)
 
+  let masked_indices = map(fn i32 (i32 i) =>
+                             if unsafe graph_mask[i] then i else -1,
+                           iota(n))
   let graph_mask' =
-    write(map(fn i32 (i32 i) => if unsafe graph_mask[i] then i else -1, iota(n)),
-          replicate(n, False), graph_mask)
+    write(masked_indices, replicate(n, False), graph_mask)
 
   in {cost', graph_mask', updating_graph_mask'}
