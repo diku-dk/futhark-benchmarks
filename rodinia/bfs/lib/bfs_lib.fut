@@ -37,11 +37,11 @@ fun [i32, k] i32_plus_scan_segm([i32, k] array, [bool, k] mask) =
   in arrayScanned
 
 -- Get the updating indices.
-fun {[i32], i32} get_updating_indices([bool] updating_graph_mask) =
+fun {*[i32], i32} get_updating_indices([bool] updating_graph_mask) =
   get_updating_indices_alt0(updating_graph_mask)
   
 -- Get the updating indices through a filter.
-fun {[i32], i32} get_updating_indices_alt0([bool, n] updating_graph_mask) =
+fun {*[i32], i32} get_updating_indices_alt0([bool, n] updating_graph_mask) =
   let updating_indices = i32_filter(updating_graph_mask, iota(n))
   let n_indices = size(0, updating_indices)
   in {updating_indices, n_indices}
