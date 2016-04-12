@@ -47,13 +47,8 @@ fun [i32, n] main([i32, n] nodes_start_index,
       let graph_mask'' =
         write(updating_indices, replicate(n_indices, True), graph_mask')
 
-      -- FIXME: The current `write` implementation doesn't force uniqueness on
-      -- its array argument, so we help it with a hack.  This magic needs to go
-      -- away.
-      let graph_visited_unique = magic_unique(graph_visited)
-
       let graph_visited' =
-        write(updating_indices, replicate(n_indices, True), graph_visited_unique)
+        write(updating_indices, replicate(n_indices, True), graph_visited)
 
       let updating_graph_mask'' =
         write(updating_indices, replicate(n_indices, False), updating_graph_mask')
@@ -61,6 +56,3 @@ fun [i32, n] main([i32, n] nodes_start_index,
       let continue' = n_indices > 0
       in {cost', updating_graph_mask'', graph_mask'', graph_visited', continue'}
   in cost
-
--- FIXME: See above FIXME.
-fun *[bool, n] magic_unique(*[bool, n] foo) = foo
