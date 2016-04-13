@@ -1,6 +1,7 @@
 -- The first data set is equal to the Accelerate default.
 --
 -- ==
+-- tags { futhark-c futhark-opencl }
 -- compiled input {
 --   200
 --   30.0f32

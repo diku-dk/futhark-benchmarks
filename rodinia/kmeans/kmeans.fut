@@ -4,7 +4,7 @@
 -- Hackage.
 --
 -- ==
---
+-- tags { futhark-opencl futhark-c }
 -- compiled input @ data/trivial.in
 -- output @ data/trivial.out
 -- compiled input @ data/100.in
@@ -21,10 +21,10 @@ fun {int,f32} closest_point({int,f32} p1, {int,f32} p2) =
   if d1 < d2 then p1 else p2
 
 fun int find_nearest_point([[f32,d],k] pts, [f32,d] pt) =
-  let {i, _} = reduce(closest_point,
-                      {0, euclid_dist_2(pt,pts[0])},
-                      zip(iota(k),
-                          map(euclid_dist_2(pt), pts))) in
+  let {i, _} = reduceComm(closest_point,
+                          {0, euclid_dist_2(pt,pts[0])},
+                          zip(iota(k),
+                              map(euclid_dist_2(pt), pts))) in
   i
 
 fun *[f32,d] add_centroids([f32,d] x, [f32,d] y) =
@@ -33,12 +33,11 @@ fun *[f32,d] add_centroids([f32,d] x, [f32,d] y) =
 fun *[[f32,d],k]
   centroids_of(int k, [[f32,d],n] points, [int,n] membership) =
   let points_in_clusters =
-     streamRedPer(fn *[int,k] ([int,k] acc,
-                                       [int,k] x) =>
+     streamRedPer(fn [int,k] ([int,k] acc, [int,k] x) =>
                     zipWith(+, acc, x),
                   fn [int,k] (int chunk,
-                                      *[int,ncluster] acc,
-                                      [int] inp) =>
+                               *[int,ncluster] acc,
+                               [int] inp) =>
                     loop (acc) = for i < chunk do
                       let c = inp[i] in
                       unsafe let acc[c] = acc[c] + 1 in
@@ -46,14 +45,14 @@ fun *[[f32,d],k]
                     acc,
                   replicate(k,0), membership) in
   let cluster_sums =
-    streamRedPer(fn *[[f32,d],k] (*[[f32,d],k] acc,
-                                                  *[[f32,d],k] elem) =>
+    streamRedPer(fn [[f32,d],k] ([[f32,d],k] acc,
+                                 [[f32,d],k] elem) =>
                    zipWith(fn [f32,d] ([f32] x, [f32] y) =>
                              add_centroids(x, y),
                            acc, elem),
-                 fn *[[f32,d],k] (int chunk,
-                                                   *[[f32,d],k] acc,
-                                                   [{[f32,d], int}] inp) =>
+                 fn [[f32,d],k] (int chunk,
+                                 *[[f32,d],k] acc,
+                                 [{[f32,d], int}] inp) =>
                    loop (acc) = for i < chunk do
                      let {point, c} = inp[i] in
                      unsafe let acc[c] = add_centroids(acc[c], map(/f32(points_in_clusters[c]), point)) in
