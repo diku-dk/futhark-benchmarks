@@ -2,7 +2,7 @@
 -- https://github.com/kkushagra/rodinia/blob/master/openmp/hotspot/hotspot_openmp.cpp
 --
 -- ==
---
+-- tags { futhark-c futhark-opencl }
 -- compiled input @ data/64.in
 -- output @ data/64.out
 --

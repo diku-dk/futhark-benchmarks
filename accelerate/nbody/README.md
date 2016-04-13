@@ -7,7 +7,43 @@ See the `benchmark` directory for how two benchmark Futhark up against
 Accelerate on different input sizes.
 
 
+## Program structure
+
+The n-body program represents a body by 10 floating-point values:
+
+  + Three floats for the position
+  + One float for the mass
+  + Three floats for the velocity
+  + Three floats for the acceleration
+
+Like the fluid simulation benchmark, it has an outer sequential loop for
+stepping through the simulation, and like the fluid simulation benchmark, the
+Accelerate benchmarking system does not measure their benchmark running more
+than one iteration (although both Accelerate and Futhark use this feature to
+test the implementation correctness).
+
+The benchmark is a naive quadratic implementation of the n-body simulation, and
+the loop body looks like this:
+
+```
+map
+    reduce
+        map
+```
+
+which is transformed into
+
+```
+map
+    redomap
+```
+
+in Futhark.
+
+
 ## Results
+
+**Run on napoleon.**
 
 ### Raw Futhark results
 
@@ -61,3 +97,25 @@ Average runtimes:
 | 1000   | 710.60us | 2909.00us |
 | 10000  | 5311.40us | 19920.00us |
 | 100000 | 447308.30us | 1457000.00us |
+
+## Runtime results on gpu01-diku-apl (GTX 780 Ti)
+
+  n=100:
+    Accelerate: 0.455ms
+    Futhark:    0.029ms
+    Speedup:     15.9x
+
+  n=1000:
+    Futhark:    0.671ms
+    Accelerate: 1.115ms
+    Speedup:     1.551x
+
+  n=10000:
+    Futhark:    5.407ms
+    Accelerate: 8.238ms
+    Speedup:    1.5x
+
+  n=100000:
+    Futhark:    253.6ms
+    Accelerate: 622.3ms
+    Speedup:    2.45x
