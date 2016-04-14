@@ -2,7 +2,9 @@
 -- https://github.com/kkushagra/rodinia/blob/master/openmp/cfd/euler3d_cpu.cpp
 --
 -- ==
---
+-- 
+-- notravis input @ data/fvcorr.domn.193K.toa
+
 -- notravis input @ data/fvcorr.domn.097K.toa
 -- output @ data/fvcorr.domn.097K.out
 

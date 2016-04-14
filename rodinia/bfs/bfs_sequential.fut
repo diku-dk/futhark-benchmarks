@@ -1,7 +1,7 @@
 -- A naive, sequential version of BFS.  Its purpose is to exist as a simple,
--- working solution.  ==
+-- working solution.
+-- ==
 --
--- tags { notravis }
 -- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
 -- input @ data/512nodes_high_edge_variance.in
