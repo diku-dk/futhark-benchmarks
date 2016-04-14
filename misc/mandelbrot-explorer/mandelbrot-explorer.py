@@ -94,6 +94,10 @@ while True:
                 moveUp()
             if event.key == pygame.K_DOWN:
                 moveDown()
+            if event.unicode == 'q':
+                limit -= 1
+            if event.unicode == 'w':
+                limit += 1
             if event.unicode == '+':
                 zoomIn()
             if event.unicode == '-':
