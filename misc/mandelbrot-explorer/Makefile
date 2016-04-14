@@ -1,0 +1,12 @@
+.PHONY: run clean
+
+all: mandelbrot.py
+
+mandelbrot.py: mandelbrot.fut
+	futhark-pyopencl --module mandelbrot.fut
+
+clean:
+	rm mandelbrot.py
+
+run: mandelbrot.py
+	@python mandelbrot-explorer.py
