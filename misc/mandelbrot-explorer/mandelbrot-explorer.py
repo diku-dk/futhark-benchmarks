@@ -11,22 +11,24 @@ height=800
 limit=255
 size=(width,height)
 frame_every=1.0/30.0
+startpos=(-2.23,-1.15,0.83,1.15)
 
 m = mandelbrot.mandelbrot()
 
 def make_mandelbrot(minx, miny, maxx, maxy):
     return m.main(width, height, limit, minx, miny, maxx, maxy)
 
-minx=-2.23
-miny=-1.15
-maxx=0.83
-maxy=1.15
+minx, miny, maxx, maxy = startpos
 
 aspect_ratio = float(width)/float(height)
 x_inc_ratio = 1.0 + 0.01 * aspect_ratio
 x_dec_ratio = 1.0 - 0.01 * aspect_ratio
 y_inc_ratio = 1.0 + 0.01
 y_dec_ratio = 1.0 - 0.01
+
+def resetPos():
+    global minx, maxx, miny, maxy
+    minx, miny, maxx, maxy = startpos
 
 def zoomTo(pos, factor):
     global minx, maxx, miny, maxy
@@ -125,6 +127,8 @@ while True:
                 moveUp()
             if event.key == pygame.K_DOWN:
                 moveDown()
+            if event.key == pygame.K_HOME:
+                resetPos()
             if event.unicode == 'q':
                 limit -= 1
             if event.unicode == 'w':
