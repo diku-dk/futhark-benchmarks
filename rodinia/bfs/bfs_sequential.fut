@@ -1,5 +1,6 @@
 -- A naive, sequential version of BFS.  Its purpose is to exist as a simple,
--- working solution.  ==
+-- working solution.
+-- ==
 --
 -- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
