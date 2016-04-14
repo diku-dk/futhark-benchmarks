@@ -48,20 +48,20 @@ fun [i32, n] main([i32, n] nodes_start_index,
   let tids1 = write(offsets, iota(n), tids0)
   let tids = i32_plus_scan_segm(tids1, mask)
   
-  loop ({cost, updating_graph_mask, graph_mask, graph_visited, continue} =
-        {cost, updating_graph_mask, graph_mask, graph_visited, True}) =
+  loop ({cost, graph_mask, graph_visited, continue} =
+        {cost, graph_mask, graph_visited, True}) =
     while continue do
-      let {cost', graph_mask', updating_graph_mask'} =
+      let {cost', graph_mask', updating_indices} =
         step(cost,
              nodes_start_index,
              nodes_n_edges,
              edges_dest,
              graph_visited,
              graph_mask,
-             updating_graph_mask,
              node_ids,
              tids)
-      let {updating_indices, n_indices} = get_updating_indices(updating_graph_mask')
+
+      let n_indices = size(0, updating_indices)
 
       let graph_mask'' =
         write(updating_indices, replicate(n_indices, True), graph_mask')
@@ -70,22 +70,20 @@ fun [i32, n] main([i32, n] nodes_start_index,
         write(updating_indices, replicate(n_indices, True),
               graph_visited)
 
-      let updating_graph_mask'' =
-        write(updating_indices, replicate(n_indices, False),
-              updating_graph_mask')
+      let tmp_arr = map(fn i32 (int ind) => if ind == -1 then 0 else 1, updating_indices)
+      let n_indices' = reduce(+, 0, tmp_arr)
 
-      let continue' = n_indices > 0
-      in {cost', updating_graph_mask'', graph_mask'', graph_visited', continue'}
+      let continue' = n_indices' > 0
+      in {cost', graph_mask'', graph_visited', continue'}
   in cost
 
-fun {*[i32, n], *[bool, n], *[bool, n]}
+fun {*[i32, n], *[bool, n], *[i32]}
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
        [i32, n] nodes_n_edges,
        [i32, e] edges_dest,
        [bool, n] graph_visited,
        *[bool, n] graph_mask,
-       *[bool, n] updating_graph_mask,
        [i32, e] node_ids,
        [i32, e] tids) =
   let write_indices = map(fn i32 (i32 id, i32 tid) =>
@@ -97,8 +95,6 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
   let costs_new = map(fn i32 (i32 tid) => unsafe cost[tid] + 1, tids)
 
   let cost' = write(write_indices, costs_new, cost)
-  let updating_graph_mask' =
-    write(write_indices, replicate(e, True), updating_graph_mask)
 
   let masked_indices = map(fn i32 (i32 i) =>
                              if unsafe graph_mask[i] then i else -1,
@@ -106,4 +102,4 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
   let graph_mask' =
     write(masked_indices, replicate(n, False), graph_mask)
 
-  in {cost', graph_mask', updating_graph_mask'}
+  in {cost', graph_mask', write_indices}

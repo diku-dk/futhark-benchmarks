@@ -49,7 +49,7 @@ fun {*[i32], i32} get_updating_indices_alt0([bool, n] updating_graph_mask) =
 -- Alternatively, get the updating indices through two maps and a reduce, and
 -- let the non-active indices be -1.  This was found to be slower for both small
 -- and large datasets.
-fun {[i32, n], i32} get_updating_indices_alt1([bool, n] updating_graph_mask) =
+fun {*[i32, n], i32} get_updating_indices_alt1([bool, n] updating_graph_mask) =
   let updating_indices = map(fn i32 (i32 i) =>
                                if updating_graph_mask[i] then i else -1,
                              iota(n))

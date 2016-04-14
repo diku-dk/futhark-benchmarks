@@ -7,7 +7,40 @@
 -- input @ data/512nodes_high_edge_variance.in
 -- output @ data/512nodes_high_edge_variance.out
 
-include bfs_main
+fun [i32, n] main([i32, n] nodes_start_index,
+                  [i32, n] nodes_n_edges,
+                  [i32, e] edges_dest) =
+  let graph_mask = replicate(n, False)
+  let updating_graph_mask = replicate(n, False)
+  let graph_visited = replicate(n, False)
+  let source = 0
+  let graph_mask[source] = True
+  let graph_visited[source] = True
+  let cost = replicate(n, -1)
+  let cost[source] = 0 in
+  loop ({cost, updating_graph_mask, graph_mask, graph_visited, continue} =
+        {cost, updating_graph_mask, graph_mask, graph_visited, True}) =
+    while continue do
+      let {cost', graph_mask', updating_graph_mask'} =
+        step(cost,
+             nodes_start_index,
+             nodes_n_edges,
+             edges_dest,
+             graph_visited,
+             graph_mask,
+             updating_graph_mask)
+
+      let continue' = False
+      loop({graph_mask', graph_visited, updating_graph_mask', continue'}) = for tid < n do
+            if(updating_graph_mask'[tid])
+            then let graph_mask'[tid]   = True
+                 let graph_visited[tid] = True
+                 let updating_graph_mask'[tid] = False
+                 in {graph_mask', graph_visited, updating_graph_mask', True    }
+            else    {graph_mask', graph_visited, updating_graph_mask', continue'}
+      
+      in {cost', updating_graph_mask', graph_mask', graph_visited, continue'}
+  in cost
 
 fun {*[i32, n], *[bool, n], *[bool, n]}
   step(*[i32, n] cost,

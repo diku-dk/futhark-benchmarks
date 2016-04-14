@@ -31,18 +31,18 @@ fun [i32, n] main([i32, n] nodes_start_index,
   let graph_visited[source] = True
   let cost = replicate(n, -1)
   let cost[source] = 0 in
-  loop ({cost, updating_graph_mask, graph_mask, graph_visited, continue} =
-        {cost, updating_graph_mask, graph_mask, graph_visited, True}) =
+  loop ({cost, graph_mask, graph_visited, continue} =
+        {cost, graph_mask, graph_visited, True}) =
     while continue do
-      let {cost', graph_mask', updating_graph_mask'} =
+      let {cost', graph_mask', updating_indices} =
         step(cost,
              nodes_start_index,
              nodes_n_edges,
              edges_dest,
              graph_visited,
-             graph_mask,
-             updating_graph_mask)
-      let {updating_indices, n_indices} = get_updating_indices(updating_graph_mask')
+             graph_mask)
+      
+      let n_indices = size(0, updating_indices)
 
       let graph_mask'' =
         write(updating_indices, replicate(n_indices, True), graph_mask')
@@ -50,9 +50,9 @@ fun [i32, n] main([i32, n] nodes_start_index,
       let graph_visited' =
         write(updating_indices, replicate(n_indices, True), graph_visited)
 
-      let updating_graph_mask'' =
-        write(updating_indices, replicate(n_indices, False), updating_graph_mask')
+      let tmp_arr = map(fn i32 (int ind) => if ind == -1 then 0 else 1, updating_indices)
+      let n_indices' = reduce(+, 0, tmp_arr)
 
-      let continue' = n_indices > 0
-      in {cost', updating_graph_mask'', graph_mask'', graph_visited', continue'}
+      let continue' = n_indices' > 0
+      in {cost', graph_mask'', graph_visited', continue'}
   in cost

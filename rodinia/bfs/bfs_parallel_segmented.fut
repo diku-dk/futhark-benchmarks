@@ -12,14 +12,13 @@
 include bfs_main
 include lib.bfs_lib
 
-fun {*[i32, n], *[bool, n], *[bool, n]}
+fun {*[i32, n], *[bool, n], *[i32]}
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
        [i32, n] nodes_n_edges,
        [i32, e] edges_dest,
        [bool, n] graph_visited,
-       *[bool, n] graph_mask,
-       *[bool, n] updating_graph_mask) =
+       *[bool, n] graph_mask) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
   let n_indices = size(0, active_indices)
@@ -54,7 +53,5 @@ fun {*[i32, n], *[bool, n], *[bool, n]}
   let costs_new = i32_plus_scan_segm(costs_new1, mask)
 
   let cost' = write(write_indices, costs_new, cost)
-  let updating_graph_mask' =
-    write(write_indices, replicate(full_length, True), updating_graph_mask)
 
-  in {cost', graph_mask', updating_graph_mask'}
+  in {cost', graph_mask', write_indices}
