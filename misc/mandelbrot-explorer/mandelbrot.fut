@@ -40,7 +40,7 @@ fun [[int,height],width] mandelbrot(int width, int height, int depth, {f32,f32,f
   let {xmin, ymin, xmax, ymax} = view in
   let sizex = xmax - xmin in
   let sizey = ymax - ymin in
-  map(fn [int,width] (int x) =>
+  map(fn [int,height] (int x) =>
         map (fn int (int y) =>
                let c0 = {xmin + (f32(x) * sizex) / f32(width),
                          ymin + (f32(y) * sizey) / f32(height)} in
@@ -50,7 +50,7 @@ fun [[int,height],width] mandelbrot(int width, int height, int depth, {f32,f32,f
 
 fun [[[i8,3],height],width] main(int width, int height, int depth, {f32,f32,f32,f32} view) =
   let escapes = mandelbrot(width, height, depth, view) in
-  map(fn [[i8],width] ([int] row) =>
+  map(fn [[i8,3],height] ([int] row) =>
         map(escapeToColour(depth), map(+1, row)),
       escapes)
 
