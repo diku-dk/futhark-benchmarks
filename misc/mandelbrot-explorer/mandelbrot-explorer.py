@@ -71,14 +71,28 @@ def moveDown():
     maxy += y_dist * 0.01
 
 pygame.init()
+pygame.display.set_caption('Mandelbrot Explorer!')
 screen = pygame.display.set_mode(size)
 surface = pygame.Surface(size)
+font = pygame.font.Font(None, 36)
 pygame.key.set_repeat(1, 1)
 
+def showText(what, where):
+    text = font.render(what, 1, (255, 255, 255))
+    screen.blit(text, where)
+
 def render():
+    start = time.time()
     frame = make_mandelbrot(minx, miny, maxx, maxy)
+    end = time.time()
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
+
+    infomessage = "Region: (%f,%f) to (%f,%f)    Rendering limit: %d" % (minx, miny, maxx, maxy, limit)
+    showText(infomessage, (0,0))
+
+    speedmessage = "Futhark call took %2fms" % ((end-start)*1000)
+    showText(speedmessage, (0, height-36))
     pygame.display.flip()
     end = time.time()
 
