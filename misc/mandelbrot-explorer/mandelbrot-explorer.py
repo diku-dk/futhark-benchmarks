@@ -6,8 +6,8 @@ import pygame
 import time
 import sys
 
-width=800
-height=600
+width=1200
+height=800
 limit=255
 size=(width,height)
 frame_every=1.0/30.0
@@ -98,4 +98,3 @@ while True:
                 zoomIn()
             if event.unicode == '-':
                 zoomOut()
-
