@@ -28,6 +28,21 @@ x_dec_ratio = 1.0 - 0.01 * aspect_ratio
 y_inc_ratio = 1.0 + 0.01
 y_dec_ratio = 1.0 - 0.01
 
+def zoomTo(pos, factor):
+    global minx, maxx, miny, maxy
+    pos_x, pos_y = pos
+    rel_x = float(pos_x) / float(width)
+    rel_y = float(pos_y) / float(height)
+    x_span = maxx - minx
+    y_span = maxy - miny
+    x = minx + x_span * rel_x
+    y = miny + y_span * rel_y
+
+    minx = x - factor * x_span
+    maxx = x + factor * x_span
+    miny = y - factor * y_span
+    maxy = y + factor * y_span
+
 def zoomIn():
     global minx, maxx, miny, maxy
     x_dist = abs(maxx-minx)
@@ -91,17 +106,17 @@ def render():
     infomessage = "Region: (%f,%f) to (%f,%f)    Rendering limit: %d" % (minx, miny, maxx, maxy, limit)
     showText(infomessage, (0,0))
 
-    speedmessage = "Futhark call took %2fms" % ((end-start)*1000)
+    speedmessage = "Futhark call took %.2fms" % ((end-start)*1000)
     showText(speedmessage, (0, height-36))
+
     pygame.display.flip()
-    end = time.time()
 
 while True:
     render()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-        if event.type == pygame.KEYDOWN:
+        elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
                 moveRight()
             if event.key == pygame.K_LEFT:
@@ -118,3 +133,8 @@ while True:
                 zoomIn()
             if event.unicode == '-':
                 zoomOut()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                zoomTo(pygame.mouse.get_pos(), 0.25)
+            if pygame.mouse.get_pressed()[2]:
+                zoomTo(pygame.mouse.get_pos(), 1.25)
