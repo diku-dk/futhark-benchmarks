@@ -17,11 +17,6 @@ m = mandelbrot.mandelbrot()
 def make_mandelbrot(minx, miny, maxx, maxy):
     return m.main(width, height, limit, minx, miny, maxx, maxy)
 
-pygame.init()
-screen = pygame.display.set_mode(size)
-surface = pygame.Surface(size)
-screen.blit(surface, (0, 0))
-
 minx=-2.23
 miny=-1.15
 maxx=0.83
@@ -75,13 +70,20 @@ def moveDown():
     miny += y_dist * 0.01
     maxy += y_dist * 0.01
 
+pygame.init()
+screen = pygame.display.set_mode(size)
+surface = pygame.Surface(size)
 pygame.key.set_repeat(1, 1)
 
-while True:
+def render():
     frame = make_mandelbrot(minx, miny, maxx, maxy)
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
     pygame.display.flip()
+    end = time.time()
+
+while True:
+    render()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
