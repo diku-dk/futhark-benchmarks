@@ -1,6 +1,9 @@
 -- Variant of game of life with a donut world.
 --
 -- Rules invented by Torben Mogensen.
+--
+-- ==
+-- tags { notravis }
 
 fun i8 sum_of_cell_and_neighbors(int i, int j, [[i8,m],n] board) =
   unsafe
