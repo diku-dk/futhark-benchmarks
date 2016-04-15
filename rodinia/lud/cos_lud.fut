@@ -236,7 +236,7 @@ main(int b, [[f32,n],n] mat) =
                 map ( fn [[f32,b],b] (int j_b) =>
                         map( fn [f32,b] (int i) =>
                                 map ( fn f32 (int j) =>
-                                        mat[i_b*b+i, j_b*b + j]
+                                        unsafe mat[i_b*b+i, j_b*b + j]
                                     , iota(b) )
                            , iota(b) )
                     , iota(num_blocks) )
@@ -303,7 +303,7 @@ main(int b, [[f32,n],n] mat) =
             lud_diagonal(upp_blk[last_step,last_step]) in
     map ( fn [f32,n] (int i) =>
             map ( fn f32 (int j) =>
-                upp_blk[i/b, j/b, i%b, j%b]
+                unsafe upp_blk[i/b, j/b, i%b, j%b]
                 , iota(n) )
         , iota(n) )
     
