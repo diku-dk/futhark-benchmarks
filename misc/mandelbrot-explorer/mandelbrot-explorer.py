@@ -119,24 +119,26 @@ while True:
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
-                moveRight()
-            if event.key == pygame.K_LEFT:
-                moveLeft()
-            if event.key == pygame.K_UP:
-                moveUp()
-            if event.key == pygame.K_DOWN:
-                moveDown()
-            if event.key == pygame.K_HOME:
-                resetPos()
-            if event.unicode == 'q':
-                limit -= 1
-            if event.unicode == 'w':
-                limit += 1
-            if event.unicode == '+':
-                zoomIn()
-            if event.unicode == '-':
-                zoomOut()
+            repeats = 5 if pygame.key.get_mods() & pygame.KMOD_CTRL else 1
+            for i in range(repeats):
+              if event.key == pygame.K_RIGHT:
+                  moveRight()
+              if event.key == pygame.K_LEFT:
+                  moveLeft()
+              if event.key == pygame.K_UP:
+                  moveUp()
+              if event.key == pygame.K_DOWN:
+                  moveDown()
+              if event.key == pygame.K_HOME:
+                  resetPos()
+              if event.unicode == 'q':
+                  limit -= 1
+              if event.unicode == 'w':
+                  limit += 1
+              if event.unicode == '+':
+                  zoomIn()
+              if event.unicode == '-':
+                  zoomOut()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 zoomTo(pygame.mouse.get_pos(), 0.25)
