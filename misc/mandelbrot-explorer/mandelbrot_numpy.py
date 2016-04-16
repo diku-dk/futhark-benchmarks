@@ -1,23 +1,24 @@
-from numpy import *
+import numpy as np
 import pylab
+
+# From
+# https://www.ibm.com/developerworks/community/blogs/jfp/entry/How_To_Compute_Mandelbrodt_Set_Quickly
 
 # Note: very slow.
 
-def mandelbrot(w, h, limit, minx, miny, maxx, maxy):
-        '''Returns an image of the Mandelbrot fractal of size (h,w).
-        '''
-        y,x = ogrid[ miny:maxy:h*1j, minx:maxx:w*1j ]
-        c = x+y*1j
-        z = c
-        divtime = limit + zeros(z.shape, dtype=int)
+def mandelbrot_numpy(c, maxiter):
+    output = np.zeros(c.shape, dtype=np.int)
+    z = np.zeros(c.shape, np.complex64)
+    for it in range(maxiter):
+        notdone = np.less(z.real*z.real + z.imag*z.imag, 4.0)
+        output[notdone] = it
+        z[notdone] = z[notdone]**2 + c[notdone]
+    output[output == maxiter-1] = 0
+    return output
 
-        for i in xrange(limit):
-                z  = z**2 + c
-                diverge = z*conj(z) > 2**2            # who is diverging
-                div_now = diverge & (divtime==limit)  # who is diverging now
-                divtime[div_now] = i                  # note when
-                z[diverge] = 2                        # avoid diverging too much
-
-        # We do not even colour it here, but merely treat the
-        # divergence count as a number.
-        return transpose(divtime)
+def mandelbrot(width, height, limit, xmin, ymin, xmax, ymax):
+    r1 = np.linspace(xmin, xmax, width, dtype=np.float32)
+    r2 = np.linspace(ymin, ymax, height, dtype=np.float32)
+    c = r1 + r2[:,None]*1j
+    n3 = mandelbrot_numpy(c, limit)
+    return n3.T
