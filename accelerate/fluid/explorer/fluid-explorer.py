@@ -91,7 +91,7 @@ class FluidExplorer:
             self.add_density(pos_new)
         elif self.making_forces and self.pos_old is not None:
             self.add_force(self.pos_old, pos_new)
-            
+
         self.pos_old = pos_new
 
     def render(self):
@@ -108,11 +108,11 @@ class FluidExplorer:
         text = self.font.render(what, antialias, color)
         self.screen.blit(text, where)
 
-        
     def loop(self):
         while True:
             self.react()
             self.render()
+
 
 def main(args):
     try:
@@ -128,6 +128,6 @@ def main(args):
     f = FluidExplorer(grid_resolution=grid_resolution)
     f.run()
     return 0
-            
+
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
