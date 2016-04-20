@@ -12,7 +12,7 @@ quadlife_alt.py: quadlife_alt.fut
 	futhark-pyopencl --module quadlife_alt.fut
 
 clean:
-	rm life.py
+	rm life.py quadlife.py quadlife_alt.py
 
 run: life.py quadlife.py
 	@python life-visualise.py
