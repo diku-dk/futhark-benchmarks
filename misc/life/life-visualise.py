@@ -2,6 +2,7 @@
 
 import life
 import quadlife
+import quadlife_alt
 import numpy
 import pygame
 import argparse
@@ -10,7 +11,8 @@ import sys
 
 rulesets = {
     'life' : life.life,
-    'quadlife' : quadlife.quadlife
+    'quadlife' : quadlife.quadlife,
+    'quadlife_alt' : quadlife_alt.quadlife_alt,
 }
 
 parser = argparse.ArgumentParser(description='The Game of Life!')
