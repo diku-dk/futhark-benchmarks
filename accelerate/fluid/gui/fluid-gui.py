@@ -6,12 +6,12 @@ A simple GUI for fluid simulation.
 
 import sys
 import time
-import random
 
 import numpy as np
 import pygame
 
 import fluid
+
 
 # From http://www.roguebasin.com/index.php?title=Bresenham%27s_Line_Algorithm#Python
 def get_line(start, end):
@@ -137,8 +137,8 @@ class FluidGUI:
         x_new, y_new = pos_new
         points = get_line((x_old + 1, y_old + 1),
                           (x_new + 1, y_new + 1))
-        for x,y in points:
-            self.D[x,y] = density
+        for x, y in points:
+            self.D[x, y] = density
 
     def react(self):
         for event in pygame.event.get():
@@ -162,7 +162,8 @@ class FluidGUI:
 
         if self.pos_old is not None:
             if self.making_densities:
-                self.add_density(self.pos_old, pos_new, self.click_particles_cur)
+                self.add_density(self.pos_old, pos_new,
+                                 self.click_particles_cur)
                 self.click_particles_cur = min(self.click_particles_cur + 1.0,
                                                self.click_particles_max)
             else:
