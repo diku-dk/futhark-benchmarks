@@ -1,6 +1,6 @@
 .PHONY: run clean
 
-all: life.py
+all: life.py quadlife.py
 
 life.py: life.fut
 	futhark-pyopencl --module life.fut
