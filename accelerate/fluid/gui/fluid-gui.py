@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+'''
+A simple GUI for fluid simulation.
+'''
+
 import sys
 import time
 import random
@@ -67,32 +71,34 @@ def get_line(start, end):
         points.reverse()
     return points
 
+
 class FluidQuit(Exception):
     pass
 
 
-class FluidExplorer:
-    def __init__(self, grid_resolution):
+class FluidGUI:
+    def __init__(self, grid_resolution, time_step=0.1, n_solver_steps=20,
+                 diffusion_rate=0.00001, viscosity=0.00001,
+                 click_particles_min=10.0, click_particles_max=100.0):
         self.grid_resolution = grid_resolution
-        self.time_step = 0.1
-        self.n_solver_steps = 20
-        self.diffusion_rate = 0  # 0.0001
-        self.viscosity = 0  # 0.00001
+        self.time_step = time_step
+        self.n_solver_steps = n_solver_steps
+        self.diffusion_rate = diffusion_rate
+        self.viscosity = viscosity
+        self.click_particles_min = click_particles_min
+        self.click_particles_max = click_particles_max
 
+        self.click_particles_cur = self.click_particles_min
         self.pos_old = None
         self.making_densities = False
         self.making_forces = False
 
     def run(self):
-        g = self.grid_resolution + 2
-        self.U = np.zeros((g, g), dtype=np.float32)
-        self.V = np.zeros((g, g), dtype=np.float32)
-        self.D = np.zeros((g, g), dtype=np.float32)
-
+        self.clear()
         self.futhark = fluid.fluid_visualize_densities_one_frame_rgb()
 
         pygame.init()
-        pygame.display.set_caption('Fluid Simulation Explorer!')
+        pygame.display.set_caption('Fluid Simulation GUI!')
         size = (self.grid_resolution, self.grid_resolution)
         self.screen = pygame.display.set_mode(size)
         self.surface = pygame.Surface(size)
@@ -102,6 +108,12 @@ class FluidExplorer:
             self.loop()
         except FluidQuit:
             return
+
+    def clear(self):
+        g = self.grid_resolution + 2
+        self.U = np.zeros((g, g), dtype=np.float32)
+        self.V = np.zeros((g, g), dtype=np.float32)
+        self.D = np.zeros((g, g), dtype=np.float32)
 
     def new_frame(self):
         frame, U1, V1, D1 = self.futhark.main(
@@ -120,14 +132,13 @@ class FluidExplorer:
         self.U[x1, y1] = force * (x1 - x0)
         self.V[x1, y1] = force * (y1 - y0)
 
-    def add_density(self, pos_old, pos_new):
+    def add_density(self, pos_old, pos_new, density):
         x_old, y_old = pos_old
         x_new, y_new = pos_new
-        source = 100.0
-        points = get_line((x_old+1, y_old+1),
-                          (x_new+1, y_new+1))
+        points = get_line((x_old + 1, y_old + 1),
+                          (x_new + 1, y_new + 1))
         for x,y in points:
-            self.D[x,y] = source
+            self.D[x,y] = density
 
     def react(self):
         for event in pygame.event.get():
@@ -143,13 +154,22 @@ class FluidExplorer:
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.making_forces = False
                 self.making_densities = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_c:
+                    self.clear()
 
         pos_new = pygame.mouse.get_pos()
 
         if self.pos_old is not None:
             if self.making_densities:
-                self.add_density(self.pos_old, pos_new)
-            elif self.making_forces and self.pos_old is not None:
+                self.add_density(self.pos_old, pos_new, self.click_particles_cur)
+                self.click_particles_cur = min(self.click_particles_cur + 1.0,
+                                               self.click_particles_max)
+            else:
+                self.click_particles_cur = max(self.click_particles_cur - 1.0,
+                                               self.click_particles_min)
+
+            if self.making_forces:
                 self.add_force(self.pos_old, pos_new)
 
         self.pos_old = pos_new
@@ -161,10 +181,10 @@ class FluidExplorer:
         diff_ms = (end - start) * 1000.0
         pygame.surfarray.blit_array(self.surface, frame)
         self.screen.blit(self.surface, (0, 0))
-        self.show_text('Futhark call took {:.2f} ms.'.format(diff_ms), (0, 0))
+        self.show_text('Futhark took {:.2f} ms.'.format(diff_ms), (5, 5))
         pygame.display.flip()
 
-    def show_text(self, what, where, color=(0, 255, 0), antialias=True):
+    def show_text(self, what, where, color=(255, 0, 255), antialias=True):
         text = self.font.render(what, antialias, color)
         self.screen.blit(text, where)
 
@@ -178,16 +198,19 @@ def main(args):
     try:
         grid_resolution = int(args[0])
     except IndexError:
-        print 'Usage: ./fluid-explorer.py GRID_RESOLUTION'
+        print 'Usage: ./fluid-gui.py GRID_RESOLUTION'
         print
-        print 'Add densities with right click.  Add forces with left click.'
+        print 'Add particles with right click.'
+        print 'Add forces with left click.'
+        print 'Press C to clear all particles and forces.'
         print
         print 'Example: Create a 256x256 fluid simulation.'
-        print '  ./fluid-explorer.py 256'
+        print '  ./fluid-gui.py 256'
         return 1
-    f = FluidExplorer(grid_resolution=grid_resolution)
+    f = FluidGUI(grid_resolution=grid_resolution)
     f.run()
     return 0
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
