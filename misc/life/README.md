@@ -1,4 +1,5 @@
-== Game of Life in Futhark
+Game of Life in Futhark
+==
 
 Just run `make` to build, then `python life-visualise.py`.  Requires
 the Futhark compiler, Pygame and PyOpenCL.  And of course, a working
