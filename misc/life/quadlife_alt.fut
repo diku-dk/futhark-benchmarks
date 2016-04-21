@@ -64,7 +64,7 @@ fun [i8,3] colour_history(int history) =
 
 fun int update_history(int history, i8 now) =
   let used_to_be = history & 3 -- Last two bits encode the previous live cell.
-  let age = history >> 2
+  let age = min(128, history >> 2)
   in if now == i8(used_to_be)
      then (((age + 1) << 2) | int(now))
      else int(now)
