@@ -310,7 +310,7 @@ fun [[f32,num_und],num_dates] blackScholes(
 ----------------------------------------
 -- MAIN
 ----------------------------------------
-fun [f32] main(
+fun [f32] mainRec(
                int                                    contract_number,
                int                                    num_mc_it,
              [[int,num_bits]]                         dir_vs_nosz,
@@ -355,17 +355,17 @@ fun [f32] main(
 
 
 
-fun [f32] mainRec(
-               int                                    contract_number,
-               int                                    num_mc_it,
-             [[int,num_bits]]                         dir_vs_nosz,
+fun [f32] main(
+               int                                   contract_number,
+               int                                   num_mc_it,
+             [[int,num_bits]]                        dir_vs_nosz,
              [[[f32,num_und],num_und  ],num_models]  md_cs,
              [[[f32,num_und],num_dates],num_models]  md_vols,
              [[[f32,num_und],num_dates],num_models]  md_drifts,
              [[f32,num_und],num_models]              md_sts,
              [[f32],num_models]                      md_detvals,
              [[f32],num_models]                      md_discts,
-             [[int, num_dates],3]                     bb_inds,
+             [[int, num_dates],3]                    bb_inds,
              [[f32,num_dates],3]                     bb_data
 ) =
   let sobvctsz  = num_dates*num_und in
