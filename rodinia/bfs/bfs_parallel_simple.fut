@@ -30,7 +30,7 @@ fun {*[i32, n], *[bool, n], *[i32]}--*[bool, n]}
   -- nested array.
   let e_max = reduceComm(max, 0, nodes_n_edges)
 
-  let changes = map(fn {*[i32, e_max], *[i32, e_max]} (i32 i) =>
+  let changes = map(fn {[i32, e_max], [i32, e_max]} (i32 i) =>
                       node_work(i, e_max, cost, nodes_start_index,
                                 nodes_n_edges, edges_dest, graph_visited)
                    , active_indices)
@@ -49,7 +49,7 @@ fun {*[i32, n], *[bool, n], *[i32]}--*[bool, n]}
 
   in {cost', graph_mask', node_ids}
 
-fun {*[i32, e_max], *[i32, e_max]}
+fun {[i32, e_max], [i32, e_max]}
   node_work(i32 tid,
             i32 e_max,
             [i32, n] cost,
