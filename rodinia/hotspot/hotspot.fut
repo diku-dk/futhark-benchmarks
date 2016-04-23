@@ -6,7 +6,7 @@
 -- compiled input @ data/64.in
 -- output @ data/64.out
 --
--- compiled input @ data/512.in
+-- notravis input @ data/512.in
 -- output @ data/512.out
 --
 -- notravis input @ data/1024.in
