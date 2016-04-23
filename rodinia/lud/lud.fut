@@ -3,9 +3,9 @@
 -- ==
 -- compiled input @ data/64.in
 -- output @ data/64.out
--- compiled input @ data/256.in
+-- notravis input @ data/256.in
 -- output @ data/256.out
--- compiled input @ data/512.in
+-- notravis input @ data/512.in
 -- output @ data/512.out
 
 -- FIXME: futhark-test barfs on the largest data set.
