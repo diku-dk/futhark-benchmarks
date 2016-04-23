@@ -22,10 +22,10 @@
 -- input @ nbody-acc-t10.in
 -- output @ nbody-acc-t10.out
 --
--- compiled input @ nbody-n_steps=1-n_bodies=100-timestep=1.0-epsilon=50.0.in
--- compiled input @ nbody-n_steps=1-n_bodies=1000-timestep=1.0-epsilon=50.0.in
--- compiled input @ nbody-n_steps=1-n_bodies=10000-timestep=1.0-epsilon=50.0.in
--- compiled input @ nbody-n_steps=1-n_bodies=100000-timestep=1.0-epsilon=50.0.in
+-- notravis input @ nbody-n_steps=1-n_bodies=100-timestep=1.0-epsilon=50.0.in
+-- notravis input @ nbody-n_steps=1-n_bodies=1000-timestep=1.0-epsilon=50.0.in
+-- notravis input @ nbody-n_steps=1-n_bodies=10000-timestep=1.0-epsilon=50.0.in
+-- notravis input @ nbody-n_steps=1-n_bodies=100000-timestep=1.0-epsilon=50.0.in
 
 fun {f32, f32, f32}
   vec_add({f32, f32, f32} v1,
