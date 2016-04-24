@@ -117,7 +117,7 @@ def showText(what, where):
 
 def render():
     start = time.time()
-    frame = make_mandelbrot(minx, miny, maxx, maxy)
+    frame = make_mandelbrot(minx, miny, maxx, maxy).get()
     end = time.time()
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))

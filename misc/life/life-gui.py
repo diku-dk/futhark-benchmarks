@@ -39,7 +39,10 @@ surface = pygame.Surface(size)
 
 def render():
     frame = l.render_frame(history)
-    pygame.surfarray.blit_array(surface, frame)
+    # We get back a PyOpenCL array.  It is mostly compatible with
+    # Numpy, but Pygame really wants a proper Numpy array, so we use
+    # the get() method to obtain that.
+    pygame.surfarray.blit_array(surface, frame.get())
     screen.blit(surface, (0, 0))
     pygame.display.flip()
 
