@@ -113,7 +113,7 @@ class HotSpot:
     def new_frame(self):
         self.temp = self.simulation.compute_tran_temp(self.iterations_per_step, self.temp, self.power)
 
-        return self.simulation.render_frame(self.temp)
+        return self.simulation.render_frame(self.temp).get()
 
     def add_power(self, pos_old, pos_new):
         x_old, y_old = pos_old

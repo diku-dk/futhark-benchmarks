@@ -123,7 +123,7 @@ class FluidGUI:
         self.U = U1
         self.V = V1
         self.D = D1
-        return frame
+        return frame.get()
 
     def add_force(self, pos_old, pos_new):
         x0, y0 = pos_old
