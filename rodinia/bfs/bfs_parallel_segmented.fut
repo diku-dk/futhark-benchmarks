@@ -2,6 +2,7 @@
 -- contrary to `bfs_parallel_segmented_alternate`.
 -- ==
 --
+-- tags { notravis }
 -- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
 -- input @ data/512nodes_high_edge_variance.in

@@ -2,7 +2,7 @@
 --
 -- ==
 -- tags { futhark-c futhark-opencl }
--- compiled input {
+-- notravis input {
 --   200
 --   30.0f32
 --   5

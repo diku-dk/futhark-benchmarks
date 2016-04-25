@@ -42,8 +42,8 @@ fun [[[i32]], n_steps]
        [[f32, g], g] V0,
        [[f32, g], g] D0,
        i32 n_steps,
-       f32 time_step,
        i32 n_solver_steps,
+       f32 time_step,
        f32 diffusion_rate,
        f32 viscosity) =
   draw_all_frames(U0, V0, D0, n_steps, n_solver_steps,
