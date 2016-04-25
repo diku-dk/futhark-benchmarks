@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import mandelbrot
+import mandelbrot_numpy
 import numpy
 import pygame
 import time
@@ -13,10 +14,26 @@ size=(width,height)
 frame_every=1.0/30.0
 startpos=(-2.23,-1.15,0.83,1.15)
 
-m = mandelbrot.mandelbrot()
+futm = mandelbrot.mandelbrot()
 
-def make_mandelbrot(minx, miny, maxx, maxy):
-    return m.main(width, height, limit, minx, miny, maxx, maxy)
+def make_mandelbrot_futhark(minx, miny, maxx, maxy):
+    return futm.main(width, height, limit, minx, miny, maxx, maxy).get()
+
+def make_mandelbrot_numpy(minx, miny, maxx, maxy):
+    return mandelbrot_numpy.mandelbrot(width, height, limit, minx, miny, maxx, maxy)
+
+backend='Futhark'
+make_mandelbrot = make_mandelbrot_futhark
+
+def toggleBackend():
+    global backend, make_mandelbrot
+
+    if backend == 'Futhark':
+        backend = 'Numpy'
+        make_mandelbrot = make_mandelbrot_numpy
+    else:
+        backend = 'Futhark'
+        make_mandelbrot = make_mandelbrot_futhark
 
 minx, miny, maxx, maxy = startpos
 
@@ -106,10 +123,10 @@ def render():
     screen.blit(surface, (0, 0))
 
     infomessage = "Region: (%f,%f) to (%f,%f)    Rendering limit: %d" % (minx, miny, maxx, maxy, limit)
-    showText(infomessage, (0,0))
+    showText(infomessage, (10,10))
 
-    speedmessage = "Futhark call took %.2fms" % ((end-start)*1000)
-    showText(speedmessage, (0, height-36))
+    speedmessage = "%s call took %.2fms" % (backend, (end-start)*1000)
+    showText(speedmessage, (10, 40))
 
     pygame.display.flip()
 
@@ -131,6 +148,8 @@ while True:
                   moveDown()
               if event.key == pygame.K_HOME:
                   resetPos()
+              if event.key == pygame.K_SPACE:
+                  toggleBackend()
               if event.unicode == 'q':
                   limit -= 1
               if event.unicode == 'w':

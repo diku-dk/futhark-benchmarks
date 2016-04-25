@@ -2,7 +2,7 @@
 -- IDEATest.jomp from the JGF benchmark suite.  Comments too.
 --
 -- ==
--- input @ crypt-data/small.in
+-- compiled input @ crypt-data/small.in
 -- output @ crypt-data/small.out
 
 fun u16 mk16b(u8 upper, u8 lower) =

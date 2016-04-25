@@ -6,15 +6,13 @@
 -- compiled input @ data/64.in
 -- output @ data/64.out
 --
--- compiled input @ data/512.in
+-- notravis input @ data/512.in
 -- output @ data/512.out
 --
 -- notravis input @ data/1024.in
 -- output @ data/1024.out
 
 default(f32)
-
-fun int str_size() = 256
 
 -- Maximum power density possible (say 300W for a 10mm x 10mm chip)
 fun f32 max_pd() = 3.0e6
@@ -83,8 +81,10 @@ fun [[f32]] single_iteration([[f32,col],row] temp, [[f32,col],row] power,
 
 -- Transient solver driver routine: simply converts the heat transfer
 -- differential equations to difference equations and solves the
--- difference equations by iterating
-fun [[f32]] compute_tran_temp(int num_iterations, [[f32,col],row] temp, [[f32,col],row] power) =
+-- difference equations by iterating.
+--
+-- Returns a new 'temp' array.
+entry [[f32,col],row] compute_tran_temp(int num_iterations, [[f32,col],row] temp, [[f32,col],row] power) =
   let grid_height = chip_height() / f32(row) in
   let grid_width = chip_width() / f32(col) in
   let Cap = factor_chip() * spec_heat_si() * t_chip() * grid_width * grid_height in
@@ -96,6 +96,19 @@ fun [[f32]] compute_tran_temp(int num_iterations, [[f32,col],row] temp, [[f32,co
   loop (temp) = for i < num_iterations do
     single_iteration(temp, power, Cap, Rx, Ry, Rz, step) in
   temp
+
+entry [[[i8,3],col],row] render_frame([[f32,col],row] temp) =
+  let hottest = 360f32
+  let coldest = 270f32
+  in map(fn [[i8,3],col] ([f32] temp_r) =>
+           map(fn [i8,3] (f32 c) =>
+                 let c' = (if c < coldest
+                           then coldest
+                           else (if c > hottest then hottest else c))
+                 let intensity = ((c' - coldest) / (hottest - coldest)) * 256f32
+                 in [i8(intensity), 0i8, i8(intensity)],
+               temp_r),
+           temp)
 
 fun [[f32]] main(int num_iterations, [[f32,col],row] temp, [[f32,col],row] power) =
   compute_tran_temp(num_iterations, temp, power)
