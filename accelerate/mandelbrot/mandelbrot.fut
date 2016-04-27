@@ -14,23 +14,25 @@
 
 default(f32)
 
-fun f32 dot({f32,f32} c) =
+type complex = {f32, f32}
+
+fun f32 dot(complex c) =
   let {r, i} = c in
   r * r + i * i
 
-fun {f32,f32} multComplex({f32,f32} x, {f32,f32} y) =
+fun complex multComplex(complex x, complex y) =
   let {a, b} = x in
   let {c, d} = y in
   {a*c - b * d,
    a*d + b * c}
 
-fun {f32,f32} addComplex({f32,f32} x, {f32,f32} y) =
+fun complex addComplex(complex x, complex y) =
   let {a, b} = x in
   let {c, d} = y in
   {a + c,
    b + d}
 
-fun int divergence(int depth, {f32,f32} c0) =
+fun int divergence(int depth, complex c0) =
   loop ({c, i} = {c0, 0}) = while i < depth && dot(c) < 4.0 do
     {addComplex(c0, multComplex(c, c)),
      i + 1} in
