@@ -58,7 +58,7 @@ fun bool odd(i32 n) = (n & 1) == 1
 
 fun u32 quasicrystal(f32 scale, i32 degree, f32 time, f32 x, f32 y) =
   let phi = 1.0 + (time ** 1.5) * 0.005 in
-  let {x', y'} = point(scale, x, y) in
+  let (x', y') = point(scale, x, y) in
   intColour(rampColour(waves(degree, phi, x', y')))
 
 fun f32 waves(i32 degree, f32 phi, f32 x, f32 y) =
@@ -81,14 +81,14 @@ fun f32 wave(f32 th, f32 x, f32 y) =
   let sth = sin32(th) in
   (cos32(cth * x + sth * y) + 1.0) / 2.0
 
-fun {f32, f32} point(f32 scale, f32 x, f32 y) =
-  {x * scale, y * scale}
+fun (f32, f32) point(f32 scale, f32 x, f32 y) =
+  (x * scale, y * scale)
 
-fun {f32, f32, f32} rampColour(f32 v) =
-  {1.0, 0.4 + (v * 0.6), v} -- rgb
+fun (f32, f32, f32) rampColour(f32 v) =
+  (1.0, 0.4 + (v * 0.6), v) -- rgb
 
-fun u32 intColour({f32, f32, f32} rgb) =
-  let {r, g, b} = rgb in
+fun u32 intColour((f32, f32, f32) rgb) =
+  let (r, g, b) = rgb in
   u32(intPixel(r)) << 16u32 | u32(intPixel(g)) << 8u32 | u32(intPixel(b))
 
 fun u8 intPixel(f32 t) =

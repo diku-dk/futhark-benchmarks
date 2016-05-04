@@ -5,9 +5,9 @@
 
 include fluid
 
-fun {[[f32, g], g],
+fun ([[f32, g], g],
      [[f32, g], g],
-     [[f32, g], g]}
+     [[f32, g], g])
   main([[f32, g], g] U0,
        [[f32, g], g] V0,
        [[f32, g], g] D0,

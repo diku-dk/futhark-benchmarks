@@ -44,25 +44,25 @@ fun [f32,m] sobolIndR( [[int,num_bits],m] dir_vs, int n ) =
 ---- STRENGTH-REDUCED FORMULA
 --------------------------------
 fun int index_of_least_significant_0(int num_bits, int n) = 
-  let {goon,k} = {True,0} in
-  loop ({goon,k,n}) =
+  let (goon,k) = (True,0) in
+  loop ((goon,k,n)) =
         for i < num_bits do
 	  if(goon) 
 	  then if (n & 1) == 1
-	       then {True, k+1, n>>1}
-	       else {False,k,   n   }
-	  else      {False,k,   n   }
+	       then (True, k+1, n>>1)
+	       else (False,k,   n   )
+	  else      (False,k,   n   )
   in k
 
 fun [int] sobolRecI([[int,num_bits]] sob_dir_vs, [int] prev, int n) = 
   let bit = index_of_least_significant_0(num_bits,n) in
-  map (fn int ({[int],int} vct_prev) => 
-	 let {vct_row, prev} = vct_prev in
+  map (fn int (([int],int) vct_prev) => 
+	 let (vct_row, prev) = vct_prev in
 	 vct_row[bit] ^ prev
       , zip(sob_dir_vs,prev))
 
-fun [[f32]] sobolRecMap( f32  sob_fact, [[int]] dir_vs, {int,int} lu_bds ) =
-  let {lb_inc, ub_exc} = lu_bds in 
+fun [[f32]] sobolRecMap( f32  sob_fact, [[int]] dir_vs, (int,int) lu_bds ) =
+  let (lb_inc, ub_exc) = lu_bds in 
   -- the if inside may be particularly ugly for
   -- flattening since it introduces control flow!
   let contribs = map( fn [int] (int k) => 
@@ -262,7 +262,7 @@ fun [[f32,num_und],num_dates] brownianBridge (
 ---------------------------------
 --- Black-Scholes
 ---------------------------------
-fun [f32,n] take(int n, [f32] a) = let {first, rest} = split((n), a) in first
+fun [f32,n] take(int n, [f32] a) = let (first, rest) = split((n), a) in first
 
 fun [[f32,num_und],num_dates] 
 correlateDeltas( [[f32,num_und],num_und  ] md_c, 
@@ -336,13 +336,13 @@ fun [f32] main(
   let payoffs   = map ( fn [f32,num_models] ([[f32]] bb_row) =>
 			  let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
 			  let bd_row =
-                            map (fn [[f32,num_und],num_dates] ({[[f32]],[[f32]],[[f32]],[f32]} m) =>
-				   let {c,vol,drift,st} = m in
+                            map (fn [[f32,num_und],num_dates] (([[f32]],[[f32]],[[f32]],[f32]) m) =>
+				   let (c,vol,drift,st) = m in
 				   blackScholes(c, vol, drift, st, bb_row)
 				, market_params) in
                           let payoff_params = zip(md_discts, md_detvals, bd_row) in
-                          map (fn f32 ({[f32],[f32],[[f32]]} p) =>
-				 let {disct, detval, bd} = p in
+                          map (fn f32 (([f32],[f32],[[f32]]) p) =>
+				 let (disct, detval, bd) = p in
 				 genericPayoff(contract_number, disct, detval, bd)
 			      , payoff_params)
 		      , bb_mat)
@@ -380,14 +380,14 @@ fun [f32] mainRec(
 
   let payoffs   = map ( fn [f32] ([[f32]] bb_row) =>
 			                let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
-			                let bd_row = map (fn [[f32]] ({[[f32]],[[f32]],[[f32]],[f32]} m) =>
-				                                let {c,vol,drift,st} = m in
+			                let bd_row = map (fn [[f32]] (([[f32]],[[f32]],[[f32]],[f32]) m) =>
+				                                let (c,vol,drift,st) = m in
 					                            blackScholes(c, vol, drift, st, bb_row)
 					                         , market_params) 
                             in
 			                let payoff_params = zip(md_discts, md_detvals, bd_row) in  
-                            map (fn f32 ({[f32],[f32],[[f32]]} p) =>
-				                    let {disct, detval, bd} = p in
+                            map (fn f32 (([f32],[f32],[[f32]]) p) =>
+				                    let (disct, detval, bd) = p in
 				                    genericPayoff(contract_number, disct, detval, bd)
 				                , payoff_params)
 		              , bb_mat)
@@ -415,16 +415,16 @@ fun f32 payoff1([f32] md_disct, [f32] md_detval, [[f32,1],1] xss) =
     in  trajInner(amount0, 0, md_disct)
 
 fun f32 payoff2 ([f32] md_disc, [[f32,3],5] xss) =
-  let {date, amount} = 
-    if      (1.0 <= fminPayoff(xss[0])) then {0, 1150.0}
-    else if (1.0 <= fminPayoff(xss[1])) then {1, 1300.0}
-    else if (1.0 <= fminPayoff(xss[2])) then {2, 1450.0}
-    else if (1.0 <= fminPayoff(xss[3])) then {3, 1600.0}
+  let (date, amount) = 
+    if      (1.0 <= fminPayoff(xss[0])) then (0, 1150.0)
+    else if (1.0 <= fminPayoff(xss[1])) then (1, 1300.0)
+    else if (1.0 <= fminPayoff(xss[2])) then (2, 1450.0)
+    else if (1.0 <= fminPayoff(xss[3])) then (3, 1600.0)
     else let x50  = fminPayoff(xss[4]) in
 	 let val  = if      ( 1.0 <= x50 ) then 1750.0
                     else if ( 0.75 < x50 ) then 1000.0
                     else                        x50*1000.0
-	 in {4, val}
+	 in (4, val)
   in  trajInner(amount, date, md_disc) 
 
 fun f32 payoff3([f32] md_disct, [[f32,3],367] xss) =
@@ -446,7 +446,7 @@ fun f32 payoff3([f32] md_disct, [[f32,3],367] xss) =
 
 fun f32 fminPayoff([f32] xs) = 
 --    MIN( zipWith(/, xss, {3758.05, 11840.0, 1200.0}) )
-    let {a,b,c} = { xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0} in
+    let (a,b,c) = ( xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0) in
     if a < b then if a < c then a else c
 	     else if b < c then b else c
 

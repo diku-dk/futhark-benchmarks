@@ -3,30 +3,30 @@
 ---- Translation of: lud_diagonal_omp -----
 -------------------------------------------
 ----
-----void lud_diagonal_omp (float* a, int size, int offset) {
+----void lud_diagonal_omp (float* a, int size, int offset) (
 ----    int i, j, k;
-----    for (j = 0; j < BS; j++) {
-----        for (i = 0; i < BS-1; i++) {
+----    for (j = 0; j < BS; j++) (
+----        for (i = 0; i < BS-1; i++) (
 ----            if(j > i)
 ----                float temp = 1.f/AA(i,i);
-----                for (k = 0; k < i ; k++) {
+----                for (k = 0; k < i ; k++) (
 ----                    AA(j,i) = AA(j,i) - AA(j,k) * AA(k,i);
-----                }
+----                )
 ----                AA(j,i) = AA(j,i)*temp;
-----            }
-----        }
-----    }
+----            )
+----        )
+----    )
 ----
-----    for (j = 0; j < BS; j++) {
-----        for (i = 0; i < BS-1; i++) {
-----            if( j > i) {
-----                for (k = 0; k < i+1 ; k++) {
+----    for (j = 0; j < BS; j++) (
+----        for (i = 0; i < BS-1; i++) (
+----            if( j > i) (
+----                for (k = 0; k < i+1 ; k++) (
 ----                    AA(i+1,j) = AA(i+1,j) - AA(i+1,k) * AA(k,j);
-----                }
-----            }
-----        }
-----    }
-----}
+----                )
+----            )
+----        )
+----    )
+----)
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 fun *[[f32,b],b]
@@ -35,12 +35,12 @@ lud_diagonal([[f32,b],b] a0) =
         map(fn [f32,b] (int j) =>
                 let row = copy(a0[j]) in
                 loop(row) = for i <  b - 1 do
-                    let {sum, tmp} = if(j > i) 
+                    let (sum, tmp) = if(j > i) 
                     then let sum = 0.0f32  in
                          loop (sum) = for k < i do
                             sum + row[k] * a0[k,i]
-                         in {sum, a0[i,i]}
-                    else    {0.0f32, 1.0f32}
+                         in (sum, a0[i,i])
+                    else    (0.0f32, 1.0f32)
                     in
                     let row[i] = (row[i] - sum) / tmp
                     in row
@@ -73,17 +73,17 @@ lud_diagonal([[f32,b],b] a0) =
 ------------------------------
 ------------------------------
 ----
-----for (j = 0; j < BS; j++) {
-----    for (i = 0; i < BS; i++) {
+----for (j = 0; j < BS; j++) (
+----    for (i = 0; i < BS; i++) (
 ----        sum = 0.f;
-----        for (k=0; k < i; k++) {
+----        for (k=0; k < i; k++) (
 ----            sum += temp[BS*i +k] * BB((i_global+k),(j_global+j));
-----        }
+----        )
 ----        i_here = i_global + i;
 ----        j_here = j_global + j;
 ----        BB(i_here, j_here) = BB(i_here,j_here) - sum;
-----    }
-----}
+----    )
+----)
 ----
 ---- Ideally: diag is hold in CONSTANT memory!
 ----          row = a1[j] is in shared memory!
@@ -120,17 +120,17 @@ lud_perimeter_upper(int d, [[f32,b],b] diag, [[[f32,b],b],m] a0s) =
 ------------------------------
 ----j_global = offset;
 ----i_global += BS * (chunk_idx + 1);
-----for (i = 0; i < BS; i++) {
-----    for (j = 0; j < BS; j++) {
+----for (i = 0; i < BS; i++) (
+----    for (j = 0; j < BS; j++) (
 ----        sum = 0.f;
-----        for (k=0; k < j; k++) {
+----        for (k=0; k < j; k++) (
 ----            sum += BB((i_global+i),(j_global+k)) * temp[BS*k + j];
-----        }
+----        )
 ----        i_here = i_global + i;
 ----        j_here = j_global + j;
 ----        a[size*i_here + j_here] = ( a[size*i_here+j_here] - sum ) / a[size*(offset+j) + offset+j];
-----    }
-----}
+----    )
+----)
 ----
 ---- Ideally: diag is hold in CONSTANT memory!
 ----          row = a0[i] is in shared memory!
@@ -163,38 +163,38 @@ lud_perimeter_lower(int d, [[f32,b],b] diag, [[[f32,b],b],m] a0s) =
 ------------------------------
 ----
 ----    for  (chunk_idx =0; chunk_idx < chunks_per_inter; chunk_idx++)
-----    {
+----    (
 ----        int i, j, k, i_global, j_global;
 ----        float temp_top[BS*BS] __attribute__ ((aligned (64)));
 ----        float temp_left[BS*BS] __attribute__ ((aligned (64)));
-----        float sum[BS] __attribute__ ((aligned (64))) = {0.f};
+----        float sum[BS] __attribute__ ((aligned (64))) = (0.f);
 ----        
 ----        i_global = offset + BS * (1 +  chunk_idx/chunks_in_inter_row);
 ----        j_global = offset + BS * (1 + chunk_idx%chunks_in_inter_row);
 
-----        for (i = 0; i < BS; i++) {
+----        for (i = 0; i < BS; i++) (
 ----#pragma omp simd
-----            for (j =0; j < BS; j++){
+----            for (j =0; j < BS; j++)(
 ----                temp_top[i*BS + j]  = a[size*(i + offset) + j + j_global ]; 
 ----                temp_left[i*BS + j] = a[size*(i + i_global) + offset + j];
-----            }
-----        }
+----            )
+----        )
 ----
 ----        for (i = 0; i < BS; i++)
-----        {
-----            for (k=0; k < BS; k++) {
+----        (
+----            for (k=0; k < BS; k++) (
 ----#pragma omp simd 
-----                for (j = 0; j < BS; j++) {
+----                for (j = 0; j < BS; j++) (
 ----                    sum[j] += temp_left[BS*i + k] * temp_top[BS*k + j];
-----                }
-----            }
+----                )
+----            )
 ----#pragma omp simd 
-----            for (j = 0; j < BS; j++) {
+----            for (j = 0; j < BS; j++) (
 ----                BB((i+i_global),(j+j_global)) -= sum[j];
 ----                sum[j] = 0.f;
-----            }
-----        }
-----    }
+----            )
+----        )
+----    )
 ----
 ---- Ideally: temp_top and temp_left
 ----          are stored in shared memory!!!
