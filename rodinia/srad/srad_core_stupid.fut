@@ -53,11 +53,11 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
     -- gets standard deviation of ROI
     let q0sqr = varROI / (meanROI*meanROI) in
 
-    let {dN, dS, dW, dE, c} =
+    let (dN, dS, dW, dE, c) =
       unzip(
-        zipWith(fn [{f32,f32,f32,f32,f32},cols]
+        zipWith(fn [(f32,f32,f32,f32,f32),cols]
                   (int i, [f32] row) =>
-                    zipWith(fn {f32,f32,f32,f32,f32} (int j, f32 Jc) =>
+                    zipWith(fn (f32,f32,f32,f32,f32) (int j, f32 Jc) =>
                               let dN_k = image[iN[i],j] - Jc in
                               let dS_k = image[iS[i],j] - Jc in
                               let dW_k = image[i, jW[j]] - Jc in
@@ -74,7 +74,7 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
                                         then 0.0
                                         else if c_k > 1.0
                                              then 1.0 else c_k in
-                              {dN_k, dS_k, dW_k, dE_k, c_k}
+                              (dN_k, dS_k, dW_k, dE_k, c_k)
                            , iota(cols), row)
                , iota(rows), image)) in
 

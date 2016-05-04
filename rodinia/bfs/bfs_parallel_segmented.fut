@@ -11,7 +11,7 @@
 include bfs_main
 include lib.bfs_lib
 
-fun {*[i32, n], *[bool, n], *[i32]}
+fun (*[i32, n], *[bool, n], *[i32])
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
        [i32, n] nodes_n_edges,
@@ -53,4 +53,4 @@ fun {*[i32, n], *[bool, n], *[i32]}
 
   let cost' = write(write_indices, costs_new, cost)
 
-  in {cost', graph_mask', write_indices}
+  in (cost', graph_mask', write_indices)

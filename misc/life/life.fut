@@ -42,8 +42,8 @@ fun int min(int x, int y) =
   if x < y then x else y
 
 
-entry {[[bool,m],n], [[int,m],n]} init([[bool,m],n] world) =
-  {world, replicate(n, replicate(m, 255))}
+entry ([[bool,m],n], [[int,m],n]) init([[bool,m],n] world) =
+  (world, replicate(n, replicate(m, 255)))
 
 entry [[[i8,3],m],n] render_frame([[int,m],n] history) =
   map(fn [[i8,3],m] ([int] ages) =>
@@ -56,16 +56,16 @@ entry [[[i8,3],m],n] render_frame([[int,m],n] history) =
      , history)
 
 
-entry {[[bool,m],n], [[int,m],n]}
+entry ([[bool,m],n], [[int,m],n])
   steps([[bool,m],n] world, [[int,m],n] history, int steps) =
-  loop ({world, history}) = for i < steps do
+  loop ((world, history)) = for i < steps do
     (let world' = iteration(world)
      let history' = zipWith(fn [int,m] ([int] xs, [bool] alives) =>
                               zipWith(fn int (int x, bool alive) =>
                                         if alive then 0 else x + 1,
                                       xs, alives),
                               history, world')
-     in {world', history'})
-  in {world, history}
+     in (world', history'))
+  in (world, history)
 
 fun int main() = 2

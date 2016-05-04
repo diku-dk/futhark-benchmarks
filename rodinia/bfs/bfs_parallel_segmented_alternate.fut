@@ -46,10 +46,10 @@ fun [i32, n] main([i32, n] nodes_start_index,
   let tids1 = write(offsets, iota(n), tids0)
   let tids = i32_plus_scan_segm(tids1, mask)
   
-  loop ({cost, graph_mask, graph_visited, continue} =
-        {cost, graph_mask, graph_visited, True}) =
+  loop ((cost, graph_mask, graph_visited, continue) =
+        (cost, graph_mask, graph_visited, True)) =
     while continue do
-      let {cost', graph_mask', updating_indices} =
+      let (cost', graph_mask', updating_indices) =
         step(cost,
              nodes_start_index,
              nodes_n_edges,
@@ -72,10 +72,10 @@ fun [i32, n] main([i32, n] nodes_start_index,
       let n_indices' = reduce(+, 0, tmp_arr)
 
       let continue' = n_indices' > 0
-      in {cost', graph_mask'', graph_visited', continue'}
+      in (cost', graph_mask'', graph_visited', continue')
   in cost
 
-fun {*[i32, n], *[bool, n], *[i32]}
+fun (*[i32, n], *[bool, n], *[i32])
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
        [i32, n] nodes_n_edges,
@@ -100,4 +100,4 @@ fun {*[i32, n], *[bool, n], *[i32]}
   let graph_mask' =
     write(masked_indices, replicate(n, False), graph_mask)
 
-  in {cost', graph_mask', write_indices}
+  in (cost', graph_mask', write_indices)

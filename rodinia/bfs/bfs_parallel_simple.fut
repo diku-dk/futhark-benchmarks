@@ -14,7 +14,7 @@ include lib.bfs_lib
 fun i32 max(i32 a, i32 b) =
   if a > b then a else b
 
-fun {*[i32, n], *[bool, n], *[i32]}--*[bool, n]}
+fun (*[i32, n], *[bool, n], *[i32])--*[bool, n])
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
        [i32, n] nodes_n_edges,
@@ -30,12 +30,12 @@ fun {*[i32, n], *[bool, n], *[i32]}--*[bool, n]}
   -- nested array.
   let e_max = reduceComm(max, 0, nodes_n_edges)
 
-  let changes = map(fn {[i32, e_max], [i32, e_max]} (i32 i) =>
+  let changes = map(fn ([i32, e_max], [i32, e_max]) (i32 i) =>
                       node_work(i, e_max, cost, nodes_start_index,
                                 nodes_n_edges, edges_dest, graph_visited)
                    , active_indices)
 
-  let {changes_node_ids, changes_costs} =
+  let (changes_node_ids, changes_costs) =
     unzip(changes)
 
   let full_length = e_max * n_indices
@@ -47,9 +47,9 @@ fun {*[i32, n], *[bool, n], *[i32]}--*[bool, n]}
   let graph_mask' =
     write(active_indices, replicate(n_indices, False), graph_mask)
 
-  in {cost', graph_mask', node_ids}
+  in (cost', graph_mask', node_ids)
 
-fun {[i32, e_max], [i32, e_max]}
+fun ([i32, e_max], [i32, e_max])
   node_work(i32 tid,
             i32 e_max,
             [i32, n] cost,
@@ -70,4 +70,4 @@ fun {[i32, e_max], [i32, e_max]}
                        else -1,
                      edge_indices)
   let costs = replicate(e_max, unsafe cost[tid] + 1)
-  in {node_ids, costs}
+  in (node_ids, costs)

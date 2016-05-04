@@ -37,13 +37,13 @@ fun [[i8,m],n] iteration([[i8,m],n] board) =
 fun int min(int x, int y) =
   if x < y then x else y
 
-entry {[[i8,m],n], [[int,m],n]} init([[bool,m],n] world) =
-  {map(fn [i8,m] ([bool] row) =>
+entry ([[i8,m],n], [[int,m],n]) init([[bool,m],n] world) =
+  (map(fn [i8,m] ([bool] row) =>
          map(fn i8 (bool b) =>
                if b then 1i8 else 0i8,
              row),
          world),
-   replicate(n, replicate(m, 255 << 2))}
+   replicate(n, replicate(m, 255 << 2)))
 
 entry [[[i8,3],m],n] render_frame([[int,m],n] all_history) =
   map(fn [[i8,3],m] ([int] row_history) =>
@@ -68,12 +68,12 @@ fun int update_history(int history, i8 now) =
                        else (128 << 2) | used_to_be)
      else int(now)
 
-entry {[[i8,m],n], [[int,m],n]}
+entry ([[i8,m],n], [[int,m],n])
   steps([[i8,m],n] world, [[int,m],n] history, int steps) =
-  loop ({world, history}) = for i < steps do
+  loop ((world, history)) = for i < steps do
     (let world' = iteration(world)
      let history' = zipWith(fn [int,m] ([int] row_history, [i8] row) =>
                               zipWith(update_history, row_history, row),
                             history, world')
-     in {world', history'})
-  in {world, history}
+     in (world', history'))
+  in (world, history)
