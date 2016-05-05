@@ -101,7 +101,6 @@ std dev              5.203 ms   (0.0 s .. 5.208 ms)
 variance introduced by outliers: 19% (moderately inflated)
 ```
 
-
 ### Conclusion
 
 Average runtimes:
@@ -114,26 +113,15 @@ Average runtimes:
 | 20 | 3000 | 227403.50us | 895700.00us |
 
 
-## Visualizations
-
-Go to the `visualize` directory.
-
-Run `./fluid-make-images.sh <n steps> <grid resolution> <backend> <output
-directory> <seed>` to make `<n steps>` images of size `<grid resolution> × <grid
-resolution>` with the `<backend>` `futhark` or `c`, and with the random seed
-`<seed>` as a predefined number or as `none`.
-
-After that, you can run `./fluid-images-to-video.sh <output directory>` to make
-a video with the filename `<output directory>.webm`.
-
-Python 3 dependencies:
-
-  + numpy
-  + pypng
-
 ## Runtime results on gpu01-diku-apl (GTX 780 Ti)
 
   resolution=3000, n_steps=1, n_solver_steps=20:
      Accelerate:      154.5ms
      Futhark:         107.9ms
      Futhark speedup:   1.43x
+
+
+## GUI
+
+Go to the `gui` directory.  Run `make` and then `./fluid-gui.py
+GRID_RESOLUTION`, e.g. `./fluid-gui.py 256`.
