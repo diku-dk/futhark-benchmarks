@@ -4,6 +4,19 @@
 -- Only implements the first seven[sic] data-parallel stages, not the final
 -- recursive algorithm (which in the Accelerate implementation is also
 -- done in Repa).
+--
+-- ==
+
+-- compiled input {
+--  [[1038851507, 1834550796, 2046247850],
+--   [1709637579, -- 2011955188, -2110545476],
+--   [-902148259, 643549096, -787906599],
+--   [1283118839, -1359985963, 733366311],
+--   [331229149, 824288910, -112514126]]
+-- }
+-- output {
+--   [0i32, 2i32, 10i32, 11i32]
+-- }
 
 default (f32)
 
