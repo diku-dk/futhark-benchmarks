@@ -12,12 +12,12 @@ here.  Not even many opportunities for fusion.
 
 ## Runtime results on gpu01-diku-apl (GTX 780 Ti)
 
-  lena256.bmp:
-    Accelerate: 1.498ms
-    Futhark:    0.944ms
-    Speedup:    1.58x
+    lena256.bmp:
+      Accelerate: 1.498ms
+      Futhark:    0.944ms
+      Speedup:    1.58x
 
-  lena512.bmp:
-    Accelerate: 2.683ms
-    Futhark:    2.378ms
-    Speedup:    1.12x
+    lena512.bmp:
+      Accelerate: 2.683ms
+      Futhark:    2.378ms
+      Speedup:    1.12x
