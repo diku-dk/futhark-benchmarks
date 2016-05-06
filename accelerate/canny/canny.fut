@@ -21,6 +21,9 @@
 --
 -- compiled input @ data/lena256.in
 -- output @ data/lena256.out
+--
+-- compiled input @ data/lena512.in
+-- output @ data/lena512.out
 
 default (f32)
 
