@@ -28,17 +28,18 @@ fun [i32, n] main([i32, n] nodes_start_index,
              edges_dest,
              graph_visited,
              graph_mask,
-             updating_graph_mask)
+             updating_graph_mask) in
 
-      let continue' = False
-      loop((graph_mask', graph_visited, updating_graph_mask', continue')) = for tid < n do
-            if(updating_graph_mask'[tid])
-            then let graph_mask'[tid]   = True
-                 let graph_visited[tid] = True
-                 let updating_graph_mask'[tid] = False
-                 in (graph_mask', graph_visited, updating_graph_mask', True    )
-            else    (graph_mask', graph_visited, updating_graph_mask', continue')
-      
+      let continue' = False in
+      loop ((graph_mask', graph_visited, updating_graph_mask', continue')) =
+        for tid < n do
+          if updating_graph_mask'[tid]
+          then let graph_mask'[tid] = True
+               let graph_visited[tid] = True
+               let updating_graph_mask'[tid] = False
+               in (graph_mask', graph_visited, updating_graph_mask', True)
+          else (graph_mask', graph_visited, updating_graph_mask', continue')
+
       in (cost', updating_graph_mask', graph_mask', graph_visited, continue')
   in cost
 
