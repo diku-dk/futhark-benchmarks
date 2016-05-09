@@ -4,12 +4,14 @@
 -- is not the case in `bfs_parallel_segmented`, where the sizes vary.
 -- ==
 --
--- compiled input @ data/4096nodes.in
+-- tags { notravis }
+-- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
--- notravis input @ data/512nodes_high_edge_variance.in
+-- input @ data/512nodes_high_edge_variance.in
 -- output @ data/512nodes_high_edge_variance.out
 
 include lib.bfs_lib
+
 
 fun [i32, n] main([i32, n] nodes_start_index,
                   [i32, n] nodes_n_edges,
@@ -23,7 +25,6 @@ fun [i32, n] main([i32, n] nodes_start_index,
   let cost = replicate(n, -1)
   let cost[source] = 0 in
 
-
   let offsets0 = scan(+, 0, nodes_n_edges)
   let offsets = i32_excl_scan_from_incl_scan(offsets0, 0)
 
@@ -36,16 +37,10 @@ fun [i32, n] main([i32, n] nodes_start_index,
 
   let node_ids = map(fn i32 (i32 i) => unsafe edges_dest[i], is2)
 
-  let some_binding = node_ids -- FIXME: This binding should not be necessary,
-                              -- but futhark -s spews this out without it:
-                              -- "Annotation of "binding of variable lstel_1868"
-                              -- type of expression is i32, but derived to be
-                              -- bool."
-
   let tids0 = replicate(e, 0)
   let tids1 = write(offsets, iota(n), tids0)
   let tids = i32_plus_scan_segm(tids1, mask)
-  
+
   loop ((cost, graph_mask, graph_visited, continue) =
         (cost, graph_mask, graph_visited, True)) =
     while continue do
@@ -68,7 +63,8 @@ fun [i32, n] main([i32, n] nodes_start_index,
         write(updating_indices, replicate(n_indices, True),
               graph_visited)
 
-      let tmp_arr = map(fn i32 (int ind) => if ind == -1 then 0 else 1, updating_indices)
+      let tmp_arr = map(fn i32 (int ind) =>
+                          if ind == -1 then 0 else 1, updating_indices)
       let n_indices' = reduce(+, 0, tmp_arr)
 
       let continue' = n_indices' > 0
@@ -85,12 +81,14 @@ fun (*[i32, n], *[bool, n], *[i32])
        [i32, e] node_ids,
        [i32, e] tids) =
   let write_indices = map(fn i32 (i32 id, i32 tid) =>
-                            if unsafe graph_visited[id] || ! unsafe graph_mask[tid]
+                            if (unsafe graph_visited[id]
+                                || ! unsafe graph_mask[tid])
                             then -1
                             else id,
                           zip(node_ids, tids))
 
-  let costs_new = map(fn i32 (i32 tid) => unsafe cost[tid] + 1, tids)
+  let costs_new = map(fn i32 (i32 tid) =>
+                        unsafe cost[tid] + 1, tids)
 
   let cost' = write(write_indices, costs_new, cost)
 

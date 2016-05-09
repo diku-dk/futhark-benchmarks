@@ -8,13 +8,14 @@
 -- input @ data/512nodes_high_edge_variance.in
 -- output @ data/512nodes_high_edge_variance.out
 
-include bfs_main
+include lib.bfs_main_typical
 include lib.bfs_lib
+
 
 fun i32 max(i32 a, i32 b) =
   if a > b then a else b
 
-fun (*[i32, n], *[bool, n], *[i32])--*[bool, n])
+fun (*[i32, n], *[bool, n], *[i32])
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
        [i32, n] nodes_n_edges,
@@ -56,8 +57,7 @@ fun ([i32, e_max], [i32, e_max])
             [i32, n] nodes_start_index,
             [i32, n] nodes_n_edges,
             [i32, e] edges_dest,
-            [bool, n] graph_visited) = --,
-            -- [bool, n] updating_graph_mask) =
+            [bool, n] graph_visited) =
   let start_index = unsafe nodes_start_index[tid]
   let n_edges = unsafe nodes_n_edges[tid]
   let edge_indices = map(+ start_index, iota(e_max))

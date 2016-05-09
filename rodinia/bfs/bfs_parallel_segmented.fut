@@ -10,6 +10,7 @@
 
 include lib.bfs_lib
 
+
 fun [i32, n] main([i32, n] nodes_start_index,
                   [i32, n] nodes_n_edges,
                   [i32, e] edges_dest) =
@@ -84,8 +85,10 @@ fun (*[i32, n], *[bool, n], *[bool, n])
                           node_ids)
 
   let costs_new0 = replicate(full_length, 0)
-  let costs_new1 = write(
-    offsets, map(fn i32 (i32 id) => unsafe cost[id] + 1, active_indices), costs_new0)
+  let costs_new1 =
+    write(offsets,
+          map(fn i32 (i32 id) => unsafe cost[id] + 1, active_indices),
+          costs_new0)
   let costs_new = i32_plus_scan_segm(costs_new1, mask)
 
   let cost' = write(write_indices, costs_new, cost)
