@@ -5,7 +5,7 @@ Port of Accelerate's
 example, along with a Python wrapper for easily turning the raw data
 into images.  For example:
 
-    futhark-pyopencl --module mandelbrot.fut -o mandelbrot.py
+    futhark-pyopencl --library mandelbrot.fut -o mandelbrot.py
     ./mandelbrot-run.py --width 1024 --height 768 mandelbrot.png
 
 ## Runtime results on gpu01-diku-apl (GTX 780 Ti)
