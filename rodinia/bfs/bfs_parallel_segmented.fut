@@ -8,16 +8,54 @@
 -- input @ data/512nodes_high_edge_variance.in
 -- output @ data/512nodes_high_edge_variance.out
 
-include bfs_main
 include lib.bfs_lib
 
-fun {*[i32, n], *[bool, n], *[i32]}
+
+fun [i32, n] main([i32, n] nodes_start_index,
+                  [i32, n] nodes_n_edges,
+                  [i32, e] edges_dest) =
+  let graph_mask = replicate(n, False)
+  let updating_graph_mask = replicate(n, False)
+  let graph_visited = replicate(n, False)
+  let source = 0
+  let graph_mask[source] = True
+  let graph_visited[source] = True
+  let cost = replicate(n, -1)
+  let cost[source] = 0 in
+  loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
+        (cost, updating_graph_mask, graph_mask, graph_visited, True)) =
+    while continue do
+      let (cost', graph_mask', updating_graph_mask') =
+        step(cost,
+             nodes_start_index,
+             nodes_n_edges,
+             edges_dest,
+             graph_visited,
+             graph_mask,
+             updating_graph_mask)
+      let (updating_indices, n_indices) = get_updating_indices(updating_graph_mask')
+
+      let graph_mask'' =
+        write(updating_indices, replicate(n_indices, True), graph_mask')
+
+      let graph_visited' =
+        write(updating_indices, replicate(n_indices, True), graph_visited)
+
+      let updating_graph_mask'' =
+        write(updating_indices, replicate(n_indices, False), updating_graph_mask')
+
+      let continue' = n_indices > 0
+      in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
+  in cost
+
+fun (*[i32, n], *[bool, n], *[bool, n])
   step(*[i32, n] cost,
        [i32, n] nodes_start_index,
        [i32, n] nodes_n_edges,
        [i32, e] edges_dest,
        [bool, n] graph_visited,
-       *[bool, n] graph_mask) =
+       *[bool, n] graph_mask,
+       *[bool, n] updating_graph_mask) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
   let n_indices = size(0, active_indices)
@@ -47,10 +85,14 @@ fun {*[i32, n], *[bool, n], *[i32]}
                           node_ids)
 
   let costs_new0 = replicate(full_length, 0)
-  let costs_new1 = write(
-    offsets, map(fn i32 (i32 id) => unsafe cost[id] + 1, active_indices), costs_new0)
+  let costs_new1 =
+    write(offsets,
+          map(fn i32 (i32 id) => unsafe cost[id] + 1, active_indices),
+          costs_new0)
   let costs_new = i32_plus_scan_segm(costs_new1, mask)
 
   let cost' = write(write_indices, costs_new, cost)
+  let updating_graph_mask' =
+    write(write_indices, replicate(full_length, True), updating_graph_mask)
 
-  in {cost', graph_mask', write_indices}
+  in (cost', graph_mask', updating_graph_mask')

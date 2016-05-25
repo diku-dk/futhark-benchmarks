@@ -17,7 +17,7 @@ startpos=(-2.23,-1.15,0.83,1.15)
 futm = mandelbrot.mandelbrot()
 
 def make_mandelbrot_futhark(minx, miny, maxx, maxy):
-    return futm.main(width, height, limit, minx, miny, maxx, maxy)
+    return futm.main(width, height, limit, minx, miny, maxx, maxy).get()
 
 def make_mandelbrot_numpy(minx, miny, maxx, maxy):
     return mandelbrot_numpy.mandelbrot(width, height, limit, minx, miny, maxx, maxy)

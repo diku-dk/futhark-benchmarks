@@ -273,18 +273,18 @@ fun *[f32,EQUS] ecc( f32 timeinst, [f32,EQUS] initvalu, int initvalu_offset,
   -- I_Na: Fast Na Current
   let am = 0.32f32 * (initvalu_39 + 47.13f32) / (1.0f32 - exp32(-0.1f32*(initvalu_39+47.13f32))) in
   let bm = 0.08f32 * exp32(-initvalu_39/11.0f32) in
-  let { ah, aj, bh, bj } =  if (initvalu_39 >= -40.0f32)
-                            then { 0.0f32, 
+  let ( ah, aj, bh, bj ) =  if (initvalu_39 >= -40.0f32)
+                            then ( 0.0f32, 
                                    0.0f32,
                                    1.0f32/(0.13f32*(1.0f32+exp32(-(initvalu_39+10.66f32)/11.1f32))),
                                    0.3f32*exp32(-2.535e-7f32*initvalu_39)/(1.0f32+exp32(-0.1f32*(initvalu_39+32.0f32))) 
-                                 }
-                            else { 0.135f32*exp32((80.0f32+initvalu_39)/-6.8f32),
+                                 )
+                            else ( 0.135f32*exp32((80.0f32+initvalu_39)/-6.8f32),
                                    ( -127140.0f32*exp32(0.2444f32*initvalu_39) - 3.474e-5f32*exp32(-0.04391f32*initvalu_39) ) *
                                         (initvalu_39+37.78f32)/(1.0f32+exp32(0.311f32*(initvalu_39+79.23f32))),
                                    3.56f32*exp32(0.079f32*initvalu_39)+3.1e5f32*exp32(0.35f32*initvalu_39),
                                    0.1212f32 * exp32(-0.01052f32*initvalu_39) / (1.0f32 + exp32(-0.1378f32 * (initvalu_39+40.14f32)))
-                                 }
+                                 )
   in
   let finavalu[offset_1] = am*(1.0f32-initvalu_1) - bm*initvalu_1 in
   let finavalu[offset_2] = ah*(1.0f32-initvalu_2) - bh*initvalu_2 in
@@ -530,7 +530,7 @@ fun *[f32,EQUS] ecc( f32 timeinst, [f32,EQUS] initvalu, int initvalu_offset,
 ----- Cam MODULE -----
 ----------------------
 
-fun {f32, *[f32,EQUS]} cam( f32 timeinst, [f32,EQUS] initvalu, 
+fun (f32, *[f32,EQUS]) cam( f32 timeinst, [f32,EQUS] initvalu, 
                             int initvalu_offset,
                             [f32,PARS] parameter, int parameter_offset, 
                             *[f32,EQUS] finavalu, f32 Ca ) =
@@ -589,15 +589,15 @@ fun {f32, *[f32,EQUS]} cam( f32 timeinst, [f32,EQUS] initvalu,
   let Mg = 1.0f32  
   in
   -- Ca/CaM parameters
-  let {Kd02, Kd24} = if (Mg <= 1.0f32)
-                     then { 0.0025f32*(1.0f32+K/0.94f32-Mg/0.012f32)*(1.0f32+K/8.1f32+Mg/0.022f32),
+  let (Kd02, Kd24) = if (Mg <= 1.0f32)
+                     then ( 0.0025f32*(1.0f32+K/0.94f32-Mg/0.012f32)*(1.0f32+K/8.1f32+Mg/0.022f32),
                             0.128f32*(1.0f32+K/0.64f32+Mg/0.0014f32)*(1.0f32+K/13.0f32-Mg/0.153f32)
-                          }
-                     else { 0.0025f32*(1.0f32+K/0.94f32-1.0f32/0.012f32+(Mg-1.0f32)/0.060f32) *
+                          )
+                     else ( 0.0025f32*(1.0f32+K/0.94f32-1.0f32/0.012f32+(Mg-1.0f32)/0.060f32) *
                                 (1.0f32+K/8.1f32+1.0f32/0.022f32+(Mg-1.0f32)/0.068f32),
                             0.128f32*(1.0f32+K/0.64f32+1.0f32/0.0014f32+(Mg-1.0f32)/0.005f32) *
                                 (1.0f32+K/13.0f32-1.0f32/0.153f32+(Mg-1.0f32)/0.150f32)
-                          }
+                          )
   in
   let k20 = 10.0f32  in -- [s^-1]      
   let k02 = k20/Kd02 in -- [uM^-2 s^-1]
@@ -724,7 +724,7 @@ fun {f32, *[f32,EQUS]} cam( f32 timeinst, [f32,EQUS] initvalu,
   -- write to global variables for adjusting Ca buffering in EC coupling model
   let JCa = 1e-3f32*(2.0f32*CaMKIItot*(rcnCKtt2-rcnCKb2b) -
             2.0f32*(rcn02+rcn24+rcn02B+rcn24B+rcnCa4CaN+rcn02CaN+rcn24CaN)) -- [uM/msec]
-  in { JCa, finavalu}
+  in ( JCa, finavalu)
 
 ----------------------
 ----- Fin MODULE -----
@@ -822,24 +822,24 @@ fun *[f32,EQUS] master( f32 timeinst, [f32,EQUS] initvalu, [f32,PARS] parameter 
   let JCaDyad = 0.0f32 in
   let JCaSL   = 0.0f32 in
   let JCaCyt  = 0.0f32 in
-  loop ({JCaDyad, JCaSL, JCaCyt, finavalu}) = for ii < 3 do
-        let {initvalu_offset, parameter_offset, ind} = 
+  loop ((JCaDyad, JCaSL, JCaCyt, finavalu)) = for ii < 3 do
+        let (initvalu_offset, parameter_offset, ind) = 
             if      (ii == 0) then -- cam function for Dyad
-                { 46, 1, 35 } 
+                ( 46, 1, 35 ) 
             else if (ii == 1) then -- cam function for SL
-                { 61, 6, 36 } 
+                ( 61, 6, 36 ) 
             else -- if (ii == 2) then -- cam function for Cyt
-                { 76, 11, 37 }
+                ( 76, 11, 37 )
         in
         let inp_val = unsafe (initvalu[ind]*1e3f32) in
-        let {res_val, finavalu} = cam(  timeinst, initvalu, initvalu_offset, parameter,
+        let (res_val, finavalu) = cam(  timeinst, initvalu, initvalu_offset, parameter,
                                         parameter_offset, finavalu, inp_val )
         in
-        let { JCaDyad, JCaSL, JCaCyt } = 
-            if      (ii == 0) then { res_val, JCaSL,   JCaCyt }
-            else if (ii == 1) then { JCaDyad, res_val, JCaCyt }
-            else                   { JCaDyad, JCaSL,   res_val}
-        in  { JCaDyad, JCaSL, JCaCyt, finavalu}
+        let ( JCaDyad, JCaSL, JCaCyt ) = 
+            if      (ii == 0) then ( res_val, JCaSL,   JCaCyt )
+            else if (ii == 1) then ( JCaDyad, res_val, JCaCyt )
+            else                   ( JCaDyad, JCaSL,   res_val)
+        in  ( JCaDyad, JCaSL, JCaCyt, finavalu)
   in
   -- final adjustments
   let finavalu = fin(  initvalu, initvalu_offset_ecc, 46, 61, 76, 
@@ -856,7 +856,7 @@ fun *[f32,EQUS] master( f32 timeinst, [f32,EQUS] initvalu, [f32,PARS] parameter 
 ----- embedded_fehlberg_7_8 MODULE -----
 ----------------------------------------
 
-fun {*[f32,EQUS], *[f32,EQUS]} 
+fun (*[f32,EQUS], *[f32,EQUS]) 
 embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                         [f32,EQUS]  initvalu,
                         [f32,PARS]  parameter ) =
@@ -937,42 +937,42 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
   let finavalu_temp = replicate(13, replicate(EQUS, 0.0f32)) in
 
   loop (finavalu_temp) = for ii < 13 do
-    let { timeinst_temp, initvalu_temp } = 
+    let ( timeinst_temp, initvalu_temp ) = 
         if      (ii == 0) then 
-            { timeinst, initvalu }
+            ( timeinst, initvalu )
         else if (ii == 1) then
             let timeinst_temp = timeinst + h2_7 in
-            let initvalu_temp = map( fn f32 ({f32,f32} xy) => let {x,y} = xy in x + h2_7 * y
+            let initvalu_temp = map( fn f32 ((f32,f32) xy) => let (x,y) = xy in x + h2_7 * y
                                     , zip(initvalu,finavalu_temp[0]) ) in
-             { timeinst_temp, initvalu_temp }
+             ( timeinst_temp, initvalu_temp )
         else if (ii == 2) then
             let timeinst_temp = timeinst + a3*h in
-            let initvalu_temp = map( fn f32 ({f32,f32,f32} xy) => 
-                                        let {x,y1,y2} = xy in 
+            let initvalu_temp = map( fn f32 ((f32,f32,f32) xy) => 
+                                        let (x,y1,y2) = xy in 
                                         x + h * ( b31*y1 + b32*y2 )
                                    , zip(initvalu,finavalu_temp[0],finavalu_temp[1]) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
         else if (ii == 3) then
             let timeinst_temp = timeinst + a4*h in
-            let initvalu_temp = map( fn f32 ({f32,f32,f32} xy) => 
-                                        let {x,y1,y2} = xy in 
+            let initvalu_temp = map( fn f32 ((f32,f32,f32) xy) => 
+                                        let (x,y1,y2) = xy in 
                                         x + h * ( b41*y1 + b43*y2 )
                                    , zip(initvalu,finavalu_temp[0],finavalu_temp[2]) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
         else if (ii == 4) then
             let timeinst_temp = timeinst + a5*h in
             let initvalu_temp = map( fn f32 (int i) => 
                                         initvalu[i] + h * ( b51*finavalu_temp[0,i] + 
                                         b53*finavalu_temp[2,i] + b54*finavalu_temp[3,i])
                                    , iota(EQUS) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
         else if (ii == 5) then
             let timeinst_temp = timeinst + a6*h in
             let initvalu_temp = map( fn f32 (int i) => 
                                         initvalu[i] + h * ( b61*finavalu_temp[0,i] + 
                                         b64*finavalu_temp[3,i] + b65*finavalu_temp[4,i] )
                                    , iota(EQUS) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
         else if (ii == 6) then
               let timeinst_temp = timeinst + a7 * h in
               let initvalu_temp = map( fn f32 (int i) => 
@@ -980,7 +980,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                                         b74*finavalu_temp[3,i] + b75*finavalu_temp[4,i] + 
                                         b76*finavalu_temp[5,i] )
                                      , iota(EQUS) ) in
-              { timeinst_temp, initvalu_temp }
+              ( timeinst_temp, initvalu_temp )
         else if (ii == 7) then
               let timeinst_temp = timeinst + a8 * h in
               let initvalu_temp = map( fn f32 (int i) => 
@@ -988,7 +988,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                                         b85*finavalu_temp[4,i] + b86*finavalu_temp[5,i] + 
                                         b87*finavalu_temp[6,i] )
                                      , iota(EQUS) ) in
-              { timeinst_temp, initvalu_temp }
+              ( timeinst_temp, initvalu_temp )
         else if (ii == 8) then
             let timeinst_temp = timeinst + a9*h in
             let initvalu_temp = map( fn f32 (int i) => 
@@ -997,7 +997,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                                         b96*finavalu_temp[5,i] + b97*finavalu_temp[6,i] + 
                                         b98*finavalu_temp[7,i] )
                                    , iota(EQUS) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
         else if (ii == 9) then
             let timeinst_temp = timeinst + a10*h in
             let initvalu_temp = map( fn f32 (int i) => 
@@ -1006,7 +1006,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                                         b10_6*finavalu_temp[5,i] + b10_7*finavalu_temp[6,i] + 
                                         b10_8*finavalu_temp[7,i] + b10_9*finavalu_temp[8,i] )
                                    , iota(EQUS) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
         else if (ii == 10) then
             let timeinst_temp = timeinst + h in
             let initvalu_temp = map( fn f32 (int i) => 
@@ -1016,7 +1016,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                                         b11_8*finavalu_temp[7,i] + b11_9*finavalu_temp[8,i] + 
                                         b11_10 * finavalu_temp[9,i])
                                    , iota(EQUS) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
         else if (ii == 11) then
             let timeinst_temp = timeinst in
             let initvalu_temp = map( fn f32 (int i) => 
@@ -1025,7 +1025,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                                         b12_8*finavalu_temp[7,i] + b12_9*finavalu_temp[8,i] + 
                                         b12_10 * finavalu_temp[9,i] )
                                    , iota(EQUS) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
         else -- if (ii == 12) then
             let timeinst_temp = timeinst + h in
             let initvalu_temp = map( fn f32 (int i) => 
@@ -1035,7 +1035,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
                                         b13_8*finavalu_temp[7,i] + b13_9*finavalu_temp[8,i] + 
                                         b13_10*finavalu_temp[9,i] + finavalu_temp[11,i] )
                                    , iota(EQUS) ) in
-            { timeinst_temp, initvalu_temp }
+            ( timeinst_temp, initvalu_temp )
     in unsafe 
     let finavalu_temp[ii] = master( timeinst_temp, initvalu_temp, parameter ) in
     finavalu_temp
@@ -1052,7 +1052,7 @@ embedded_fehlberg_7_8(  f32 timeinst, f32 h,
   let error = map( fn f32 (int i) =>
                         fabs(err_factor * (finavalu_temp[0,i] + finavalu_temp[10,i] - finavalu_temp[11,i] - finavalu_temp[12,i]))
                  , iota(EQUS) )
-  in { finavalu, error }
+  in ( finavalu, error )
 
 
 -------------------------
@@ -1066,7 +1066,7 @@ fun int ATTEMPTS()         = 12
 fun f32 max(f32 x, f32 y) = if ( x < y ) then y else x
 fun f32 min(f32 x, f32 y) = if ( x < y ) then x else y
 
-fun {bool,[f32,EQUS]} 
+fun (bool,[f32,EQUS]) 
 solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
   let err_exponent  = 1.0f32 / 7.0f32 in
   let last_interval = 0.0f32 in
@@ -1076,17 +1076,17 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
   let tolerance = 10.0f32 / f32(xmax-xmin) in
   let y_km1  = y0 in -- copy(y0)
 
-  if (xmax < xmin || h <= 0.0f32) then { False, y_km1 }
-  else if ( xmax == xmin ) then { True, y_km1 }
+  if (xmax < xmin || h <= 0.0f32) then ( False, y_km1 )
+  else if ( xmax == xmin ) then ( True, y_km1 )
   else 
-  let {h, last_interval} = if (h > f32(xmax - xmin) )
-                           then { f32(xmax - xmin), 1.0f32 }
-                           else { h, last_interval }
+  let (h, last_interval) = if (h > f32(xmax - xmin) )
+                           then ( f32(xmax - xmin), 1.0f32 )
+                           else ( h, last_interval )
   in
   -- initialize return and loop-variant params
   let failed = False in
   let km1    = 0     in
-  loop({km1, failed, y_km1}) = while ( (!failed) && (km1 < xmax) ) do -- for km1 < xmax do
+  loop((km1, failed, y_km1)) = while ( (!failed) && (km1 < xmax) ) do -- for km1 < xmax do
     -- reinitialize variables
     let h          = h_init in
     let scale_fina = 1.0f32 in
@@ -1095,14 +1095,14 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
     -- make attempts to minimize error
     let breakLoop  = False  in
     let j = 0 in
-    loop({j,h,y_k,breakLoop,scale_fina}) = while ( (!breakLoop) && (j < ATTEMPTS()) ) do
+    loop((j,h,y_k,breakLoop,scale_fina)) = while ( (!breakLoop) && (j < ATTEMPTS()) ) do
       -- REINITIALIZE ALL VARIABLES
       let error   = 0 in
       let outside = 0 in
       let scale_min = MAX_SCALE_FACTOR() in
 
       -- EVALUATE ALL EQUATIONS
-      let {y_k, err} = reshape( (EQUS), embedded_fehlberg_7_8( f32(km1), h, y_km1, params) ) in
+      let (y_k, err) = reshape( (EQUS), embedded_fehlberg_7_8( f32(km1), h, y_km1, params) ) in
       
       -- IF THERE WAS NO ERROR FOR ANY OF EQUATIONS, SET SCALE AND LEAVE THE LOOP
       let errs = map( fn bool (f32 e) => if e > 0.0f32 then True else False, err ) in
@@ -1113,15 +1113,15 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
 --                                    else {False, scale_fina}
 
       if (!error)
-      then {j+1, h, y_k, True, MAX_SCALE_FACTOR()}
+      then (j+1, h, y_k, True, MAX_SCALE_FACTOR())
       else 
       -- FIGURE OUT SCALE AS THE MINIMUM OF COMPONENT SCALES
       let yy = map( fn f32 (f32 x) =>
                         if (x == 0.0f32) then tolerance else fabs(x)
                   , y_km1 )
       in
-      let scale = map ( fn f32 ({f32,f32} yy_erri) =>
-                            let {yyi, erri} = yy_erri in
+      let scale = map ( fn f32 ((f32,f32) yy_erri) =>
+                            let (yyi, erri) = yy_erri in
                             0.8f32 * pow( tolerance * yyi / erri , err_exponent )
                       , zip(yy,err) )
       in
@@ -1129,8 +1129,8 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
       let scale_fina = min( max(scale_min,MIN_SCALE_FACTOR()), MAX_SCALE_FACTOR())
       in
       -- IF WITHIN TOLERANCE, FINISH ATTEMPTS...
-      let tmps =map ( fn bool ({f32,f32} err_yyi) =>
-                        let {erri, yyi} = err_yyi in
+      let tmps =map ( fn bool ((f32,f32) err_yyi) =>
+                        let (erri, yyi) = err_yyi in
                         erri <= ( tolerance * yyi )
                     , zip(err, yy) ) in
       let breakLoop = reduce (&&, True, tmps) in
@@ -1148,9 +1148,9 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
       let h = if ( f32(km1) + h > f32(xmax) ) then f32(xmax - km1)
               else if ( f32(km1) + h + 0.5f32 * h > f32(xmax) )
                    then 0.5f32 * h else h
-      in {j+1, h, y_k, breakLoop, scale_fina}
-    in { km1+1, !breakLoop, y_k }
-  in {!failed,y_km1}
+      in (j+1, h, y_k, breakLoop, scale_fina)
+    in ( km1+1, !breakLoop, y_k )
+  in (!failed,y_km1)
 
 -----------------------
 ----- MAIN MODULE -----
@@ -1159,30 +1159,30 @@ solver(int xmax, [f32,PARS] params, [f32,EQUS] y0) =
 fun int EQUATIONS () = 91
 fun int PARAMETERS() = 16
 
-fun {bool, [[f32,91],workload]}
+fun (bool, [[f32,91],workload])
 main(int repeat, f32 eps, int workload, int xmax, [f32,91] y0, [f32,16] params) =
-  let {oks, y_res} = unzip (
-    map ( fn {bool,[f32,91]} (int i) =>
+  let (oks, y_res) = unzip (
+    map ( fn (bool,[f32,91]) (int i) =>
             let add_fact = f32(i % repeat)*eps in
             let y_row = map(+add_fact, y0) in
             solver(xmax, params, y_row)
         , iota(workload) ) )
   in
-  { reduce(&&, True, oks), y_res }
+  ( reduce(&&, True, oks), y_res )
 
 
 
-fun {[f32,91], [f32,91]}
+fun ([f32,91], [f32,91])
 main_EMBEDDED(int xmax, [[f32,91],workload] y, [[f32,16],workload] params) =
     embedded_fehlberg_7_8( 0.0f32, 1.0f32, y[0], params[0])
 
-fun {f32, [f32,91]}
+fun (f32, [f32,91])
 main_ECC_CAM(int xmax, [[f32,91],workload] y, [[f32,16],workload] params) =
     let finavalu = replicate(91, 0.0f32) in
     let finavalu = ecc( 0.0f32, y[0], 0, params[0], 0, finavalu ) in
-    let {res_val, finavalu} = cam(  0.0f32, y[0], 46, params[0],  
+    let (res_val, finavalu) = cam(  0.0f32, y[0], 46, params[0],  
                                     1, finavalu, y[0, 35]*1e3f32 )
-    in {res_val, finavalu}
+    in (res_val, finavalu)
 
 fun [f32,91]
 main_MASTER(int xmax, [[f32,91],workload] y, [[f32,16],workload] params) =

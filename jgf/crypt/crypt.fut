@@ -2,7 +2,7 @@
 -- IDEATest.jomp from the JGF benchmark suite.  Comments too.
 --
 -- ==
--- input @ crypt-data/small.in
+-- compiled input @ crypt-data/small.in
 -- output @ crypt-data/small.out
 
 fun u16 mk16b(u8 upper, u8 lower) =
@@ -13,7 +13,7 @@ fun [u8,8] cipher_idea_block([u16,52] key, [u8,8] block) =
   let x2 = mk16b(block[3], block[2]) in
   let x3 = mk16b(block[5], block[4]) in
   let x4 = mk16b(block[7], block[6]) in
-  loop ({x1,x2,x3,x4}) = for i < 8 do
+  loop ((x1,x2,x3,x4)) = for i < 8 do
     let ik = i * 6 in
     -- 1) Multiply (modulo 0x10001), 1st text sub-block with 1st key
     -- sub-block.
@@ -50,7 +50,7 @@ fun [u8,8] cipher_idea_block([u16,52] key, [u8,8] block) =
     -- 12) XOR results from steps 3 and 9. (Out of order).
     let x2 = x3 ^ t1 in
     let x3 = t2 in -- Results of x2 and x3 now swapped.
-    {x1,x2,x3,x4} in
+    (x1,x2,x3,x4) in
   let ik = 6 * 8 in
   -- Final output transform (4 steps).
 
@@ -79,6 +79,6 @@ fun [u8,n] cipher_idea([u16,52] key, [u8,n] text) =
   let blocks = reshape((n//8,8), text) in
   reshape((n), map(cipher_idea_block(key), blocks))
 
-fun {[u8,n], [u8,n]} main([u16,52] Z, [u16,52] DK, [u8,n] text) =
+fun ([u8,n], [u8,n]) main([u16,52] Z, [u16,52] DK, [u8,n] text) =
   let text_encrypted = cipher_idea(Z, text) in
-  {text_encrypted, cipher_idea(DK, text_encrypted)}
+  (text_encrypted, cipher_idea(DK, text_encrypted))

@@ -14,41 +14,43 @@
 
 default(f32)
 
-fun f32 dot({f32,f32} c) =
-  let {r, i} = c in
+type complex = (f32, f32)
+
+fun f32 dot(complex c) =
+  let (r, i) = c in
   r * r + i * i
 
-fun {f32,f32} multComplex({f32,f32} x, {f32,f32} y) =
-  let {a, b} = x in
-  let {c, d} = y in
-  {a*c - b * d,
-   a*d + b * c}
+fun complex multComplex(complex x, complex y) =
+  let (a, b) = x in
+  let (c, d) = y in
+  (a*c - b * d,
+   a*d + b * c)
 
-fun {f32,f32} addComplex({f32,f32} x, {f32,f32} y) =
-  let {a, b} = x in
-  let {c, d} = y in
-  {a + c,
-   b + d}
+fun complex addComplex(complex x, complex y) =
+  let (a, b) = x in
+  let (c, d) = y in
+  (a + c,
+   b + d)
 
-fun int divergence(int depth, {f32,f32} c0) =
-  loop ({c, i} = {c0, 0}) = while i < depth && dot(c) < 4.0 do
-    {addComplex(c0, multComplex(c, c)),
-     i + 1} in
+fun int divergence(int depth, complex c0) =
+  loop ((c, i) = (c0, 0)) = while i < depth && dot(c) < 4.0 do
+    (addComplex(c0, multComplex(c, c)),
+     i + 1) in
   i
 
-fun [[int,screenX],screenY] mandelbrot(int screenX, int screenY, int depth, {f32,f32,f32,f32} view) =
-  let {xmin, ymin, xmax, ymax} = view in
+fun [[int,screenX],screenY] mandelbrot(int screenX, int screenY, int depth, (f32,f32,f32,f32) view) =
+  let (xmin, ymin, xmax, ymax) = view in
   let sizex = xmax - xmin in
   let sizey = ymax - ymin in
   map(fn [int,screenX] (int y) =>
         map (fn int (int x) =>
-               let c0 = {xmin + (f32(x) * sizex) / f32(screenX),
-                         ymin + (f32(y) * sizey) / f32(screenY)} in
+               let c0 = (xmin + (f32(x) * sizex) / f32(screenX),
+                         ymin + (f32(y) * sizey) / f32(screenY)) in
                divergence(depth, c0)
             , iota(screenX)),
         iota(screenY))
 
-fun [[int,screenX],screenY] main(int screenX, int screenY, int depth, {f32,f32,f32,f32} view) =
+fun [[int,screenX],screenY] main(int screenX, int screenY, int depth, (f32,f32,f32,f32) view) =
   let escapes = mandelbrot(screenX, screenY, depth, view) in
   map(fn [int,screenX] ([int] row) =>
         map(escapeToColour(depth), row),

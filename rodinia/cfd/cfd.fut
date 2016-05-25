@@ -37,12 +37,12 @@ fun int  VAR_DENSITY_ENERGY() = VAR_MOMENTUM() + 3 --VAR_MOMENTUM+NDIM
 fun int  NVAR() = VAR_DENSITY_ENERGY() + 1
 
 -- short functions
-fun {f32,f32,f32} compute_velocity(f32 density, {f32,f32,f32} momentum) =
-    let {momentum_x, momentum_y, momentum_z} = momentum
-    in  {momentum_x / density, momentum_y / density, momentum_z / density}
+fun (f32,f32,f32) compute_velocity(f32 density, (f32,f32,f32) momentum) =
+    let (momentum_x, momentum_y, momentum_z) = momentum
+    in  (momentum_x / density, momentum_y / density, momentum_z / density)
 
-fun f32 compute_speed_sqd({f32,f32,f32} velocity) = 
-    let {velocity_x, velocity_y, velocity_z} = velocity in
+fun f32 compute_speed_sqd((f32,f32,f32) velocity) = 
+    let (velocity_x, velocity_y, velocity_z) = velocity in
     velocity_x*velocity_x + velocity_y*velocity_y + velocity_z*velocity_z
 
 fun f32 compute_pressure(f32 density, f32 density_energy, f32 speed_sqd) = 
@@ -56,11 +56,11 @@ fun [[f32,nelr],5] initialize_variables(int nelr, [f32,5] ff_variable) = --[floa
     map(fn [f32,nelr] (f32 x) => replicate(nelr, x), ff_variable)
 
 -- 
-fun {{f32,f32,f32},{f32,f32,f32},{f32,f32,f32},{f32,f32,f32}} 
-compute_flux_contribution( f32 density,  {f32,f32,f32} momentum, f32 density_energy, 
-                           f32 pressure, {f32,f32,f32} velocity ) =
-    let {momentum_x, momentum_y, momentum_z} = momentum in
-    let {velocity_x, velocity_y, velocity_z} = velocity in
+fun ((f32,f32,f32),(f32,f32,f32),(f32,f32,f32),(f32,f32,f32)) 
+compute_flux_contribution( f32 density,  (f32,f32,f32) momentum, f32 density_energy, 
+                           f32 pressure, (f32,f32,f32) velocity ) =
+    let (momentum_x, momentum_y, momentum_z) = momentum in
+    let (velocity_x, velocity_y, velocity_z) = velocity in
 
     let fc_momentum_x_x = velocity_x*momentum_x + pressure in
     let fc_momentum_x_y = velocity_x*momentum_y in
@@ -79,11 +79,11 @@ compute_flux_contribution( f32 density,  {f32,f32,f32} momentum, f32 density_ene
     let fc_density_energy_y = velocity_y*de_p in
     let fc_density_energy_z = velocity_z*de_p in
 
-    { {fc_momentum_x_x,fc_momentum_x_y,fc_momentum_x_z}
-    , {fc_momentum_y_x,fc_momentum_y_y,fc_momentum_y_z}
-    , {fc_momentum_z_x,fc_momentum_z_y,fc_momentum_z_z}
-    , {fc_density_energy_x, fc_density_energy_y, fc_density_energy_z}
-    }
+    ( (fc_momentum_x_x,fc_momentum_x_y,fc_momentum_x_z)
+    , (fc_momentum_y_x,fc_momentum_y_y,fc_momentum_y_z)
+    , (fc_momentum_z_x,fc_momentum_z_y,fc_momentum_z_z)
+    , (fc_density_energy_x, fc_density_energy_y, fc_density_energy_z)
+    )
 
 --
 fun [f32,nelr] compute_step_factor([[f32,nelr],5] variables, [f32,nelr] areas) = -- 5 == NVAR
@@ -92,7 +92,7 @@ fun [f32,nelr] compute_step_factor([[f32,nelr],5] variables, [f32,nelr] areas) =
             let momentum_x = variables[VAR_MOMENTUM()+0, i] in
             let momentum_y = variables[VAR_MOMENTUM()+1, i] in
             let momentum_z = variables[VAR_MOMENTUM()+2, i] in
-            let momentum   = { momentum_x, momentum_y, momentum_z } in
+            let momentum   = ( momentum_x, momentum_y, momentum_z ) in
             let density_energy = variables[VAR_DENSITY_ENERGY(), i] in
             let velocity   = compute_velocity( density, momentum )  in
             let speed_sqd  = compute_speed_sqd(velocity)    in
@@ -107,19 +107,19 @@ fun [[f32,nel],5]
                 ,   [[[f32,nel],NNB],NDIM] normals
                 ,   [[f32,nel],5]          variables   
                 ,   [f32,5]                ff_variable
-                ,   {f32,f32,f32}        ff_flux_contribution_momentum_x
-                ,   {f32,f32,f32}        ff_flux_contribution_momentum_y
-                ,   {f32,f32,f32}        ff_flux_contribution_momentum_z
-                ,   {f32,f32,f32}        ff_flux_contribution_density_energy
+                ,   (f32,f32,f32)        ff_flux_contribution_momentum_x
+                ,   (f32,f32,f32)        ff_flux_contribution_momentum_y
+                ,   (f32,f32,f32)        ff_flux_contribution_momentum_z
+                ,   (f32,f32,f32)        ff_flux_contribution_density_energy
                 ) =
-    let { ff_flux_contribution_momentum_x_x, ff_flux_contribution_momentum_x_y, 
-          ff_flux_contribution_momentum_x_z } = ff_flux_contribution_momentum_x in
-    let { ff_flux_contribution_momentum_y_x, ff_flux_contribution_momentum_y_y,
-          ff_flux_contribution_momentum_y_z } = ff_flux_contribution_momentum_y in
-    let { ff_flux_contribution_momentum_z_x, ff_flux_contribution_momentum_z_y,
-          ff_flux_contribution_momentum_z_z } = ff_flux_contribution_momentum_z in
-    let { ff_flux_contribution_density_energy_x, ff_flux_contribution_density_energy_y,
-          ff_flux_contribution_density_energy_z } = ff_flux_contribution_density_energy in
+    let ( ff_flux_contribution_momentum_x_x, ff_flux_contribution_momentum_x_y, 
+          ff_flux_contribution_momentum_x_z ) = ff_flux_contribution_momentum_x in
+    let ( ff_flux_contribution_momentum_y_x, ff_flux_contribution_momentum_y_y,
+          ff_flux_contribution_momentum_y_z ) = ff_flux_contribution_momentum_y in
+    let ( ff_flux_contribution_momentum_z_x, ff_flux_contribution_momentum_z_y,
+          ff_flux_contribution_momentum_z_z ) = ff_flux_contribution_momentum_z in
+    let ( ff_flux_contribution_density_energy_x, ff_flux_contribution_density_energy_y,
+          ff_flux_contribution_density_energy_z ) = ff_flux_contribution_density_energy in
     let smoothing_coefficient = 0.2 in
     transpose( 
       map(fn [f32,5] (int i) =>
@@ -127,34 +127,34 @@ fun [[f32,nel],5]
             let momentum_i_x = variables[VAR_MOMENTUM()+0, i] in
             let momentum_i_y = variables[VAR_MOMENTUM()+1, i] in
             let momentum_i_z = variables[VAR_MOMENTUM()+2, i] in
-            let momentum_i   = {momentum_i_x, momentum_i_y, momentum_i_z} in
+            let momentum_i   = (momentum_i_x, momentum_i_y, momentum_i_z) in
             let density_energy_i = variables[VAR_DENSITY_ENERGY(), i]     in
             let velocity_i   = compute_velocity(density_i, momentum_i)    in
             let speed_sqd_i  = compute_speed_sqd(velocity_i)              in
             let speed_i      = sqrt32(speed_sqd_i) in
             let pressure_i   = compute_pressure(density_i, density_energy_i, speed_sqd_i) in
             let speed_of_sound_i = compute_speed_of_sound(density_i, pressure_i) in
-            let { flux_contribution_i_momentum_x, flux_contribution_i_momentum_y, 
-                  flux_contribution_i_momentum_z,  flux_contribution_i_density_energy } = 
+            let ( flux_contribution_i_momentum_x, flux_contribution_i_momentum_y, 
+                  flux_contribution_i_momentum_z,  flux_contribution_i_density_energy ) = 
                 compute_flux_contribution(density_i, momentum_i, density_energy_i, pressure_i, velocity_i)
             in
-            let { flux_contribution_i_momentum_x_x, flux_contribution_i_momentum_x_y, 
-                  flux_contribution_i_momentum_x_z } = flux_contribution_i_momentum_x in
-            let { flux_contribution_i_momentum_y_x, flux_contribution_i_momentum_y_y, 
-                  flux_contribution_i_momentum_y_z } = flux_contribution_i_momentum_y in
-            let { flux_contribution_i_momentum_z_x, flux_contribution_i_momentum_z_y, 
-                  flux_contribution_i_momentum_z_z } = flux_contribution_i_momentum_z in
-            let { flux_contribution_i_density_energy_x, flux_contribution_i_density_energy_y,
-                  flux_contribution_i_density_energy_z } = flux_contribution_i_density_energy in
+            let ( flux_contribution_i_momentum_x_x, flux_contribution_i_momentum_x_y, 
+                  flux_contribution_i_momentum_x_z ) = flux_contribution_i_momentum_x in
+            let ( flux_contribution_i_momentum_y_x, flux_contribution_i_momentum_y_y, 
+                  flux_contribution_i_momentum_y_z ) = flux_contribution_i_momentum_y in
+            let ( flux_contribution_i_momentum_z_x, flux_contribution_i_momentum_z_y, 
+                  flux_contribution_i_momentum_z_z ) = flux_contribution_i_momentum_z in
+            let ( flux_contribution_i_density_energy_x, flux_contribution_i_density_energy_y,
+                  flux_contribution_i_density_energy_z ) = flux_contribution_i_density_energy in
             
             let flux_i_density = 0.0 in
-            let flux_i_momentum= {0.0, 0.0, 0.0} in
-            let {flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z} = flux_i_momentum in
+            let flux_i_momentum= (0.0, 0.0, 0.0) in
+            let (flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) = flux_i_momentum in
             let flux_i_density_energy = 0.0 in
-            let loop_res = {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z} in
+            let loop_res = (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) in
             loop(loop_res) =
               for j < NNB do
-                let {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z} = loop_res in
+                let (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) = loop_res in
                 let nb = elements_surrounding_elements[j, i] in
                 let normal_x = normals[0, j, i] in
                 let normal_y = normals[1, j, i] in
@@ -165,24 +165,24 @@ fun [[f32,nel],5]
 		             let momentum_nb_x = unsafe variables[VAR_MOMENTUM()+0, nb] in
                      let momentum_nb_y = unsafe variables[VAR_MOMENTUM()+1, nb] in
                      let momentum_nb_z = unsafe variables[VAR_MOMENTUM()+2, nb] in
-                     let momentum_nb   = {momentum_nb_x, momentum_nb_y, momentum_nb_z} in
+                     let momentum_nb   = (momentum_nb_x, momentum_nb_y, momentum_nb_z) in
                      let density_energy_nb = unsafe variables[VAR_DENSITY_ENERGY(), nb] in
                      let velocity_nb = compute_velocity(density_nb, momentum_nb) in
                      let speed_sqd_nb= compute_speed_sqd(velocity_nb) in
                      let pressure_nb = compute_pressure(density_nb, density_energy_nb, speed_sqd_nb) in
                      let speed_of_sound_nb = compute_speed_of_sound(density_nb, pressure_nb) in
-                     let { flux_contribution_nb_momentum_x, flux_contribution_nb_momentum_y 
-                         , flux_contribution_nb_momentum_z, flux_contribution_nb_density_energy } =
+                     let ( flux_contribution_nb_momentum_x, flux_contribution_nb_momentum_y 
+                         , flux_contribution_nb_momentum_z, flux_contribution_nb_density_energy ) =
                          compute_flux_contribution( density_nb, momentum_nb, density_energy_nb, pressure_nb, velocity_nb ) in
 
-                     let { flux_contribution_nb_density_energy_x, flux_contribution_nb_density_energy_y, 
-                           flux_contribution_nb_density_energy_z } = flux_contribution_nb_density_energy in
-                     let { flux_contribution_nb_momentum_x_x, flux_contribution_nb_momentum_x_y,
-                           flux_contribution_nb_momentum_x_z } = flux_contribution_nb_momentum_x in
-                     let { flux_contribution_nb_momentum_y_x, flux_contribution_nb_momentum_y_y,
-                           flux_contribution_nb_momentum_y_z } = flux_contribution_nb_momentum_y in
-                     let { flux_contribution_nb_momentum_z_x, flux_contribution_nb_momentum_z_y,
-                           flux_contribution_nb_momentum_z_z } = flux_contribution_nb_momentum_z in
+                     let ( flux_contribution_nb_density_energy_x, flux_contribution_nb_density_energy_y, 
+                           flux_contribution_nb_density_energy_z ) = flux_contribution_nb_density_energy in
+                     let ( flux_contribution_nb_momentum_x_x, flux_contribution_nb_momentum_x_y,
+                           flux_contribution_nb_momentum_x_z ) = flux_contribution_nb_momentum_x in
+                     let ( flux_contribution_nb_momentum_y_x, flux_contribution_nb_momentum_y_y,
+                           flux_contribution_nb_momentum_y_z ) = flux_contribution_nb_momentum_y in
+                     let ( flux_contribution_nb_momentum_z_x, flux_contribution_nb_momentum_z_y,
+                           flux_contribution_nb_momentum_z_z ) = flux_contribution_nb_momentum_z in
 
                      -- artificial viscosity
                      let factor = -normal_len*smoothing_coefficient*0.5*
@@ -227,7 +227,7 @@ fun [[f32,nel],5]
                              factor*(flux_contribution_nb_momentum_y_z+flux_contribution_i_momentum_y_z) in
                      let flux_i_momentum_z = flux_i_momentum_z + 
                              factor*(flux_contribution_nb_momentum_z_z+flux_contribution_i_momentum_z_z) in
-                     {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z}
+                     (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z)
 
                 else if(nb == -2)
                 then let factor = 0.5*normal_x in
@@ -262,17 +262,17 @@ fun [[f32,nel],5]
                              factor*(ff_flux_contribution_momentum_y_z + flux_contribution_i_momentum_y_z) in
                      let flux_i_momentum_z = flux_i_momentum_z + 
                              factor*(ff_flux_contribution_momentum_z_z + flux_contribution_i_momentum_z_z) in
-                     {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z}
+                     (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z)
 
                 else if (nb == -1)
                 then let flux_i_momentum_x = flux_i_momentum_x + normal_x*pressure_i in
                      let flux_i_momentum_y = flux_i_momentum_y + normal_y*pressure_i in
                      let flux_i_momentum_z = flux_i_momentum_z + normal_z*pressure_i in
-                     {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z}
+                     (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z)
                 else -- not reachable
-                     {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z}
+                     (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z)
             in
-            let {flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z} = loop_res
+            let (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) = loop_res
             in  [flux_i_density, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z, flux_i_density_energy]
             --fluxes[i + VAR_DENSITY*nelr] = flux_i_density;
             --fluxes[i + (VAR_MOMENTUM+0)*nelr] = flux_i_momentum.x;
@@ -315,11 +315,11 @@ main(  [f32,nel]       areas,
     let ff_pressure = 1.0f32 in
     let ff_speed_of_sound = sqrt32( GAMMA()*ff_pressure / var_of_density ) in
     let ff_speed = ff_mach() * ff_speed_of_sound in
-    let { ff_velocity_x, ff_velocity_y, ff_velocity_z } = 
-            { ff_speed * cos32(angle_of_attack) -- .x   ... cos(angle_of_attack()) = 1
+    let ( ff_velocity_x, ff_velocity_y, ff_velocity_z ) = 
+            ( ff_speed * cos32(angle_of_attack) -- .x   ... cos(angle_of_attack()) = 1
             , ff_speed * sin32(angle_of_attack) -- .y   ... sin(angle_of_attack()) = 0
-            , 0.0f32 } in                       -- .z
-    let ff_velocity = { ff_velocity_x, ff_velocity_y, ff_velocity_z }
+            , 0.0f32 ) in                       -- .z
+    let ff_velocity = ( ff_velocity_x, ff_velocity_y, ff_velocity_z )
     in
     let ff_variable = [ var_of_density 
                       , var_of_density * ff_velocity_x 
@@ -330,13 +330,13 @@ main(  [f32,nel]       areas,
                       ]
     in
     let ff_momentum = 
-            { ff_variable[VAR_MOMENTUM()+0]
+            ( ff_variable[VAR_MOMENTUM()+0]
             , ff_variable[VAR_MOMENTUM()+1]
             , ff_variable[VAR_MOMENTUM()+2]
-            } 
+            ) 
     in
-    let {   ff_flux_contribution_momentum_x, ff_flux_contribution_momentum_y, 
-            ff_flux_contribution_momentum_z, ff_flux_contribution_density_energy    } =
+    let (   ff_flux_contribution_momentum_x, ff_flux_contribution_momentum_y, 
+            ff_flux_contribution_momentum_z, ff_flux_contribution_density_energy    ) =
         compute_flux_contribution(  ff_variable[VAR_DENSITY()],        ff_momentum, 
                                     ff_variable[VAR_DENSITY_ENERGY()], ff_pressure, ff_velocity    ) 
     in

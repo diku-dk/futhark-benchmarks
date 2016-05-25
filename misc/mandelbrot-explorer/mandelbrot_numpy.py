@@ -1,5 +1,4 @@
 import numpy as np
-import pylab
 
 # From
 # https://www.ibm.com/developerworks/community/blogs/jfp/entry/How_To_Compute_Mandelbrodt_Set_Quickly

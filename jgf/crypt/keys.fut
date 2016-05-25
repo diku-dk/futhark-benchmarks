@@ -13,7 +13,7 @@ fun i32 inv(i16 a) =
   let b = 0x10001 in
   let u = 0 in
   let v = 1 in
-  loop ({a,b,u,v}) = while a > 0i32 do
+  loop ((a,b,u,v)) = while a > 0i32 do
     let q = i32((i64(b)&0xFFFFFFFFi64) // (i64(a)&0xFFFFi64)) in
     let r = i32((i64(b)&0xFFFFFFFFi64) %% (i64(a)&0xFFFFi64)) in
 
@@ -23,7 +23,7 @@ fun i32 inv(i16 a) =
     let t = v in
     let v = u - q * v in
     let u = t in
-    {a,b,u,v} in
+    (a,b,u,v) in
 
   (if u < 0 then u + 0x10001 else u) & 0xFFFF
 
@@ -91,6 +91,6 @@ fun [i16,52] decryptionKey([i16,52] Z) =
   let DK[jb-5] = t1 in
   DK
 
-fun {[i16,52],[i16,52]} main([i16,8] userkey) =
+fun ([i16,52],[i16,52]) main([i16,8] userkey) =
   let Z = encryptionKey(userkey) in
-  {Z, decryptionKey(Z)}
+  (Z, decryptionKey(Z))
