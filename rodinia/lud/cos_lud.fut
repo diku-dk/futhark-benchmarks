@@ -224,7 +224,9 @@ lud_internal( int d, [[[[f32,b],b],m],m] mat ) =
 ---- Main Driver:
 --------------------------------------------
 fun [[f32,n],n]
-main(int b, [[f32,n],n] mat) =
+--main(int b, [[f32,n],n] mat) =
+main([[f32,n],n] mat) =
+    let b = 16 in
     let num_blocks = n / b in
     -------------------------------------------------
     ---- transform matrix in [n/b,n/b,b,b] block ----
