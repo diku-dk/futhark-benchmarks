@@ -48,25 +48,25 @@ fun bool inside(i32 i, i32 j, i32 g) =
 fun bool in_outside_corner(i32 i, i32 j, i32 g) =
   (i == 0 || i == g - 1) && (j == 0 || j == g - 1)
   
-fun {i32, i32, i32, i32} corner_index_neighbors(i32 i, i32 j, i32 g) =
+fun (i32, i32, i32, i32) corner_index_neighbors(i32 i, i32 j, i32 g) =
   if i == 0 && j == 0
-  then {1, 0, 0, 1}
+  then (1, 0, 0, 1)
   else if i == 0 && j == g - 1
-  then {1, g - 1, 0, g - 2}
+  then (1, g - 1, 0, g - 2)
   else if i == g - 1 && j == 0
-  then {g - 2, 0, g - 1, 1}
-  else {g - 2, g - 1, g - 1, g - 2} -- if i == g - 1 && j == g - 1
+  then (g - 2, 0, g - 1, 1)
+  else (g - 2, g - 1, g - 1, g - 2) -- if i == g - 1 && j == g - 1
 
-fun {i32, i32, f32} outermost_inner_index(i32 i, i32 j, i32 g, i32 b) =
+fun (i32, i32, f32) outermost_inner_index(i32 i, i32 j, i32 g, i32 b) =
   if i == 0
-  then {1, j, if b == 1 then -1.0f32 else 1.0f32}
+  then (1, j, if b == 1 then -1.0f32 else 1.0f32)
   else if i == g - 1
-  then {g - 2, j, if b == 1 then -1.0f32 else 1.0f32}
+  then (g - 2, j, if b == 1 then -1.0f32 else 1.0f32)
   else if j == 0
-  then {i, 1, if b == 2 then -1.0f32 else 1.0f32}
+  then (i, 1, if b == 2 then -1.0f32 else 1.0f32)
   else if j == g - 1
-  then {i, g - 2, if b == 2 then -1.0f32 else 1.0f32}
-  else {0, 0, 0.0f32} -- This is not supposed to happen.
+  then (i, g - 2, if b == 2 then -1.0f32 else 1.0f32)
+  else (0, 0, 0.0f32) -- This is not supposed to happen.
 
 
 ------------------------------------------------------------
@@ -115,7 +115,7 @@ fun f32
                   f32 c,
                   i32 b) =
   if in_outside_corner(i, j, g)
-  then let {i1, j1, i2, j2} = corner_index_neighbors(i, j, g)
+  then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (lin_solve_outer_base(i1, j1, S0, S1, a, c, b)
                     + lin_solve_outer_base(i2, j2, S0, S1, a, c, b))
   else lin_solve_outer_base(i, j, S0, S1, a, c, b)
@@ -128,7 +128,7 @@ fun f32
                        f32 a,
                        f32 c,
                        i32 b) =
-  let {i1, j1, f} = outermost_inner_index(i, j, g, b)
+  let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * lin_solve_inner(i1, j1, S0, S1, a, c)
 
 
@@ -205,7 +205,7 @@ fun f32
                f32 time_step0,
                i32 b) =
   if in_outside_corner(i, j, g)
-  then let {i1, j1, i2, j2} = corner_index_neighbors(i, j, g)
+  then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (advect_outer_base(i1, j1, S0, U, V, time_step0, b)
                     + advect_outer_base(i2, j2, S0, U, V, time_step0, b))
   else advect_outer_base(i, j, S0, U, V, time_step0, b)
@@ -218,7 +218,7 @@ fun f32
                     [[f32, g], g] V,
                     f32 time_step0,
                     i32 b) =
-  let {i1, j1, f} = outermost_inner_index(i, j, g, b)
+  let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * advect_inner(i1, j1, S0, U, V, time_step0)
 
 
@@ -226,8 +226,8 @@ fun f32
 -- project.
 ------------------------------------------------------------
 
-fun {*[[f32, g], g],
-     *[[f32, g], g]}
+fun (*[[f32, g], g],
+     *[[f32, g], g])
   project(i32 n_solver_steps,
           [[f32, g], g] U0,
           [[f32, g], g] V0) =
@@ -235,7 +235,7 @@ fun {*[[f32, g], g],
   let P0 = lin_solve(n_solver_steps, Div0, 0, 1.0f32, 4.0f32) in
   let U1 = project_bottom(P0, U0, 1, 1, 0, -1, 0) in
   let V1 = project_bottom(P0, V0, 2, 0, 1, 0, -1) in
-  {U1, V1}
+  (U1, V1)
 
 fun [[f32, g], g]
   project_top([[f32, g], g] U0,
@@ -266,7 +266,7 @@ fun f32
                     [[f32, g], g] U0,
                     [[f32, g], g] V0) =
   if in_outside_corner(i, j, g)
-  then let {i1, j1, i2, j2} = corner_index_neighbors(i, j, g)
+  then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (project_top_outer_base(i1, j1, U0, V0)
                     + project_top_outer_base(i2, j2, U0, V0))
   else project_top_outer_base(i, j, U0, V0)
@@ -276,7 +276,7 @@ fun f32
                          i32 j,
                          [[f32, g], g] U0,
                          [[f32, g], g] V0) =
-  let {i1, j1, f} = outermost_inner_index(i, j, g, 0)
+  let (i1, j1, f) = outermost_inner_index(i, j, g, 0)
   in project_top_inner(i1, j1, U0, V0)
 
 fun *[[f32, g], g]
@@ -321,7 +321,7 @@ fun f32
                        i32 j1d,
                        i32 b) =
   if in_outside_corner(i, j, g)
-  then let {i1, j1, i2, j2} = corner_index_neighbors(i, j, g)
+  then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (project_bottom_outer_base(i1, j1, P0, S0, i0d, j0d, i1d, j1d, b)
                     + project_bottom_outer_base(i2, j2, P0, S0, i0d, j0d, i1d, j1d, b))
   else project_bottom_outer_base(i, j, P0, S0, i0d, j0d, i1d, j1d, b)
@@ -336,7 +336,7 @@ fun f32
                             i32 i1d,
                             i32 j1d,
                             i32 b) =
-  let {i1, j1, f} = outermost_inner_index(i, j, g, b)
+  let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * project_bottom_inner(i1, j1, P0, S0, i0d, j0d, i1d, j1d)
 
 
@@ -355,8 +355,8 @@ fun *[[f32, g], g]
   let D2 = advect(D1, U0, V0, 0, time_step) in
   D2
 
-fun {*[[f32, g], g],
-     *[[f32, g], g]}
+fun (*[[f32, g], g],
+     *[[f32, g], g])
   vel_step([[f32, g], g] U0,
            [[f32, g], g] V0,
            i32 n_solver_steps,
@@ -364,15 +364,15 @@ fun {*[[f32, g], g],
            f32 time_step) =
   let U1 = diffuse(U0, 1, n_solver_steps, viscosity, time_step) in
   let V1 = diffuse(V0, 2, n_solver_steps, viscosity, time_step) in
-  let {U2, V2} = project(n_solver_steps, U1, V1) in
+  let (U2, V2) = project(n_solver_steps, U1, V1) in
   let U3 = advect(U2, U2, V2, 1, time_step) in
   let V3 = advect(V2, U2, V2, 2, time_step) in
-  let {U4, V4} = project(n_solver_steps, U3, V3) in
-  {U4, V4}
+  let (U4, V4) = project(n_solver_steps, U3, V3) in
+  (U4, V4)
 
-fun {*[[f32, g], g],
+fun (*[[f32, g], g],
      *[[f32, g], g],
-     *[[f32, g], g]}
+     *[[f32, g], g])
      step([[f32, g], g] U0,
           [[f32, g], g] V0,
           [[f32, g], g] D0,
@@ -380,20 +380,20 @@ fun {*[[f32, g], g],
           f32 time_step,
           f32 diffusion_rate,
           f32 viscosity) =
-  let {U1, V1} = vel_step(U0, V0, n_solver_steps,
+  let (U1, V1) = vel_step(U0, V0, n_solver_steps,
                           viscosity, time_step) in
   let D1 = dens_step(D0, U0, V0, n_solver_steps,
                      diffusion_rate, time_step) in
-  {U1, V1, D1}
+  (U1, V1, D1)
 
 
 ------------------------------------------------------------
 -- Wrapper functions.
 ------------------------------------------------------------
 
-fun {[[f32, g], g],
+fun ([[f32, g], g],
      [[f32, g], g],
-     [[f32, g], g]}
+     [[f32, g], g])
   get_end_frame([[f32, g], g] U0,
                 [[f32, g], g] V0,
                 [[f32, g], g] D0,
@@ -402,14 +402,14 @@ fun {[[f32, g], g],
                 f32 time_step,
                 f32 diffusion_rate,
                 f32 viscosity) =
-  loop ({U0, V0, D0}) = for i < n_steps do
+  loop ((U0, V0, D0)) = for i < n_steps do
     step(U0, V0, D0, n_solver_steps, time_step,
          diffusion_rate, viscosity)
-  in {U0, V0, D0}
+  in (U0, V0, D0)
 
-fun {[[[f32, g], g], n_steps],
+fun ([[[f32, g], g], n_steps],
      [[[f32, g], g], n_steps],
-     [[[f32, g], g], n_steps]}
+     [[[f32, g], g], n_steps])
   get_all_frames([[f32, g], g] U0,
                  [[f32, g], g] V0,
                  [[f32, g], g] D0,
@@ -421,12 +421,12 @@ fun {[[[f32, g], g], n_steps],
   let U_out = replicate(n_steps, U0) in
   let V_out = replicate(n_steps, V0) in
   let D_out = replicate(n_steps, D0) in
-  loop ({U_out, V_out, D_out}) = for 1 <= i < n_steps do
-    let {U0, V0, D0} = {U_out[i - 1], V_out[i - 1], D_out[i - 1]} in
-    let {U1, V1, D1} = step(U0, V0, D0, n_solver_steps, time_step,
+  loop ((U_out, V_out, D_out)) = for 1 <= i < n_steps do
+    let (U0, V0, D0) = (U_out[i - 1], V_out[i - 1], D_out[i - 1]) in
+    let (U1, V1, D1) = step(U0, V0, D0, n_solver_steps, time_step,
                             diffusion_rate, viscosity) in
     let U_out[i] = U1 in
     let V_out[i] = V1 in
     let D_out[i] = D1 in
-    {U_out, V_out, D_out}
-  in {U_out, V_out, D_out}
+    (U_out, V_out, D_out)
+  in (U_out, V_out, D_out)

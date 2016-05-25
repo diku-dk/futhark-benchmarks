@@ -30,13 +30,13 @@
 -- ==
 -- compiled input @ data/small.in
 -- output @ data/small.out
--- compiled input @ data/large.in
+-- notravis input @ data/large.in
 -- output @ data/large.out
 
 fun f32 pi() = 3.1415926535897932384626433832795029f32
 fun f32 pi2() = pi() * 2.0f32
 
-fun {[f32,numX], [f32,numX]} main([f32,numK] kx, [f32,numK] ky, [f32,numK] kz,
+fun ([f32,numX], [f32,numX]) main([f32,numK] kx, [f32,numK] ky, [f32,numK] kz,
                                   [f32,numX] x, [f32,numX] y, [f32,numX] z,
                                   [f32,numK] phiR, [f32,numK] phiI) =
   let phiMag = zipWith(fn f32 (f32 r, f32 i) =>
@@ -54,4 +54,4 @@ fun {[f32,numX], [f32,numX]} main([f32,numK] kx, [f32,numK] ky, [f32,numK] kz,
   let Qi = map(fn f32 ([f32,numK] row) =>
                  reduce(+, 0.0f32, zipWith(*, phiMag, map(sin32, row)))
               , expArgs) in
-  {Qr, Qi}
+  (Qr, Qi)

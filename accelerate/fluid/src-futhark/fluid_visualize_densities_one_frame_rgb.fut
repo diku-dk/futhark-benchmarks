@@ -22,10 +22,10 @@ fun [[[i8, 3], g_minus_two], g_minus_two]
             ks),
         ks)
 
-fun {[[[i8, 3], g_minus_two], g_minus_two],
+fun ([[[i8, 3], g_minus_two], g_minus_two],
      [[f32, g], g],
      [[f32, g], g],
-     [[f32, g], g]}
+     [[f32, g], g])
   draw_one_frame([[f32, g], g] U0,
                  [[f32, g], g] V0,
                  [[f32, g], g] D0,
@@ -34,14 +34,14 @@ fun {[[[i8, 3], g_minus_two], g_minus_two],
                  f32 diffusion_rate,
                  f32 viscosity,
                  i32 g_minus_two) =
-  let {U1, V1, D1} = step(U0, V0, D0, n_solver_steps,
+  let (U1, V1, D1) = step(U0, V0, D0, n_solver_steps,
                        time_step, diffusion_rate, viscosity) in
-  {draw_densities(D1, g_minus_two), U1, V1, D1}
+  (draw_densities(D1, g_minus_two), U1, V1, D1)
 
-fun {[[[i8, 3]]],
+fun ([[[i8, 3]]],
      [[f32, g], g],
      [[f32, g], g],
-     [[f32, g], g]}
+     [[f32, g], g])
   main([[f32, g], g] U0,
        [[f32, g], g] V0,
        [[f32, g], g] D0,

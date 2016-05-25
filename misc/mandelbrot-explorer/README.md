@@ -1,4 +1,5 @@
-== Mandelbrot Explorer
+Mandelbrot Explorer
+==
 
 Just run `make` to build, then `make run`.  Requires the Futhark
 compiler, Pygame and PyOpenCL.  And of course, a working OpenCL setup.

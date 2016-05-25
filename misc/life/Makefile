@@ -1,6 +1,6 @@
 .PHONY: run clean
 
-all: life.py
+all: life.py quadlife.py quadlife_alt.py
 
 life.py: life.fut
 	futhark-pyopencl --module life.fut
@@ -8,8 +8,11 @@ life.py: life.fut
 quadlife.py: quadlife.fut
 	futhark-pyopencl --module quadlife.fut
 
-clean:
-	rm life.py
+quadlife_alt.py: quadlife_alt.fut
+	futhark-pyopencl --module quadlife_alt.fut
 
-run: life.py quadlife.py
-	@python life-visualise.py
+clean:
+	rm -f life.py quadlife.py quadlife_alt.py *.pyc
+
+run: life.py quadlife.py quadlife_alt.py
+	@python life-gui.py
