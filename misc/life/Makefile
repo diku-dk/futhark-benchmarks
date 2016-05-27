@@ -3,13 +3,13 @@
 all: life.py quadlife.py quadlife_alt.py
 
 life.py: life.fut
-	futhark-pyopencl --module life.fut
+	futhark-pyopencl --library life.fut
 
 quadlife.py: quadlife.fut
-	futhark-pyopencl --module quadlife.fut
+	futhark-pyopencl --library quadlife.fut
 
 quadlife_alt.py: quadlife_alt.fut
-	futhark-pyopencl --module quadlife_alt.fut
+	futhark-pyopencl --library quadlife_alt.fut
 
 clean:
 	rm -f life.py quadlife.py quadlife_alt.py *.pyc

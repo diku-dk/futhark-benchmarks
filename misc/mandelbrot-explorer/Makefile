@@ -3,7 +3,7 @@
 all: mandelbrot.py
 
 mandelbrot.py: mandelbrot.fut
-	futhark-pyopencl --module mandelbrot.fut
+	futhark-pyopencl --library mandelbrot.fut
 
 clean:
 	rm mandelbrot.py
