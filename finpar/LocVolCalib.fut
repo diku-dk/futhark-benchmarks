@@ -96,11 +96,11 @@ fun *[f32] tridagPar( [f32] a, *[f32] b, [f32] c, *[f32] y ) =
                                                 (f32,f32,f32,f32) b ) =>
                          let (a0,a1,a2,a3) = a   in
                          let (b0,b1,b2,b3) = b   in
-                         let val = 1.0/(a0*b0)   in
-                         ( (b0*a0 + b1*a2)*val,
-                           (b0*a1 + b1*a3)*val,
-                           (b2*a0 + b3*a2)*val,
-                           (b2*a1 + b3*a3)*val
+                         let valu = 1.0/(a0*b0)   in
+                         ( (b0*a0 + b1*a2)*valu,
+                           (b0*a1 + b1*a3)*valu,
+                           (b2*a0 + b3*a2)*valu,
+                           (b2*a1 + b3*a3)*valu
                          )
                    , (1.0,  0.0, 0.0, 1.0), mats ) in
     let b    = map ( fn f32 ((f32,f32,f32,f32) tup) =>

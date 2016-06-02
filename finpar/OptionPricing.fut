@@ -421,10 +421,10 @@ fun f32 payoff2 ([f32] md_disc, [[f32,3],5] xss) =
     else if (1.0 <= fminPayoff(xss[2])) then (2, 1450.0)
     else if (1.0 <= fminPayoff(xss[3])) then (3, 1600.0)
     else let x50  = fminPayoff(xss[4]) in
-	 let val  = if      ( 1.0 <= x50 ) then 1750.0
+	 let value  = if      ( 1.0 <= x50 ) then 1750.0
                     else if ( 0.75 < x50 ) then 1000.0
                     else                        x50*1000.0
-	 in (4, val)
+	 in (4, value)
   in  trajInner(amount, date, md_disc) 
 
 fun f32 payoff3([f32] md_disct, [[f32,3],367] xss) =
