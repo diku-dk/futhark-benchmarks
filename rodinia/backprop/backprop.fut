@@ -150,8 +150,8 @@ fun ([[f32,n],m],[f32,m]) bpnn_randomize_weights(int m, int n, int offset, [int]
 fun [f32,m] bpnn_randomize_row(int m, int offset, [int] dirVct) =
     map ( sobolIndR(dirVct), map(+offset, iota(m)) )
 
-fun [f32,m] bpnn_constant_row(int m, f32 val) =
-    replicate(m, val)
+fun [f32,m] bpnn_constant_row(int m, f32 value) =
+    replicate(m, value)
 
 fun [[f32,n],m] bpnn_zero_weights(int m, int n) =
     map (fn [f32] (int i) => replicate(n, 0.0)

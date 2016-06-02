@@ -17,8 +17,8 @@ fun [[[i8, 3], g_minus_two], g_minus_two]
   let ks = map(fn i32 (i32 k) => k + 1, iota(g_minus_two)) in
   map(fn [[i8, 3], g_minus_two] (i32 i) =>
         map(fn [i8, 3] (i32 j) =>
-              let val = clamp(255.0f32 * unsafe D[i, j])
-              in [val, val, val],
+              let value = clamp(255.0f32 * unsafe D[i, j])
+              in [value, value, value],
             ks),
         ks)
 
