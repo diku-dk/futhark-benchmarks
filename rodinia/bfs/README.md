@@ -2,5 +2,7 @@
 
 Ported from Rodinia's BFS benchmark.
 
-There are four different versions: One sequential version, one simple parallel
-version, and two different segmented versions.
+There are Futhark five versions: One sequential version, and four parallel
+versions utilizing either padding or segmentation.
+
+Also see the README in the `data` directory.
