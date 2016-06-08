@@ -10,7 +10,7 @@
 -- Futhark instead of an ordinary function (which cannot take an anonymous
 -- function).
 fun *[i32] i32_filter([bool, k] bs, [i32, k] ns) =
-  let flags = map(fn bool (i32 n) => bs[n], ns)
+  let flags = map(fn bool (i32 n) => unsafe bs[n], ns)
   let flags_i = map(fn i32 (bool b) => if b then 1 else 0, flags)
   let is0 = scan(+, 0, flags_i)
   let filter_size = is0[k - 1]
