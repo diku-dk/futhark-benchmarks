@@ -1,0 +1,5 @@
+/bfs_sequential
+/bfs_parallel_simple
+/bfs_parallel_mapwrite
+/bfs_parallel_segmented
+/bfs_parallel_segmented_alternate
