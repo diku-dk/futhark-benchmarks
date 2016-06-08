@@ -14,8 +14,8 @@
 --   [0, 1, 4, 5, 6, 33, 83, 99]
 -- }
 --
--- input @ radix_sort_100.in
--- output @ radix_sort_100.out
+-- input @ data/radix_sort_100.in
+-- output @ data/radix_sort_100.out
 
 fun [u32, n] main([u32, n] xs) =
   split_radix_sort(xs, 32)
