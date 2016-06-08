@@ -1,6 +1,5 @@
 -- Test the library scan conversion functions.
 -- ==
--- tags { disable }
 -- input {
 --   [5, 3, -3, 1, 99]
 -- }
