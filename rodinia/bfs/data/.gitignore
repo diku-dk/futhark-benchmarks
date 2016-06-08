@@ -1,1 +1,9 @@
 __pycache__
+
+# Generated datasets
+/1Mnodes.*
+/rod1MW_6
+/65536nodes.*
+/few_nodes_many_edges_1000n_1000e.*
+/high_edge_variance_100K.*
+/higher_edge_variance_5K.*
