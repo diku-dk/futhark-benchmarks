@@ -20,32 +20,32 @@
 fun [u32, n] main([u32, n] xs) =
   split_radix_sort(xs, 32)
 
-fun [u32, n] split_radix_sort([u32, n] A, i32 number_of_bits) =
-  loop (A) = for i < number_of_bits do
-    let Ai = map(fn i32 (u32 a) => i32((a >> u32(i)) & 1u32), A)
-    in split_blelloch(A, Ai)
-  in A
+fun [u32, n] split_radix_sort([u32, n] a, i32 number_of_bits) =
+  loop (a) = for i < number_of_bits do
+    let ai = map(fn i32 (u32 a) => i32((a >> u32(i)) & 1u32), a)
+    in split_blelloch(a, ai)
+  in a
 
-fun [u32, n] split_blelloch([u32, n] A, [i32, n] Flags) =
-  let I_down = plus_prescan(map(1 -, Flags))
-  let I_up = map(n -, plus_scan_reverse_order(Flags))
-  let Index = map(fn i32 (i32 i) =>
-                    if Flags[i] == 1 then I_up[i] else I_down[i],
+fun [u32, n] split_blelloch([u32, n] a, [i32, n] flags) =
+  let i_down = plus_prescan(map(1 -, flags))
+  let i_up = map(n -, plus_scan_reverse_order(flags))
+  let index = map(fn i32 (i32 i) =>
+                    if flags[i] == 1 then i_up[i] else i_down[i],
                   iota(n))
-  in permute(A, Index)
+  in permute(a, index)
 
-fun [i32, n] plus_scan_reverse_order([i32, n] X) =
-  let Xreversed = map(fn i32 (i32 i) => X[n - i - 1], iota(n))
-  let X' = plus_scan(Xreversed)
-  let X'reversed = map(fn i32 (i32 i) => X'[n - i - 1], iota(n))
-  in X'reversed
+fun [i32, n] plus_scan_reverse_order([i32, n] x) =
+  let xreversed = map(fn i32 (i32 i) => x[n - i - 1], iota(n))
+  let x' = plus_scan(xreversed)
+  let x'reversed = map(fn i32 (i32 i) => x'[n - i - 1], iota(n))
+  in x'reversed
 
-fun [i32, n] plus_scan([i32, n] X) =
-  scan(+, 0, X)
+fun [i32, n] plus_scan([i32, n] x) =
+  scan(+, 0, x)
 
-fun [i32, n] plus_prescan([i32, n] X) =
-  let Xshifted = map(fn i32 (i32 i) => if i == 0 then 0 else unsafe X[i - 1], iota(n))
-  in scan(+, 0, Xshifted)
+fun [i32, n] plus_prescan([i32, n] x) =
+  let xshifted = map(fn i32 (i32 i) => if i == 0 then 0 else unsafe x[i - 1], iota(n))
+  in scan(+, 0, xshifted)
 
-fun [u32, n] permute([u32, n] A, [i32, n] Index) =
-  write(Index, A, copy(A))
+fun [u32, n] permute([u32, n] a, [i32, n] index) =
+  write(index, a, copy(a))
