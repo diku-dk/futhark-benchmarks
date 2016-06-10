@@ -422,8 +422,8 @@ fun f32 payoff2 ([f32] md_disc, [[f32,3],5] xss) =
     else if (1.0 <= fminPayoff(xss[3])) then (3, 1600.0)
     else let x50  = fminPayoff(xss[4]) in
 	 let value  = if      ( 1.0 <= x50 ) then 1750.0
-                    else if ( 0.75 < x50 ) then 1000.0
-                    else                        x50*1000.0
+                      else if ( 0.75 < x50 ) then 1000.0
+                      else                        x50*1000.0
 	 in (4, value)
   in  trajInner(amount, date, md_disc) 
 
@@ -450,9 +450,9 @@ fun f32 fminPayoff([f32] xs) =
     if a < b then if a < c then a else c
 	     else if b < c then b else c
 
-fun f32 MIN([f32] arr) =
+fun f32 min([f32] arr) =
   reduce( fn f32 (f32 x, f32 y) => if(x<y) then x else y, arr[0], arr )
 
-fun int MINint(int x, int y) = if x < y then x else y
+fun int minint(int x, int y) = if x < y then x else y
 
 fun f32 trajInner(f32 amount, int ind, [f32] disc) = amount * unsafe disc[ind]

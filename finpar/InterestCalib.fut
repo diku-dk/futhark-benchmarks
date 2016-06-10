@@ -16,14 +16,14 @@ default(f32)
 --/ ENTRY POINT 
 --------------------------------------------------/
 fun ((f32,f32,f32,f32,f32,f32),[[f32]])
-    main( int POP, int MCMC_CONV, int l
+    main( int pop, int mcmc_conv, int l
 	    , [[f32]] swaptions,     int ll  
             , [f32]   hermCoefs     
             , [f32]   hermWeights,   int lll   
             , [int ]   sobDirVct
 	    ) = 
   let hermData  = zip(hermCoefs, hermWeights) in
-  InterestCalibKernel(POP, MCMC_CONV, swaptions, hermData, sobDirVct)
+  interestCalibKernel(pop, mcmc_conv, swaptions, hermData, sobDirVct)
 
 ----------------------------------------------------
 --/ Prepares the output summary for each swaption
@@ -41,8 +41,8 @@ fun [[f32]] makeSummary([(f32,f32)] quote_prices) =
 --/ COMPUTATIONAL KERNEL
 ----------------------------------------------------
 fun ((f32,f32,f32,f32,f32,f32),[[f32]])
-    InterestCalibKernel( int            POP
-		       , int            MCMC_CONV
+    interestCalibKernel( int            pop
+		       , int            mcmc_conv
                        , [[f32]]       swaptions
 		       , [(f32,f32)]  hermdata
 		       , [int]          sobDirVct
@@ -53,7 +53,7 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 			let z5s = map ( +k, iota(5) ) in
 			let sobs= map ( sobolInd(sobDirVct), z5s )
 			in  initGenome( copy(sobs) ) 
-		    , iota(POP) ) in
+		    , iota(pop) ) in
   -- evaluate genomes
   let logLiks = map ( fn f32 ([f32] genome) =>
 			let qtprs = map ( evalGenomeOnSwap(genome,hermdata)
@@ -63,11 +63,11 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 			          reduce( +, 0.0, terms )
 		    , genomes ) in
 --  logLiks
---  genomes[POP/2]
+--  genomes[pop/2]
   let proposals = copy(genomes) in
-  let sob_offs = 5*POP+1        in
+  let sob_offs = 5*pop+1        in
   loop ((genomes,proposals,logLiks,sob_offs)) =
-    for j < MCMC_CONV do
+    for j < mcmc_conv do
       let rand01   = sobolInd( sobDirVct, sob_offs ) in
       let move_type= selectMoveType(rand01)          in
       let sob_offs = sob_offs + 1                    in
@@ -79,11 +79,11 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 			let k   = 5*i + sob_offs          in
 			let z5s = map( +k, iota(5) ) in
 			map ( sobolInd(sobDirVct), z5s )
-		    , iota(POP) ) in
+		    , iota(pop) ) in
 	     let new_gene_rat = 
 	         map( mutate_dims_all, zip(sob_mat,genomes,proposals) ) in
 	     let (new_genomes, fb_rats) = unzip(new_gene_rat) 
-	     in  (new_genomes, fb_rats, sob_offs+5*POP)
+	     in  (new_genomes, fb_rats, sob_offs+5*pop)
 
 	else 
         if (move_type == 2) -- move_type == DIMS_ONE
@@ -94,22 +94,22 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 			let k   = 5*i + sob_offs + 1    in
 			let z5s = map(+k, iota(5)) in
 			map ( sobolInd(sobDirVct), z5s )
-		    , iota(POP) ) 
+		    , iota(pop) ) 
 	     in
 	     let new_gene_rat = 
 	         map( mutate_dims_one(dim_j), zip(sob_mat, genomes, proposals) ) in
 	     let (new_genomes, fb_rats) = unzip(new_gene_rat) 
-	     in  (new_genomes, fb_rats, sob_offs+5*POP+1)
+	     in  (new_genomes, fb_rats, sob_offs+5*pop+1)
 
 	else                -- move_type == DEMCMC
 	     let new_genomes = 
 	         map( fn *[f32] (int i) =>
 			let kk  = 8*i + sob_offs            in
 			let s1  = sobolInd( sobDirVct, kk ) in
-			let k = int( s1 * f32(POP-1) ) in -- random in [0,POP-1)
+			let k = int( s1 * f32(pop-1) ) in -- random in [0,pop-1)
 			let (k,cand_UB) = if k == i 
-			                  then (POP-1, POP-2)
-					  else (k,     POP-1) 
+			                  then (pop-1, pop-2)
+					  else (k,     pop-1) 
 			in
 			let s2  = sobolInd(sobDirVct, kk+1) in
 			let l = int( s2*f32(cand_UB) ) in -- random in [0,cand_UB -1)
@@ -121,8 +121,8 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 			let z5s     = map( +(kk+3),      iota(5) ) in
 			let sob_row = map( sobolInd(sobDirVct), z5s ) in
 		            mcmc_DE(s3, sob_row, genomes[i], genomes[k], genomes[l])
-		    , iota(POP) ) 
-	     in  (new_genomes, replicate(POP, 1.0), sob_offs+8*POP)
+		    , iota(pop) ) 
+	     in  (new_genomes, replicate(pop, 1.0), sob_offs+8*pop)
         in
       let new_logLiks = 
 	  map ( fn f32 ([f32] genome) =>
@@ -142,11 +142,11 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
                        then (new_gene, new_logLik)
 		       else (gene,     logLik    )
 		 in (copy(res_gene), res_logLik)
-             , zip(genomes, logLiks, proposals, new_logLiks, fb_rats, iota(POP))
+             , zip(genomes, logLiks, proposals, new_logLiks, fb_rats, iota(pop))
 	     )
       in
       let (res_genomes, res_logLiks) = unzip(res_gene_liks) in
-      (res_genomes, proposals, res_logLiks, sob_offs+POP)
+      (res_genomes, proposals, res_logLiks, sob_offs+pop)
   -- END OF DO LOOP!!!
 
   in
@@ -155,7 +155,7 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 		let (i1, v1) = t1 in let (i2, v2) = t2 in
 		if (v1 < v2) then (i2, v2) else (i1, v1)
 	    , (0, -infinity())
-	    , zip( iota(POP), logLiks ) 
+	    , zip( iota(pop), logLiks ) 
 	    )
   in
   let winner = genomes[winner_ind] in
@@ -169,17 +169,17 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 --------------------------------------------------/
 --/ Constants and Utility Functions
 --------------------------------------------------/
-fun f32 EPS0   () = 1.0e-3
-fun f32 EPS    () = 1.0e-5
-fun f32 PI     () = 3.1415926535897932384626433832795
+fun f32 eps0   () = 1.0e-3
+fun f32 eps    () = 1.0e-5
+fun f32 pi     () = 3.1415926535897932384626433832795
 
-fun bool IS_CAUCHY_LLHOOD  () = True 
-fun f32 LLHOOD_CAUCHY_OFFS() = 5.0
-fun f32 LLHOOD_NORMAL_OFFS() = 1.0
+fun bool is_cauchy_llhood  () = True 
+fun f32 llhood_cauchy_offs() = 5.0
+fun f32 llhood_normal_offs() = 1.0
 
 fun f32 r       () = 0.03
 fun f32 infinity() = 1.0e49
-fun f32 epsilon () = EPS()
+fun f32 epsilon () = eps()
 
 fun int  itMax   () = 10000
 
@@ -314,7 +314,7 @@ fun (f32,f32) evalGenomeOnSwap (
                   , hermdata )
   in
   let accum = reduce( +, 0.0, accums ) in
-  let new_price = zc_mat * ( accum / sqrt32( PI() ) ) in
+  let new_price = zc_mat * ( accum / sqrt32( pi() ) ) in
   (new_quote, new_price)
 
 
@@ -343,11 +343,11 @@ fun f32 sobolInd( [int] dirVct, int n ) =
 --/ Genome Implementation
 --------------------------------------------------/
 fun [(f32,f32,f32)] genomeBounds() =
-    [ (EPS0(),     1.0-EPS0(), 0.02)
-    , (EPS0(),     1.0-EPS0(), 0.02)
-    , (EPS0()-1.0, 1.0-EPS0(), 0.0 )
-    , (EPS0(),     0.2,        0.01)
-    , (EPS0(),     0.2,        0.04)
+    [ (eps0(),     1.0-eps0(), 0.02)
+    , (eps0(),     1.0-eps0(), 0.02)
+    , (eps0()-1.0, 1.0-eps0(), 0.0 )
+    , (eps0(),     0.2,        0.01)
+    , (eps0(),     0.2,        0.04)
     ]
 
 fun [f32] initGenome ([f32] rand_nums) =
@@ -365,12 +365,12 @@ fun int selectMoveType(f32 r01) =
     else               3 -- r01 in (0.5, 1.0) => DEMCMC
 --( MV_EL_TYPE(0.2,DIMS_ALL), MV_EL_TYPE(0.5,DIMS_ONE), MV_EL_TYPE(1.0,DEMCMC) );
 
-fun f32 MOVES_UNIF_AMPL_RATIO() = 0.005
+fun f32 moves_unif_ampl_ratio() = 0.005
 
 fun (*[f32],f32) mutate_dims_all(([f32],[f32],[f32]) tup) = 
   let (sob_row, orig, muta) = tup in
   let gene_bds = genomeBounds()   in
-  let amplitude = MOVES_UNIF_AMPL_RATIO() in
+  let amplitude = moves_unif_ampl_ratio() in
   let gene_rats = map( mutateHelper(amplitude), zip(sob_row,orig,muta,gene_bds) ) in
   let (tmp_genome, fb_rats) = unzip(gene_rats) in
   let new_genome= map( constrainDim, zip(tmp_genome, gene_bds) ) in
@@ -381,7 +381,7 @@ fun (*[f32],f32) mutate_dims_one(int dim_j, ([f32],[f32],[f32]) tup) =
   let (sob_row, orig, muta) = tup in
   let gene_bds = genomeBounds()   in
   let amplitudes= map(fn f32 (int i) =>
-			  if i == dim_j then MOVES_UNIF_AMPL_RATIO() else 0.0
+			  if i == dim_j then moves_unif_ampl_ratio() else 0.0
 		     , iota(size(0,orig)) )
   in  
   let gene_rats = map( mutateHelper, zip(amplitudes,sob_row,orig,muta,gene_bds) ) in
@@ -394,7 +394,7 @@ fun (*[f32],f32) mutate_dims_one(int dim_j, ([f32],[f32],[f32]) tup) =
 fun *[f32] mcmc_DE(f32 r01, [f32] sob_row, [f32] g_i, [f32] g_k, [f32] g_l) =
   let gene_bds = genomeBounds()         in
   let gamma_avg = 2.38 / sqrt32(2.0*5.0)    in
-  let ampl_ratio= 0.1 * MOVES_UNIF_AMPL_RATIO() in
+  let ampl_ratio= 0.1 * moves_unif_ampl_ratio() in
   let gamma1    = gamma_avg - 0.5 + r01 in
   let mm_diffs  = map( fn f32 ((f32,f32,f32) tup) => 
 		           let (g_min, g_max, uu) = tup 
@@ -441,25 +441,25 @@ fun f32 constrainDim( f32 gene, (f32,f32,f32) tup ) =
 --/ Likelihood implementation
 --------------------------------------------------------------/
 fun f32 logLikelihood(f32 y_ref, f32 y) =
-  if   IS_CAUCHY_LLHOOD() 
+  if   is_cauchy_llhood() 
   then logLikeCauchy(y_ref, y)
   else logLikeNormal(y_ref, y)
 
 fun f32 normalPdf( f32 z, f32 mu, f32 sigma ) =
     let sigma  = fabs(sigma) in 
-    let res    = 1.0 / (sigma * sqrt32(2.0*PI())) in
+    let res    = 1.0 / (sigma * sqrt32(2.0*pi())) in
     let ecf    = (z-mu) * (z-mu) / (2.0 * sigma * sigma) in
     res * exp32( 0.0 - ecf )
 fun f32 logLikeNormal( f32 y_ref, f32 y) =
-    let sigma = (y_ref / 50.0) * LLHOOD_NORMAL_OFFS() in
+    let sigma = (y_ref / 50.0) * llhood_normal_offs() in
     let pdfs  = normalPdf( y, y_ref, sigma ) in
     log32(pdfs + 1.0e-20)
 
 fun f32 cauchyPdf( f32 z, f32 mu, f32 gamma ) = -- mu=0.0, gamma=4.0
     let x = (z-mu) / gamma in
-    1.0 / ( PI() * gamma * (1.0 + x*x) )
+    1.0 / ( pi() * gamma * (1.0 + x*x) )
 fun f32 logLikeCauchy( f32 y_ref, f32 y ) = 
-    let gamma = ( fabs(y_ref) / 50.0 ) * LLHOOD_CAUCHY_OFFS() + 0.01 in
+    let gamma = ( fabs(y_ref) / 50.0 ) * llhood_cauchy_offs() + 0.01 in
     let pdfs  = cauchyPdf( y, y_ref, gamma ) in
     log32(pdfs + 1.0e-20)
 
@@ -895,7 +895,7 @@ pricer_of_swaption( f32                       today,
                   , zip(x_quads, w_quads)
                   )                        in
     let sum = reduce(+, 0.0, tmps)      in
-            zc_mat * ( sum / sqrt32( PI() ) )
+            zc_mat * ( sum / sqrt32( pi() ) )
 
 
 --------------------------
@@ -976,7 +976,7 @@ fun f32 exactYhat( int n_schedi,
 ----   Date: Gregorian calendar
 ------------------------------------------------------
 
-fun int MOD(int x, int y) = x - (x/y)*y
+fun int mod(int x, int y) = x - (x/y)*y
 
 fun int hours_in_dayI   () = 24
 fun int minutes_in_dayI () = hours_in_dayI() * 60
@@ -1016,7 +1016,7 @@ gregorian_of_date ( int minutes_since_epoch ) =
     let y = 100 * ( n - 49 ) + i + l in
 
     --let daytime = minutes_since_epoch mod minutes_in_day in
-    let daytime = MOD( minutes_since_epoch, minutes_in_dayI() ) in
+    let daytime = mod( minutes_since_epoch, minutes_in_dayI() ) in
 
     if ( daytime == minutes_to_noonI() )
 
@@ -1024,7 +1024,7 @@ gregorian_of_date ( int minutes_since_epoch ) =
     then (y, m, d, 12, 0)
 
     --else [year = y; month = m; day = d; hour = daytime / 60; minute = daytime mod 60]
-    else (y, m, d, daytime / 60, MOD(daytime, 60) )
+    else (y, m, d, daytime / 60, mod(daytime, 60) )
 
 
 fun bool check_date(int year, int month, int day) =
@@ -1032,8 +1032,8 @@ fun bool check_date(int year, int month, int day) =
     let tmp2 = ( day <= 28 ) in
 
     let tmp3 = if      ( month == 2 )
-               then let tmpmod = MOD(year, 100) in
-                        ( day == 29 && MOD(year, 4) == 0 && ( year == 2000 || (! (tmpmod == 0)) ) )
+               then let tmpmod = mod(year, 100) in
+                        ( day == 29 && mod(year, 4) == 0 && ( year == 2000 || (! (tmpmod == 0)) ) )
                else if ( month == 4 || month == 6 || month == 9 || month == 11 )
                     then ( day <= 30 )
                     else ( day <= 31 )
@@ -1046,7 +1046,7 @@ fun f32 days_between(f32 t1, f32 t2) =
 
 fun f32 date_act_365(f32 t1, f32 t2) = days_between(t1, t2) / 365.0
 
-fun bool leap(int y) = ( MOD(y,4) == 0  && ( (!(MOD(y,100)==0)) || (MOD(y,400)==0) ) )
+fun bool leap(int y) = ( mod(y,4) == 0  && ( (!(mod(y,100)==0)) || (mod(y,400)==0) ) )
 
 fun int end_of_month(int year, int month) =
     if      ( month == 2 && leap(year) )                           then 29
@@ -1059,7 +1059,7 @@ fun f32 add_months ( f32 date, f32 rnbmonths ) =
     let nbmonths          = int(rnbmonths)                 in
     let (y, m, d, h, min) = gregorian_of_date( int(date) ) in
     let m = m + nbmonths                                     in
-    let (y, m) = (y + (m-1) / 12, MOD(m-1, 12) + 1)          in
+    let (y, m) = (y + (m-1) / 12, mod(m-1, 12) + 1)          in
     let (y, m) = if (m <= 0) then (y - 1, m + 12) else (y, m) in
     let resmin = date_of_gregorian ( (y, m, minI( d, end_of_month(y, m) ), 12, 0) ) in
 

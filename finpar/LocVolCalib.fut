@@ -27,22 +27,22 @@ fun (int,int,[f32,numX],[f32,numY],[f32,numT])
 fun ([[f32],n],[[f32],n]) initOperator([f32,n] x) =
     let dxu    = x[1] - x[0] in
     let dxl    = 0.0         in
-    let Dxlow  = [[0.0, -1.0 / dxu, 1.0 / dxu]] in
-    let Dxxlow = [[0.0, 0.0, 0.0]]              in
-    let Dxmids = map(fn ([f32],[f32]) (int i) =>
+    let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]] in
+    let dxx_low = [[0.0, 0.0, 0.0]]              in
+    let dx_mids = map(fn ([f32],[f32]) (int i) =>
                        let dxl = x[i] - x[i-1]  in
                        let dxu = x[i+1] - x[i]  in
                        ( [ -dxu/dxl/(dxl+dxu), (dxu/dxl - dxl/dxu)/(dxl+dxu),      dxl/dxu/(dxl+dxu) ],
                          [  2.0/dxl/(dxl+dxu), -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu), 2.0/dxu/(dxl+dxu) ] )
                    , map (+ (1), iota(n-2))) in
-    let (Dxmid, Dxxmid) = unzip(Dxmids)         in
+    let (dx_mid, dxx_mid) = unzip(dx_mids)         in
     let dxl    = x[n-1] - x[n-2] in
     let dxu    = 0.0 in
-    let Dxhigh = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]] in
-    let Dxxhigh= [[0.0, 0.0, 0.0 ]] in
-    let Dx     = concat(concat(Dxlow, Dxmid), Dxhigh) in
-    let Dxx    = concat(concat(Dxxlow, Dxxmid), Dxxhigh)
-    in  (Dx, Dxx)
+    let dx_high = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]] in
+    let dxx_high= [[0.0, 0.0, 0.0 ]] in
+    let dx     = concat(concat(dx_low, dx_mid), dx_high) in
+    let dxx    = concat(concat(dxx_low, dxx_mid), dxx_high)
+    in  (dx, dxx)
 
 fun f32 max(f32 x, f32 y) = if y < x then x else y
 fun int maxInt(int x, int y) = if y < x then x else y
@@ -96,11 +96,11 @@ fun *[f32] tridagPar( [f32] a, *[f32] b, [f32] c, *[f32] y ) =
                                                 (f32,f32,f32,f32) b ) =>
                          let (a0,a1,a2,a3) = a   in
                          let (b0,b1,b2,b3) = b   in
-                         let valu = 1.0/(a0*b0)   in
-                         ( (b0*a0 + b1*a2)*valu,
-                           (b0*a1 + b1*a3)*valu,
-                           (b2*a0 + b3*a2)*valu,
-                           (b2*a1 + b3*a3)*valu
+                         let value = 1.0/(a0*b0)   in
+                         ( (b0*a0 + b1*a2)*value,
+                           (b0*a1 + b1*a3)*value,
+                           (b2*a0 + b3*a2)*value,
+                           (b2*a1 + b3*a3)*value
                          )
                    , (1.0,  0.0, 0.0, 1.0), mats ) in
     let b    = map ( fn f32 ((f32,f32,f32,f32) tup) =>

@@ -15,10 +15,10 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
   let r2 = rows - 1 in
   let c1 = 0 in
   let c2 = cols - 1 in
-  let Ne = rows * cols in
+  let ne = rows * cols in
 
   -- ROI image size
-  let NeROI = (r2-r1+1)*(c2-c1+1) in
+  let neROI = (r2-r1+1)*(c2-c1+1) in
 
   -- N/S/W/E indices of surrounding pixels (every element of IMAGE)
   -- holds index of IMAGE row above
@@ -44,12 +44,12 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
                     image) in
   loop (image) = for i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
-    let sum = reduce(+, 0.0, reshape((Ne), image)) in
-    let sum2 = reduce(+, 0.0, map(**2.0, reshape((Ne), image))) in
+    let sum = reduce(+, 0.0, reshape((ne), image)) in
+    let sum2 = reduce(+, 0.0, map(**2.0, reshape((ne), image))) in
     -- get mean (average) value of element in ROI
-    let meanROI = sum / f32(NeROI) in
+    let meanROI = sum / f32(neROI) in
     -- gets variance of ROI
-    let varROI = (sum2 / f32(NeROI)) - meanROI*meanROI in
+    let varROI = (sum2 / f32(neROI)) - meanROI*meanROI in
     -- gets standard deviation of ROI
     let q0sqr = varROI / (meanROI*meanROI) in
 
@@ -57,16 +57,16 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
       unzip(
         zipWith(fn [(f32,f32,f32,f32,f32),cols]
                   (int i, [f32] row) =>
-                    zipWith(fn (f32,f32,f32,f32,f32) (int j, f32 Jc) =>
-                              let dN_k = image[iN[i],j] - Jc in
-                              let dS_k = image[iS[i],j] - Jc in
-                              let dW_k = image[i, jW[j]] - Jc in
-                              let dE_k = image[i, jE[j]] - Jc in
-                              let G2 = (dN_k*dN_k + dS_k*dS_k +
-                                        dW_k*dW_k + dE_k*dE_k) / (Jc*Jc) in
-                              let L = (dN_k + dS_k + dW_k + dE_k) / Jc in
-                              let num = (0.5*G2) - ((1.0/16.0)*(L*L)) in
-                              let den = 1.0 + 0.25*L in
+                    zipWith(fn (f32,f32,f32,f32,f32) (int j, f32 jc) =>
+                              let dN_k = image[iN[i],j] - jc in
+                              let dS_k = image[iS[i],j] - jc in
+                              let dW_k = image[i, jW[j]] - jc in
+                              let dE_k = image[i, jE[j]] - jc in
+                              let g2 = (dN_k*dN_k + dS_k*dS_k +
+                                        dW_k*dW_k + dE_k*dE_k) / (jc*jc) in
+                              let l = (dN_k + dS_k + dW_k + dE_k) / jc in
+                              let num = (0.5*g2) - ((1.0/16.0)*(l*l)) in
+                              let den = 1.0 + 0.25*l in
                               let qsqr = num / (den*den) in
                               let den = (qsqr-q0sqr) / (q0sqr * (1.0+q0sqr)) in
                               let c_k = 1.0 / (1.0+den) in
@@ -86,8 +86,8 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
                           let cS = c[iS[i], j] in
                           let cW = c_k in
                           let cE = c[i, jE[j]] in
-                          let D = cN*dN_k + cS*dS_k + cW*dW_k + cE*dE_k in
-                          pixel + 0.25 * lambda * D
+                          let d = cN*dN_k + cS*dS_k + cW*dW_k + cE*dE_k in
+                          pixel + 0.25 * lambda * d
                        , iota(cols), image_row, c_row, dN_row, dS_row, dW_row, dE_row),
                 iota(rows), image, c, dN, dS, dW, dE) in
     image in

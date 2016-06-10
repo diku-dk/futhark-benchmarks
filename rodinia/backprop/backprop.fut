@@ -7,12 +7,12 @@
 
 default(f32)
 
-fun f32 ETA()       = 0.3
-fun f32 MOMENTUM()  = 0.3
-fun bool INIT_ZERO() = False
+fun f32 eta()       = 0.3
+fun f32 momentum()  = 0.3
+fun bool init_zero() = False
 
 fun f32 squash(f32 x) = 1.0 / (1.0 + exp32(-x))
-fun f32 ABS   (f32 x) = if x < 0.0 then 0.0 - x else x
+fun f32 fabs   (f32 x) = if x < 0.0 then 0.0 - x else x
 
 -- Computational kernels
 
@@ -34,7 +34,7 @@ bpnn_hidden_error([f32,no] delta_o, [[f32,no],nh] who, [f32,nh] hidden) =
                 let prods  = zipWith( *, delta_o, who_row )       in
                 let sumrow = reduce ( +, 0.0, prods )             in
                 let new_el = hidden_el * (1.0-hidden_el) * sumrow in
-                ( ABS(new_el), new_el )
+                ( fabs(new_el), new_el )
             , zip( hidden, who )
         ) ) in
     let err = reduce( +, 0.0, errs)
@@ -49,7 +49,7 @@ bpnn_adjust_weights([f32,ndelta] delta, [f32,nlym1] ly, [[f32,ndelta],nly] w, [[
   map ( fn ([f32],[f32]) ([f32] w_row, [f32] oldw_row, f32 lyk) =>
           unzip (
             map ( fn (f32,f32) (f32 w_el, f32 oldw_el, f32 delta_el, int j) =>
-                    let new_dw = ETA()*delta_el*lyk + MOMENTUM()*oldw_el in
+                    let new_dw = eta()*delta_el*lyk + momentum()*oldw_el in
                     ( w_el+new_dw, new_dw )
                 , zip(w_row,oldw_row,delta,iota(ndelta)) )
           )
@@ -173,7 +173,7 @@ bpnn_create(int n_in, int n_inp1, int n_hid, int n_hidp1, int n_out, int offset,
 
   -- [[f32,n_hidden],n_in]
   let (offset, (input_weights, input_weights_fstcol)) =
-    if INIT_ZERO()
+    if init_zero()
     then (  offset, (bpnn_zero_weights(n_inp1, n_hid), replicate(n_inp1, 0.0)) )
     else (  offset+n_inp1*n_hidp1,
             bpnn_randomize_weights(n_inp1, n_hid, offset, dirVct)  ) in
