@@ -79,6 +79,6 @@ fun [u8,n] cipher_idea([u16,52] key, [u8,n] text) =
   let blocks = reshape((n//8,8), text) in
   reshape((n), map(cipher_idea_block(key), blocks))
 
-fun ([u8,n], [u8,n]) main([u16,52] Z, [u16,52] DK, [u8,n] text) =
-  let text_encrypted = cipher_idea(Z, text) in
-  (text_encrypted, cipher_idea(DK, text_encrypted))
+fun ([u8,n], [u8,n]) main([u16,52] z, [u16,52] dk, [u8,n] text) =
+  let text_encrypted = cipher_idea(z, text) in
+  (text_encrypted, cipher_idea(dk, text_encrypted))

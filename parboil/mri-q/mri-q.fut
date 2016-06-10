@@ -48,10 +48,10 @@ fun ([f32,numX], [f32,numX]) main([f32,numK] kx, [f32,numK] ky, [f32,numK] kz,
                                         kx_e * x_e + ky_e * y_e + kz_e * z_e
                                      , kx, ky, kz))
                        , x, y, z) in
-  let Qr = map(fn f32 ([f32,numK] row) =>
+  let qr = map(fn f32 ([f32,numK] row) =>
                  reduce(+, 0.0f32, zipWith(*, phiMag, map(cos32, row)))
               , expArgs) in
-  let Qi = map(fn f32 ([f32,numK] row) =>
+  let qi = map(fn f32 ([f32,numK] row) =>
                  reduce(+, 0.0f32, zipWith(*, phiMag, map(sin32, row)))
               , expArgs) in
-  (Qr, Qi)
+  (qr, qi)

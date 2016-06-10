@@ -39,42 +39,42 @@ fun f32 amb_temp() = 80.0
 -- advances the solution of the discretized difference equations by
 -- one time step
 fun [[f32]] single_iteration([[f32,col],row] temp, [[f32,col],row] power,
-                              f32 Cap, f32 Rx, f32 Ry, f32 Rz,
+                              f32 cap, f32 rx, f32 ry, f32 rz,
                               f32 step) =
   map (fn [f32] (int r) =>
          map(fn f32 (int c) =>
                let delta =
-                 (step / Cap) *
+                 (step / cap) *
                (power[r,c] +
                 unsafe
                   (if r == 0 && c == 0 then -- Corner 1
-                     (temp[r,c+1] - temp[r,c]) / Rx +
-                     (temp[r+1,c] - temp[r,c]) / Ry
+                     (temp[r,c+1] - temp[r,c]) / rx +
+                     (temp[r+1,c] - temp[r,c]) / ry
                    else if r == 0 && c == col-1 then -- Corner 2
-                     (temp[r,c-1] - temp[r,c]) / Rx +
-                     (temp[r+1,c] - temp[r,c]) / Ry
+                     (temp[r,c-1] - temp[r,c]) / rx +
+                     (temp[r+1,c] - temp[r,c]) / ry
                    else if r == row-1 && c == col-1 then -- Corner 3
-                     (temp[r,c-1] - temp[r,c]) / Rx +
-                     (temp[r-1,c] - temp[r,c]) / Ry
+                     (temp[r,c-1] - temp[r,c]) / rx +
+                     (temp[r-1,c] - temp[r,c]) / ry
                    else if r == row-1 && c == 0 then -- Corner 4
-                     (temp[r,c+1] - temp[r,c]) / Rx +
-                     (temp[r-1,c] - temp[r,c]) / Ry
+                     (temp[r,c+1] - temp[r,c]) / rx +
+                     (temp[r-1,c] - temp[r,c]) / ry
                    else if r == 0 then -- Edge 1
-                     (temp[r,c+1] + temp[r,c-1] - 2.0*temp[r,c]) / Rx +
-                     (temp[r+1,c] - temp[r,c]) / Ry
+                     (temp[r,c+1] + temp[r,c-1] - 2.0*temp[r,c]) / rx +
+                     (temp[r+1,c] - temp[r,c]) / ry
                    else if c == col-1 then -- Edge 2
-                     (temp[r,c-1] - temp[r,c]) / Rx +
-                     (temp[r+1,c] + temp[r-1,c] - 2.0*temp[r,c]) / Ry
+                     (temp[r,c-1] - temp[r,c]) / rx +
+                     (temp[r+1,c] + temp[r-1,c] - 2.0*temp[r,c]) / ry
                    else if r == row-1 then -- Edge 3
-                     (temp[r,c+1] + temp[r,c-1] - 2.0*temp[r,c]) / Rx +
-                     (temp[r-1,c] - temp[r,c]) / Ry
+                     (temp[r,c+1] + temp[r,c-1] - 2.0*temp[r,c]) / rx +
+                     (temp[r-1,c] - temp[r,c]) / ry
                    else if c == 0 then -- Edge 4
-                     (temp[r,c+1] - temp[r,c]) / Rx +
-                     (temp[r+1,c] + temp[r-1,c] - 2.0*temp[r,c]) / Ry
+                     (temp[r,c+1] - temp[r,c]) / rx +
+                     (temp[r+1,c] + temp[r-1,c] - 2.0*temp[r,c]) / ry
                    else
-                     (temp[r,c+1] + temp[r,c-1] - 2.0 * temp[r,c]) / Rx +
-                     (temp[r+1,c] + temp[r-1,c] - 2.0 * temp[r,c]) / Ry) +
-                  (amb_temp() - temp[r,c]) / Rz) in
+                     (temp[r,c+1] + temp[r,c-1] - 2.0 * temp[r,c]) / rx +
+                     (temp[r+1,c] + temp[r-1,c] - 2.0 * temp[r,c]) / ry) +
+                  (amb_temp() - temp[r,c]) / rz) in
                temp[r,c] + delta
             , iota(col)),
          iota(row))
@@ -87,14 +87,14 @@ fun [[f32]] single_iteration([[f32,col],row] temp, [[f32,col],row] power,
 entry [[f32,col],row] compute_tran_temp(int num_iterations, [[f32,col],row] temp, [[f32,col],row] power) =
   let grid_height = chip_height() / f32(row) in
   let grid_width = chip_width() / f32(col) in
-  let Cap = factor_chip() * spec_heat_si() * t_chip() * grid_width * grid_height in
-  let Rx = grid_width / (2.0 * k_si() * t_chip() * grid_height) in
-  let Ry = grid_height / (2.0 * k_si() * t_chip() * grid_width) in
-  let Rz = t_chip() / (k_si() * grid_height * grid_width) in
+  let cap = factor_chip() * spec_heat_si() * t_chip() * grid_width * grid_height in
+  let rx = grid_width / (2.0 * k_si() * t_chip() * grid_height) in
+  let ry = grid_height / (2.0 * k_si() * t_chip() * grid_width) in
+  let rz = t_chip() / (k_si() * grid_height * grid_width) in
   let max_slope = max_pd() / (factor_chip() * t_chip() * spec_heat_si()) in
   let step = precision() / max_slope in
   loop (temp) = for i < num_iterations do
-    single_iteration(temp, power, Cap, Rx, Ry, Rz, step) in
+    single_iteration(temp, power, cap, rx, ry, rz, step) in
   temp
 
 entry [[[i8,3],col],row] render_frame([[f32,col],row] temp) =
