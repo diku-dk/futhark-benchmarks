@@ -7,7 +7,7 @@
 -- irregular).
 --
 -- Note: Rodinia also has a weight for each edge, but BFS doesn't use it.  It
--- could have been represented as `[i32, e] edges_weight` in Futhark.
+-- could have been represented as `[e]i32 edges_weight` in Futhark.
 --
 -- Returns the cost for getting to each node from the source node.
 --
@@ -20,9 +20,9 @@
 
 include lib.bfs_lib
 
-fun [i32, n] main([i32, n] nodes_start_index,
-                  [i32, n] nodes_n_edges,
-                  [i32, e] edges_dest) =
+fun [n]i32 main([n]i32 nodes_start_index,
+                  [n]i32 nodes_n_edges,
+                  [e]i32 edges_dest) =
   let graph_mask = replicate(n, False)
   let updating_graph_mask = replicate(n, False)
   let graph_visited = replicate(n, False)

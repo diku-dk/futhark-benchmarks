@@ -15,12 +15,12 @@ default(f32)
 --------------------------------------------------/
 --/ ENTRY POINT 
 --------------------------------------------------/
-fun ((f32,f32,f32,f32,f32,f32),[[f32]])
+fun ((f32,f32,f32,f32,f32,f32),[][]f32)
     main( int pop, int mcmc_conv, int l
-	    , [[f32]] swaptions,     int ll  
-            , [f32]   hermCoefs     
-            , [f32]   hermWeights,   int lll   
-            , [int ]   sobDirVct
+	    , [][]f32 swaptions,     int ll  
+            , []f32   hermCoefs     
+            , []f32   hermWeights,   int lll   
+            , []int   sobDirVct
 	    ) = 
   let hermData  = zip(hermCoefs, hermWeights) in
   interestCalibKernel(pop, mcmc_conv, swaptions, hermData, sobDirVct)
@@ -29,8 +29,8 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 --/ Prepares the output summary for each swaption
 --/ [calibration price, black price, % error]
 ----------------------------------------------------
-fun [[f32]] makeSummary([(f32,f32)] quote_prices) =
-  map( fn [f32] ((f32,f32) qp) =>
+fun [][]f32 makeSummary([](f32,f32) quote_prices) =
+  map( fn []f32 ((f32,f32) qp) =>
 	 let (black_price, calib_price) = qp in
 	 let err_ratio =  (calib_price - black_price) / black_price in
 	 [10000.0*calib_price, 10000.0*black_price, 100.0*fabs(err_ratio)]
@@ -40,22 +40,22 @@ fun [[f32]] makeSummary([(f32,f32)] quote_prices) =
 ----------------------------------------------------
 --/ COMPUTATIONAL KERNEL
 ----------------------------------------------------
-fun ((f32,f32,f32,f32,f32,f32),[[f32]])
+fun ((f32,f32,f32,f32,f32,f32),[][]f32)
     interestCalibKernel( int            pop
 		       , int            mcmc_conv
-                       , [[f32]]       swaptions
-		       , [(f32,f32)]  hermdata
-		       , [int]          sobDirVct
+                       , [][]f32       swaptions
+		       , [](f32,f32)  hermdata
+		       , []int          sobDirVct
 		       ) = 
   -- initialize the genomes
-  let genomes = map ( fn [f32] (int i) =>
+  let genomes = map ( fn []f32 (int i) =>
 			let k   = 5*i + 1                  in
 			let z5s = map ( +k, iota(5) ) in
 			let sobs= map ( sobolInd(sobDirVct), z5s )
 			in  initGenome( copy(sobs) ) 
 		    , iota(pop) ) in
   -- evaluate genomes
-  let logLiks = map ( fn f32 ([f32] genome) =>
+  let logLiks = map ( fn f32 ([]f32 genome) =>
 			let qtprs = map ( evalGenomeOnSwap(genome,hermdata)
 					, swaptions ) in 
 			let terms = map ( logLikelihood
@@ -75,7 +75,7 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
       let (proposals, fb_rats, sob_offs) =
 	if (move_type == 1) --  move_type == DIMS_ALL
 	then let sob_mat = 
-	         map( fn [f32] (int i) =>
+	         map( fn []f32 (int i) =>
 			let k   = 5*i + sob_offs          in
 			let z5s = map( +k, iota(5) ) in
 			map ( sobolInd(sobDirVct), z5s )
@@ -90,7 +90,7 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 	then let s1  = sobolInd( sobDirVct, sob_offs )  in
 	     let dim_j = int( s1 * f32(5) )        in
 	     let sob_mat = 
-	         map( fn [f32] (int i) =>
+	         map( fn []f32 (int i) =>
 			let k   = 5*i + sob_offs + 1    in
 			let z5s = map(+k, iota(5)) in
 			map ( sobolInd(sobDirVct), z5s )
@@ -103,7 +103,7 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 
 	else                -- move_type == DEMCMC
 	     let new_genomes = 
-	         map( fn *[f32] (int i) =>
+	         map( fn *[]f32 (int i) =>
 			let kk  = 8*i + sob_offs            in
 			let s1  = sobolInd( sobDirVct, kk ) in
 			let k = int( s1 * f32(pop-1) ) in -- random in [0,pop-1)
@@ -125,7 +125,7 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 	     in  (new_genomes, replicate(pop, 1.0), sob_offs+8*pop)
         in
       let new_logLiks = 
-	  map ( fn f32 ([f32] genome) =>
+	  map ( fn f32 ([]f32 genome) =>
 		    let qtprs = map ( evalGenomeOnSwap(genome,hermdata)
 				    , swaptions ) in 
 		    let terms = map ( logLikelihood
@@ -133,7 +133,7 @@ fun ((f32,f32,f32,f32,f32,f32),[[f32]])
 		    reduce( +, 0.0, terms )
 	      , proposals ) in
       let res_gene_liks = 
-	  map( fn (*[f32],f32) (([f32],f32,[f32],f32,f32,int) tup) =>
+	  map( fn (*[]f32,f32) (([]f32,f32,[]f32,f32,f32,int) tup) =>
 		 let (gene, logLik, new_gene, new_logLik, fb_rat, i) = tup    in
 		 let acceptance = min( 1.0, exp32(new_logLik - logLik)*fb_rat ) in
 		 let rand01     = sobolInd( sobDirVct, sob_offs+i )           in       
@@ -200,9 +200,9 @@ fun bool equal(f32 x1, f32 x2) =
 --/ back the quote and the estimated price
 --------------------------------------------------/
 fun (f32,f32) evalGenomeOnSwap (   
-                        [f32]         genomea
-		      , [(f32,f32)]  hermdata
-		      , [f32]         swaption 
+                        []f32         genomea
+		      , [](f32,f32)  hermdata
+		      , []f32         swaption 
 		) = 
   let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4]) in
   let swap_freq  = swaption[1] in
@@ -321,12 +321,12 @@ fun (f32,f32) evalGenomeOnSwap (
 --------------------------------------------------/
 --/ Sobol Random Number Generation
 --------------------------------------------------/
---fun [f32] getChunkSobNums(int sob_ini, int CHUNK, [int] dirVct) = 
+--fun []f32 getChunkSobNums(int sob_ini, int CHUNK, []int dirVct) = 
 --  let norm_fact = 1.0 / ( f32(1 << size(0,dirVct)) + 1.0 ) in
 --  let sob_inds  = map(+sob_ini, iota(CHUNK))
 --  in  map( sobolInd(dirVct,norm_fact), sob_inds )
 
-fun f32 sobolInd( [int] dirVct, int n ) =
+fun f32 sobolInd( []int dirVct, int n ) =
     -- placed norm_fact here to check that hoisting does its job!
     let norm_fact = 1.0 / ( f32(1 << size(0,dirVct)) + 1.0 ) in
     let n_gray = (n >> 1) ^ n in
@@ -342,7 +342,7 @@ fun f32 sobolInd( [int] dirVct, int n ) =
 --------------------------------------------------/
 --/ Genome Implementation
 --------------------------------------------------/
-fun [(f32,f32,f32)] genomeBounds() =
+fun [](f32,f32,f32) genomeBounds() =
     [ (eps0(),     1.0-eps0(), 0.02)
     , (eps0(),     1.0-eps0(), 0.02)
     , (eps0()-1.0, 1.0-eps0(), 0.0 )
@@ -350,7 +350,7 @@ fun [(f32,f32,f32)] genomeBounds() =
     , (eps0(),     0.2,        0.04)
     ]
 
-fun [f32] initGenome ([f32] rand_nums) =
+fun []f32 initGenome ([]f32 rand_nums) =
   map (fn f32 ((f32, (f32,f32,f32)) tup) =>
 		    let (r01, (g_min, g_max, g_ini)) = tup 
 		    in  r01*(g_max - g_min) + g_min
@@ -367,7 +367,7 @@ fun int selectMoveType(f32 r01) =
 
 fun f32 moves_unif_ampl_ratio() = 0.005
 
-fun (*[f32],f32) mutate_dims_all(([f32],[f32],[f32]) tup) = 
+fun (*[]f32,f32) mutate_dims_all(([]f32,[]f32,[]f32) tup) = 
   let (sob_row, orig, muta) = tup in
   let gene_bds = genomeBounds()   in
   let amplitude = moves_unif_ampl_ratio() in
@@ -377,7 +377,7 @@ fun (*[f32],f32) mutate_dims_all(([f32],[f32],[f32]) tup) =
   let fb_rat    = reduce(*, 1.0, fb_rats)
   in  (copy(new_genome), fb_rat)
   
-fun (*[f32],f32) mutate_dims_one(int dim_j, ([f32],[f32],[f32]) tup) = 
+fun (*[]f32,f32) mutate_dims_one(int dim_j, ([]f32,[]f32,[]f32) tup) = 
   let (sob_row, orig, muta) = tup in
   let gene_bds = genomeBounds()   in
   let amplitudes= map(fn f32 (int i) =>
@@ -391,7 +391,7 @@ fun (*[f32],f32) mutate_dims_one(int dim_j, ([f32],[f32],[f32]) tup) =
   in  (copy(new_genome), fb_rat)
 
 
-fun *[f32] mcmc_DE(f32 r01, [f32] sob_row, [f32] g_i, [f32] g_k, [f32] g_l) =
+fun *[]f32 mcmc_DE(f32 r01, []f32 sob_row, []f32 g_i, []f32 g_k, []f32 g_l) =
   let gene_bds = genomeBounds()         in
   let gamma_avg = 2.38 / sqrt32(2.0*5.0)    in
   let ampl_ratio= 0.1 * moves_unif_ampl_ratio() in
@@ -520,7 +520,7 @@ fun f32 erff_poly_only( f32 x ) =
 -- otherwise follows the f32 implementation
 ------------------------------------------------------------------------
 
-fun f32 to_solve(int fid, [(f32,f32)] scalesbbi, f32 yhat) =
+fun f32 to_solve(int fid, [](f32,f32) scalesbbi, f32 yhat) =
     if(fid == 33) then (yhat+3.0)*(yhat-1.0)*(yhat-1.0)
     else
         let tmps = map( fn f32 ( (f32,f32) scalesbbi ) =>
@@ -536,7 +536,7 @@ fun f32 to_solve(int fid, [(f32,f32)] scalesbbi, f32 yhat) =
 
 
 fun (f32,int,f32)
-rootFinding_Brent(int fid, [(f32,f32)] scalesbbi, f32 lb, f32 ub, f32 tol, int iter_max) =
+rootFinding_Brent(int fid, [](f32,f32) scalesbbi, f32 lb, f32 ub, f32 tol, int iter_max) =
     let tol      = if(tol     <= 0.0) then 1.0e-9 else tol      in
     let iter_max = if(iter_max<= 0  ) then 10000  else iter_max in
     let (a,b)    = (lb,ub)                                      in
@@ -625,12 +625,12 @@ fun f32 zc(f32 t) = exp32(-r() * date_act_365(t, today()))
 ----          swapt-term in years (how often to vary the condition of the contract)
 ----  the result is also a triple:
 ----    the maturity time stamp,
-----    the range of time stamps of for each swap term : [(f32,f32)]
+----    the range of time stamps of for each swap term : [](f32,f32)
 ----    the strike price
 ------------------------------------------/
 -- Quote (block) price computation
 ------------------------------------------/
-fun (f32,[(f32,f32)],(f32,f32))
+fun (f32,[](f32,f32),(f32,f32))
 extended_swaption_of_swaption((f32,f32,f32) swaption)  =  -- swaption = (sw_mat, freq, sw_ty)
     let (sw_mat, freq, sw_ty) = swaption          in
     let maturity   = add_years( today(), sw_mat ) in
@@ -788,8 +788,8 @@ fun f32
 pricer_of_swaption( f32                       today,
                     (f32,f32,f32)           swaption,
                     (f32,f32,f32,f32,f32) genome,
-                    [f32]                     x_quads,
-                    [f32]                     w_quads
+                    []f32                     x_quads,
+                    []f32                     w_quads
                   ) =
     let swaption = extended_swaption_of_swaption(swaption) in
     let (maturity, schedulei, (strike,unused)) = swaption  in
@@ -903,7 +903,7 @@ pricer_of_swaption( f32                       today,
 --------------------------
 fun f32 exactYhat( int n_schedi,
                     (f32,f32,f32,f32,f32,f32,f32,f32) scals,
-                    [(f32,f32,f32,f32)] babaicis,
+                    [](f32,f32,f32,f32) babaicis,
                     f32 x
                   ) =
     -- ugaussian_Pinv(k)=1.0e-4

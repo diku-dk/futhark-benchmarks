@@ -14,13 +14,13 @@ include lib.bfs_main_typical
 fun i32 max(i32 a, i32 b) =
   if a > b then a else b
 
-fun (*[i32, n], *[bool, n], *[i32])
-  step(*[i32, n] cost,
-       [i32, n] nodes_start_index,
-       [i32, n] nodes_n_edges,
-       [i32, e] edges_dest,
-       [bool, n] graph_visited,
-       *[bool, n] graph_mask) =
+fun (*[n]i32, *[n]bool, *[]i32)
+  step(*[n]i32 cost,
+       [n]i32 nodes_start_index,
+       [n]i32 nodes_n_edges,
+       [e]i32 edges_dest,
+       [n]bool graph_visited,
+       *[n]bool graph_mask) =
 
   -- We calculate the maximum number of edges for a node.  This is necessary,
   -- since the number of edges are irregular, and since we want to construct a
@@ -28,7 +28,7 @@ fun (*[i32, n], *[bool, n], *[i32])
   let e_max = reduceComm(max, 0, nodes_n_edges)
 
   let (inds_mask, ind_vals_upd0) =
-    unzip(map(fn (i32, [(i32, i32), e_max]) (int tid) =>
+    unzip(map(fn (i32, [e_max](i32,i32)) (int tid) =>
                 let start_index = nodes_start_index[tid]
                 let n_edges     = nodes_n_edges[tid]
                 let new_cost    = cost[tid] + 1

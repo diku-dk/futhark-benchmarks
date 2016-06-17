@@ -15,7 +15,7 @@
 
 default(f64)
 
-fun (*[[f64,n],n], *[[f64,n],n]) lu_inplace(*[[f64,n],n] a) =
+fun (*[n][n]f64, *[n][n]f64) lu_inplace(*[n][n]f64 a) =
   loop ((a,l,u) = (a,
                    copy(replicate(n,replicate(n,0.0))),
                    copy(replicate(n,replicate(n,0.0))))) =
@@ -36,7 +36,7 @@ fun (*[[f64,n],n], *[[f64,n],n]) lu_inplace(*[[f64,n],n] a) =
   (l,u)
 
 -- transpose l
-fun (*[[f64,n],n], *[[f64,n],n]) lu_par(*[[f64,n],n] a) =
+fun (*[n][n]f64, *[n][n]f64) lu_par(*[n][n]f64 a) =
   loop ((a,l,u) = (a,
                    copy(replicate(n,replicate(n,0.0))),
                    copy(replicate(n,replicate(n,0.0))))) =
@@ -54,7 +54,7 @@ fun (*[[f64,n],n], *[[f64,n],n]) lu_par(*[[f64,n],n] a) =
       let l[k] = l_k in
       let u[k] = u_k in
       let a = 
-        map( fn [f64,n] (int i) =>
+        map( fn [n]f64 (int i) =>
                 map( fn f64 (int j) =>
                         if(i<k) || (j<k)
                         then a[i,j]
@@ -66,6 +66,6 @@ fun (*[[f64,n],n], *[[f64,n],n]) lu_par(*[[f64,n],n] a) =
   in
   (l,u)
 
-fun ([[f64,n],n], [[f64,n],n]) main(*[[f64,n],n] a) =
+fun ([n][n]f64, [n][n]f64) main(*[n][n]f64 a) =
   -- lu_inplace(a)
   let (l,u) = lu_inplace(a) in ( l, u )
