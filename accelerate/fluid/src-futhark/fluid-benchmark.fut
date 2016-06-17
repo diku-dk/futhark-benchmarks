@@ -5,12 +5,12 @@
 
 include fluid
 
-fun ([[f32, g], g],
-     [[f32, g], g],
-     [[f32, g], g])
-  main([[f32, g], g] u0,
-       [[f32, g], g] v0,
-       [[f32, g], g] d0,
+fun ([g][g]f32,
+     [g][g]f32,
+     [g][g]f32)
+  main([g][g]f32 u0,
+       [g][g]f32 v0,
+       [g][g]f32 d0,
        i32 n_steps,
        i32 n_solver_steps,
        f32 time_step,

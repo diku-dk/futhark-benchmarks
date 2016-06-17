@@ -22,13 +22,13 @@
 -- g : data term gradient array, size (m,n,p).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun [[[f32,p],n],m] 
-add_descent_div3s( [[[ f32         ,p],n],m] v
-                 , [[[(f32,f32,f32),p],n],m] xi
-                 , [[[ f32         ,p],n],m] g
+fun [m][n][p]f32 
+add_descent_div3s( [m][n][p]f32 v
+                 , [m][n][p](f32,f32,f32) xi
+                 , [m][n][p]f32 g
                  , f32                       tp ) =
-  map(fn [[f32,p],n] (int i) =>
-        map(fn [f32,p] (int j) => 
+  map(fn [n][p]f32 (int i) =>
+        map(fn [p]f32 (int j) => 
               map(fn f32 (int k) => unsafe
                     -- get current `v`, `g`, and `xi` element
                     let v_el = v[i,j,k] in
@@ -186,10 +186,10 @@ add_descent_div3s( [[[ f32         ,p],n],m] v
 -----------------------------------------------------
 -----------------------------------------------------
 
-fun [[[f32,p],n],m] 
-             main( [[[ f32         ,p],n],m] v
-                 , [[[(f32,f32,f32),p],n],m] xi
-                 , [[[ f32         ,p],n],m] g
+fun [m][n][p]f32 
+             main( [m][n][p]f32 v
+                 , [m][n][p](f32,f32,f32) xi
+                 , [m][n][p]f32 g
                  , f32                       tp ) =
     add_descent_div3s(v, xi, g, tp)
 

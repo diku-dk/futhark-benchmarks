@@ -73,9 +73,9 @@ fun (i32, i32, f32) outermost_inner_index(i32 i, i32 j, i32 g, i32 b) =
 -- lin_solve.
 ------------------------------------------------------------
 
-fun [[f32, g], g]
+fun [g][g]f32
   lin_solve(i32 n_solver_steps,
-            [[f32, g], g] s0,
+            [g][g]f32 s0,
             i32 b,
             f32 a,
             f32 c) =
@@ -95,8 +95,8 @@ fun [[f32, g], g]
 fun f32
   lin_solve_inner(i32 i,
                   i32 j,
-                  [[f32, g], g] s0,
-                  [[f32, g], g] s1,
+                  [g][g]f32 s0,
+                  [g][g]f32 s1,
                   f32 a,
                   f32 c) =
   -- A stencil.
@@ -109,8 +109,8 @@ fun f32
 fun f32
   lin_solve_outer(i32 i,
                   i32 j,
-                  [[f32, g], g] s0,
-                  [[f32, g], g] s1,
+                  [g][g]f32 s0,
+                  [g][g]f32 s1,
                   f32 a,
                   f32 c,
                   i32 b) =
@@ -123,8 +123,8 @@ fun f32
 fun f32
   lin_solve_outer_base(i32 i,
                        i32 j,
-                       [[f32, g], g] s0,
-                       [[f32, g], g] s1,
+                       [g][g]f32 s0,
+                       [g][g]f32 s1,
                        f32 a,
                        f32 c,
                        i32 b) =
@@ -136,8 +136,8 @@ fun f32
 -- diffuse.
 ------------------------------------------------------------
 
-fun [[f32, g], g]
-  diffuse([[f32, g], g] s,
+fun [g][g]f32
+  diffuse([g][g]f32 s,
           i32 b,
           i32 n_solver_steps,
           f32 diffusion_rate_or_viscosity,
@@ -151,10 +151,10 @@ fun [[f32, g], g]
 -- advect.
 ------------------------------------------------------------
 
-fun *[[f32, g], g]
-  advect([[f32, g], g] s0,
-         [[f32, g], g] u,
-         [[f32, g], g] v,
+fun *[g][g]f32
+  advect([g][g]f32 s0,
+         [g][g]f32 u,
+         [g][g]f32 v,
          i32 b,
          f32 time_step) =
   let one = (g*g+2*g+1)/(g+1) - g in
@@ -171,9 +171,9 @@ fun *[[f32, g], g]
 fun f32
   advect_inner(i32 i,
                i32 j,
-               [[f32, g], g] s,
-               [[f32, g], g] u,
-               [[f32, g], g] v,
+               [g][g]f32 s,
+               [g][g]f32 u,
+               [g][g]f32 v,
                f32 time_step0) =
   let x = f32(i) - time_step0 * unsafe u[i, j] in
   let y = f32(j) - time_step0 * unsafe v[i, j] in
@@ -199,9 +199,9 @@ fun f32
 fun f32
   advect_outer(i32 i,
                i32 j,
-               [[f32, g], g] s,
-               [[f32, g], g] u,
-               [[f32, g], g] v,
+               [g][g]f32 s,
+               [g][g]f32 u,
+               [g][g]f32 v,
                f32 time_step0,
                i32 b) =
   if in_outside_corner(i, j, g)
@@ -213,9 +213,9 @@ fun f32
 fun f32
   advect_outer_base(i32 i,
                     i32 j,
-                    [[f32, g], g] s,
-                    [[f32, g], g] u,
-                    [[f32, g], g] v,
+                    [g][g]f32 s,
+                    [g][g]f32 u,
+                    [g][g]f32 v,
                     f32 time_step0,
                     i32 b) =
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
@@ -226,20 +226,20 @@ fun f32
 -- project.
 ------------------------------------------------------------
 
-fun (*[[f32, g], g],
-     *[[f32, g], g])
+fun (*[g][g]f32,
+     *[g][g]f32)
   project(i32 n_solver_steps,
-          [[f32, g], g] u0,
-          [[f32, g], g] v0) =
+          [g][g]f32 u0,
+          [g][g]f32 v0) =
   let div0 = project_top(u0, v0) in
   let p0 = lin_solve(n_solver_steps, div0, 0, 1.0f32, 4.0f32) in
   let u1 = project_bottom(p0, u0, 1, 1, 0, -1, 0) in
   let v1 = project_bottom(p0, v0, 2, 0, 1, 0, -1) in
   (u1, v1)
 
-fun [[f32, g], g]
-  project_top([[f32, g], g] u0,
-              [[f32, g], g] v0) =
+fun [g][g]f32
+  project_top([g][g]f32 u0,
+              [g][g]f32 v0) =
       let one = (g*g+2*g+1)/(g+1) - g in
       reshape((g, g), 
         map(fn f32 (i32 ij) =>
@@ -253,8 +253,8 @@ fun [[f32, g], g]
 fun f32
   project_top_inner(i32 i,
                     i32 j,
-                    [[f32, g], g] u0,
-                    [[f32, g], g] v0) =
+                    [g][g]f32 u0,
+                    [g][g]f32 v0) =
   unsafe (-0.5f32 * (u0[i + 1, j]
                      - u0[i - 1, j]
                      + v0[i, j + 1]
@@ -263,8 +263,8 @@ fun f32
 fun f32
   project_top_outer(i32 i,
                     i32 j,
-                    [[f32, g], g] u0,
-                    [[f32, g], g] v0) =
+                    [g][g]f32 u0,
+                    [g][g]f32 v0) =
   if in_outside_corner(i, j, g)
   then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (project_top_outer_base(i1, j1, u0, v0)
@@ -274,14 +274,14 @@ fun f32
 fun f32
   project_top_outer_base(i32 i,
                          i32 j,
-                         [[f32, g], g] u0,
-                         [[f32, g], g] v0) =
+                         [g][g]f32 u0,
+                         [g][g]f32 v0) =
   let (i1, j1, f) = outermost_inner_index(i, j, g, 0)
   in project_top_inner(i1, j1, u0, v0)
 
-fun *[[f32, g], g]
-  project_bottom([[f32, g], g] p0,
-                 [[f32, g], g] s0,
+fun *[g][g]f32
+  project_bottom([g][g]f32 p0,
+                 [g][g]f32 s0,
                  i32 b,
                  i32 i0d,
                  i32 j0d,
@@ -301,8 +301,8 @@ fun *[[f32, g], g]
 fun f32
   project_bottom_inner(i32 i,
                        i32 j,
-                       [[f32, g], g] p0,
-                       [[f32, g], g] s0,
+                       [g][g]f32 p0,
+                       [g][g]f32 s0,
                        i32 i0d,
                        i32 j0d,
                        i32 i1d,
@@ -313,8 +313,8 @@ fun f32
 fun f32
   project_bottom_outer(i32 i,
                        i32 j,
-                       [[f32, g], g] p0,
-                       [[f32, g], g] s0,
+                       [g][g]f32 p0,
+                       [g][g]f32 s0,
                        i32 i0d,
                        i32 j0d,
                        i32 i1d,
@@ -329,8 +329,8 @@ fun f32
 fun f32
   project_bottom_outer_base(i32 i,
                             i32 j,
-                            [[f32, g], g] p0,
-                            [[f32, g], g] s0,
+                            [g][g]f32 p0,
+                            [g][g]f32 s0,
                             i32 i0d,
                             i32 j0d,
                             i32 i1d,
@@ -344,10 +344,10 @@ fun f32
 -- Step functions.
 ------------------------------------------------------------
 
-fun *[[f32, g], g]
-  dens_step([[f32, g], g] d0,
-            [[f32, g], g] u0,
-            [[f32, g], g] v0,
+fun *[g][g]f32
+  dens_step([g][g]f32 d0,
+            [g][g]f32 u0,
+            [g][g]f32 v0,
             i32 n_solver_steps,
             f32 diffusion_rate,
             f32 time_step) =
@@ -355,10 +355,10 @@ fun *[[f32, g], g]
   let d2 = advect(d1, u0, v0, 0, time_step) in
   d2
 
-fun (*[[f32, g], g],
-     *[[f32, g], g])
-  vel_step([[f32, g], g] u0,
-           [[f32, g], g] v0,
+fun (*[g][g]f32,
+     *[g][g]f32)
+  vel_step([g][g]f32 u0,
+           [g][g]f32 v0,
            i32 n_solver_steps,
            f32 viscosity,
            f32 time_step) =
@@ -370,12 +370,12 @@ fun (*[[f32, g], g],
   let (u4, v4) = project(n_solver_steps, u3, v3) in
   (u4, v4)
 
-fun (*[[f32, g], g],
-     *[[f32, g], g],
-     *[[f32, g], g])
-     step([[f32, g], g] u0,
-          [[f32, g], g] v0,
-          [[f32, g], g] d0,
+fun (*[g][g]f32,
+     *[g][g]f32,
+     *[g][g]f32)
+     step([g][g]f32 u0,
+          [g][g]f32 v0,
+          [g][g]f32 d0,
           i32 n_solver_steps,
           f32 time_step,
           f32 diffusion_rate,
@@ -391,12 +391,12 @@ fun (*[[f32, g], g],
 -- Wrapper functions.
 ------------------------------------------------------------
 
-fun ([[f32, g], g],
-     [[f32, g], g],
-     [[f32, g], g])
-  get_end_frame([[f32, g], g] u0,
-                [[f32, g], g] v0,
-                [[f32, g], g] d0,
+fun ([g][g]f32,
+     [g][g]f32,
+     [g][g]f32)
+  get_end_frame([g][g]f32 u0,
+                [g][g]f32 v0,
+                [g][g]f32 d0,
                 i32 n_steps,
                 i32 n_solver_steps,
                 f32 time_step,
@@ -407,12 +407,12 @@ fun ([[f32, g], g],
          diffusion_rate, viscosity)
   in (u0, v0, d0)
 
-fun ([[[f32, g], g], n_steps],
-     [[[f32, g], g], n_steps],
-     [[[f32, g], g], n_steps])
-  get_all_frames([[f32, g], g] u0,
-                 [[f32, g], g] v0,
-                 [[f32, g], g] d0,
+fun ([n_steps][g][g]f32,
+     [n_steps][g][g]f32,
+     [n_steps][g][g]f32)
+  get_all_frames([g][g]f32 u0,
+                 [g][g]f32 v0,
+                 [g][g]f32 d0,
                  i32 n_steps,
                  i32 n_solver_steps,
                  f32 time_step,

@@ -11,9 +11,9 @@
 include lib.bfs_lib
 
 
-fun [i32, n] main([i32, n] nodes_start_index,
-                  [i32, n] nodes_n_edges,
-                  [i32, e] edges_dest) =
+fun [n]i32 main([n]i32 nodes_start_index,
+                  [n]i32 nodes_n_edges,
+                  [e]i32 edges_dest) =
   let graph_mask = replicate(n, False)
   let updating_graph_mask = replicate(n, False)
   let graph_visited = replicate(n, False)
@@ -48,14 +48,14 @@ fun [i32, n] main([i32, n] nodes_start_index,
       in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
   in cost
 
-fun (*[i32, n], *[bool, n], *[bool, n])
-  step(*[i32, n] cost,
-       [i32, n] nodes_start_index,
-       [i32, n] nodes_n_edges,
-       [i32, e] edges_dest,
-       [bool, n] graph_visited,
-       *[bool, n] graph_mask,
-       *[bool, n] updating_graph_mask) =
+fun (*[n]i32, *[n]bool, *[n]bool)
+  step(*[n]i32 cost,
+       [n]i32 nodes_start_index,
+       [n]i32 nodes_n_edges,
+       [e]i32 edges_dest,
+       [n]bool graph_visited,
+       *[n]bool graph_mask,
+       *[n]bool updating_graph_mask) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
   let n_indices = size(0, active_indices)

@@ -38,10 +38,10 @@ fun f32 amb_temp() = 80.0
 -- Single iteration of the transient solver in the grid model.
 -- advances the solution of the discretized difference equations by
 -- one time step
-fun [[f32]] single_iteration([[f32,col],row] temp, [[f32,col],row] power,
+fun [][]f32 single_iteration([row][col]f32 temp, [row][col]f32 power,
                               f32 cap, f32 rx, f32 ry, f32 rz,
                               f32 step) =
-  map (fn [f32] (int r) =>
+  map (fn []f32 (int r) =>
          map(fn f32 (int c) =>
                let delta =
                  (step / cap) *
@@ -84,7 +84,7 @@ fun [[f32]] single_iteration([[f32,col],row] temp, [[f32,col],row] power,
 -- difference equations by iterating.
 --
 -- Returns a new 'temp' array.
-entry [[f32,col],row] compute_tran_temp(int num_iterations, [[f32,col],row] temp, [[f32,col],row] power) =
+entry [row][col]f32 compute_tran_temp(int num_iterations, [row][col]f32 temp, [row][col]f32 power) =
   let grid_height = chip_height() / f32(row) in
   let grid_width = chip_width() / f32(col) in
   let cap = factor_chip() * spec_heat_si() * t_chip() * grid_width * grid_height in
@@ -97,11 +97,11 @@ entry [[f32,col],row] compute_tran_temp(int num_iterations, [[f32,col],row] temp
     single_iteration(temp, power, cap, rx, ry, rz, step) in
   temp
 
-entry [[[i8,3],col],row] render_frame([[f32,col],row] temp) =
+entry [row][col][3]i8 render_frame([row][col]f32 temp) =
   let hottest = 360f32
   let coldest = 270f32
-  in map(fn [[i8,3],col] ([f32] temp_r) =>
-           map(fn [i8,3] (f32 c) =>
+  in map(fn [col][3]i8 ([]f32 temp_r) =>
+           map(fn [3]i8 (f32 c) =>
                  let c' = (if c < coldest
                            then coldest
                            else (if c > hottest then hottest else c))
@@ -110,5 +110,5 @@ entry [[[i8,3],col],row] render_frame([[f32,col],row] temp) =
                temp_r),
            temp)
 
-fun [[f32]] main(int num_iterations, [[f32,col],row] temp, [[f32,col],row] power) =
+fun [][]f32 main(int num_iterations, [row][col]f32 temp, [row][col]f32 power) =
   compute_tran_temp(num_iterations, temp, power)

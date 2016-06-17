@@ -22,11 +22,11 @@ fun int divergence(int limit, (f32,f32) c0) =
      i + 1) in
   i
 
-fun [[int,height],width] mandelbrot(int width, int height, int limit, (f32,f32,f32,f32) view) =
+fun [width][height]int mandelbrot(int width, int height, int limit, (f32,f32,f32,f32) view) =
   let (xmin, ymin, xmax, ymax) = view in
   let sizex = xmax - xmin in
   let sizey = ymax - ymin in
-  map(fn [int,height] (int x) =>
+  map(fn [height]int (int x) =>
         map (fn int (int y) =>
                let c0 = (xmin + (f32(x) * sizex) / f32(width),
                          ymin + (f32(y) * sizey) / f32(height)) in
@@ -34,14 +34,14 @@ fun [[int,height],width] mandelbrot(int width, int height, int limit, (f32,f32,f
             , iota(height)),
         iota(width))
 
-fun [[[i8,3],height],width] main(int width, int height, int limit, (f32,f32,f32,f32) view) =
+fun [width][height][3]i8 main(int width, int height, int limit, (f32,f32,f32,f32) view) =
   let escapes = mandelbrot(width, height, limit, view) in
-  map(fn [[i8,3],height] ([int] row) =>
+  map(fn [height][3]i8 ([]int row) =>
         map(escapeToColour(limit), row),
       escapes)
 
 -- Returns RGB (no alpha channel).
-fun [i8,3] escapeToColour(int limit, int divergence) =
+fun [3]i8 escapeToColour(int limit, int divergence) =
   if limit == divergence
   then [0i8, 0i8, 0i8]
   else

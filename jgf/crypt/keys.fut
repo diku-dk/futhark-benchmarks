@@ -27,7 +27,7 @@ fun i32 inv(i16 a) =
 
   (if u < 0 then u + 0x10001 else u) & 0xFFFF
 
-fun [i16,52] encryptionKey([i16,8] userkey) =
+fun [52]i16 encryptionKey([8]i16 userkey) =
   -- Key starts out blank.
   let z = replicate(52, 0i16) in
   -- First 8 subkeys are userkey itself.
@@ -52,7 +52,7 @@ fun [i16,52] encryptionKey([i16,8] userkey) =
     z in
   z
 
-fun [i16,52] decryptionKey([i16,52] z) =
+fun [52]i16 decryptionKey([52]i16 z) =
   -- Key starts out blank.
   let dk = replicate(52, 0i16) in
   let t1 = inv(z[0]) in
@@ -91,6 +91,6 @@ fun [i16,52] decryptionKey([i16,52] z) =
   let dk[jb-5] = t1 in
   dk
 
-fun ([i16,52],[i16,52]) main([i16,8] userkey) =
+fun ([52]i16,[52]i16) main([8]i16 userkey) =
   let z = encryptionKey(userkey) in
   (z, decryptionKey(z))

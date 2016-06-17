@@ -13,9 +13,9 @@
 include lib.bfs_lib
 
 
-fun [i32, n] main([i32, n] nodes_start_index,
-                  [i32, n] nodes_n_edges,
-                  [i32, e] edges_dest) =
+fun [n]i32 main([n]i32 nodes_start_index,
+                  [n]i32 nodes_n_edges,
+                  [e]i32 edges_dest) =
   let graph_mask = replicate(n, False)
   let updating_graph_mask = replicate(n, False)
   let graph_visited = replicate(n, False)
@@ -71,15 +71,15 @@ fun [i32, n] main([i32, n] nodes_start_index,
       in (cost', graph_mask'', graph_visited', continue')
   in cost
 
-fun (*[i32, n], *[bool, n], *[i32])
-  step(*[i32, n] cost,
-       [i32, n] nodes_start_index,
-       [i32, n] nodes_n_edges,
-       [i32, e] edges_dest,
-       [bool, n] graph_visited,
-       *[bool, n] graph_mask,
-       [i32, e] node_ids,
-       [i32, e] tids) =
+fun (*[n]i32, *[n]bool, *[]i32)
+  step(*[n]i32 cost,
+       [n]i32 nodes_start_index,
+       [n]i32 nodes_n_edges,
+       [e]i32 edges_dest,
+       [n]bool graph_visited,
+       *[n]bool graph_mask,
+       [e]i32 node_ids,
+       [e]i32 tids) =
   let write_indices = map(fn i32 (i32 id, i32 tid) =>
                             if (unsafe graph_visited[id]
                                 || ! unsafe graph_mask[tid])

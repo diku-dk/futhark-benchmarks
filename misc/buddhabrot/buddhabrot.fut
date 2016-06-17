@@ -18,7 +18,7 @@ fun (f32,f32) addComplex((f32,f32) x, (f32,f32) y) =
   in (a + c,
       b + d)
 
-fun ([(f32,f32),depth],bool) divergence(int depth, (f32,f32) c0) =
+fun ([depth](f32,f32),bool) divergence(int depth, (f32,f32) c0) =
   let trajectory = replicate(depth, (0.0, 0.0))
   loop ((trajectory, c, i) = (trajectory, c0, 0)) = while i < depth && dot(c) < 4.0 do
     unsafe
@@ -27,14 +27,14 @@ fun ([(f32,f32),depth],bool) divergence(int depth, (f32,f32) c0) =
     in (trajectory, c', i + 1)
     in (trajectory, i == depth)
 
-fun ([[[(f32,f32),depth],xprec],yprec],
-     [[bool,xprec],yprec]) trajectories(int depth, int xprec, int yprec,
+fun ([yprec][xprec][depth](f32,f32),
+     [yprec][xprec]bool) trajectories(int depth, int xprec, int yprec,
                                         (f32,f32,f32,f32) field) =
   let (xmin, ymin, xmax, ymax) = field
   let sizex = xmax - xmin
   let sizey = ymax - ymin
   let (trajectories, escapes) =
-    unzip(map (fn ([(f32,f32),depth],bool) (int i) =>
+    unzip(map (fn ([depth](f32,f32),bool) (int i) =>
                  let x = i % xprec
                  let y = i / yprec
                  let c0 = (xmin + (f32(x) * sizex) / f32(xprec),
@@ -63,9 +63,9 @@ fun int colourise(int max_visits, int visits) =
   let c = 255-int(log32(f32(visits)) / log32(f32(max_visits)) * 255.0)
   in c << 16 | c << 8 | c
 
-fun [[int,m],n] visualise(int n, int m, (f32,f32,f32,f32) view,
-                          [[[(f32,f32),depth],xprec],yprec] trajectories,
-                          [[bool,xprec],yprec] escapes) =
+fun [n][m]int visualise(int n, int m, (f32,f32,f32,f32) view,
+                          [yprec][xprec][depth](f32,f32) trajectories,
+                          [yprec][xprec]bool escapes) =
   let (xmin, ymin, xmax, ymax) = view
   let sizex = xmax - xmin
   let sizey = ymax - ymin
@@ -73,13 +73,13 @@ fun [[int,m],n] visualise(int n, int m, (f32,f32,f32,f32) view,
   let escapes' = reshape((xprec*yprec), escapes)
   let visits_per_pixel =
     reshape((n*m),
-            streamRedPer(fn [[int,m],n] ([[int,m],n] ass, [[int,m],n] bss) =>
-                           zipWith(fn [int,m] ([int,m] as, [int,m] bs) =>
+            streamRedPer(fn [n][m]int ([n][m]int ass, [n][m]int bss) =>
+                           zipWith(fn [m]int ([m]int as, [m]int bs) =>
                                      zipWith(+, as, bs),
                                    ass, bss),
-                           fn [[int,m],n] (int chunk,
-                                           *[[int,m],n] acc,
-                                           [([(f32,f32),depth],bool)] inp) =>
+                           fn [n][m]int (int chunk,
+                                           *[n][m]int acc,
+                                           []([depth](f32,f32),bool) inp) =>
                              loop (acc) = for i < chunk do
                                (let (trajectory, escaped) = inp[i]
                                 in if escaped then (loop (acc) = for j < depth do
@@ -99,7 +99,7 @@ fun [[int,m],n] visualise(int n, int m, (f32,f32,f32,f32) view,
   let coloured = map(colourise(max_visits), visits_per_pixel)
   in reshape((n,m), coloured)
 
-fun [[int,m],n] main(int n, int m, (f32,f32,f32,f32) view,
+fun [n][m]int main(int n, int m, (f32,f32,f32,f32) view,
                      int depth,
                      int xprec, int yprec, (f32,f32,f32,f32) field) =
   let (trajectories, escapes) = trajectories(depth, xprec, yprec, field)

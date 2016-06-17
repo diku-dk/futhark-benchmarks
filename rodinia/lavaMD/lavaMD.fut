@@ -20,12 +20,12 @@ fun f32 dot((f32,f32,f32) a, (f32,f32,f32) b) =
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
-fun [int, 30] sobolDirVcts() = 
+fun [30]int sobolDirVcts() = 
     [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
       524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
       512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
 
-fun int sobolInd( [int,30] dirVct, int n ) =
+fun int sobolInd( [30]int dirVct, int n ) =
     let n_gray = (n >> 1) ^ n in
     let res = 0 in
     loop (res) =
@@ -39,15 +39,15 @@ fun int sobolInd( [int,30] dirVct, int n ) =
 -----------------------------------------
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
-fun  [ [ (f32,f32,f32,f32), par_per_box], number_boxes ]  -- result fv
+fun  [number_boxes][par_per_box](f32,f32,f32,f32)  -- result fv
 computKernel( f32 alpha
-            , [   (int, int, int, int), number_boxes]       box_coefs
-            , [ [ (int, int, int, int), number_boxes] ]     box_nnghs  -- outer dim should be num_neighbors
-            , [ [ (f32,f32,f32,f32), par_per_box], number_boxes ] rv
-            , [ [ f32,                  par_per_box], number_boxes ] qv
+            , [number_boxes](int,int,int,int)       box_coefs
+            , [][number_boxes](int,int,int,int)     box_nnghs  -- outer dim should be num_neighbors
+            , [number_boxes][par_per_box](f32,f32,f32,f32) rv
+            , [number_boxes][par_per_box]f32 qv
             ) =
   let a2 = 2.0*alpha*alpha in
-  map( fn [ (f32,f32,f32,f32), par_per_box] (int l) =>
+  map( fn [par_per_box](f32,f32,f32,f32) (int l) =>
         let ( bl_x, bl_y, bl_bz, bl_number ) = box_coefs[l] in
         let rA = rv[l] in
         map (fn (f32,f32,f32,f32) ( (f32,f32,f32,f32) rA_el ) => --(int i) =>
@@ -104,8 +104,8 @@ computKernel( f32 alpha
 
 -----------------------
 -----------------------
-fun  ([[f32]],[[f32]],[[f32]],[[f32]])  
---fun [[(int,int,int,int)]]
+fun  ([][]f32,[][]f32,[][]f32,[][]f32)  
+--fun [][](int,int,int,int)
 main(int boxes1d) =
     let number_boxes = boxes1d * boxes1d * boxes1d in
     let alpha        = 0.5                  in
@@ -117,7 +117,7 @@ main(int boxes1d) =
     -- 1. Initialize boxs' data structure --
     ----------------------------------------
     let boxes = 
-      map(fn ( (int, int, int, int), [(int, int, int, int), num_nn] ) (int nh) =>
+      map(fn ( (int, int, int, int), [num_nn](int,int,int,int) ) (int nh) =>
             let k = nh % boxes1d in
             let nr= nh / boxes1d in
             let j = nr % boxes1d in
@@ -152,7 +152,7 @@ main(int boxes1d) =
     ----------------------------------------------
     -- 2. Initialize input distances and charge --
     ----------------------------------------------
-    let rqv = map ( fn [ (f32, (f32,f32,f32,f32)), par_per_box] (int i) =>
+    let rqv = map ( fn [par_per_box](f32,(f32,f32,f32,f32)) (int i) =>
                         map( fn (f32, (f32,f32,f32,f32)) (int j) =>
                                 let n = (i*par_per_box + j)*5 + 1 in
                                 let s1= sobolInd(dirVct, n  ) in 

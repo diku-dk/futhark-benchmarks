@@ -26,14 +26,14 @@
 -- g : data term gradient array, size (m,n,p,q).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun [[[[f32,q],p],n],m] 
-add_descent_div3v( [[[[ f32         ,q],p],n],m] v
-                 , [[[[(f32,f32,f32),q],p],n],m] xi
-                 , [[[[ f32         ,q],p],n],m] g
+fun [m][n][p][q]f32 
+add_descent_div3v( [m][n][p][q]f32 v
+                 , [m][n][p][q](f32,f32,f32) xi
+                 , [m][n][p][q]f32 g
                  , f32                           tp ) =
-  map(fn [[[f32,q],p],n] (int i) =>
-        map(fn [[f32,q],p] (int j) => 
-              map(fn [f32,q] (int k) => 
+  map(fn [n][p][q]f32 (int i) =>
+        map(fn [p][q]f32 (int j) => 
+              map(fn [q]f32 (int k) => 
               map(fn f32 (int l) => unsafe
                     -- get current `v`, `g`, and `xi` element
                     let v_el = v[i,j,k,l] in
@@ -191,15 +191,15 @@ add_descent_div3v( [[[[ f32         ,q],p],n],m] v
 -----------------------------------------------------
 -----------------------------------------------------
 
-fun [[[[f32,q],p],n],m] 
-            main1( [[[[ f32         ,q],p],n],m] v
-                 , [[[[(f32,f32,f32),q],p],n],m] xi
-                 , [[[[ f32         ,q],p],n],m] g
+fun [m][n][p][q]f32 
+            main1( [m][n][p][q]f32 v
+                 , [m][n][p][q](f32,f32,f32) xi
+                 , [m][n][p][q]f32 g
                  , f32                           tp ) =
 
     add_descent_div3v(v, xi, g, tp)
 
-fun [[[[f32,q],p],n],m] main(int m, int n, int p, int q, int loop_count) = 
+fun [m][n][p][q]f32 main(int m, int n, int p, int q, int loop_count) = 
     let mnpq = (m*n*p*q) in
     let v  = reshape( (m,n,p,q), map(f32, iota(mnpq)) ) in
     let g  = reshape( (m,n,p,q), map(f32, iota(mnpq)) ) in

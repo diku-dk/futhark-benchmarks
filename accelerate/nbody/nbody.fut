@@ -54,13 +54,13 @@ fun vec3 accel_wrap(f32 epsilon, body body_i, body body_j) =
   let (pj, mj, _ , _) = body_j
   in accel(epsilon, pi, mi, pj, mj)
 
-fun position move(f32 epsilon, [body] bodies, body this_body) =
+fun position move(f32 epsilon, []body bodies, body this_body) =
   let accels = map(fn acceleration (body other_body) =>
                      accel_wrap(epsilon, this_body, other_body),
                    bodies)
   in reduceComm(vec_add, (0f32, 0f32, 0f32), accels)
 
-fun [acceleration] calc_accels(f32 epsilon, [body] bodies) =
+fun []acceleration calc_accels(f32 epsilon, []body bodies) =
   map(move(epsilon, bodies), bodies)
 
 fun body advance_body(f32 time_step, body this_body) =
@@ -77,12 +77,12 @@ fun body advance_body_wrap(f32 time_step, body this_body, acceleration accel) =
   let body' = (pos, mass, vel, accel')
   in advance_body(time_step, body')
 
-fun [body, n] advance_bodies(f32 epsilon, f32 time_step, [body, n] bodies) =
+fun [n]body advance_bodies(f32 epsilon, f32 time_step, [n]body bodies) =
   let accels = calc_accels(epsilon, bodies)
   in zipWith(advance_body_wrap(time_step), bodies, accels)
 
-fun [body, n] advance_bodies_steps(i32 n_steps, f32 epsilon, f32 time_step,
-                                   [body, n] bodies) =
+fun [n]body advance_bodies_steps(i32 n_steps, f32 epsilon, f32 time_step,
+                                   [n]body bodies) =
   loop (bodies) = for i < n_steps do
     advance_bodies(epsilon, time_step, bodies)
   in bodies
@@ -99,20 +99,20 @@ fun (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) unwrap_body(body this_bod
 
 
 
-fun ([f32, n], [f32, n], [f32, n], [f32, n], [f32, n], [f32, n], [f32, n], [f32, n], [f32, n], [f32, n])
+fun ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32)
   main(i32 n_steps,
        f32 epsilon,
        f32 time_step,
-       [f32, n] xps,
-       [f32, n] yps,
-       [f32, n] zps,
-       [f32, n] ms,
-       [f32, n] xvs,
-       [f32, n] yvs,
-       [f32, n] zvs,
-       [f32, n] xas,
-       [f32, n] yas,
-       [f32, n] zas) =
+       [n]f32 xps,
+       [n]f32 yps,
+       [n]f32 zps,
+       [n]f32 ms,
+       [n]f32 xvs,
+       [n]f32 yvs,
+       [n]f32 zvs,
+       [n]f32 xas,
+       [n]f32 yas,
+       [n]f32 zas) =
   let bodies  = map(wrap_body, zip(xps, yps, zps, ms, xvs, yvs, zvs, xas, yas, zas))
   let bodies' = advance_bodies_steps(n_steps, epsilon, time_step, bodies)
   let bodies'' = map(unwrap_body, bodies')

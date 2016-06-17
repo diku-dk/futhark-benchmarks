@@ -3,13 +3,13 @@
 fun int bint(bool b) = if b then 1 else 0
 fun bool intb(int x) = if x == 0 then False else True
 
-fun [[bool]] to_bool_board([[int]] board) =
-  map(fn [bool] ([int] r) => map(intb, r), board)
+fun [][]bool to_bool_board([][]int board) =
+  map(fn []bool ([]int r) => map(intb, r), board)
 
-fun [[int]] to_int_board([[bool]] board) =
-  map(fn [int] ([bool] r) => map(bint, r), board)
+fun [][]int to_int_board([][]bool board) =
+  map(fn []int ([]bool r) => map(bint, r), board)
 
-fun int cell_neighbors(int i, int j, [[bool,m],n] board) =
+fun int cell_neighbors(int i, int j, [n][m]bool board) =
   unsafe
   let above = (i - 1) % n in
   let below = (i + 1) % n in
@@ -19,16 +19,16 @@ fun int cell_neighbors(int i, int j, [[bool,m],n] board) =
   bint(board[i,left]) + bint(board[i,right]) +
   bint(board[below,left]) + bint(board[below,j]) + bint(board[below,right])
 
-fun [[int,m],n] all_neighbours([[bool,m],n] board) =
-  map(fn [int] (int i) =>
+fun [n][m]int all_neighbours([n][m]bool board) =
+  map(fn []int (int i) =>
         map(fn int (int j) =>
               cell_neighbors(i,j,board)
            , iota(m))
      , iota(n))
 
-fun [[bool,m],n] iteration([[bool,m],n] board) =
+fun [n][m]bool iteration([n][m]bool board) =
   let lives = all_neighbours(board) in
-  zipWith(fn [bool] ([int] lives_r, [bool] board_r) =>
+  zipWith(fn []bool ([]int lives_r, []bool board_r) =>
             zipWith(fn bool (int neighbors, bool alive) =>
                       if neighbors < 2
                       then False
@@ -42,12 +42,12 @@ fun int min(int x, int y) =
   if x < y then x else y
 
 
-entry ([[bool,m],n], [[int,m],n]) init([[bool,m],n] world) =
+entry ([n][m]bool, [n][m]int) init([n][m]bool world) =
   (world, replicate(n, replicate(m, 255)))
 
-entry [[[i8,3],m],n] render_frame([[int,m],n] history) =
-  map(fn [[i8,3],m] ([int] ages) =>
-        map(fn [i8,3] (int age) =>
+entry [n][m][3]i8 render_frame([n][m]int history) =
+  map(fn [m][3]i8 ([]int ages) =>
+        map(fn [3]i8 (int age) =>
               if age == 0
               then [0i8, 0i8, 0i8]
               else let c = 127i8 + i8(min(age,127))
@@ -56,11 +56,11 @@ entry [[[i8,3],m],n] render_frame([[int,m],n] history) =
      , history)
 
 
-entry ([[bool,m],n], [[int,m],n])
-  steps([[bool,m],n] world, [[int,m],n] history, int steps) =
+entry ([n][m]bool, [n][m]int)
+  steps([n][m]bool world, [n][m]int history, int steps) =
   loop ((world, history)) = for i < steps do
     (let world' = iteration(world)
-     let history' = zipWith(fn [int,m] ([int] xs, [bool] alives) =>
+     let history' = zipWith(fn [m]int ([]int xs, []bool alives) =>
                               zipWith(fn int (int x, bool alive) =>
                                         if alive then 0 else x + 1,
                                       xs, alives),

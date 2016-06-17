@@ -15,12 +15,12 @@ fun int  min(int a, int b) = if (a <= b) then a else b
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
-fun [int, 30] sobolDirVcts() = 
+fun [30]int sobolDirVcts() = 
     [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
       524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
       512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
 
-fun int sobolInd( [int,30] dirVct, int n ) =
+fun int sobolInd( [30]int dirVct, int n ) =
     let n_gray = (n >> 1) ^ n in
     let res = 0 in
     loop (res) =
@@ -31,7 +31,7 @@ fun int sobolInd( [int,30] dirVct, int n ) =
             else res
     in res
 
-fun [int,cols] main(int cols, int rows) =
+fun [cols]int main(int cols, int rows) =
     let dirVct = sobolDirVcts() in
     -----------------------
     -- 1. Initialization --

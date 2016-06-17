@@ -23,12 +23,12 @@
 -- g : data term gradient array, size (m,n).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun [[f32,n],m] 
-add_descent_div2s( [[ f32     ,n],m] v
-                 , [[(f32,f32),n],m] xi
-                 , [[ f32     ,n],m] g
+fun [m][n]f32 
+add_descent_div2s( [m][n]f32 v
+                 , [m][n](f32,f32) xi
+                 , [m][n]f32 g
                  , f32               tp ) =
-  map(fn [f32,n] (int i) =>
+  map(fn [n]f32 (int i) =>
         map(fn f32 (int j) => unsafe
                 let v_el = v[i,j] in
                 let g_el = g[i,j] in
@@ -101,13 +101,13 @@ add_descent_div2s( [[ f32     ,n],m] v
 -- g : data term gradient array, size (m,n,k).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun [[[f32,k],n],m] 
-add_descent_div2v( [[[ f32     ,k],n],m] v
-                 , [[[(f32,f32),k],n],m] xi
-                 , [[[ f32     ,k],n],m] g
+fun [m][n][k]f32 
+add_descent_div2v( [m][n][k]f32 v
+                 , [m][n][k](f32,f32) xi
+                 , [m][n][k]f32 g
                  , f32                   tp ) =
-  map(fn [[f32,k],n] (int i) =>
-        map(fn [f32,k] (int j) => 
+  map(fn [n][k]f32 (int i) =>
+        map(fn [k]f32 (int j) => 
                 map(fn f32 (int q) => unsafe
                         let v_el = v[i,j,q] in
                         let g_el = g[i,j,q] in
@@ -171,14 +171,14 @@ add_descent_div2v( [[[ f32     ,k],n],m] v
 -----------------------------------------------------
 -----------------------------------------------------
 
-fun [[f32,n],m] main( [[ f32     ,n],m] v
-                    , [[(f32,f32),n],m] xi
-                    , [[ f32     ,n],m] g
+fun [m][n]f32 main( [m][n]f32 v
+                    , [m][n](f32,f32) xi
+                    , [m][n]f32 g
                     , f32               tp ) =
     add_descent_div2s(v, xi, g, tp)
 
-fun [[[f32,k],n],m] main2( [[[ f32     ,k],n],m] v
-                        , [[[(f32,f32),k],n],m] xi
-                        , [[[ f32     ,k],n],m] g
+fun [m][n][k]f32 main2( [m][n][k]f32 v
+                        , [m][n][k](f32,f32) xi
+                        , [m][n][k]f32 g
                         , f32                   tp ) =
     add_descent_div2v(v, xi, g, tp)

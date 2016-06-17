@@ -25,7 +25,7 @@ fun int indexW(int cols, int j) =
 fun int indexE(int cols, int j) =
   if j == cols-1 then j else j + 1
 
-fun [[int,cols],rows] main([[int,cols],rows] image) =
+fun [rows][cols]int main([rows][cols]int image) =
   let niter = 100 in
   let lambda = 0.5 in
   let r1 = 0 in
@@ -38,7 +38,7 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
   let neROI = (r2-r1+1)*(c2-c1+1) in
 
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
-  let image = map(fn [f32,cols] ([int] row) =>
+  let image = map(fn [cols]f32 ([]int row) =>
                     map(fn f32 (int pixel) =>
                           exp32(f32(pixel)/255.0),
                         row),
@@ -56,8 +56,8 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
 
     let (dN, dS, dW, dE, c) =
       unzip(
-        zipWith(fn [(f32,f32,f32,f32,f32),cols]
-                  (int i, [f32] row) =>
+        zipWith(fn [cols](f32,f32,f32,f32,f32)
+                  (int i, []f32 row) =>
                     zipWith(fn (f32,f32,f32,f32,f32) (int j, f32 jc) =>
                               let dN_k = unsafe image[indexN(rows,i),j] - jc in
                               let dS_k = unsafe image[indexS(rows,i),j] - jc in
@@ -80,8 +80,8 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
                , iota(rows), image)) in
 
     let image =
-      zipWith(fn [f32,cols]
-                (int i, [f32] image_row, [f32] c_row, [f32] dN_row, [f32] dS_row, [f32] dW_row, [f32] dE_row) =>
+      zipWith(fn [cols]f32
+                (int i, []f32 image_row, []f32 c_row, []f32 dN_row, []f32 dS_row, []f32 dW_row, []f32 dE_row) =>
                 zipWith(fn f32 (int j, f32 pixel, f32 c_k, f32 dN_k, f32 dS_k, f32 dW_k, f32 dE_k) =>
                           let cN = c_k in
                           let cS = unsafe c[indexS(rows, i), j] in
@@ -94,7 +94,7 @@ fun [[int,cols],rows] main([[int,cols],rows] image) =
     image in
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
-  let image = map(fn [int,cols] ([f32] row) =>
+  let image = map(fn [cols]int ([]f32 row) =>
                     map(fn int (f32 pixel) =>
                           -- take logarithm of image, log compress
                           int(log32(pixel)*255.0),

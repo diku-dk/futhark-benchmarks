@@ -11,7 +11,7 @@
 
 default(f32)
 
-fun (int,int,[f32,numX],[f32,numY],[f32,numT])
+fun (int,int,[numX]f32,[numY]f32,[numT]f32)
   initGrid(f32 s0, f32 alpha, f32 nu, f32 t, int numX, int numY, int numT) =
     let logAlpha = log32(alpha) in
     let myTimeline = map(fn f32 (int i) => t * f32(i) / (f32(numT) - 1.0), iota(numT)) in
@@ -24,12 +24,12 @@ fun (int,int,[f32,numX],[f32,numY],[f32,numT])
     (myXindex, myYindex, myX, myY, myTimeline)
 
 -- make the innermost dimension of the result of size 4 instead of 3?
-fun ([[f32],n],[[f32],n]) initOperator([f32,n] x) =
+fun ([n][]f32,[n][]f32) initOperator([n]f32 x) =
     let dxu    = x[1] - x[0] in
     let dxl    = 0.0         in
     let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]] in
     let dxx_low = [[0.0, 0.0, 0.0]]              in
-    let dx_mids = map(fn ([f32],[f32]) (int i) =>
+    let dx_mids = map(fn ([]f32,[]f32) (int i) =>
                        let dxl = x[i] - x[i-1]  in
                        let dxu = x[i+1] - x[i]  in
                        ( [ -dxu/dxl/(dxl+dxu), (dxu/dxl - dxl/dxu)/(dxl+dxu),      dxl/dxu/(dxl+dxu) ],
@@ -47,25 +47,25 @@ fun ([[f32],n],[[f32],n]) initOperator([f32,n] x) =
 fun f32 max(f32 x, f32 y) = if y < x then x else y
 fun int maxInt(int x, int y) = if y < x then x else y
 
-fun *[[f32,numX],numY] setPayoff(f32 strike, [f32,numX] myX, [f32,numY] myY) =
-  let myres = map(fn [f32] (f32 xi) => replicate(numY, max(xi-strike,0.0)), myX) in
+fun *[numY][numX]f32 setPayoff(f32 strike, [numX]f32 myX, [numY]f32 myY) =
+  let myres = map(fn []f32 (f32 xi) => replicate(numY, max(xi-strike,0.0)), myX) in
   transpose(myres)
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
-fun ([[f32]] , [[f32]] , [[f32]] , [[f32]])
-updateParams( [f32,numX] myX, [f32,numY] myY, [f32] myTimeline,
+fun ([][]f32 , [][]f32 , [][]f32 , [][]f32)
+updateParams( [numX]f32 myX, [numY]f32 myY, []f32 myTimeline,
               int g, f32 alpha, f32 beta, f32 nu    ) =
   let myMuY  = replicate(numX, replicate(numY, 0.0  )) in
   let myVarY = replicate(numX, replicate(numY, nu*nu)) in
   let myMuX  = replicate(numY, replicate(numX, 0.0  )) in
-  let myVarX = map( fn [f32] (f32 yj) =>
+  let myVarX = map( fn []f32 (f32 yj) =>
                       map ( fn f32 (f32 xi) =>
                               exp32(2.0*(beta*log32(xi) + yj - 0.5*nu*nu*myTimeline[g]))
                           , myX )
                   , myY )
   in  ( myMuX, myVarX, myMuY, myVarY )
 
-fun *[f32] tridagSeq( [f32,n] a, *[f32,n] b, [f32,n] c, *[f32,n] y ) =
+fun *[]f32 tridagSeq( [n]f32 a, *[n]f32 b, [n]f32 c, *[n]f32 y ) =
     loop ((y, b)) =
       for 1 <= i < n do
         let beta = a[i] / b[i-1]      in
@@ -79,7 +79,7 @@ fun *[f32] tridagSeq( [f32,n] a, *[f32,n] b, [f32,n] c, *[f32,n] y ) =
                  in  y
     in  y
 
-fun *[f32] tridagPar( [f32] a, *[f32] b, [f32] c, *[f32] y ) =
+fun *[]f32 tridagPar( []f32 a, *[]f32 b, []f32 c, *[]f32 y ) =
     unsafe
     let n    = size(0, a) in
     ----------------------------------------------------
@@ -150,17 +150,17 @@ fun *[f32] tridagPar( [f32] a, *[f32] b, [f32] c, *[f32] y ) =
     y
 
 ------------------------------------------/
--- myD,myDD          : [[f32,3],m]
--- myMu,myVar,result : [[f32,m],n]
--- RETURN            : [[f32,m],n]
+-- myD,myDD          : [m][3]f32
+-- myMu,myVar,result : [n][m]f32
+-- RETURN            : [n][m]f32
 ------------------------------------------/
-fun *[[f32,m],n] explicitMethod( [[f32,3],m] myD,  [[f32,3],m] myDD,
-                                  [[f32,m],n] myMu, [[f32,m],n] myVar,
-                                  [[f32,m],n] result ) =
+fun *[n][m]f32 explicitMethod( [m][3]f32 myD,  [m][3]f32 myDD,
+                                  [n][m]f32 myMu, [n][m]f32 myVar,
+                                  [n][m]f32 result ) =
   -- 0 <= i < m AND 0 <= j < n
-  map( fn [f32] ( ([f32],[f32],[f32]) tup ) =>
+  map( fn []f32 ( ([]f32,[]f32,[]f32) tup ) =>
          let (mu_row, var_row, result_row) = tup in
-         map( fn f32 (([f32], [f32], f32, f32, int) tup) =>
+         map( fn f32 (([]f32, []f32, f32, f32, int) tup) =>
                 let ( dx, dxx, mu, var, j ) = tup in
                 let c1 = if 0 < j
                          then ( mu*dx[0] + 0.5*var*dxx[0] ) * unsafe result_row[j-1]
@@ -175,17 +175,17 @@ fun *[[f32,m],n] explicitMethod( [[f32,3],m] myD,  [[f32,3],m] myDD,
      , zip( myMu, myVar, result ))
 
 ------------------------------------------/
--- myD,myDD     : [[f32,3],m]
--- myMu,myVar,u : [[f32,m],n]
--- RETURN       : [[f32,m],n]
+-- myD,myDD     : [m][3]f32
+-- myMu,myVar,u : [n][m]f32
+-- RETURN       : [n][m]f32
 ------------------------------------------/
 -- for implicitY: should be called with transpose(u) instead of u
-fun *[[f32]] implicitMethod( [[f32]] myD,  [[f32]] myDD,
-                              [[f32]] myMu, [[f32]] myVar,
-                             *[[f32]] u,    f32     dtInv  ) =
-  map( fn *[f32] ( ([f32],[f32],*[f32]) tup )  =>
+fun *[][]f32 implicitMethod( [][]f32 myD,  [][]f32 myDD,
+                              [][]f32 myMu, [][]f32 myVar,
+                             *[][]f32 u,    f32     dtInv  ) =
+  map( fn *[]f32 ( ([]f32,[]f32,*[]f32) tup )  =>
          let (mu_row,var_row,u_row) = tup in
-         let abc = map( fn (f32,f32,f32) ((f32,f32,[f32],[f32]) tup) =>
+         let abc = map( fn (f32,f32,f32) ((f32,f32,[]f32,[]f32) tup) =>
                           let (mu, var, d, dd) = tup in
                           ( 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
                           , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
@@ -199,16 +199,16 @@ fun *[[f32]] implicitMethod( [[f32]] myD,  [[f32]] myDD,
      , zip(myMu,myVar,u)
      )
 
-fun *[[f32,numX],numY] rollback
-    ([f32,numX] myX, [f32,numY] myY, [f32] myTimeline, *[[f32]] myResult,
-     [[f32]] myMuX, [[f32]] myDx, [[f32]] myDxx, [[f32]] myVarX,
-     [[f32]] myMuY, [[f32]] myDy, [[f32]] myDyy, [[f32]] myVarY, int g) =
+fun *[numY][numX]f32 rollback
+    ([numX]f32 myX, [numY]f32 myY, []f32 myTimeline, *[][]f32 myResult,
+     [][]f32 myMuX, [][]f32 myDx, [][]f32 myDxx, [][]f32 myVarX,
+     [][]f32 myMuY, [][]f32 myDy, [][]f32 myDyy, [][]f32 myVarY, int g) =
 
     let dtInv = 1.0/(myTimeline[g+1]-myTimeline[g]) in
 
     -- explicitX
     let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult ) in
-    let u = map( fn [f32] (([f32],[f32]) tup) =>
+    let u = map( fn []f32 (([]f32,[]f32) tup) =>
                     let (u_row, res_row) = tup in
                     map (fn f32 ((f32,f32) tup) =>
                            let (u_el,res_el) = tup
@@ -219,14 +219,14 @@ fun *[[f32,numX],numY] rollback
     -- explicitY
     let myResultTR = transpose(myResult) in
     let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR ) in
-    let u = map( fn *[f32] ([f32] us, [f32] vs) =>
+    let u = map( fn *[]f32 ([]f32 us, []f32 vs) =>
                    copy(map(+, zip(us, vs)))
                , zip(u, transpose(v))
                ) in
     -- implicitX
     let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv ) in
     -- implicitY
-    let y = map( fn [f32] (([f32],[f32]) uv_row) =>
+    let y = map( fn []f32 (([]f32,[]f32) uv_row) =>
                    let (u_row, v_row) = uv_row in
                    map( fn f32 ((f32,f32) uv) =>
                           let (u_el,v_el) = uv
@@ -256,7 +256,7 @@ fun f32 value(int numX, int numY, int numT, f32 s0, f32 strike, f32 t, f32 alpha
             myResult in
     myResult[myYindex,myXindex]
 
-fun [f32] main (int outer_loop_count, int numX, int numY, int numT,
+fun []f32 main (int outer_loop_count, int numX, int numY, int numT,
                  f32 s0, f32 strike, f32 t, f32 alpha, f32 nu, f32 beta) =
     let strikes = map(fn f32 (int i) => 0.001*f32(i), iota(outer_loop_count)) in
     let res = map(fn f32 (f32 x) => value(numX, numY, numT, s0, x, t, alpha, nu, beta), strikes) in

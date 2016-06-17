@@ -23,11 +23,11 @@
 -- Gradient based terms are easy as boundary conditions are 
 -- simple to manipulate. Divergence based terms are messy.
 -----------------------------------------------------------------------
-fun [[(f32,f32),n],m] 
-add_ascent_grad2s( [[(f32,f32),n],m] xi
-                 , [[ f32     ,n],m] v
+fun [m][n](f32,f32) 
+add_ascent_grad2s( [m][n](f32,f32) xi
+                 , [m][n]f32 v
                  , f32               td ) =
-  map(fn [(f32,f32), n] (int i) =>
+  map(fn [n](f32,f32) (int i) =>
         map(fn (f32,f32) (int j) => unsafe
                 let (elm1, elm2) = xi[i,j] in
                 -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
@@ -57,12 +57,12 @@ add_ascent_grad2s( [[(f32,f32),n],m] xi
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-fun [[[(f32,f32),k],n],m] 
-add_ascent_grad2v( [[[(f32,f32),k],n],m] xi
-                 , [[[f32,k]      ,n],m] v
+fun [m][n][k](f32,f32) 
+add_ascent_grad2v( [m][n][k](f32,f32) xi
+                 , [m][n][k]f32 v
                  , f32                   td ) =
-  map(fn [[(f32,f32),k], n] (int i) =>
-        map(fn [(f32,f32),k] (int j) =>
+  map(fn [n][k](f32,f32) (int i) =>
+        map(fn [k](f32,f32) (int j) =>
                 map(fn (f32,f32) (int l) => unsafe
                         let (elm1, elm2) = xi[i,j,l] in
                         -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
@@ -93,12 +93,12 @@ add_ascent_grad2v( [[[(f32,f32),k],n],m] xi
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-fun [[[(f32,f32,f32),p],n],m] 
-add_ascent_grad3s( [[[(f32,f32,f32),p],n],m] xi
-                 , [[[f32,p]          ,n],m] v
+fun [m][n][p](f32,f32,f32) 
+add_ascent_grad3s( [m][n][p](f32,f32,f32) xi
+                 , [m][n][p]f32 v
                  , f32                       td ) =
-  map(fn [[(f32,f32,f32),p], n] (int i) =>
-        map(fn [(f32,f32,f32),p] (int j) =>
+  map(fn [n][p](f32,f32,f32) (int i) =>
+        map(fn [p](f32,f32,f32) (int j) =>
                 map(fn (f32,f32,f32) (int k) => unsafe
                         let (elm1, elm2, elm3) = xi[i,j,k] in
                         -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
@@ -135,13 +135,13 @@ add_ascent_grad3s( [[[(f32,f32,f32),p],n],m] xi
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-fun [[[[(f32,f32,f32),k],p],n],m] 
-add_ascent_grad3v( [[[[(f32,f32,f32),k],p],n],m] xi
-                 , [[[[f32,k],          p],n],m] v
+fun [m][n][p][k](f32,f32,f32) 
+add_ascent_grad3v( [m][n][p][k](f32,f32,f32) xi
+                 , [m][n][p][k]f32 v
                  , f32                           td ) =
-  map(fn [[[(f32,f32,f32),k], p], n] (int i) =>
-        map(fn [[(f32,f32,f32),k], p] (int j) =>
-              map(fn [(f32,f32,f32), k] (int q) =>
+  map(fn [n][p][k](f32,f32,f32) (int i) =>
+        map(fn [p][k](f32,f32,f32) (int j) =>
+              map(fn [k](f32,f32,f32) (int q) =>
                     map(fn (f32,f32,f32) (int t) => unsafe
                             let (elm1, elm2, elm3) = xi[i,j,q,t] in
                             -- xi[0:m-1,:,:,:,0] += td*(v[1:m,:,:,:] - v[0:m-1,:,:,:])
@@ -169,9 +169,9 @@ add_ascent_grad3v( [[[[(f32,f32,f32),k],p],n],m] xi
      , iota(m) )
 
 
-fun [[[[(f32,f32,f32),k],p],n],m] 
-    main( [[[[(f32,f32,f32),k],p],n],m] xi
-        , [[[[f32,k],          p],n],m] v
+fun [m][n][p][k](f32,f32,f32) 
+    main( [m][n][p][k](f32,f32,f32) xi
+        , [m][n][p][k]f32 v
         , f32                           td ) =
   add_ascent_grad3v( xi, v, td )
 

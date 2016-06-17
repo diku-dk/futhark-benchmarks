@@ -97,13 +97,13 @@ fun u8 intPixel(f32 t) =
 fun f32 normalize_index(i32 i, i32 field_size) =
   f32(i) / f32(field_size)
 
-fun [[[u32, field_size], field_size], n_steps]
+fun [n_steps][field_size][field_size]u32
   main(i32 field_size, f32 scale, i32 degree,
        i32 n_steps, f32 time_delta) =
   let ks = iota(field_size) in
-  map(fn [[u32, field_size], field_size] (i32 step_i) =>
+  map(fn [field_size][field_size]u32 (i32 step_i) =>
         let time = f32(step_i) * time_delta in
-        map(fn [u32, field_size] (i32 y) =>
+        map(fn [field_size]u32 (i32 y) =>
               map(fn u32 (i32 x) =>
                     quasicrystal(scale, degree, time,
                                  normalize_index(x, field_size),

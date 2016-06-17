@@ -29,10 +29,10 @@
 ----)
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
-fun *[[f32,b],b]
-lud_diagonal([[f32,b],b] a0) =
+fun *[b][b]f32
+lud_diagonal([b][b]f32 a0) =
     let a1 = 
-        map(fn [f32,b] (int j) =>
+        map(fn [b]f32 (int j) =>
                 let row = copy(a0[j]) in
                 loop(row) = for i <  b - 1 do
                     let (sum, tmp) = if(j > i) 
@@ -49,7 +49,7 @@ lud_diagonal([[f32,b],b] a0) =
     in
     let a2 = transpose(a1) in
     let res = 
-        map(fn [f32,b] (int j) =>
+        map(fn [b]f32 (int j) =>
                 let row = copy(a2[j]) in
                 loop(row) = for i <  b - 1 do
                     let sum = if(j > i) 
@@ -89,12 +89,12 @@ lud_diagonal([[f32,b],b] a0) =
 ----          row = a1[j] is in shared memory!
 --------------------------------------------
 --------------------------------------------
-fun *[[[f32,b],b],m]
-lud_perimeter_upper(int d, [[f32,b],b] diag, [[[f32,b],b],m] a0s) =
-    let a1s = map(fn [[f32,b],b] ([[f32,b],b] x) => transpose(x), a0s) in
+fun *[m][b][b]f32
+lud_perimeter_upper(int d, [b][b]f32 diag, [m][b][b]f32 a0s) =
+    let a1s = map(fn [b][b]f32 ([b][b]f32 x) => transpose(x), a0s) in
     let a2s = 
-        map ( fn *[[f32,b],b] ([[f32,b],b] a1, int jj) =>
-        map ( fn *[f32,b] ([f32,b] row0) =>   -- Upper
+        map ( fn *[b][b]f32 ([b][b]f32 a1, int jj) =>
+        map ( fn *[b]f32 ([b]f32 row0) =>   -- Upper
                 let row = copy(row0) in
                 if (jj <= d) -- move this if inside!!!
                 then row
@@ -111,7 +111,7 @@ lud_perimeter_upper(int d, [[f32,b],b] diag, [[[f32,b],b],m] a0s) =
                 in row
             , a1 )
             , zip(a1s,iota(m)) )
-    in map(fn [[f32,b],b] ([[f32,b],b] x) => transpose(x), a2s)
+    in map(fn [b][b]f32 ([b][b]f32 x) => transpose(x), a2s)
 
 ------------------------------
 ------------------------------
@@ -137,10 +137,10 @@ lud_perimeter_upper(int d, [[f32,b],b] diag, [[[f32,b],b],m] a0s) =
 --------------------------------------------
 --------------------------------------------
 --- FIX ME, see upper!!!!!!!!!
-fun *[[[f32,b],b],m]
-lud_perimeter_lower(int d, [[f32,b],b] diag, [[[f32,b],b],m] a0s) =
-  map ( fn *[[f32,b],b] ([[f32,b],b] a0, int ii) =>
-        map ( fn *[f32,b] ([f32,b] row0) =>   -- Upper
+fun *[m][b][b]f32
+lud_perimeter_lower(int d, [b][b]f32 diag, [m][b][b]f32 a0s) =
+  map ( fn *[b][b]f32 ([b][b]f32 a0, int ii) =>
+        map ( fn *[b]f32 ([b]f32 row0) =>   -- Upper
                 let row = copy(row0) in
                 if (ii <= d) -- move this if inside!
                 then row
@@ -200,13 +200,13 @@ lud_perimeter_lower(int d, [[f32,b],b] diag, [[[f32,b],b],m] a0s) =
 ----          are stored in shared memory!!!
 --------------------------------------------
 --------------------------------------------
-fun *[[[[f32,b],b],m],m]
-lud_internal( int d, [[[[f32,b],b],m],m] mat ) =
-  map( fn [[[f32,b],b],m] (int ii) =>
-        map( fn [[f32,b],b] (int jj) =>
+fun *[m][m][b][b]f32
+lud_internal( int d, [m][m][b][b]f32 mat ) =
+  map( fn [m][b][b]f32 (int ii) =>
+        map( fn [b][b]f32 (int jj) =>
                 let temp_top = copy(mat[d, jj]) in -- copy?
                 let temp_left= copy(mat[ii, d]) in -- copy?
-                map ( fn [f32,b] (int i) =>
+                map ( fn [b]f32 (int i) =>
                         map ( fn f32 (int j) =>
                                 if (ii > d && jj > d)
                                 then let sum = 0.0f32 in
@@ -223,9 +223,9 @@ lud_internal( int d, [[[[f32,b],b],m],m] mat ) =
 --------------------------------------------
 ---- Main Driver:
 --------------------------------------------
-fun [[f32,n],n]
---main(int b, [[f32,n],n] mat) =
-main([[f32,n],n] mat) =
+fun [n][n]f32
+--main(int b, [n][n]f32 mat) =
+main([n][n]f32 mat) =
     let b = 16 in
     let num_blocks = n / b in
     -------------------------------------------------
@@ -234,9 +234,9 @@ main([[f32,n],n] mat) =
     ---- the blocks of the lower part            ----
     -------------------------------------------------
     let upp_blk = 
-        map ( fn [[[f32,b],b],num_blocks] (int i_b) =>
-                map ( fn [[f32,b],b] (int j_b) =>
-                        map( fn [f32,b] (int i) =>
+        map ( fn [num_blocks][b][b]f32 (int i_b) =>
+                map ( fn [b][b]f32 (int j_b) =>
+                        map( fn [b]f32 (int i) =>
                                 map ( fn f32 (int j) =>
                                         unsafe mat[i_b*b+i, j_b*b + j]
                                     , iota(b) )
@@ -245,9 +245,9 @@ main([[f32,n],n] mat) =
             , iota(num_blocks) )
     in
     let low_blk = 
-        map ( fn [[[f32,b],b],num_blocks] (int i_b) =>
-                map ( fn [[f32,b],b] (int j_b) =>
-                        map( fn [f32,b] (int i) =>
+        map ( fn [num_blocks][b][b]f32 (int i_b) =>
+                map ( fn [b][b]f32 (int j_b) =>
+                        map( fn [b]f32 (int i) =>
                                 map ( fn f32 (int j) =>
                                         upp_blk[j_b, i_b, i, j] -- inside the tile they keep the same disposition
                                     , iota(b) )
@@ -280,9 +280,9 @@ main([[f32,n],n] mat) =
         let left_per = 
             lud_perimeter_lower(step, diag, low_blk[step]) in
         let upp_blk = 
-            map (fn [[[f32,b],b],num_blocks] (int ii) =>
-                    map (fn [[f32,b],b] (int jj) =>
-                            map (fn [f32,b] (int i) =>
+            map (fn [num_blocks][b][b]f32 (int ii) =>
+                    map (fn [b][b]f32 (int jj) =>
+                            map (fn [b]f32 (int i) =>
                                     map (fn f32 (int j) =>
                                             if(ii <= step) || (jj != step)
                                             then upp_blk[ii,jj,i,j]
@@ -303,7 +303,7 @@ main([[f32,n],n] mat) =
     let last_step = (n / b) - 1 in
     let upp_blk[last_step,last_step] = 
             lud_diagonal(upp_blk[last_step,last_step]) in
-    map ( fn [f32,n] (int i) =>
+    map ( fn [n]f32 (int i) =>
             map ( fn f32 (int j) =>
                 unsafe upp_blk[i/b, j/b, i%b, j%b]
                 , iota(n) )

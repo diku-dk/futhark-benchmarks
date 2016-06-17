@@ -15,13 +15,13 @@ include lib.bfs_lib
 fun i32 max(i32 a, i32 b) =
   if a > b then a else b
 
-fun (*[i32, n], *[bool, n], *[i32])
-  step(*[i32, n] cost,
-       [i32, n] nodes_start_index,
-       [i32, n] nodes_n_edges,
-       [i32, e] edges_dest,
-       [bool, n] graph_visited,
-       *[bool, n] graph_mask) =
+fun (*[n]i32, *[n]bool, *[]i32)
+  step(*[n]i32 cost,
+       [n]i32 nodes_start_index,
+       [n]i32 nodes_n_edges,
+       [e]i32 edges_dest,
+       [n]bool graph_visited,
+       *[n]bool graph_mask) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
   let n_indices = size(0, active_indices)
@@ -31,7 +31,7 @@ fun (*[i32, n], *[bool, n], *[i32])
   -- nested array.
   let e_max = reduceComm(max, 0, nodes_n_edges)
 
-  let changes = map(fn ([i32, e_max], [i32, e_max]) (i32 i) =>
+  let changes = map(fn ([e_max]i32, [e_max]i32) (i32 i) =>
                       node_work(i, e_max, cost, nodes_start_index,
                                 nodes_n_edges, edges_dest, graph_visited)
                    , active_indices)
@@ -50,14 +50,14 @@ fun (*[i32, n], *[bool, n], *[i32])
 
   in (cost', graph_mask', node_ids)
 
-fun ([i32, e_max], [i32, e_max])
+fun ([e_max]i32, [e_max]i32)
   node_work(i32 tid,
             i32 e_max,
-            [i32, n] cost,
-            [i32, n] nodes_start_index,
-            [i32, n] nodes_n_edges,
-            [i32, e] edges_dest,
-            [bool, n] graph_visited) =
+            [n]i32 cost,
+            [n]i32 nodes_start_index,
+            [n]i32 nodes_n_edges,
+            [e]i32 edges_dest,
+            [n]bool graph_visited) =
   let start_index = unsafe nodes_start_index[tid]
   let n_edges = unsafe nodes_n_edges[tid]
   let edge_indices = map(+ start_index, iota(e_max))

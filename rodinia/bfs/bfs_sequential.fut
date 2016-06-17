@@ -7,9 +7,9 @@
 -- compiled input @ data/512nodes_high_edge_variance.in
 -- output @ data/512nodes_high_edge_variance.out
 
-fun [i32, n] main([i32, n] nodes_start_index,
-                  [i32, n] nodes_n_edges,
-                  [i32, e] edges_dest) =
+fun [n]i32 main([n]i32 nodes_start_index,
+                  [n]i32 nodes_n_edges,
+                  [e]i32 edges_dest) =
   let graph_mask = replicate(n, False)
   let updating_graph_mask = replicate(n, False)
   let graph_visited = replicate(n, False)
@@ -43,14 +43,14 @@ fun [i32, n] main([i32, n] nodes_start_index,
       in (cost', updating_graph_mask', graph_mask', graph_visited, continue')
   in cost
 
-fun (*[i32, n], *[bool, n], *[bool, n])
-  step(*[i32, n] cost,
-       [i32, n] nodes_start_index,
-       [i32, n] nodes_n_edges,
-       [i32, e] edges_dest,
-       [bool, n] graph_visited,
-       *[bool, n] graph_mask,
-       *[bool, n] updating_graph_mask) =
+fun (*[n]i32, *[n]bool, *[n]bool)
+  step(*[n]i32 cost,
+       [n]i32 nodes_start_index,
+       [n]i32 nodes_n_edges,
+       [e]i32 edges_dest,
+       [n]bool graph_visited,
+       *[n]bool graph_mask,
+       *[n]bool updating_graph_mask) =
   let active_indices =
     filter(fn bool (i32 i) => graph_mask[i],
            iota(n))
@@ -66,15 +66,15 @@ fun (*[i32, n], *[bool, n], *[bool, n])
 
   in (cost, graph_mask, updating_graph_mask)
 
-fun (*[i32, n], *[bool, n], *[bool, n])
+fun (*[n]i32, *[n]bool, *[n]bool)
   node_work(i32 tid,
-            *[i32, n] cost,
-            [i32, n] nodes_start_index,
-            [i32, n] nodes_n_edges,
-            [i32, e] edges_dest,
-            [bool, n] graph_visited,
-            *[bool, n] graph_mask,
-            *[bool, n] updating_graph_mask) =
+            *[n]i32 cost,
+            [n]i32 nodes_start_index,
+            [n]i32 nodes_n_edges,
+            [e]i32 edges_dest,
+            [n]bool graph_visited,
+            *[n]bool graph_mask,
+            *[n]bool updating_graph_mask) =
   let start_index = nodes_start_index[tid]
   let n_edges = nodes_n_edges[tid]
   let graph_mask[tid] = False

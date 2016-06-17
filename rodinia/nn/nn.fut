@@ -9,10 +9,10 @@
 fun f32 infty() = 1.0f32 / 0.0f32
 fun (int, f32) emptyRecord() = (0, 0.0f32)
 
-fun ([int, resultsCount], [f32, resultsCount])
+fun ([resultsCount]int, [resultsCount]f32)
 main(   int resultsCount, f32 lat, f32 lng, 
-        [f32, numRecords] locations_lat, 
-        [f32, numRecords] locations_lng    ) =
+        [numRecords]f32 locations_lat, 
+        [numRecords]f32 locations_lng    ) =
   let locations    = zip(locations_lat, locations_lng) in
   -- let resultsCount = if (resultsCount > numRecords) then numRecords else resultsCount in
   let distances = 

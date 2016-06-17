@@ -8,7 +8,7 @@
 fun u16 mk16b(u8 upper, u8 lower) =
   (u16(upper) & 0xFFu16) << 8u16 | (u16(lower) & 0xFFu16)
 
-fun [u8,8] cipher_idea_block([u16,52] key, [u8,8] block) =
+fun [8]u8 cipher_idea_block([52]u16 key, [8]u8 block) =
   let x1 = mk16b(block[1], block[0]) in
   let x2 = mk16b(block[3], block[2]) in
   let x3 = mk16b(block[5], block[4]) in
@@ -75,10 +75,10 @@ fun [u8,8] cipher_idea_block([u16,52] key, [u8,8] block) =
   , u8(x4), u8(x4>>>8u16)
   ]
 
-fun [u8,n] cipher_idea([u16,52] key, [u8,n] text) =
+fun [n]u8 cipher_idea([52]u16 key, [n]u8 text) =
   let blocks = reshape((n//8,8), text) in
   reshape((n), map(cipher_idea_block(key), blocks))
 
-fun ([u8,n], [u8,n]) main([u16,52] z, [u16,52] dk, [u8,n] text) =
+fun ([n]u8, [n]u8) main([52]u16 z, [52]u16 dk, [n]u8 text) =
   let text_encrypted = cipher_idea(z, text) in
   (text_encrypted, cipher_idea(dk, text_encrypted))
