@@ -19,11 +19,14 @@ inputs="$(cat <<EOF
 EOF
 )"
 
+n_runs=10
 for x in $inputs; do
     echo "# $x"
 
-    "$RODINIA_DIR"/cuda/bfs/bfs $x
-    
-    echo
+    sum=0
+    for i in $(seq 1 $n_runs); do
+        sum=$(expr $sum + $("$RODINIA_DIR"/cuda/bfs/bfs $x | grep -Eo '[0-9]+'))
+    done
+    echo "$(echo "scale=2; $sum / $n_runs" | bc) microseconds"
     echo
 done
