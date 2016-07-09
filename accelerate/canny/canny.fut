@@ -16,7 +16,7 @@
 --    [331229149, 824288910, -112514126]]
 -- }
 -- output {
---   [0, 2, 10, 11]
+--   [0, 6, 9, 12]
 -- }
 --
 -- compiled input @ data/lena256.in
@@ -125,17 +125,17 @@ fun [h][w](f32,int) gradiantMagDir(f32 low, [h][w]f32 img) =
 
 fun [h][w]f32 nonMaximumSuppression(f32 low, f32 high, [h][w](f32,int) magdir) =
   unsafe
-  map(fn [w]f32 (int y) =>
-        map(fn f32 (int x) =>
+  map(fn [w]f32 (int x) =>
+        map(fn f32 (int y) =>
               let (mag, dir) = magdir[x,y]
               let offsetx = if dir > orientVert() then -1
                             else if dir < orientVert() then 1
                             else 0
               let offsety = if dir < orientHoriz() then -1 else 0
-              let (fwd, _) = magdir[clamp(0, x+offsetx, w-1),
-                                    clamp(0, y+offsety, h-1)]
-              let (rev, _) = magdir[clamp(0, x-offsetx, w-1),
-                                    clamp(0, y-offsety, h-1)]
+              let (fwd, _) = magdir[clamp(0, x+offsetx, h-1),
+                                    clamp(0, y+offsety, w-1)]
+              let (rev, _) = magdir[clamp(0, x-offsetx, h-1),
+                                    clamp(0, y-offsety, w-1)]
 
               in if dir == orientUndef() || mag < low || mag < fwd || mag < rev
                  then 0.0
