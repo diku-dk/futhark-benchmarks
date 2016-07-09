@@ -14,10 +14,10 @@ here.  Not even many opportunities for fusion.
 
     lena256.bmp:
       Accelerate: 1.498ms
-      Futhark:    0.944ms
-      Speedup:    1.58x
+      Futhark:    0.791ms
+      Speedup:    1.89x
 
     lena512.bmp:
       Accelerate: 2.683ms
-      Futhark:    2.378ms
-      Speedup:    1.12x
+      Futhark:    2.099ms
+      Speedup:    1.27x
