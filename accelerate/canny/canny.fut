@@ -9,14 +9,14 @@
 -- compiled input {
 --   50f32
 --   100f32
---   [[1038851507, 1834550796, 2046247850],
---    [1709637579, 2011955188, -2110545476],
---    [-902148259, 643549096, -787906599],
---    [1283118839, -1359985963, 733366311],
---    [331229149, 824288910, -112514126]]
+--   [[2092830683i32, 1394728708i32, -33326269i32],
+--    [1986857019i32, 1313352304i32, -424163480i32],
+--    [1813961220i32, -967167319i32, -503802777i32],
+--    [-2133263610i32, -1327310708i32, -1863700019i32],
+--    [-873352195i32, -1591419765i32, 378033750i32]]
 -- }
 -- output {
---   [0, 6, 9, 12]
+--   [6, 7, 8]
 -- }
 --
 -- compiled input @ data/lena256.in
@@ -63,21 +63,21 @@ fun [h][w]f32 toGreyscale([h][w]i32 img) =
 
 fun [h][w]f32 gaussianX([h][w]f32 img) =
   unsafe
-  map(fn [w]f32 (int y) =>
-        map(fn f32 (int x) =>
-              let a = img[clamp(0,x-2,w-1),y] * (1.0 / 16.0)
-              let b = img[clamp(0,x-1,w-1),y] * (4.0 / 16.0)
-              let c = img[clamp(0,x+0,w-1),y] * (6.0 / 16.0)
-              let d = img[clamp(0,x+1,w-1),y] * (4.0 / 16.0)
-              let e = img[clamp(0,x+2,w-1),y] * (1.0 / 16.0)
+  map(fn [w]f32 (int x) =>
+        map(fn f32 (int y) =>
+              let a = img[clamp(0,x-2,h-1),y] * (1.0 / 16.0)
+              let b = img[clamp(0,x-1,h-1),y] * (4.0 / 16.0)
+              let c = img[clamp(0,x+0,h-1),y] * (6.0 / 16.0)
+              let d = img[clamp(0,x+1,h-1),y] * (4.0 / 16.0)
+              let e = img[clamp(0,x+2,h-1),y] * (1.0 / 16.0)
               in a + b + c + d + e,
             iota(w)),
       iota(h))
 
 fun [h][w]f32 gaussianY([h][w]f32 img) =
   unsafe
-  map(fn [w]f32 (int y) =>
-        map(fn f32 (int x) =>
+  map(fn [w]f32 (int x) =>
+        map(fn f32 (int y) =>
               unsafe
               let a = img[x,clamp(0,y-2,h-1)] * (1.0 / 16.0)
               let b = img[x,clamp(0,y-1,h-1)] * (4.0 / 16.0)
@@ -90,19 +90,19 @@ fun [h][w]f32 gaussianY([h][w]f32 img) =
 
 fun [h][w](f32,int) gradiantMagDir(f32 low, [h][w]f32 img) =
   unsafe
-  map(fn [w](f32,int) (int y) =>
-        map(fn (f32,int) (int x) =>
+  map(fn [w](f32,int) (int x) =>
+        map(fn (f32,int) (int y) =>
               unsafe
-              let v0 = img[clamp(0, x-1, w-1), clamp(0, y-1, h-1)]
-              let v1 = img[clamp(0, x+0, w-1), clamp(0, y-1, h-1)]
-              let v2 = img[clamp(0, x+1, w-1), clamp(0, y-1, h-1)]
+              let v0 = img[clamp(0, x-1, h-1), clamp(0, y-1, w-1)]
+              let v1 = img[clamp(0, x+0, h-1), clamp(0, y-1, w-1)]
+              let v2 = img[clamp(0, x+1, h-1), clamp(0, y-1, w-1)]
 
-              let v3 = img[clamp(0, x-1, w-1), clamp(0, y+0, h-1)]
-              let v4 = img[clamp(0, x+1, w-1), clamp(0, y+0, h-1)]
+              let v3 = img[clamp(0, x-1, h-1), clamp(0, y+0, w-1)]
+              let v4 = img[clamp(0, x+1, h-1), clamp(0, y+0, w-1)]
 
-              let v5 = img[clamp(0, x-1, w-1), clamp(0, y+1, h-1)]
-              let v6 = img[clamp(0, x+0, w-1), clamp(0, y+1, h-1)]
-              let v7 = img[clamp(0, x+1, w-1), clamp(0, y+1, h-1)]
+              let v5 = img[clamp(0, x-1, h-1), clamp(0, y+1, w-1)]
+              let v6 = img[clamp(0, x+0, h-1), clamp(0, y+1, w-1)]
+              let v7 = img[clamp(0, x+1, h-1), clamp(0, y+1, w-1)]
 
               let dx = v2 + (2.0*v4) + v7 - v0 - (2.0*v3) - v5
               let dy = v0 + (2.0*v1) + v2 - v5 - (2.0*v6) - v7
