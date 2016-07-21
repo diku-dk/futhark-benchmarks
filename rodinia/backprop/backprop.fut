@@ -58,7 +58,7 @@ bpnn_adjust_weights([ndelta]f32 delta, [nlym1]f32 ly, [nly][ndelta]f32 w, [nly][
 
 
 fun [n2]f32
-bpnn_layerforward([n1]f32 l1, [n1][n2]f32 conn, [n2]f32 conn_fstrow) =
+bpnn_layerforward_GOOD([n1]f32 l1, [n1][n2]f32 conn, [n2]f32 conn_fstrow) =
   let connT     = transpose(conn) in
   let res_tmp   = map ( fn f32 ([n1]f32 conn_tr_row) =>
                             let prods = zipWith(*, conn_tr_row, l1) in
@@ -69,7 +69,7 @@ bpnn_layerforward([n1]f32 l1, [n1][n2]f32 conn, [n2]f32 conn_fstrow) =
 
 
 fun [n2]f32
-bpnn_layerforward_BAD([n1]f32 l1, [n1][n2]f32 conn, [n2]f32 conn_fstrow) =
+bpnn_layerforward([n1]f32 l1, [n1][n2]f32 conn, [n2]f32 conn_fstrow) =
   let connT     = transpose(conn) in
   let res_map   = map ( fn [n1]f32 ([n1]f32 conn_tr_row) =>
                         zipWith(*, conn_tr_row, l1)
