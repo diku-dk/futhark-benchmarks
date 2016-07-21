@@ -134,7 +134,7 @@ fun ([m][n]f32,[m]f32) bpnn_randomize_weights(int m, int n, int offset, []int di
     --in  reshape((m,n), linw)
     -- OR with better structure:
     let mat =
-      map( fn []f32 (int i) =>
+      map( fn [n]f32 (int i) =>
              map( fn f32 (int j) =>
                     -- (n+1) needed to create the sob num
                     -- as in the original Rodinia code.
@@ -154,7 +154,7 @@ fun [m]f32 bpnn_constant_row(int m, f32 value) =
     replicate(m, value)
 
 fun [m][n]f32 bpnn_zero_weights(int m, int n) =
-    map (fn []f32 (int i) => replicate(n, 0.0)
+    map (fn [n]f32 (int i) => replicate(n, 0.0)
         , iota(m) )
     --reshape((m,n), replicate(m*n, 0.0))
 
