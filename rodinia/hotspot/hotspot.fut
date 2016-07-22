@@ -43,39 +43,40 @@ fun [][]f32 single_iteration([row][col]f32 temp, [row][col]f32 power,
                               f32 step) =
   map (fn []f32 (int r) =>
          map(fn f32 (int c) =>
+               let temp_el = temp[r,c] in
                let delta =
                  (step / cap) *
                (power[r,c] +
                 unsafe
                   (if r == 0 && c == 0 then -- Corner 1
-                     (temp[r,c+1] - temp[r,c]) / rx +
-                     (temp[r+1,c] - temp[r,c]) / ry
+                     (temp[r,c+1] - temp_el) / rx +
+                     (temp[r+1,c] - temp_el) / ry
                    else if r == 0 && c == col-1 then -- Corner 2
-                     (temp[r,c-1] - temp[r,c]) / rx +
-                     (temp[r+1,c] - temp[r,c]) / ry
+                     (temp[r,c-1] - temp_el) / rx +
+                     (temp[r+1,c] - temp_el) / ry
                    else if r == row-1 && c == col-1 then -- Corner 3
-                     (temp[r,c-1] - temp[r,c]) / rx +
-                     (temp[r-1,c] - temp[r,c]) / ry
+                     (temp[r,c-1] - temp_el) / rx +
+                     (temp[r-1,c] - temp_el) / ry
                    else if r == row-1 && c == 0 then -- Corner 4
-                     (temp[r,c+1] - temp[r,c]) / rx +
-                     (temp[r-1,c] - temp[r,c]) / ry
+                     (temp[r,c+1] - temp_el) / rx +
+                     (temp[r-1,c] - temp_el) / ry
                    else if r == 0 then -- Edge 1
-                     (temp[r,c+1] + temp[r,c-1] - 2.0*temp[r,c]) / rx +
-                     (temp[r+1,c] - temp[r,c]) / ry
+                     (temp[r,c+1] + temp[r,c-1] - 2.0*temp_el) / rx +
+                     (temp[r+1,c] - temp_el) / ry
                    else if c == col-1 then -- Edge 2
-                     (temp[r,c-1] - temp[r,c]) / rx +
-                     (temp[r+1,c] + temp[r-1,c] - 2.0*temp[r,c]) / ry
+                     (temp[r,c-1] - temp_el) / rx +
+                     (temp[r+1,c] + temp[r-1,c] - 2.0*temp_el) / ry
                    else if r == row-1 then -- Edge 3
-                     (temp[r,c+1] + temp[r,c-1] - 2.0*temp[r,c]) / rx +
-                     (temp[r-1,c] - temp[r,c]) / ry
+                     (temp[r,c+1] + temp[r,c-1] - 2.0*temp_el) / rx +
+                     (temp[r-1,c] - temp_el) / ry
                    else if c == 0 then -- Edge 4
-                     (temp[r,c+1] - temp[r,c]) / rx +
-                     (temp[r+1,c] + temp[r-1,c] - 2.0*temp[r,c]) / ry
+                     (temp[r,c+1] - temp_el) / rx +
+                     (temp[r+1,c] + temp[r-1,c] - 2.0*temp_el) / ry
                    else
-                     (temp[r,c+1] + temp[r,c-1] - 2.0 * temp[r,c]) / rx +
-                     (temp[r+1,c] + temp[r-1,c] - 2.0 * temp[r,c]) / ry) +
-                  (amb_temp() - temp[r,c]) / rz) in
-               temp[r,c] + delta
+                     (temp[r,c+1] + temp[r,c-1] - 2.0 * temp_el) / rx +
+                     (temp[r+1,c] + temp[r-1,c] - 2.0 * temp_el) / ry) +
+                  (amb_temp() - temp_el) / rz) in
+               temp_el + delta
             , iota(col)),
          iota(row))
 
