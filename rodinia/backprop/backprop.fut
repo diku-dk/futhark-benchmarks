@@ -75,11 +75,15 @@ bpnn_layerforward([n1]f32 l1, [n1][n2]f32 conn, [n2]f32 conn_fstrow) =
                         zipWith(*, conn_tr_row, l1)
                       , connT)
   in
-  let res_map_cpy = copy(res_map) 
+  -- FIXME: nasty hack to avoid fusion, which presently causes the
+  -- kernel extractor to sequentialise the reduction.
+  let x = res_map[0,0]
+  let res_map[0,0] = res_map[0,1]
+  let res_map[0,0] = x
   in
   let res_tmp   = map ( fn f32 ([n1]f32 res_map_row) =>
                             reduce(+, 0.0, res_map_row)
-                      , res_map_cpy ) 
+                      , res_map )
   in
   map ( fn f32 (f32 pr, f32 conn0) => squash(pr+conn0)
       , zip(res_tmp, conn_fstrow) )
@@ -134,7 +138,7 @@ fun ([m][n]f32,[m]f32) bpnn_randomize_weights(int m, int n, int offset, []int di
     --in  reshape((m,n), linw)
     -- OR with better structure:
     let mat =
-      map( fn []f32 (int i) =>
+      map( fn [n]f32 (int i) =>
              map( fn f32 (int j) =>
                     -- (n+1) needed to create the sob num
                     -- as in the original Rodinia code.
@@ -154,7 +158,7 @@ fun [m]f32 bpnn_constant_row(int m, f32 value) =
     replicate(m, value)
 
 fun [m][n]f32 bpnn_zero_weights(int m, int n) =
-    map (fn []f32 (int i) => replicate(n, 0.0)
+    map (fn [n]f32 (int i) => replicate(n, 0.0)
         , iota(m) )
     --reshape((m,n), replicate(m*n, 0.0))
 
