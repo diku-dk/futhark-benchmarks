@@ -21,7 +21,7 @@
 default(f32)
 
 fun f32 gamma() = 1.4
-fun int  iterations() = 1300 --2000
+fun int  iterations() = 2000
 
 --#define NDIM 3
 --#define NNB 4
