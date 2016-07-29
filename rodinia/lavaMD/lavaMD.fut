@@ -58,11 +58,9 @@ computKernel( f32 alpha
                                         then let (_,_,_,num) = unsafe box_nnghs[k-1, l] in num
                                         else l
                           in
-                          let (pointer, invalid_neighb) = 
-                            if (pointer < 0) 
-                            then (0,       True ) 
-                            else (pointer, False)
-                          in
+                          if pointer < 0 -- means no neighbor, should not accumulate!
+                          then ( 0.0, 0.0, 0.0, 0.0 )
+                          else
                           let (_,_,_,first_j) = box_coefs[pointer] in
                           let rB = unsafe rv[first_j] in
                           let qB = unsafe qv[first_j] in
@@ -70,28 +68,25 @@ computKernel( f32 alpha
                           -- Important note: rB and qB are invariant to the      --
                           -- second map on rA => can be blocked in shared memory --
                           ---------------------------------------------------------
-                          let pres = 
-                            map( fn (f32,f32,f32,f32) ( ( (f32,f32,f32,f32), f32 ) tup) =>
-                                    if ( invalid_neighb ) -- means no neighbor, should not accumulate!
-                                    then ( 0.0, 0.0, 0.0, 0.0 )
-                                    else 
-                                      let ( (rbj_v,rbj_x,rbj_y,rbj_z), qbj ) = tup in
-                                      let r2   = rai_v + rbj_v - dot((rai_x,rai_y,rai_z), (rbj_x,rbj_y,rbj_z)) in
-                                      let u2   = a2*r2          in
-                                      let vij  = exp32(-u2)       in
-                                      let fs   = 2.0 * vij      in
-                                      let d_x  = rai_x  - rbj_x in 
-                                      let d_y  = rai_y  - rbj_y in 
-                                      let d_z  = rai_z  - rbj_z in 
-                                      let fxij = fs * d_x       in
-                                      let fyij = fs * d_y       in
-                                      let fzij = fs * d_z       in
-                                      (qbj*vij, qbj*fxij, qbj*fyij, qbj*fzij)
-                               , zip(rB,qB) )
+                            let pres = 
+                              map( fn (f32,f32,f32,f32) ( ( (f32,f32,f32,f32), f32 ) tup) =>
+                                       let ( (rbj_v,rbj_x,rbj_y,rbj_z), qbj ) = tup in
+                                       let r2   = rai_v + rbj_v - dot((rai_x,rai_y,rai_z), (rbj_x,rbj_y,rbj_z)) in
+                                       let u2   = a2*r2          in
+                                       let vij  = exp32(-u2)       in
+                                       let fs   = 2.0 * vij      in
+                                       let d_x  = rai_x  - rbj_x in 
+                                       let d_y  = rai_y  - rbj_y in 
+                                       let d_z  = rai_z  - rbj_z in 
+                                       let fxij = fs * d_x       in
+                                       let fyij = fs * d_y       in
+                                       let fzij = fs * d_z       in
+                                       (qbj*vij, qbj*fxij, qbj*fyij, qbj*fzij)
+                                 , zip(rB,qB) )
 
-                          in reduce( fn (f32,f32,f32,f32) ((f32,f32,f32,f32) a, (f32,f32,f32,f32) b) =>
-                                        let (a1,a2,a3,a4) = a in let (b1,b2,b3,b4) = b in (a1+b1, a2+b2, a3+b3, a4+b4)
-                                   , (0.0,0.0,0.0,0.0), pres)
+                            in reduce( fn (f32,f32,f32,f32) ((f32,f32,f32,f32) a, (f32,f32,f32,f32) b) =>
+                                         let (a1,a2,a3,a4) = a in let (b1,b2,b3,b4) = b in (a1+b1, a2+b2, a3+b3, a4+b4)
+                                     , (0.0,0.0,0.0,0.0), pres)
 
                       , iota(num_neighbors()+1) )
 
