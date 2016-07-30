@@ -17,26 +17,6 @@ fun f32 dot((f32,f32,f32) a, (f32,f32,f32) b) =
     let (bx,by,bz) = b in
     ax*bx + ay*by + az*bz
 
-
-------------------------------------------
--- Util: Sobol random number generation --
-------------------------------------------
-fun [30]int sobolDirVcts() = 
-    [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
-      524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
-      512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
-
-fun int sobolInd( [30]int dirVct, int n ) =
-    let n_gray = (n >> 1) ^ n in
-    let res = 0 in
-    loop (res) =
-      for i < 30 do
-        let t = 1 << i in
-        if (n_gray & t) == t
-            then res ^ dirVct[i]
-            else res
-    in res
-
 -----------------------------------------
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------

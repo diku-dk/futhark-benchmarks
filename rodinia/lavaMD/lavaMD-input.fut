@@ -1,13 +1,7 @@
 default(f32)
 
 fun int num_neighbors()      = 27
-fun int number_par_per_box() = 100 
-
-fun f32 dot((f32,f32,f32) a, (f32,f32,f32) b) =
-  let (ax,ay,az) = a in
-  let (bx,by,bz) = b in
-  ax*bx + ay*by + az*bz
-
+fun int number_par_per_box() = 100
 
 ------------------------------------------
 -- Util: Sobol random number generation --
