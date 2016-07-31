@@ -48,8 +48,9 @@ fun f32 max(f32 x, f32 y) = if y < x then x else y
 fun int maxInt(int x, int y) = if y < x then x else y
 
 fun *[numY][numX]f32 setPayoff(f32 strike, [numX]f32 myX, [numY]f32 myY) =
-  let myres = map(fn []f32 (f32 xi) => replicate(numY, max(xi-strike,0.0)), myX) in
-  transpose(myres)
+  replicate(numY, map(fn f32 (f32 xi) => max(xi-strike,0.0), myX) )
+--  let myres = map(fn []f32 (f32 xi) => replicate(numY, max(xi-strike,0.0)), myX) in
+--  transpose(myres)
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
 fun ([][]f32 , [][]f32 , [][]f32 , [][]f32)
