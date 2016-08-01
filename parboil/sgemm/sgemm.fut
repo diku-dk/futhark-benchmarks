@@ -1,8 +1,8 @@
--- The small dataset is something I made up - it is not from Parboil.
+-- The tiny dataset is something I made up - it is not from Parboil.
 --
 -- ==
--- input @ data/small.in
--- output @ data/small.out
+-- input @ data/tiny.in
+-- output @ data/tiny.out
 
 
 fun [n][p]f32 mult([n][m]f32 xss, [m][p]f32 yss) =
