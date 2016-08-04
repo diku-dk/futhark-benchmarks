@@ -150,7 +150,7 @@ fun []int selectStrong([h][w]f32 img) =
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
   let targetIdxAndLen = scan(+, 0, strong)
-  let (targetIdx, len') = split((size(0,strong)-1), targetIdxAndLen)
+  let (targetIdx, len') = split((shape(strong)[0]-1), targetIdxAndLen)
   let len = len'[0]
   let indices = iota(w*h)
   let zeros = replicate(len, 0)
