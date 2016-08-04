@@ -42,7 +42,7 @@ fun [n]i32 main([n]i32 nodes_start_index,
              graph_visited,
              graph_mask)
       
-      let n_indices = size(0, updating_indices)
+      let n_indices = shape(updating_indices)[0]
 
       let graph_mask'' =
         write(updating_indices, replicate(n_indices, True), graph_mask')
