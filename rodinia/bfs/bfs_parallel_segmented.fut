@@ -58,7 +58,7 @@ fun (*[n]i32, *[n]bool, *[n]bool)
        *[n]bool updating_graph_mask) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
-  let n_indices = size(0, active_indices)
+  let n_indices = shape(active_indices)[0]
 
   let graph_mask' =
     write(active_indices, replicate(n_indices, False), graph_mask)

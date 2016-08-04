@@ -80,9 +80,8 @@ fun *[]f32 tridagSeq( [n]f32 a, *[n]f32 b, [n]f32 c, *[n]f32 y ) =
                  in  y
     in  y
 
-fun *[]f32 tridagPar( []f32 a, *[]f32 b, []f32 c, *[]f32 y ) =
+fun *[]f32 tridagPar( [n]f32 a, *[]f32 b, []f32 c, *[]f32 y ) =
     unsafe
-    let n    = size(0, a) in
     ----------------------------------------------------
     -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --
     --   solved by scan with 2x2 matrix mult operator --

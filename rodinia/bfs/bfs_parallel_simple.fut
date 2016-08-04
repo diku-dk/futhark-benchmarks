@@ -24,7 +24,7 @@ fun (*[n]i32, *[n]bool, *[]i32)
        *[n]bool graph_mask) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
-  let n_indices = size(0, active_indices)
+  let n_indices = shape(active_indices)[0]
 
   -- We calculate the maximum number of edges for a node.  This is necessary,
   -- since the number of edges are irregular, and since we want to construct a

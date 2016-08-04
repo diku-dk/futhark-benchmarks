@@ -61,7 +61,7 @@ fun []int sobolRecI([][num_bits]int sob_dir_vs, []int prev, int n) =
 	 vct_row[bit] ^ prev
       , zip(sob_dir_vs,prev))
 
-fun [][]f32 sobolRecMap( f32  sob_fact, [][]int dir_vs, (int,int) lu_bds ) =
+fun [][]f32 sobolRecMap( f32  sob_fact, [n][]int dir_vs, (int,int) lu_bds ) =
   let (lb_inc, ub_exc) = lu_bds in 
   -- the if inside may be particularly ugly for
   -- flattening since it introduces control flow!
@@ -72,7 +72,7 @@ fun [][]f32 sobolRecMap( f32  sob_fact, [][]int dir_vs, (int,int) lu_bds ) =
 		    , iota(ub_exc-lb_inc) 
 		    ) in
   let vct_ints = scan( fn []int ([]int x, []int y) => zipWith(^, x, y) 
-	 	     , replicate( size(0,dir_vs), 0 ) 
+	 	     , replicate( n, 0 ) 
 		     , contribs
 		     )
   in  map( fn []f32 ([]int xs) => 

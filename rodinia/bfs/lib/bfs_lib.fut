@@ -43,7 +43,7 @@ fun (*[]i32, i32) get_updating_indices([]bool updating_graph_mask) =
 -- Get the updating indices through a filter.
 fun (*[]i32, i32) get_updating_indices_alt0([n]bool updating_graph_mask) =
   let updating_indices = i32_filter(updating_graph_mask, iota(n))
-  let n_indices = size(0, updating_indices)
+  let n_indices = shape(updating_indices)[0]
   in (updating_indices, n_indices)
 
 -- Alternatively, get the updating indices through two maps and a reduce, and
