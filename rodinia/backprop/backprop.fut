@@ -1,9 +1,9 @@
 -- Rodinia's Back-Propagation benchmark translated to Futhark.
 --
 -- ==
--- notravis input @ data/medium.in
 -- compiled input @ data/small.in
 -- output @ data/small.out
+-- notravis input @ data/medium.in
 
 default(f32)
 
