@@ -7,10 +7,7 @@
 -- output @ data/256.out
 -- notravis input @ data/512.in
 -- output @ data/512.out
-
--- FIXME: futhark-test barfs on the largest data set.
-
--- compiled input @ data/2048.in
+-- notravis input @ data/2048.in
 -- output @ data/2048.out
 
 default(f64)

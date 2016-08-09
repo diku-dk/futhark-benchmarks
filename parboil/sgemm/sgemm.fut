@@ -3,6 +3,10 @@
 -- ==
 -- input @ data/tiny.in
 -- output @ data/tiny.out
+-- compiled input @ data/small.in
+-- output @ data/small.out
+-- notravis input @ data/medium.in
+-- output @ data/medium.out
 
 
 fun [n][p]f32 mult([n][m]f32 xss, [m][p]f32 yss) =
