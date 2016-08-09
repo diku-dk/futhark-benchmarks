@@ -3,7 +3,7 @@
 --
 -- ==
 --
--- compiled input @ data/fvcorr.domn.097K.toa
+-- notravis input @ data/fvcorr.domn.097K.toa
 -- output @ data/fvcorr.domn.097K.out
 --
 -- notravis input @ data/fvcorr.domn.193K.toa
