@@ -3,13 +3,13 @@
 --
 -- ==
 --
--- notravis input @ data/fvcorr.domn.097K.toa
+-- compiled input @ data/fvcorr.domn.097K.toa
 -- output @ data/fvcorr.domn.097K.out
 --
--- compiled input @ data/fvcorr.domn.193K.toa
+-- notravis input @ data/fvcorr.domn.193K.toa
 -- output @ data/fvcorr.domn.193K.out
 --
--- compiled input @ data/missile.domn.0.2M.toa
+-- notravis input @ data/missile.domn.0.2M.toa
 -- output @ data/missile.domn.0.2M.out
 
 default(f32)
