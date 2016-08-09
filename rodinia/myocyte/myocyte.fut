@@ -6,7 +6,6 @@
 --
 -- notravis input @ data/small.in
 -- output @ data/small.out
-
 -- notravis input @ data/medium.in
 
 ----------------------
