@@ -1,5 +1,6 @@
 -- Test the library scan conversion functions.
 -- ==
+-- tags { nobench }
 -- input {
 --   [5, 3, -3, 1, 99]
 -- }
