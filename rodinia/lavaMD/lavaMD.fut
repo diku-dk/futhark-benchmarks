@@ -2,7 +2,7 @@
 -- https://github.com/kkushagra/rodinia/blob/master/openmp/lavaMD/main.c
 --
 -- ==
--- compiled input @ data/3_boxes.in
+-- nobench input @ data/3_boxes.in
 -- output @ data/3_boxes.out
 -- notravis input @ data/10_boxes.in
 -- output @ data/10_boxes.out
