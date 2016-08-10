@@ -1,6 +1,6 @@
 -- ==
 --
--- tags { notravis }
+-- tags { disable }
 --
 -- compiled input @ data/4096nodes.in
 -- output @ data/4096nodes.out

@@ -1,6 +1,7 @@
 -- Sequential LU-decomposition.
 --
 -- ==
+-- tags { nobench }
 -- compiled input @ data/64.in
 -- output @ data/64.out
 -- notravis input @ data/256.in
