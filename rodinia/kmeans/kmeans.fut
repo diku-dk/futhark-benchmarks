@@ -9,6 +9,8 @@
 -- output @ data/trivial.out
 -- compiled input @ data/100.in
 -- output @ data/100.out
+-- notravis input @ data/204800.in
+-- output @ data/204800.out
 -- notravis input @ data/kdd_cup.in
 -- output @ data/kdd_cup.out
 
