@@ -2,7 +2,7 @@
 -- IDEATest.jomp from the JGF benchmark suite.  Comments too.
 --
 -- ==
--- compiled input @ crypt-data/small.in
+-- nobench input @ crypt-data/small.in
 -- output @ crypt-data/small.out
 -- notravis input @ crypt-data/medium.in
 -- output @ crypt-data/medium.out
