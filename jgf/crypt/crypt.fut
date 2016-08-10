@@ -5,6 +5,7 @@
 -- compiled input @ crypt-data/small.in
 -- output @ crypt-data/small.out
 -- notravis input @ crypt-data/medium.in
+-- output @ crypt-data/medium.out
 
 fun u16 mk16b(u8 upper, u8 lower) =
   (u16(upper) & 0xFFu16) << 8u16 | (u16(lower) & 0xFFu16)
