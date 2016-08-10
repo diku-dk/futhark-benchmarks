@@ -8,7 +8,10 @@
 --
 -- notravis input @ data/fvcorr.domn.193K.toa
 -- output @ data/fvcorr.domn.193K.out
---
+
+-- FIXME the dataset below produces nothing but NaNs.  Is it supposed
+-- to make sense?
+
 -- notravis input @ data/missile.domn.0.2M.toa
 -- output @ data/missile.domn.0.2M.out
 
