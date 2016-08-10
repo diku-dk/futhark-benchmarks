@@ -1,5 +1,6 @@
 -- Test the library scan_segm functions.
 -- ==
+-- tags { nobench }
 -- input {
 --   [False, True, False, False, True, True, False]
 --   [0, 1, 2, 3, 4, 5, 6]
