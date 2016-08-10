@@ -7,8 +7,17 @@
 -- One annoying difference is that the original program assumes
 -- column-major storage, whereas we use row-major storage here.
 --
+-- The original program rounds the final result to integers (as is
+-- proper for an image).  This creates problems with getting the same
+-- results on GPU and CPU, as differences in floating-point accuracy
+-- leads to slight changes that just might push the rounded integer up
+-- or down, thus exaggerating the difference.  For simplicity, this
+-- mplementation returns floats instead.  This should have no
+-- measurable impact on performance, as we still perform the scaling
+-- to (0,255).
+--
 -- ==
--- notravis input @ data/image.in
+-- compiled input @ data/image.in
 -- output @ data/image.out
 
 default(f32)
@@ -25,7 +34,7 @@ fun int indexW(int cols, int j) =
 fun int indexE(int cols, int j) =
   if j == cols-1 then j else j + 1
 
-fun [rows][cols]int main([rows][cols]int image) =
+fun [rows][cols]f32 main([rows][cols]int image) =
   let niter = 100 in
   let lambda = 0.5 in
   let r1 = 0 in
@@ -94,10 +103,12 @@ fun [rows][cols]int main([rows][cols]int image) =
     image in
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
-  let image = map(fn [cols]int ([]f32 row) =>
-                    map(fn int (f32 pixel) =>
-                          -- take logarithm of image, log compress
-                          int(log32(pixel)*255.0),
+  let image = map(fn [cols]f32 ([]f32 row) =>
+                    map(fn f32 (f32 pixel) =>
+                          -- take logarithm of image, log compress.
+                          -- This is where the original implementation
+                          -- would round to int.
+                          log32(pixel)*255.0,
                         row),
                     image) in
   image
