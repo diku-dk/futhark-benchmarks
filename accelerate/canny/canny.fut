@@ -6,7 +6,7 @@
 -- done in Repa).
 --
 -- ==
--- compiled input {
+-- nobench input {
 --   50f32
 --   100f32
 --   [[2092830683i32, 1394728708i32, -33326269i32],
