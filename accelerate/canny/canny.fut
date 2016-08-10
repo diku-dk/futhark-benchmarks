@@ -16,7 +16,7 @@
 --    [-873352195i32, -1591419765i32, 378033750i32]]
 -- }
 -- output {
---   [6, 7, 8]
+--   [1, 4, 6, 7]
 -- }
 --
 -- compiled input @ data/lena256.in
@@ -79,11 +79,11 @@ fun [h][w]f32 gaussianY([h][w]f32 img) =
   map(fn [w]f32 (int x) =>
         map(fn f32 (int y) =>
               unsafe
-              let a = img[x,clamp(0,y-2,h-1)] * (1.0 / 16.0)
-              let b = img[x,clamp(0,y-1,h-1)] * (4.0 / 16.0)
-              let c = img[x,clamp(0,y+0,h-1)] * (6.0 / 16.0)
-              let d = img[x,clamp(0,y+1,h-1)] * (4.0 / 16.0)
-              let e = img[x,clamp(0,y+2,h-1)] * (1.0 / 16.0)
+              let a = img[x,clamp(0,y-2,w-1)] * (1.0 / 16.0)
+              let b = img[x,clamp(0,y-1,w-1)] * (4.0 / 16.0)
+              let c = img[x,clamp(0,y+0,w-1)] * (6.0 / 16.0)
+              let d = img[x,clamp(0,y+1,w-1)] * (4.0 / 16.0)
+              let e = img[x,clamp(0,y+2,w-1)] * (1.0 / 16.0)
               in a + b + c + d + e,
             iota(w)),
       iota(h))
