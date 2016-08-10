@@ -1,6 +1,6 @@
 -- Benchmark the speed of write on different datasets.
 -- ==
--- tags { notravis }
+-- tags { disable }
 --
 -- input @ indices_iota_10000.in
 -- output @ indices_iota_10000.out
