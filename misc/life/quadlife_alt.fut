@@ -5,7 +5,7 @@
 -- This is a variant where only orthogonal neighbours are considered.
 --
 -- ==
--- tags { notravis }
+-- tags { disable }
 
 fun i8 sum_of_cell_and_neighbors(int i, int j, [n][m]i8 board) =
   unsafe
