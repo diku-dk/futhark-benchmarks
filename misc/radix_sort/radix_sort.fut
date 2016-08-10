@@ -1,14 +1,14 @@
 -- A least significant digit radix sort to test out `write`.
 -- ==
 --
--- input {
+-- nobench input {
 --   [83, 1, 4, 99, 33, 0, 6, 5]
 -- }
 -- output {
 --   [0, 1, 4, 5, 6, 33, 83, 99]
 -- }
 --
--- input @ data/radix_sort_100.in
+-- nobench input @ data/radix_sort_100.in
 -- output @ data/radix_sort_100.out
 
 fun [n]u32 main([n]u32 xs) =
