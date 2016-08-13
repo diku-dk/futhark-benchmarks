@@ -20,16 +20,31 @@ fun f32 dot((f32,f32,f32) a, (f32,f32,f32) b) =
 -----------------------------------------
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
-fun  [number_boxes][par_per_box](f32,f32,f32,f32)  -- result fv
+fun  ([number_boxes][par_per_box]f32,
+      [number_boxes][par_per_box]f32,
+      [number_boxes][par_per_box]f32,
+      [number_boxes][par_per_box]f32)
   main( f32 alpha
-            , [number_boxes](int,int,int,int)       box_coefs
-            , [][number_boxes](int,int,int,int)     box_nnghs  -- outer dim should be num_neighbors
+            , [number_boxes]int       box_coefs_0
+            , [number_boxes]int       box_coefs_1
+            , [number_boxes]int       box_coefs_2
+            , [number_boxes]int       box_coefs_3
+            , [][number_boxes]int     box_nnghs_0  -- outer dim should be num_neighbors
+            , [][number_boxes]int     box_nnghs_1  -- outer dim should be num_neighbors
+            , [][number_boxes]int     box_nnghs_2  -- outer dim should be num_neighbors
+            , [][number_boxes]int     box_nnghs_3  -- outer dim should be num_neighbors
             , [number_boxes]int                     box_num_nghbs
-            , [number_boxes][par_per_box](f32,f32,f32,f32) rv
+            , [number_boxes][par_per_box]f32 rv_0
+            , [number_boxes][par_per_box]f32 rv_1
+            , [number_boxes][par_per_box]f32 rv_2
+            , [number_boxes][par_per_box]f32 rv_3
             , [number_boxes][par_per_box]f32 qv
-            ) =
+      ) =
+  let box_coefs = zip(box_coefs_0, box_coefs_1, box_coefs_2, box_coefs_3)
+  let box_nnghs = zip@1(box_nnghs_0, box_nnghs_1, box_nnghs_2, box_nnghs_3)
+  let rv = zip@1(rv_0, rv_1, rv_2, rv_3)
   let a2 = 2.0*alpha*alpha in
-  map( fn [par_per_box](f32,f32,f32,f32) (int l) =>
+  unzip(map( fn [par_per_box](f32,f32,f32,f32) (int l) =>
         let ( bl_x, bl_y, bl_bz, bl_number ) = box_coefs[l] in
         let rA = rv[l] in
         map (fn (f32,f32,f32,f32) ( (f32,f32,f32,f32) rA_el ) => --(int i) =>
@@ -71,5 +86,5 @@ fun  [number_boxes][par_per_box](f32,f32,f32,f32)  -- result fv
                           let (a1, a2, a3, a4) = acc
                           in  (a1+r1, a2+r2, a3+r3, a4+r4)
                 in acc                         
-            , rA )  -- iota(par_per_box) )
-     , iota(number_boxes) )
+            , rA )
+     , iota(number_boxes) ))

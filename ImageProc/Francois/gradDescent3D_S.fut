@@ -188,9 +188,11 @@ add_descent_div3s( [m][n][p]f32 v
 
 fun [m][n][p]f32 
              main( [m][n][p]f32 v
-                 , [m][n][p](f32,f32,f32) xi
+                 , [m][n][p]f32 xi_0
+                 , [m][n][p]f32 xi_1
+                 , [m][n][p]f32 xi_2
                  , [m][n][p]f32 g
                  , f32                       tp ) =
-    add_descent_div3s(v, xi, g, tp)
+    add_descent_div3s(v, zip@2(xi_0,xi_1,xi_2), g, tp)
 
  
