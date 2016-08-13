@@ -169,9 +169,13 @@ add_ascent_grad3v( [m][n][p][k](f32,f32,f32) xi
      , iota(m) )
 
 
-fun [m][n][p][k](f32,f32,f32) 
-    main( [m][n][p][k](f32,f32,f32) xi
+fun ([m][n][p][k]f32,
+     [m][n][p][k]f32,
+     [m][n][p][k]f32)
+    main( [m][n][p][k]f32 xi_0
+        , [m][n][p][k]f32 xi_1
+        , [m][n][p][k]f32 xi_2
         , [m][n][p][k]f32 v
         , f32                           td ) =
-  add_ascent_grad3v( xi, v, td )
+  unzip(add_ascent_grad3v( zip@3(xi_0,xi_1,xi_2), v, td ))
 

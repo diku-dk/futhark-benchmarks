@@ -99,9 +99,10 @@ fun [n][m]int visualise(int n, int m, (f32,f32,f32,f32) view,
   let coloured = map(colourise(max_visits), visits_per_pixel)
   in reshape((n,m), coloured)
 
-fun [n][m]int main(int n, int m, (f32,f32,f32,f32) view,
+fun [n][m]int main(int n, int m, f32 v_xmin, f32 v_ymin, f32 v_xmax, f32 v_ymax,
                      int depth,
-                     int xprec, int yprec, (f32,f32,f32,f32) field) =
-  let (trajectories, escapes) = trajectories(depth, xprec, yprec, field)
-  let image = visualise(n, m, view, trajectories, escapes)
+                     int xprec, int yprec, f32 f_xmin, f32 f_ymin, f32 f_xmax, f32 f_ymax) =
+  let (trajectories, escapes) = trajectories(depth, xprec, yprec,
+                                             (f_xmin, f_ymin, f_xmax, f_ymax))
+  let image = visualise(n, m, (v_xmin, v_ymin, v_xmax, v_ymax), trajectories, escapes)
   in image
