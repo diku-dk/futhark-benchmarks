@@ -34,8 +34,8 @@ fun [width][height]int mandelbrot(int width, int height, int limit, (f32,f32,f32
             , iota(height)),
         iota(width))
 
-fun [width][height][3]i8 main(int width, int height, int limit, (f32,f32,f32,f32) view) =
-  let escapes = mandelbrot(width, height, limit, view) in
+fun [width][height][3]i8 main(int width, int height, int limit, f32 xmin, f32 ymin, f32 xmax, f32 ymax) =
+  let escapes = mandelbrot(width, height, limit, (xmin, ymin, xmax, ymax)) in
   map(fn [height][3]i8 ([]int row) =>
         map(escapeToColour(limit), row),
       escapes)

@@ -172,10 +172,11 @@ add_descent_div2v( [m][n][k]f32 v
 -----------------------------------------------------
 
 fun [m][n]f32 main( [m][n]f32 v
-                    , [m][n](f32,f32) xi
+                    , [m][n]f32 xi_0
+                    , [m][n]f32 xi_1
                     , [m][n]f32 g
                     , f32               tp ) =
-    add_descent_div2s(v, xi, g, tp)
+    add_descent_div2s(v, zip@1(xi_0,xi_1), g, tp)
 
 fun [m][n][k]f32 main2( [m][n][k]f32 v
                         , [m][n][k](f32,f32) xi

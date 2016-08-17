@@ -25,10 +25,24 @@ fun int sobolInd( [30]int dirVct, int n ) =
 -----------------------
 -----------------------
 fun (f32,
-     [](i32, i32, i32, i32),
-     [][](i32, i32, i32, i32),
      []i32,
-     [][](f32,f32,f32,f32),
+     []i32,
+     []i32,
+     []i32,
+
+     [][]i32,
+     [][]i32,
+     [][]i32,
+     [][]i32,
+
+
+     []i32,
+
+     [][]f32,
+     [][]f32,
+     [][]f32,
+     [][]f32,
+
      [][]f32)
   --fun [][](int,int,int,int)
   main(int boxes1d) =
@@ -99,7 +113,24 @@ fun (f32,
                 , iota(number_boxes) )
   in
   let (qv, rv) = unzip(rqv)  in
-  ----------------------------------------------
-  -- 3. Finally, call the computational kernel--
-  ----------------------------------------------
-  ( alpha, box_coefs, box_nnghs, box_num_nghbs, rv, qv )
+
+  ( alpha,
+
+    unzip(box_coefs).0,
+    unzip(box_coefs).1,
+    unzip(box_coefs).2,
+    unzip(box_coefs).3,
+
+    unzip(box_nnghs).0,
+    unzip(box_nnghs).1,
+    unzip(box_nnghs).2,
+    unzip(box_nnghs).3,
+
+    box_num_nghbs,
+
+    unzip(rv).0,
+    unzip(rv).1,
+    unzip(rv).2,
+    unzip(rv).3,
+
+    qv)
