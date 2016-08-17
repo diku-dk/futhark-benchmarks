@@ -47,7 +47,7 @@ fun *[k](f32,f32)
 fun f32 fabs32(f32 x) =
   if x < 0.0f32 then -x else x
 
-fun ([](f32,f32), int)
+fun ([]f32,[]f32, int)
   main(int threshold,
        int k,
        int max_iterations,
@@ -76,4 +76,4 @@ fun ([](f32,f32), int)
                                     fabs32(x1-x2) > 0.01f32 || fabs32(y1-y2) > 0.01f32,
                                   copy(new_centres), cluster_centres)) in
     (new_membership, new_centres, continue, i+1) in
-  (cluster_centres, i)
+  (unzip(cluster_centres).0, unzip(cluster_centres).1, i)

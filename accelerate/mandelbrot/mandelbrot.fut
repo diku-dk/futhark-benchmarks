@@ -50,8 +50,8 @@ fun [screenY][screenX]int mandelbrot(int screenX, int screenY, int depth, (f32,f
             , iota(screenX)),
         iota(screenY))
 
-fun [screenY][screenX]int main(int screenX, int screenY, int depth, (f32,f32,f32,f32) view) =
-  let escapes = mandelbrot(screenX, screenY, depth, view) in
+fun [screenY][screenX]int main(int screenX, int screenY, int depth, f32 xmin, f32 ymin, f32 xmax, f32 ymax) =
+  let escapes = mandelbrot(screenX, screenY, depth, (xmin, ymin, xmax, ymax)) in
   map(fn [screenX]int ([]int row) =>
         map(escapeToColour(depth), row),
       escapes)
