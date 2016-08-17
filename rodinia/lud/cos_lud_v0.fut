@@ -145,21 +145,18 @@ fun *[m][m][b][b]f32
 lud_internal( int d, [m][m][b][b]f32 mat ) =
   map( fn [m][b][b]f32 (int ii) =>
         map( fn [b][b]f32 (int jj) =>
-                let top = transpose(mat[d, jj]) in 
-                let left= mat[ii, d] in 
-                map ( fn [b]f32 ([b]f32 left_row, int i) =>
-                        map ( fn f32 ([b]f32 top_row, int j) =>
+                let temp_top = copy(mat[d, jj]) in -- copy?
+                let temp_left= copy(mat[ii, d]) in -- copy?
+                map ( fn [b]f32 (int i) =>
+                        map ( fn f32 (int j) =>
                                 if (ii > d && jj > d)
-                                then let prods = zipWith(*, left_row, top_row) in
-                                     let sum   = reduce (+, 0.0f32, prods) in
-                                     mat[ii,jj,i,j] - sum
-                                     -- let sum = 0.0f32 in
-                                     -- loop (sum) = for k < b do
-                                     --    sum + left_row[k] * top_row[k]
-                                     -- in mat[ii,jj,i,j] - sum
+                                then let sum = 0.0f32 in
+                                     loop (sum) = for k < b do
+                                        sum + temp_left[i,k] * temp_top[k,j]
+                                     in mat[ii,jj,i,j] - sum
                                 else mat[ii,jj,i,j]
-                            , zip(top,iota(b)) )
-                    , zip(left,iota(b)) )
+                            , iota(b) )
+                    , iota(b) )
            , iota(m) )
      , iota(m) )
 
@@ -186,16 +183,14 @@ fun [n][n]f32 main([n][n]f32 mat) =
                     , iota(num_blocks) )
             , iota(num_blocks) )
     in
-    let one =  (n*n + 2*n + 1) / (n+1) - n in
     --------------------------------------
     ---- sequential tiled loop driver ----
     --------------------------------------
     loop(upp_blk) = for step < ((n / b) - 1) do
+
         -----------------------------------------------
         ---- 1. compute the current diagonal block ----
         -----------------------------------------------
-        --let cur_blk = reshape((one,b+one-1,b+one-1), upp_blk[step,step]) in
-        --let diag = reshape((b,b), map(lud_diagonal3, cur_blk)) in
         let diag = lud_diagonal(upp_blk[step,step]) in
         let upp_blk[step,step] = diag in
 
