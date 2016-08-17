@@ -77,13 +77,13 @@ lud_diagonal3([b][b]f32 a0) = -- CORRECT
 --------------------------------------------
 --------------------------------------------
 fun *[m][b][b]f32
-lud_perimeter_upper(int d, [b][b]f32 diag, [m][b][b]f32 a0s) =
+lud_perimeter_upper0(int step, [b][b]f32 diag, [m][b][b]f32 a0s) =
     let a1s = map(fn [b][b]f32 ([b][b]f32 x) => transpose(x), a0s) in
     let a2s = 
         map ( fn *[b][b]f32 ([b][b]f32 a1, int jj) =>
         map ( fn *[b]f32 ([b]f32 row0) =>   -- Upper
                 let row = copy(row0) in
-                if (jj <= d) -- move this if inside!!!
+                if (jj <= step) -- move this if inside!!!
                 then row
                 else
                 -- copy row?
@@ -100,6 +100,68 @@ lud_perimeter_upper(int d, [b][b]f32 diag, [m][b][b]f32 a0s) =
             , zip(a1s,iota(m)) )
     in map(fn [b][b]f32 ([b][b]f32 x) => transpose(x), a2s)
 
+
+fun *[m][b][b]f32
+lud_perimeter_upper1(int step, [b][b]f32 diag, [m][b][b]f32 a0s) =
+    let a1s = rearrange((0,2,1), a0s) in
+    let a2s = 
+        map ( fn *[b][b]f32 ([b][b]f32 a1, int jj) =>
+        map ( fn *[b]f32 ([b]f32 row, int j) =>   -- Upper
+        map ( fn f32 ([b]f32 diag_row, f32 el, int i) => 
+                if (jj <= step) 
+                then el
+                else
+                    let sum = 0.0f32  in
+                    let (diag_c, _) = split((i), diag_row) in
+                    let (row_c , _) = split((i), row ) in
+                    let prods = zipWith(*, diag_c, row_c) in
+                    let sum   = reduce(+, 0.0f32, prods) in
+                    el - sum
+            , zip(diag, row, iota(b)) )
+            , zip(a1, iota(b)) )
+            , zip(a1s,iota(m)) )
+    in rearrange((0,2,1), a2s)
+
+fun *[m][b][b]f32
+lud_perimeter_upper2(int step, [b][b]f32 diag, [m][b][b]f32 a0s) =
+    let a2s = 
+        map ( fn *[b][b]f32 ([b][b]f32 a0, int jj) =>
+        map ( fn *   [b]f32 (int j) =>
+                if jj <= step
+                then map(fn f32 (int i) => a0[i,j], iota(b))
+                else let a1 = transpose(a0) in
+                     let row= a1[j] in
+                     map(fn f32 ([b]f32 diag_i, int i)  =>
+                            let (diag_c, _) = split((i), diag_i) in
+                            let (row_c , _) = split((i), row ) in
+                            let prods = zipWith(*, diag_c, row_c) in
+                            let sum   = reduce(+, 0.0f32, prods) in
+                            row[i] - sum
+                        , zip(diag,iota(b)) )
+            , iota(b) )
+            , zip(a0s, iota(m)) )
+    in rearrange((0,2,1), a2s)
+
+fun *[m][b][b]f32
+lud_perimeter_upper(int step, [b][b]f32 diag, [m][b][b]f32 a0ss) = let one = (m*m + 2*m + 1) / (m + 1) - m in
+        map ( fn *[b][b]f32 ([b][b]f32 a0s, int jj) =>
+        map ( fn *[b]f32 ([b]f32 a0, int i) =>   -- Upper
+        map ( fn f32 (f32 el, int j) => 
+                if (jj <= step) 
+                then el
+                else
+                    let a1t = transpose(a0s) in
+                    let row = unsafe a1t[j*one+one-1] in
+                    let (row_c , _) = split((i), row ) in
+                    let (diag_c, _) = split((i), unsafe diag[i*one+one-1]) in
+                    let prods = zipWith(*, diag_c, row_c) in
+                    let sum   = reduce (+, 0.0f32, prods) in
+                    el - sum
+            , zip(a0,  iota(b)) )
+            , zip(a0s, iota(b)) )
+            , zip(a0ss,iota(m)) )
+
+
 ------------------------------
 ------------------------------
 ---- LUD Perimeter Lower -----
@@ -111,7 +173,7 @@ lud_perimeter_upper(int d, [b][b]f32 diag, [m][b][b]f32 a0s) =
 --------------------------------------------
 --------------------------------------------
 fun *[m][b][b]f32
-lud_perimeter_lower(int step, [b][b]f32 diag, [m][m][b][b]f32 mat) =
+lud_perimeter_lower0(int step, [b][b]f32 diag, [m][m][b][b]f32 mat) =
   map ( fn *[b][b]f32 ([m][b][b]f32 a0s, int ii) =>
         let a0 = unsafe a0s[step] in
         map ( fn *[b]f32 ([b]f32 row0) =>   -- Lower
@@ -131,6 +193,26 @@ lud_perimeter_lower(int step, [b][b]f32 diag, [m][m][b][b]f32 mat) =
             , a0 )
       , zip(mat,iota(m)) )
 
+fun *[m][b][b]f32
+lud_perimeter_lower(int step, [b][b]f32 diag0, [m][m][b][b]f32 mat) = -- COMPILER BUG??? when setting b = 2
+  let diag = transpose(diag0) in
+  map ( fn *[b][b]f32 ([m][b][b]f32 a0s, int ii) =>
+        let a0 = unsafe a0s[step] in
+        map ( fn *[b]f32 ([b]f32 row) => -- Lower
+        map ( fn f32 (f32 el, int j) =>
+                if (ii <= step) 
+                then el
+                else
+                    let (row_c , _) = split((j), row    ) in
+                    let (diag_c, _) = split((j), diag[j]) in
+                    let prods = zipWith(*, diag_c, row_c) in
+                    let sum   = reduce (+, 0.0f32, prods) in
+                    (el - sum) / diag0[j,j]
+            , zip(row,iota(b)) )
+            , a0 )
+      , zip(mat,iota(m)) )
+
+
 ------------------------------
 ------------------------------
 ----     LUD Internal    -----
@@ -145,8 +227,8 @@ fun *[m][m][b][b]f32
 lud_internal( int d, [m][m][b][b]f32 mat ) =
   map( fn [m][b][b]f32 (int ii) =>
         map( fn [b][b]f32 (int jj) =>
-                let temp_top = copy(mat[d, jj]) in -- copy?
-                let temp_left= copy(mat[ii, d]) in -- copy?
+                let temp_top = mat[d, jj] in -- copy?
+                let temp_left= mat[ii, d] in -- copy?
                 map ( fn [b]f32 (int i) =>
                         map ( fn f32 (int j) =>
                                 if (ii > d && jj > d)
