@@ -3,6 +3,13 @@
 -- Quite straightforward.  The Accelerate guys write very pretty code.
 -- I don't know if my port is correct.  It does generate a tunnel, but
 -- it might not look exactly like the one Accelerate makes.
+--
+-- ==
+-- compiled input { 10 800  600 }
+-- compiled input { 10 1000 1000 }
+-- compiled input { 10 2000 2000 }
+-- compiled input { 10 4000 4000 }
+-- compiled input { 10 8000 8000 }
 
 type v2 = (f32,f32)
 
