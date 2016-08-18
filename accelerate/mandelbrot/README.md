@@ -2,11 +2,13 @@
 
 Port of Accelerate's
 [mandelbrot](https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/mandelbrot)
-example, along with a Python wrapper for easily turning the raw data
-into images.  For example:
+example, along with a Python frontend that uses Pygame to implement a
+interactive visualisation.  Just run
 
-    futhark-pyopencl --library mandelbrot.fut -o mandelbrot.py
-    ./mandelbrot-run.py --width 1024 --height 768 mandelbrot.png
+    make run
+
+for pretty pictures.  Note that the implementation uses 32-bit
+floating point numbers, so it can't zoom far before it gets choppy.
 
 ## Runtime results on gpu01-diku-apl (GTX 780 Ti)
 

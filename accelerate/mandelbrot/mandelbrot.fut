@@ -38,21 +38,21 @@ fun int divergence(int depth, complex c0) =
      i + 1) in
   i
 
-fun [screenY][screenX]int mandelbrot(int screenX, int screenY, int depth, (f32,f32,f32,f32) view) =
+fun [screenX][screenY]int mandelbrot(int screenX, int screenY, int depth, (f32,f32,f32,f32) view) =
   let (xmin, ymin, xmax, ymax) = view in
   let sizex = xmax - xmin in
   let sizey = ymax - ymin in
-  map(fn [screenX]int (int y) =>
-        map (fn int (int x) =>
+  map(fn [screenX]int (int x) =>
+        map (fn int (int y) =>
                let c0 = (xmin + (f32(x) * sizex) / f32(screenX),
                          ymin + (f32(y) * sizey) / f32(screenY)) in
                divergence(depth, c0)
-            , iota(screenX)),
-        iota(screenY))
+            , iota(screenY)),
+        iota(screenX))
 
-fun [screenY][screenX]int main(int screenX, int screenY, int depth, f32 xmin, f32 ymin, f32 xmax, f32 ymax) =
+fun [screenX][screenY]int main(int screenX, int screenY, int depth, f32 xmin, f32 ymin, f32 xmax, f32 ymax) =
   let escapes = mandelbrot(screenX, screenY, depth, (xmin, ymin, xmax, ymax)) in
-  map(fn [screenX]int ([]int row) =>
+  map(fn [screenY]int ([]int row) =>
         map(escapeToColour(depth), row),
       escapes)
 
