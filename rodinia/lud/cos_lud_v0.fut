@@ -16,7 +16,28 @@
 ---------------------------------------------------------------------
 
 fun *[b][b]f32
-lud_diagonal([b][b]f32 a0) =  -- CORRECT
+lud_diagonal0([b][b]f32 a0) = -- CORRECT
+    let a = copy(a0) in
+    loop(a) = for i < b do
+        loop(a) = for i <= j < b do
+            loop(a) = for k < i do
+                let a[i,j] = a[i,j] - a[i,k]*a[k,j] 
+                in  a
+            in a
+        in
+        let tmp = 1.0f32 / a[i,i] in
+        loop(a) = for (i+1) <= j < b do
+            loop(a) = for k < i do
+                let a[j,i] = a[j,i] - a[j,k]*a[k,i]
+                in  a
+            in 
+            let a[j,i] = a[j,i]*tmp
+            in  a
+        in a
+    in a
+
+fun *[b][b]f32
+lud_diagonal1([b][b]f32 a0) =  -- CORRECT
     let a = copy(a0) in
     loop(a) = for i < b do
         let (vals, inds) = unzip( 
@@ -46,25 +67,35 @@ lud_diagonal([b][b]f32 a0) =  -- CORRECT
     in a
 
 fun *[b][b]f32
-lud_diagonal3([b][b]f32 a0) = -- CORRECT
-    let a = copy(a0) in
-    loop(a) = for i < b do
-        loop(a) = for i <= j < b do
-            loop(a) = for k < i do
-                let a[i,j] = a[i,j] - a[i,k]*a[k,j] 
-                in  a
-            in a
+lud_diagonal([b][b]f32 a) =  -- CORRECT
+    let a_cols = copy(transpose(a)) in
+    let a_rows = copy(a) in
+    loop( (a_rows,a_cols) ) = for i < b do
+        let it_row = map( fn f32 (int j) =>
+                            if j < i then 0.0f32 else
+                            let sum = 0.0f32 in
+                            loop(sum) = for k < i do
+                                sum + a_cols[k,i]*a_rows[k,j]
+                            in  a_rows[i,j]-sum
+                        , iota(b) )
         in
-        let tmp = 1.0f32 / a[i,i] in
-        loop(a) = for (i+1) <= j < b do
-            loop(a) = for k < i do
-                let a[j,i] = a[j,i] - a[j,k]*a[k,i]
-                in  a
-            in 
-            let a[j,i] = a[j,i]*tmp
-            in  a
-        in a
-    in a
+        let it_col = map( fn f32 (int j) =>
+                            if j < (i+1) then 0.0f32 else
+                            let sum = 0.0f32 in
+                            loop(sum) = for k < i do
+                                sum + a_cols[k,j]*a_rows[k,i]
+                            in  (a_cols[i,j]-sum) / it_row[i]
+                        , iota(b) )
+        in
+        let a_rows[i] = it_row in
+        let a_cols[i] = it_col in
+        (a_rows,a_cols)
+    in zipWith( fn [b]f32 ([b]f32 a_rows_r, [b]f32 a_cols_r, int i) =>
+                    zipWith( fn f32 (f32 row_el, f32 col_el, int j) =>
+                                if (i <= j) then row_el else col_el
+                           , a_rows_r, a_cols_r, iota(b) )                 
+              , a_rows, transpose(a_cols), iota(b) )
+
 
 ------------------------------
 ------------------------------
@@ -77,7 +108,7 @@ lud_diagonal3([b][b]f32 a0) = -- CORRECT
 --------------------------------------------
 --------------------------------------------
 fun *[m][b][b]f32
-lud_perimeter_upper0(int step, [b][b]f32 diag, [m][b][b]f32 a0s) =
+lud_perimeter_upper(int step, [b][b]f32 diag, [m][b][b]f32 a0s) =
     let a1s = map(fn [b][b]f32 ([b][b]f32 x) => transpose(x), a0s) in
     let a2s = 
         map ( fn *[b][b]f32 ([b][b]f32 a1, int jj) =>
@@ -143,7 +174,7 @@ lud_perimeter_upper2(int step, [b][b]f32 diag, [m][b][b]f32 a0s) =
     in rearrange((0,2,1), a2s)
 
 fun *[m][b][b]f32
-lud_perimeter_upper(int step, [b][b]f32 diag, [m][b][b]f32 a0ss) = let one = (m*m + 2*m + 1) / (m + 1) - m in
+lud_perimeter_upper3(int step, [b][b]f32 diag, [m][b][b]f32 a0ss) = 
         map ( fn *[b][b]f32 ([b][b]f32 a0s, int jj) =>
         map ( fn *[b]f32 ([b]f32 a0, int i) =>   -- Upper
         map ( fn f32 (f32 el, int j) => 
@@ -151,9 +182,9 @@ lud_perimeter_upper(int step, [b][b]f32 diag, [m][b][b]f32 a0ss) = let one = (m*
                 then el
                 else
                     let a1t = transpose(a0s) in
-                    let row = unsafe a1t[j*one+one-1] in
+                    let row = unsafe a1t[j] in
                     let (row_c , _) = split((i), row ) in
-                    let (diag_c, _) = split((i), unsafe diag[i*one+one-1]) in
+                    let (diag_c, _) = split((i), unsafe diag[i]) in
                     let prods = zipWith(*, diag_c, row_c) in
                     let sum   = reduce (+, 0.0f32, prods) in
                     el - sum
@@ -173,7 +204,7 @@ lud_perimeter_upper(int step, [b][b]f32 diag, [m][b][b]f32 a0ss) = let one = (m*
 --------------------------------------------
 --------------------------------------------
 fun *[m][b][b]f32
-lud_perimeter_lower0(int step, [b][b]f32 diag, [m][m][b][b]f32 mat) =
+lud_perimeter_lower(int step, [b][b]f32 diag, [m][m][b][b]f32 mat) =
   map ( fn *[b][b]f32 ([m][b][b]f32 a0s, int ii) =>
         let a0 = unsafe a0s[step] in
         map ( fn *[b]f32 ([b]f32 row0) =>   -- Lower
@@ -194,7 +225,7 @@ lud_perimeter_lower0(int step, [b][b]f32 diag, [m][m][b][b]f32 mat) =
       , zip(mat,iota(m)) )
 
 fun *[m][b][b]f32
-lud_perimeter_lower(int step, [b][b]f32 diag0, [m][m][b][b]f32 mat) = -- COMPILER BUG??? when setting b = 2
+lud_perimeter_lower0(int step, [b][b]f32 diag0, [m][m][b][b]f32 mat) = -- COMPILER BUG??? when setting b = 2
   let diag = transpose(diag0) in
   map ( fn *[b][b]f32 ([m][b][b]f32 a0s, int ii) =>
         let a0 = unsafe a0s[step] in
@@ -247,7 +278,7 @@ lud_internal( int d, [m][m][b][b]f32 mat ) =
 ---- Main Driver:
 --------------------------------------------
 fun [n][n]f32 main([n][n]f32 mat) =
-    let b = 16 in -- 16 in
+    let b = 4 in -- 16 in
     let num_blocks = n / b in
     -------------------------------------------------
     ---- transform matrix in [n/b,n/b,b,b] block ----
@@ -269,7 +300,6 @@ fun [n][n]f32 main([n][n]f32 mat) =
     ---- sequential tiled loop driver ----
     --------------------------------------
     loop(upp_blk) = for step < ((n / b) - 1) do
-
         -----------------------------------------------
         ---- 1. compute the current diagonal block ----
         -----------------------------------------------
