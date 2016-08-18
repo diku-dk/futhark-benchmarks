@@ -5,11 +5,11 @@
 -- it might not look exactly like the one Accelerate makes.
 --
 -- ==
--- compiled input { 10 800  600 }
--- compiled input { 10 1000 1000 }
--- compiled input { 10 2000 2000 }
--- compiled input { 10 4000 4000 }
--- compiled input { 10 8000 8000 }
+-- compiled input { 10f32 800  600 }
+-- compiled input { 10f32 1000 1000 }
+-- compiled input { 10f32 2000 2000 }
+-- compiled input { 10f32 4000 4000 }
+-- compiled input { 10f32 8000 8000 }
 
 type v2 = (f32,f32)
 
