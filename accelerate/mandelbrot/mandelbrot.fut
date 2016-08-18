@@ -17,36 +17,36 @@ default(f32)
 type complex = (f32, f32)
 
 fun f32 dot(complex c) =
-  let (r, i) = c in
-  r * r + i * i
+  let (r, i) = c
+  in r * r + i * i
 
 fun complex multComplex(complex x, complex y) =
-  let (a, b) = x in
-  let (c, d) = y in
-  (a*c - b * d,
-   a*d + b * c)
+  let (a, b) = x
+  let (c, d) = y
+  in (a*c - b * d,
+      a*d + b * c)
 
 fun complex addComplex(complex x, complex y) =
-  let (a, b) = x in
-  let (c, d) = y in
-  (a + c,
-   b + d)
+  let (a, b) = x
+  let (c, d) = y
+  in (a + c,
+      b + d)
 
 fun int divergence(int depth, complex c0) =
   loop ((c, i) = (c0, 0)) = while i < depth && dot(c) < 4.0 do
     (addComplex(c0, multComplex(c, c)),
-     i + 1) in
-  i
+     i + 1)
+  in i
 
 fun [screenX][screenY]int mandelbrot(int screenX, int screenY, int depth, (f32,f32,f32,f32) view) =
-  let (xmin, ymin, xmax, ymax) = view in
-  let sizex = xmax - xmin in
-  let sizey = ymax - ymin in
-  map(fn [screenX]int (int x) =>
-        map (fn int (int y) =>
-               let c0 = (xmin + (f32(x) * sizex) / f32(screenX),
-                         ymin + (f32(y) * sizey) / f32(screenY)) in
-               divergence(depth, c0)
+  let (xmin, ymin, xmax, ymax) = view
+  let sizex = xmax - xmin
+  let sizey = ymax - ymin
+  in map(fn [screenX]int (int x) =>
+           map (fn int (int y) =>
+                  let c0 = (xmin + (f32(x) * sizex) / f32(screenX),
+                            ymin + (f32(y) * sizey) / f32(screenY))
+                  in divergence(depth, c0)
             , iota(screenY)),
         iota(screenX))
 
