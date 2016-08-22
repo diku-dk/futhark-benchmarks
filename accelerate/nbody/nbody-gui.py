@@ -60,6 +60,8 @@ def render():
 def BOOM(pos):
     global N, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas
     x,y = pos
+    x += x_ul
+    y += y_ul
     BOOM_N = 100
 
     angles = numpy.random.rand(BOOM_N).astype('float32') * numpy.pi * 2
