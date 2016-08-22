@@ -59,9 +59,11 @@ def render():
 
 def BOOM(pos):
     global N, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas
+    x_dist = float(x_br-x_ul)
+    y_dist = float(y_br-y_ul)
     x,y = pos
-    x += x_ul
-    y += y_ul
+    x = x_ul + (float(x) / width) * x_dist
+    y = y_ul + (float(y) / height) * y_dist
     BOOM_N = 100
 
     angles = numpy.random.rand(BOOM_N).astype('float32') * numpy.pi * 2
@@ -80,25 +82,49 @@ def BOOM(pos):
 
     N += BOOM_N
 
+def zoomOut():
+    global x_br,x_ul,y_br,y_ul
+    x_dist = float(x_br-x_ul)
+    y_dist = float(y_br-y_ul)
+
+    x_br += x_dist * 0.01
+    x_ul -= x_dist * 0.01
+    y_br += y_dist * 0.01
+    y_ul -= y_dist * 0.01
+
+def zoomIn():
+    global x_br,x_ul,y_br,y_ul
+    x_dist = float(x_br-x_ul)
+    y_dist = float(y_br-y_ul)
+
+    x_br -= x_dist * 0.01
+    x_ul += x_dist * 0.01
+    y_br -= y_dist * 0.01
+    y_ul += y_dist * 0.01
+
 def moveLeft():
     global x_ul, x_br
-    x_ul -= 10
-    x_br -= 10
+    x_dist = abs(x_br-x_ul)
+    x_ul -= x_dist * 0.01
+    x_br -= x_dist * 0.01
 
 def moveRight():
     global x_ul, x_br
-    x_ul += 10
-    x_br += 10
+    x_dist = abs(x_br-x_ul)
+    x_ul += x_dist * 0.01
+    x_br += x_dist * 0.01
 
 def moveUp():
     global y_ul, y_br
-    y_ul -= 10
-    y_br -= 10
+    y_dist = abs(y_br-x_ul)
+    y_ul -= y_dist * 0.01
+    y_br -= y_dist * 0.01
 
 def moveDown():
     global y_ul, y_br
-    y_ul += 10
-    y_br += 10
+    y_dist = abs(y_br-x_ul)
+    y_ul += y_dist * 0.01
+    y_br += y_dist * 0.01
 
 pygame.key.set_repeat(1, 1)
 while True:
@@ -120,6 +146,10 @@ while True:
                   moveDown()
               if event.key == pygame.K_HOME:
                   resetPos()
+              if event.unicode == '+':
+                  zoomIn()
+              if event.unicode == '-':
+                  zoomOut()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 BOOM(pygame.mouse.get_pos())
