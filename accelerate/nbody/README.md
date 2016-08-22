@@ -1,7 +1,13 @@
 # N-body simulation
 
 Based on Accelerate's version from
-https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/n-body
+https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/n-body,
+along with a Python frontend that uses Pygame to implement a
+interactive visualisation.  Just run
+
+    make run
+
+and watch the dots.  You can left-click to add more bodies.
 
 See the `benchmark` directory for how two benchmark Futhark up against
 Accelerate on different input sizes.
