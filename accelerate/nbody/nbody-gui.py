@@ -78,12 +78,46 @@ def BOOM(pos):
 
     N += BOOM_N
 
+def moveLeft():
+    global x_ul, x_br
+    x_ul -= 10
+    x_br -= 10
+
+def moveRight():
+    global x_ul, x_br
+    x_ul += 10
+    x_br += 10
+
+def moveUp():
+    global y_ul, y_br
+    y_ul -= 10
+    y_br -= 10
+
+def moveDown():
+    global y_ul, y_br
+    y_ul += 10
+    y_br += 10
+
+pygame.key.set_repeat(1, 1)
 while True:
     curtime += 0.005
     render()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            repeats = 5 if pygame.key.get_mods() & pygame.KMOD_CTRL else 1
+            for i in range(repeats):
+              if event.key == pygame.K_RIGHT:
+                  moveRight()
+              if event.key == pygame.K_LEFT:
+                  moveLeft()
+              if event.key == pygame.K_UP:
+                  moveUp()
+              if event.key == pygame.K_DOWN:
+                  moveDown()
+              if event.key == pygame.K_HOME:
+                  resetPos()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 BOOM(pygame.mouse.get_pos())
