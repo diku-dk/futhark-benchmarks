@@ -126,6 +126,18 @@ def moveDown():
     y_ul += y_dist * 0.01
     y_br += y_dist * 0.01
 
+mass_active = False
+def mouseMass(pos):
+    global ms, xps, yps, zps
+
+    if mass_active and pos:
+        ms[0] = 10000
+        xps[0] = pos[0]
+        yps[0] = pos[1]
+        zps[0] = 0
+    else:
+        ms[0] = 0.0001
+
 pygame.key.set_repeat(1, 1)
 while True:
     curtime += 0.005
@@ -153,4 +165,7 @@ while True:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 BOOM(pygame.mouse.get_pos())
-
+            mass_active = pygame.mouse.get_pressed()[2] == 1
+        elif event.type == pygame.MOUSEBUTTONUP:
+            mass_active = pygame.mouse.get_pressed()[2] == 1
+    mouseMass(pygame.mouse.get_pos())
