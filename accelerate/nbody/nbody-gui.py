@@ -19,8 +19,8 @@ step_nbody = nb.main
 N = 5000
 epsilon=0.50
 
-xps = numpy.random.rand(N).astype('float32')*width
-yps = numpy.random.rand(N).astype('float32')*height
+xps = numpy.random.normal(size=N,scale=width/5,loc=width/2).astype('float32')
+yps = numpy.random.normal(size=N,scale=height/5,loc=height/2).astype('float32')
 zps = numpy.random.rand(N).astype('float32')
 ms = numpy.random.rand(N).astype('float32')
 xvs = numpy.zeros(N).astype('float32')
