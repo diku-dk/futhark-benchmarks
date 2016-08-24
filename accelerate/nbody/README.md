@@ -1,7 +1,15 @@
 # N-body simulation
 
 Based on Accelerate's version from
-https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/n-body
+https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/n-body,
+along with a Python frontend that uses Pygame to implement a
+interactive visualisation.  Just run
+
+    make run
+
+and watch the dots.  Left-click to add more bodies in a tight ball
+that will immediately explode in discretisation errors.  Right-hold to
+have the mouse cursor act as a massive gravitational body.
 
 See the `benchmark` directory for how two benchmark Futhark up against
 Accelerate on different input sizes.
