@@ -117,3 +117,38 @@ fun ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]
   let bodies' = advance_bodies_steps(n_steps, epsilon, time_step, bodies)
   let bodies'' = map(unwrap_body, bodies')
    in unzip(bodies'')
+
+entry [w][h]int render(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
+                       [n]f32 xps, [n]f32 yps, [n]f32 zps) =
+  let (is, vs) = unzip(zipWith(renderPoint(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
+  in reshape((w,h), write(is, vs, replicate(w*h, 0)))
+
+entry ([n]f32, [n]f32) test(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
+                            [n]f32 xps, [n]f32 yps, [n]f32 zps) =
+  unzip(zipWith(idx(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
+
+fun (int, int) renderPoint(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
+                           f32 x, f32 y, f32 z) =
+  -- Draw nothing if the point is outside the viewport.
+  if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
+  else
+    -- Normalise x,y to positions in interval (0,1) within the viewport.
+    let x' = (x-x_ul) / (x_br-x_ul)
+    let y' = (y-y_ul) / (y_br-y_ul)
+    -- Convert x',y' to screen coordinate space.
+    let x'' = int(x' * f32(w))
+    let y'' = int(y' * f32(h))
+    in (x''*h + y'', 0x00FFFFFF)
+
+entry (f32, f32) idx(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
+                     f32 x, f32 y, f32 z) =
+  -- Draw nothing if the point is outside the viewport.
+  if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1f32, 0f32)
+  else
+    -- Normalise x,y to positions in interval (0,1) within the viewport.
+    let x' = x-x_ul / x_br-x_ul
+    let y' = y-y_ul / y_br-y_ul
+    -- Convert x',y' to screen coordinate space.
+    let x'' = int(x' * f32(w))
+    let y'' = int(y' * f32(h))
+    in (f32(x), f32(y))
