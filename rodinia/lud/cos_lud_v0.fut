@@ -1,6 +1,7 @@
 -- Sequential LU-decomposition.
 --
 -- ==
+
 -- tags { nobench }
 -- compiled input @ data/16by16.in
 -- output @ data/16by16.out
@@ -119,7 +120,7 @@ lud_perimeter_upper(int step, [b][b]f32 diag, [m][b][b]f32 a0s) =
                 else
                 -- copy row?
                 loop(row) = for im1 < b - 1 do
-                    let i   = im1 + 1 in 
+                    let i   = im1 + 1 in
                     let sum = 0.0f32  in
                     loop(sum) = for k < i do
                         sum + diag[i,k] * row[k]
@@ -278,7 +279,7 @@ lud_internal( int d, [m][m][b][b]f32 mat ) =
 ---- Main Driver:
 --------------------------------------------
 fun [n][n]f32 main([n][n]f32 mat) =
-    let b = 16 in -- 16 in
+    let b = 4 in -- 16 in
     let num_blocks = n / b in
     -------------------------------------------------
     ---- transform matrix in [n/b,n/b,b,b] block ----
