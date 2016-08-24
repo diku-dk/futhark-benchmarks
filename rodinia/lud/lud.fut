@@ -283,7 +283,7 @@ lud_internal0( int d, [mp1][b][b]f32 top_per, [mp1][b][b]f32 lft_per, [mp1][mp1]
 
 
 fun *[][][b][b]f32
-lud_internal( int d, [mp1][b][b]f32 top_per, [mp1][b][b]f32 lft_per, [mp1][mp1][b][b]f32 mat ) =
+lud_internal1( int d, [mp1][b][b]f32 top_per, [mp1][b][b]f32 lft_per, [mp1][mp1][b][b]f32 mat ) =
   let m = mp1 - 1 in
   let top_slice = top_per[1:mp1] in
   let lft_slice = lft_per[1:mp1] in
@@ -322,23 +322,23 @@ lud_internal2( int d, [mp1][b][b]f32 top_per0t, [mp1][b][b]f32 lft_per0, [mp1][m
 
 
 fun *[][][b][b]f32
-lud_internal3( int d, [mp1][b][b]f32 top_per, [mp1][b][b]f32 lft_per, [mp1][mp1][b][b]f32 mat ) =
+lud_internal( int d, [mp1][b][b]f32 top_per, [mp1][b][b]f32 lft_per, [mp1][mp1][b][b]f32 mat ) =
   let m = mp1 - 1 in
   let top_slice0= top_per[1:mp1] in
   let top_slice = rearrange((0,2,1),top_slice0) in
   let lft_slice = lft_per[1:mp1] in
   let mat_slice = mat[1:mp1,1:mp1] in
-  map( fn [m][b][b]f32 ([b][b]f32 lft, int ii) =>
-        map( fn [b][b]f32 ([b][b]f32 top, int jj) =>
-                map ( fn [b]f32 ([b]f32 lft_row, int i) =>
-                        map ( fn f32 ([b]f32 top_row, int j) =>
+  map( fn [m][b][b]f32 ([m][b][b]f32 mat_arr, [b][b]f32 lft, int ii) =>
+        map( fn [b][b]f32 ([b][b]f32 mat_blk, [b][b]f32 top, int jj) =>
+                map ( fn [b]f32 ([b]f32 mat_row, [b]f32 lft_row, int i) =>
+                        map ( fn f32 (f32 mat_el, [b]f32 top_row, int j) =>
                                 let prods = zipWith(*, lft_row, top_row) in
                                 let sum   = reduce(+, 0.0f32, prods)     in
-                                mat_slice[ii,jj,i,j] - sum                                
-                            , zip(top,iota(b)) )
-                    , zip(lft,iota(b)) )
-           , zip(top_slice,iota(m)) )
-     , zip(lft_slice,iota(m)) )
+                                mat_el - sum --mat_slice[ii,jj,i,j] - sum                                
+                            , zip(mat_row,top,iota(b)) )
+                    , zip(mat_blk,lft,iota(b)) )
+           , zip(mat_arr,top_slice,iota(m)) )
+     , zip(mat_slice,lft_slice,iota(m)) )
 
 
 --------------------------------------------
