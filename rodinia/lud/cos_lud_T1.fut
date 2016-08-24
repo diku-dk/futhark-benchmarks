@@ -1,6 +1,7 @@
 -- Sequential LU-decomposition.
 --
 -- ==
+
 -- tags { nobench }
 -- compiled input @ data/16by16.in
 -- output @ data/16by16.out
