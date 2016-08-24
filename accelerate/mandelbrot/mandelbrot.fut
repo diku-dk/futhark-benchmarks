@@ -42,7 +42,7 @@ fun [screenX][screenY]int mandelbrot(int screenX, int screenY, int depth, (f32,f
   let (xmin, ymin, xmax, ymax) = view
   let sizex = xmax - xmin
   let sizey = ymax - ymin
-  in map(fn [screenX]int (int x) =>
+  in map(fn [screenY]int (int x) =>
            map (fn int (int y) =>
                   let c0 = (xmin + (f32(x) * sizex) / f32(screenX),
                             ymin + (f32(y) * sizey) / f32(screenY))
