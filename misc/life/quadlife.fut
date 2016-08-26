@@ -5,7 +5,7 @@
 -- ==
 -- tags { disable }
 
-fun i8 sum_of_cell_and_neighbors(int i, int j, [n][m]i8 board) =
+fun sum_of_cell_and_neighbors(i: int, j: int, board: [n][m]i8): i8 =
   unsafe
   let above = (i - 1) % n in
   let below = (i + 1) % n in
@@ -15,17 +15,17 @@ fun i8 sum_of_cell_and_neighbors(int i, int j, [n][m]i8 board) =
   board[i,left] + board[i,j] + board[i,right] +
   board[below,left] + board[below,j] + board[below,right]
 
-fun [n][m]i8 all_neighbour_sums([n][m]i8 board) =
-  map(fn [m]i8 (int i) =>
-        map(fn i8 (int j) =>
+fun all_neighbour_sums(board: [n][m]i8): [n][m]i8 =
+  map(fn (i: int): [m]i8  =>
+        map(fn (j: int): i8  =>
               sum_of_cell_and_neighbors(i,j,board)
            , iota(m))
      , iota(n))
 
-fun [n][m]i8 iteration([n][m]i8 board) =
+fun iteration(board: [n][m]i8): [n][m]i8 =
   let all_sums = all_neighbour_sums(board) in
-  map(fn [m]i8 ([]i8 row_sums) =>
-        map(fn i8 (i8 s) =>
+  map(fn (row_sums: []i8): [m]i8  =>
+        map(fn (s: i8): i8  =>
               let t = [0i8,0i8,0i8,2i8,2i8,3i8,3i8,
                        1i8,1i8,1i8,1i8,1i8,0i8,0i8,
                        2i8,0i8,2i8,2i8,2i8,2i8,2i8,
@@ -34,23 +34,23 @@ fun [n][m]i8 iteration([n][m]i8 board) =
            , row_sums)
      , all_sums)
 
-fun int min(int x, int y) =
+fun min(x: int, y: int): int =
   if x < y then x else y
 
-entry ([n][m]i8, [n][m]int) init([n][m]bool world) =
-  (map(fn [m]i8 ([]bool row) =>
-         map(fn i8 (bool b) =>
+entry init(world: [n][m]bool): ([n][m]i8, [n][m]int) =
+  (map(fn (row: []bool): [m]i8  =>
+         map(fn (b: bool): i8  =>
                if b then 1i8 else 0i8,
              row),
          world),
    replicate(n, replicate(m, 255 << 2)))
 
-entry [n][m][3]i8 render_frame([n][m]int all_history) =
-  map(fn [m][3]i8 ([]int row_history) =>
+entry render_frame(all_history: [n][m]int): [n][m][3]i8 =
+  map(fn (row_history: []int): [m][3]i8  =>
         map(colour_history, row_history)
      , all_history)
 
-fun [3]i8 colour_history(int history) =
+fun colour_history(history: int): [3]i8 =
   let used_to_be = history & 3 -- Last two bits encode the previous live cell.
   let age = history >> 2
   let colours = [[0i8,   255i8, 0i8],
@@ -60,7 +60,7 @@ fun [3]i8 colour_history(int history) =
   let colour = unsafe colours[used_to_be]
   in map(-i8(age), colour)
 
-fun int update_history(int history, i8 now) =
+fun update_history(history: int, now: i8): int =
   let used_to_be = history & 3 -- Last two bits encode the previous live cell.
   let age = history >> 2
   in if now == 1i8
@@ -68,11 +68,10 @@ fun int update_history(int history, i8 now) =
                        else (128 << 2) | used_to_be)
      else int(now)
 
-entry ([n][m]i8, [n][m]int)
-  steps([n][m]i8 world, [n][m]int history, int steps) =
+entry steps(world: [n][m]i8, history: [n][m]int, steps: int): ([n][m]i8, [n][m]int) =
   loop ((world, history)) = for i < steps do
     (let world' = iteration(world)
-     let history' = zipWith(fn [m]int ([]int row_history, []i8 row) =>
+     let history' = zipWith(fn (row_history: []int, row: []i8): [m]int  =>
                               zipWith(update_history, row_history, row),
                             history, world')
      in (world', history'))

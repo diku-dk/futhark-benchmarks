@@ -8,4 +8,4 @@
 
 include radix_sort_blelloch
 
-fun i32 f() = 0 -- 
+fun f(): i32 = 0 -- 

@@ -12,32 +12,32 @@
 
 type vec3 = (f64, f64, f64)
 
-fun f64 pi() = 3.1415926535897932384626433832795029f64
-fun f64 dec2rad(f64 dec) = pi()/180.0f64 * dec
-fun f64 rad2dec(f64 rad) = 180.0f64/pi() * rad
-fun f64 min_arcmin() = 1.0f64
-fun f64 max_arcmin() = 10000.0f64
-fun f64 bins_per_dec() = 5.0f64
-fun i32 numBins() = 20
+fun pi(): f64 = 3.1415926535897932384626433832795029f64
+fun dec2rad(dec: f64): f64 = pi()/180.0f64 * dec
+fun rad2dec(rad: f64): f64 = 180.0f64/pi() * rad
+fun min_arcmin(): f64 = 1.0f64
+fun max_arcmin(): f64 = 10000.0f64
+fun bins_per_dec(): f64 = 5.0f64
+fun numBins(): i32 = 20
 
-fun [num]f64 iota32(i32 num) =
+fun iota32(num: i32): [num]f64 =
     map(f64, iota(num))
 
 -- Prøv streamRed i stedet
-fun *[numBins]i32 sumBins([numBinss][numBins]i32 bins) =
-    map(fn i32 ([]i32 binIndex) => reduce(+, 0i32, binIndex), transpose(bins))
+fun sumBins(bins: [numBinss][numBins]i32): *[numBins]i32 =
+    map(fn (binIndex: []i32): i32  => reduce(+, 0i32, binIndex), transpose(bins))
 
-fun f64 log10(f64 num) = log64(num) / log64(10.0)
+fun log10(num: f64): f64 = log64(num) / log64(10.0)
 
-fun *[numBins2]i32 doCompute(
-    [num1]vec3 data1,
-    [num2]vec3 data2,
-    i32 numBins,
-    i32 numBins2,
-    [numBBins]f64 binb
-) =
-    let value = map(fn *[numBins2]i32 (f64 xOuter, f64 yOuter, f64 zOuter) =>
-            streamMap(fn *[numBins2]i32 (int chunk, []vec3 inner) =>
+fun doCompute(data1: 
+    [num1]vec3,
+    data2: [num2]vec3,
+    numBins: i32,
+    numBins2: i32,
+    binb: [numBBins]f64
+): *[numBins2]i32 =
+    let value = map(fn (xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32  =>
+            streamMap(fn (chunk: int, inner: []vec3): *[numBins2]i32  =>
                     loop (dBins = replicate(numBins2, 0i32)) = for i < chunk do
                         let (xInner, yInner, zInner) = inner[i]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
@@ -60,14 +60,14 @@ fun *[numBins2]i32 doCompute(
     in
     sumBins(value)
 
-fun *[numBins2]i32 doComputeSelf(
-    [numD]vec3 data,
-    i32 numBins,
-    i32 numBins2,
-    [numBBins]f64 binb
-) =
+fun doComputeSelf(data: 
+    [numD]vec3,
+    numBins: i32,
+    numBins2: i32,
+    binb: [numBBins]f64
+): *[numBins2]i32 =
 -- loop version
-    let value = map(fn [numBins2]i32 (vec3 vec, i32 index) =>
+    let value = map(fn (vec: vec3, index: i32): [numBins2]i32  =>
                     let (xOuter, yOuter, zOuter) = vec
                     loop (dBins = replicate(numBins2, 0i32)) = for (index+1) <= j < numD do
                         let (xInner, yInner, zInner) = data[j]
@@ -90,28 +90,28 @@ fun *[numBins2]i32 doComputeSelf(
     in
     sumBins(value)
 
-fun vec3 fixPoints(f64 ra, f64 dec) =
+fun fixPoints(ra: f64, dec: f64): vec3 =
     let rarad = dec2rad(ra)
     let decrad = dec2rad(dec)
     let cd = cos64(decrad)
     in
     (cos64(rarad)*cd, sin64(rarad)*cd, sin64(decrad))
 
-fun *[60]i32 main(
-    [numD]f64 datapointsx,
-    [numD]f64 datapointsy,
-    [numRs][numR]f64 randompointsx,
-    [numRs][numR]f64 randompointsy
-) =
+fun main(datapointsx: 
+    [numD]f64,
+    datapointsy: [numD]f64,
+    randompointsx: [numRs][numR]f64,
+    randompointsy: [numRs][numR]f64
+): *[60]i32 =
     let numBins2 = numBins() + 2
-    let binb = map(fn f64 (f64 k) =>
+    let binb = map(fn (k: f64): f64  =>
                         cos64((10.0 ** (log10(min_arcmin()) + k*1.0/bins_per_dec())) / 60.0 * dec2rad(1.0)),
                     iota32(numBins() + 1))
     let datapoints = map(fixPoints, zip(datapointsx, datapointsy))
-    let randompoints = map(fn [numR]vec3 ([numR]f64 x, [numR]f64 y) =>
+    let randompoints = map(fn (x: [numR]f64, y: [numR]f64): [numR]vec3  =>
                             map(fixPoints, zip(x,y)),
                            zip(randompointsx, randompointsy))
-    let (rrs, drs) = unzip(map(fn (*[]i32, *[]i32) ([numR]vec3 random) =>
+    let (rrs, drs) = unzip(map(fn (random: [numR]vec3): (*[]i32, *[]i32)  =>
                                 (doComputeSelf(random, numBins(), numBins2, binb),
                                 doCompute(datapoints, random, numBins(), numBins2, binb)),
                                 randompoints))

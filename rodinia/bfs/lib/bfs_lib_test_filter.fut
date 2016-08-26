@@ -11,5 +11,5 @@
 
 include bfs_lib
 
-fun []i32 main([n]bool bs, [n]i32 ns) =
+fun main(bs: [n]bool, ns: [n]i32): []i32 =
   i32_filter(bs, ns)

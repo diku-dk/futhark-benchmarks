@@ -7,10 +7,10 @@
 -- notravis input @ crypt-data/medium.in
 -- output @ crypt-data/medium.out
 
-fun u16 mk16b(u8 upper, u8 lower) =
+fun mk16b(upper: u8, lower: u8): u16 =
   (u16(upper) & 0xFFu16) << 8u16 | (u16(lower) & 0xFFu16)
 
-fun [8]u8 cipher_idea_block([52]u16 key, [8]u8 block) =
+fun cipher_idea_block(key: [52]u16, block: [8]u8): [8]u8 =
   let x1 = mk16b(block[1], block[0]) in
   let x2 = mk16b(block[3], block[2]) in
   let x3 = mk16b(block[5], block[4]) in
@@ -77,10 +77,10 @@ fun [8]u8 cipher_idea_block([52]u16 key, [8]u8 block) =
   , u8(x4), u8(x4>>>8u16)
   ]
 
-fun [n]u8 cipher_idea([52]u16 key, [n]u8 text) =
+fun cipher_idea(key: [52]u16, text: [n]u8): [n]u8 =
   let blocks = reshape((n//8,8), text) in
   reshape((n), map(cipher_idea_block(key), blocks))
 
-fun ([n]u8, [n]u8) main([52]u16 z, [52]u16 dk, [n]u8 text) =
+fun main(z: [52]u16, dk: [52]u16, text: [n]u8): ([n]u8, [n]u8) =
   let text_encrypted = cipher_idea(z, text) in
   (text_encrypted, cipher_idea(dk, text_encrypted))

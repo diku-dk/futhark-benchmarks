@@ -27,14 +27,13 @@
 -- g : data term gradient array, size (m,n,p,q).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun [m][n][p][q]f32 
-add_descent_div3v( [m][n][p][q]f32 v
-                 , [m][n][p][q](f32,f32,f32) xi
-                 , [m][n][p][q]f32 g
-                 , f32                           tp ) =
+fun add_descent_div3v(v:  [m][n][p][q]f32
+                 , xi: [m][n][p][q](f32,f32,f32)
+                 , g: [m][n][p][q]f32
+                 , tp: f32 ): [m][n][p][q]f32 =
   let one = (m*m+2*m+1)/(m+1) - m in
   let res_flat = 
-    map(fn f32 (int ind) => unsafe
+    map(fn (ind: int): f32  => unsafe
             let tmp = ind / q     in
             let l   = ind - tmp*q in
             let ind = tmp         in
@@ -205,20 +204,19 @@ add_descent_div3v( [m][n][p][q]f32 v
 -----------------------------------------------------
 -----------------------------------------------------
 
-fun [m][n][p][q]f32 
-            main1( [m][n][p][q]f32 v
-                 , [m][n][p][q](f32,f32,f32) xi
-                 , [m][n][p][q]f32 g
-                 , f32                           tp ) =
+fun main1(v:  [m][n][p][q]f32
+                 , xi: [m][n][p][q](f32,f32,f32)
+                 , g: [m][n][p][q]f32
+                 , tp: f32 ): [m][n][p][q]f32 =
 
     add_descent_div3v(v, xi, g, tp)
 
-fun [m][n][p][q]f32 main(int m, int n, int p, int q, int loop_count) = 
+fun main(m: int, n: int, p: int, q: int, loop_count: int): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q) in
     let v  = reshape( (m,n,p,q), map(f32, iota(mnpq)) ) in
     let g  = reshape( (m,n,p,q), map(f32, iota(mnpq)) ) in
     let xi = reshape( (m,n,p,q)
-                    , map( fn (f32,f32,f32) (int t) =>
+                    , map( fn (t: int): (f32,f32,f32)  =>
                             let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
                          , iota(mnpq) )
                     )

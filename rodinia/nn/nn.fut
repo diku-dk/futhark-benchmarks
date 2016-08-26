@@ -6,17 +6,16 @@
 -- notravis input @ data/medium.in
 -- output @ data/medium.out
 
-fun f32 infty() = 1.0f32 / 0.0f32
-fun (int, f32) emptyRecord() = (0, 0.0f32)
+fun infty(): f32 = 1.0f32 / 0.0f32
+fun emptyRecord(): (int, f32) = (0, 0.0f32)
 
-fun ([resultsCount]int, [resultsCount]f32)
-main(   int resultsCount, f32 lat, f32 lng, 
-        [numRecords]f32 locations_lat, 
-        [numRecords]f32 locations_lng    ) =
+fun main(resultsCount:    int, lat: f32, lng: f32, 
+        locations_lat: [numRecords]f32, 
+        locations_lng: [numRecords]f32    ): ([resultsCount]int, [resultsCount]f32) =
   let locations    = zip(locations_lat, locations_lng) in
   -- let resultsCount = if (resultsCount > numRecords) then numRecords else resultsCount in
   let distances = 
-      map(  fn f32 ((f32,f32) latlng) =>
+      map(  fn (latlng: (f32,f32)): f32  =>
                 let (lat_i, lng_i) = latlng in
                 sqrt32( (lat-lat_i)*(lat-lat_i) + (lng-lng_i)*(lng-lng_i) )
          ,  locations )
@@ -25,7 +24,7 @@ main(   int resultsCount, f32 lat, f32 lng,
   loop ((results_ind, results_dst, distances)) = 
     for i < resultsCount do
         let (minDist, minLoc) = 
-            reduceComm( fn (f32, int) ((f32,int) di1, (f32,int) di2) =>
+            reduceComm( fn (di1: (f32,int), di2: (f32,int)): (f32, int)  =>
                             let( (d1, i1), (d2,i2) ) = ( di1, di2 ) in
                             if(d1 < d2) then (d1, i1) 
                             else if (d2 < d1) then (d2, i2)

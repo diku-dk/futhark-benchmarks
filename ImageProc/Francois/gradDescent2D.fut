@@ -23,13 +23,12 @@
 -- g : data term gradient array, size (m,n).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun [m][n]f32 
-add_descent_div2s( [m][n]f32 v
-                 , [m][n](f32,f32) xi
-                 , [m][n]f32 g
-                 , f32               tp ) =
-  map(fn [n]f32 (int i) =>
-        map(fn f32 (int j) => unsafe
+fun add_descent_div2s(v:  [m][n]f32
+                 , xi: [m][n](f32,f32)
+                 , g: [m][n]f32
+                 , tp: f32 ): [m][n]f32 =
+  map(fn (i: int): [n]f32  =>
+        map(fn (j: int): f32  => unsafe
                 let v_el = v[i,j] in
                 let g_el = g[i,j] in
                 if      (i > 0) && (i < m-1) && (j > 0) && (j < n-1) 
@@ -101,14 +100,13 @@ add_descent_div2s( [m][n]f32 v
 -- g : data term gradient array, size (m,n,k).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun [m][n][k]f32 
-add_descent_div2v( [m][n][k]f32 v
-                 , [m][n][k](f32,f32) xi
-                 , [m][n][k]f32 g
-                 , f32                   tp ) =
-  map(fn [n][k]f32 (int i) =>
-        map(fn [k]f32 (int j) => 
-                map(fn f32 (int q) => unsafe
+fun add_descent_div2v(v:  [m][n][k]f32
+                 , xi: [m][n][k](f32,f32)
+                 , g: [m][n][k]f32
+                 , tp: f32 ): [m][n][k]f32 =
+  map(fn (i: int): [n][k]f32  =>
+        map(fn (j: int): [k]f32  => 
+                map(fn (q: int): f32  => unsafe
                         let v_el = v[i,j,q] in
                         let g_el = g[i,j,q] in
                         let (xi_0, xi_1) = xi[i,j,q] in
@@ -171,15 +169,15 @@ add_descent_div2v( [m][n][k]f32 v
 -----------------------------------------------------
 -----------------------------------------------------
 
-fun [m][n]f32 main( [m][n]f32 v
-                    , [m][n]f32 xi_0
-                    , [m][n]f32 xi_1
-                    , [m][n]f32 g
-                    , f32               tp ) =
+fun main(v:  [m][n]f32
+                    , xi_0: [m][n]f32
+                    , xi_1: [m][n]f32
+                    , g: [m][n]f32
+                    , tp: f32 ): [m][n]f32 =
     add_descent_div2s(v, zip@1(xi_0,xi_1), g, tp)
 
-fun [m][n][k]f32 main2( [m][n][k]f32 v
-                        , [m][n][k](f32,f32) xi
-                        , [m][n][k]f32 g
-                        , f32                   tp ) =
+fun main2(v:  [m][n][k]f32
+                        , xi: [m][n][k](f32,f32)
+                        , g: [m][n][k]f32
+                        , tp: f32 ): [m][n][k]f32 =
     add_descent_div2v(v, xi, g, tp)

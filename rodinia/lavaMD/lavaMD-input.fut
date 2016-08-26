@@ -1,17 +1,17 @@
 default(f32)
 
-fun int num_neighbors()      = 27
-fun int number_par_per_box() = 100
+fun num_neighbors(): int      = 27
+fun number_par_per_box(): int = 100
 
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
-fun [30]int sobolDirVcts() = 
+fun sobolDirVcts(): [30]int = 
   [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
     524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
     512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
 
-fun int sobolInd( [30]int dirVct, int n ) =
+fun sobolInd(dirVct:  [30]int, n: int ): int =
   let n_gray = (n >> 1) ^ n in
   let res = 0 in
   loop (res) =
@@ -24,28 +24,25 @@ fun int sobolInd( [30]int dirVct, int n ) =
 
 -----------------------
 -----------------------
-fun (f32,
-     []i32,
-     []i32,
-     []i32,
-     []i32,
+fun main(boxes1d: int): (f32,
+                         []i32,
+                         []i32,
+                         []i32,
+                         []i32,
 
-     [][]i32,
-     [][]i32,
-     [][]i32,
-     [][]i32,
+                         [][]i32,
+                         [][]i32,
+                         [][]i32,
+                         [][]i32,
 
+                         []i32,
 
-     []i32,
+                         [][]f32,
+                         [][]f32,
+                         [][]f32,
+                         [][]f32,
 
-     [][]f32,
-     [][]f32,
-     [][]f32,
-     [][]f32,
-
-     [][]f32)
-  --fun [][](int,int,int,int)
-  main(int boxes1d) =
+                         [][]f32) =
   let number_boxes = boxes1d * boxes1d * boxes1d in
   let alpha        = 0.5                  in
   let num_nn       = num_neighbors()      in
@@ -56,7 +53,7 @@ fun (f32,
   -- 1. Initialize boxs' data structure --
   ----------------------------------------
   let boxes = 
-    map(fn ( (int, int, int, int), [num_nn](int,int,int,int), int ) (int nh) =>
+    map(fn (nh: int): ( (int, int, int, int), [num_nn](int,int,int,int), int )  =>
           let k = nh % boxes1d in
           let nr= nh / boxes1d in
           let j = nr % boxes1d in
@@ -97,8 +94,8 @@ fun (f32,
   ----------------------------------------------
   -- 2. Initialize input distances and charge --
   ----------------------------------------------
-  let rqv = map ( fn [par_per_box](f32,(f32,f32,f32,f32)) (int i) =>
-                    map( fn (f32, (f32,f32,f32,f32)) (int j) =>
+  let rqv = map ( fn (i: int): [par_per_box](f32,(f32,f32,f32,f32))  =>
+                    map( fn (j: int): (f32, (f32,f32,f32,f32))  =>
                            let n = (i*par_per_box + j)*5 + 1 in
                            let s1= sobolInd(dirVct, n  ) in 
                            let s2= sobolInd(dirVct, n+1) in 

@@ -8,4 +8,4 @@
 
 include radix_sort
 
-fun i32 f() = 0 -- hack
+fun f(): i32 = 0 -- hack

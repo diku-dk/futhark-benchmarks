@@ -20,9 +20,9 @@
 
 include lib.bfs_lib
 
-fun [n]i32 main([n]i32 nodes_start_index,
-                  [n]i32 nodes_n_edges,
-                  [e]i32 edges_dest) =
+fun main(nodes_start_index: [n]i32,
+                  nodes_n_edges: [n]i32,
+                  edges_dest: [e]i32): [n]i32 =
   let graph_mask = replicate(n, False)
   let updating_graph_mask = replicate(n, False)
   let graph_visited = replicate(n, False)
@@ -50,7 +50,7 @@ fun [n]i32 main([n]i32 nodes_start_index,
       let graph_visited' =
         write(updating_indices, replicate(n_indices, True), graph_visited)
 
-      let tmp_arr = map(fn i32 (i32 ind) => if ind == -1 then 0 else 1, updating_indices)
+      let tmp_arr = map(fn (ind: i32): i32  => if ind == -1 then 0 else 1, updating_indices)
       let n_indices' = reduce(+, 0, tmp_arr)
 
       let continue' = n_indices' > 0

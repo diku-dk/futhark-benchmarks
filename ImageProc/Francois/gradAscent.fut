@@ -23,12 +23,11 @@
 -- Gradient based terms are easy as boundary conditions are 
 -- simple to manipulate. Divergence based terms are messy.
 -----------------------------------------------------------------------
-fun [m][n](f32,f32) 
-add_ascent_grad2s( [m][n](f32,f32) xi
-                 , [m][n]f32 v
-                 , f32               td ) =
-  map(fn [n](f32,f32) (int i) =>
-        map(fn (f32,f32) (int j) => unsafe
+fun add_ascent_grad2s(xi:  [m][n](f32,f32)
+                 , v: [m][n]f32
+                 , td: f32 ): [m][n](f32,f32) =
+  map(fn (i: int): [n](f32,f32)  =>
+        map(fn (j: int): (f32,f32)  => unsafe
                 let (elm1, elm2) = xi[i,j] in
                 -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                 let fst_elm = 
@@ -57,13 +56,12 @@ add_ascent_grad2s( [m][n](f32,f32) xi
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-fun [m][n][k](f32,f32) 
-add_ascent_grad2v( [m][n][k](f32,f32) xi
-                 , [m][n][k]f32 v
-                 , f32                   td ) =
-  map(fn [n][k](f32,f32) (int i) =>
-        map(fn [k](f32,f32) (int j) =>
-                map(fn (f32,f32) (int l) => unsafe
+fun add_ascent_grad2v(xi:  [m][n][k](f32,f32)
+                 , v: [m][n][k]f32
+                 , td: f32 ): [m][n][k](f32,f32) =
+  map(fn (i: int): [n][k](f32,f32)  =>
+        map(fn (j: int): [k](f32,f32)  =>
+                map(fn (l: int): (f32,f32)  => unsafe
                         let (elm1, elm2) = xi[i,j,l] in
                         -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                         let fst_elm = 
@@ -93,13 +91,12 @@ add_ascent_grad2v( [m][n][k](f32,f32) xi
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-fun [m][n][p](f32,f32,f32) 
-add_ascent_grad3s( [m][n][p](f32,f32,f32) xi
-                 , [m][n][p]f32 v
-                 , f32                       td ) =
-  map(fn [n][p](f32,f32,f32) (int i) =>
-        map(fn [p](f32,f32,f32) (int j) =>
-                map(fn (f32,f32,f32) (int k) => unsafe
+fun add_ascent_grad3s(xi:  [m][n][p](f32,f32,f32)
+                 , v: [m][n][p]f32
+                 , td: f32 ): [m][n][p](f32,f32,f32) =
+  map(fn (i: int): [n][p](f32,f32,f32)  =>
+        map(fn (j: int): [p](f32,f32,f32)  =>
+                map(fn (k: int): (f32,f32,f32)  => unsafe
                         let (elm1, elm2, elm3) = xi[i,j,k] in
                         -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                         let fst_elm = 
@@ -135,14 +132,13 @@ add_ascent_grad3s( [m][n][p](f32,f32,f32) xi
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-fun [m][n][p][k](f32,f32,f32) 
-add_ascent_grad3v( [m][n][p][k](f32,f32,f32) xi
-                 , [m][n][p][k]f32 v
-                 , f32                           td ) =
-  map(fn [n][p][k](f32,f32,f32) (int i) =>
-        map(fn [p][k](f32,f32,f32) (int j) =>
-              map(fn [k](f32,f32,f32) (int q) =>
-                    map(fn (f32,f32,f32) (int t) => unsafe
+fun add_ascent_grad3v(xi:  [m][n][p][k](f32,f32,f32)
+                 , v: [m][n][p][k]f32
+                 , td: f32 ): [m][n][p][k](f32,f32,f32) =
+  map(fn (i: int): [n][p][k](f32,f32,f32)  =>
+        map(fn (j: int): [p][k](f32,f32,f32)  =>
+              map(fn (q: int): [k](f32,f32,f32)  =>
+                    map(fn (t: int): (f32,f32,f32)  => unsafe
                             let (elm1, elm2, elm3) = xi[i,j,q,t] in
                             -- xi[0:m-1,:,:,:,0] += td*(v[1:m,:,:,:] - v[0:m-1,:,:,:])
                             let fst_elm = 
@@ -169,13 +165,12 @@ add_ascent_grad3v( [m][n][p][k](f32,f32,f32) xi
      , iota(m) )
 
 
-fun ([m][n][p][k]f32,
+fun main(xi_0:  [m][n][p][k]f32
+        , xi_1: [m][n][p][k]f32
+        , xi_2: [m][n][p][k]f32
+        , v: [m][n][p][k]f32
+        , td: f32 ): ([m][n][p][k]f32,
      [m][n][p][k]f32,
-     [m][n][p][k]f32)
-    main( [m][n][p][k]f32 xi_0
-        , [m][n][p][k]f32 xi_1
-        , [m][n][p][k]f32 xi_2
-        , [m][n][p][k]f32 v
-        , f32                           td ) =
+     [m][n][p][k]f32) =
   unzip(add_ascent_grad3v( zip@3(xi_0,xi_1,xi_2), v, td ))
 

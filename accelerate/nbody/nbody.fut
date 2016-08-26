@@ -22,26 +22,26 @@ type acceleration = vec3
 type velocity = vec3
 type body = (position, mass, velocity, acceleration)
 
-fun vec3 vec_add(vec3 v1, vec3 v2) =
+fun vec_add(v1: vec3, v2: vec3): vec3 =
   let (x1, y1, z1) = v1
   let (x2, y2, z2) = v2
   in (x1 + x2, y1 + y2, z1 + z2)
 
-fun vec3 vec_subtract(vec3 v1, vec3 v2) =
+fun vec_subtract(v1: vec3, v2: vec3): vec3 =
   let (x1, y1, z1) = v1
   let (x2, y2, z2) = v2
   in (x1 - x2, y1 - y2, z1 - z2)
 
-fun vec3 vec_mult_factor(f32 factor, vec3 v) =
+fun vec_mult_factor(factor: f32, v: vec3): vec3 =
   let (x, y, z) = v
   in (x * factor, y * factor, z * factor)
 
-fun f32 dot(vec3 v1, vec3 v2) =
+fun dot(v1: vec3, v2: vec3): f32 =
   let (x1, y1, z1) = v1
   let (x2, y2, z2) = v2
   in x1 * x2 + y1 * y2 + z1 * z2
 
-fun velocity accel(f32 epsilon, vec3 pi, f32 mi, vec3 pj, f32 mj) =
+fun accel(epsilon: f32, pi: vec3, mi: f32, pj: vec3, mj: f32): velocity =
   let r = vec_subtract(pj, pi)
   let rsqr = dot(r, r) + epsilon * epsilon
   let invr = 1.0f32 / sqrt32(rsqr)
@@ -49,21 +49,21 @@ fun velocity accel(f32 epsilon, vec3 pi, f32 mi, vec3 pj, f32 mj) =
   let s = mj * invr3
   in vec_mult_factor(s, r)
 
-fun vec3 accel_wrap(f32 epsilon, body body_i, body body_j) =
+fun accel_wrap(epsilon: f32, body_i: body, body_j: body): vec3 =
   let (pi, mi, _ , _) = body_i
   let (pj, mj, _ , _) = body_j
   in accel(epsilon, pi, mi, pj, mj)
 
-fun position move(f32 epsilon, []body bodies, body this_body) =
-  let accels = map(fn acceleration (body other_body) =>
+fun move(epsilon: f32, bodies: []body, this_body: body): position =
+  let accels = map(fn (other_body: body): acceleration  =>
                      accel_wrap(epsilon, this_body, other_body),
                    bodies)
   in reduceComm(vec_add, (0f32, 0f32, 0f32), accels)
 
-fun []acceleration calc_accels(f32 epsilon, []body bodies) =
+fun calc_accels(epsilon: f32, bodies: []body): []acceleration =
   map(move(epsilon, bodies), bodies)
 
-fun body advance_body(f32 time_step, body this_body) =
+fun advance_body(time_step: f32, this_body: body): body =
   let (pos, mass, vel, acc) = this_body
   let pos' = vec_add(pos, vec_mult_factor(time_step, vel))
   let vel' = vec_add(vel, vec_mult_factor(time_step, acc))
@@ -71,64 +71,63 @@ fun body advance_body(f32 time_step, body this_body) =
   let (xv', yv', zv') = vel'
   in (pos', mass, vel', acc)
 
-fun body advance_body_wrap(f32 time_step, body this_body, acceleration accel) =
+fun advance_body_wrap(time_step: f32, this_body: body, accel: acceleration): body =
   let (pos, mass, vel, acc) = this_body
   let accel' = vec_mult_factor(mass, accel)
   let body' = (pos, mass, vel, accel')
   in advance_body(time_step, body')
 
-fun [n]body advance_bodies(f32 epsilon, f32 time_step, [n]body bodies) =
+fun advance_bodies(epsilon: f32, time_step: f32, bodies: [n]body): [n]body =
   let accels = calc_accels(epsilon, bodies)
   in zipWith(advance_body_wrap(time_step), bodies, accels)
 
-fun [n]body advance_bodies_steps(i32 n_steps, f32 epsilon, f32 time_step,
-                                   [n]body bodies) =
+fun advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
+                                   bodies: [n]body): [n]body =
   loop (bodies) = for i < n_steps do
     advance_bodies(epsilon, time_step, bodies)
   in bodies
 
-fun body wrap_body (f32 posx, f32 posy, f32 posz,
-                    f32 mass,
-                    f32 velx, f32 vely, f32 velz,
-                    f32 accx, f32 accy, f32 accz) =
+fun wrap_body (posx: f32, posy: f32, posz: f32,
+                    mass: f32,
+                    velx: f32, vely: f32, velz: f32,
+                    accx: f32, accy: f32, accz: f32): body =
   ((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz))
 
-fun (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) unwrap_body(body this_body) =
+fun unwrap_body(this_body: body): (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) =
   let ((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz)) = this_body
   in (posx, posy, posz, mass, velx, vely, velz, accx, accy, accz)
 
 
 
-fun ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32)
-  main(i32 n_steps,
-       f32 epsilon,
-       f32 time_step,
-       [n]f32 xps,
-       [n]f32 yps,
-       [n]f32 zps,
-       [n]f32 ms,
-       [n]f32 xvs,
-       [n]f32 yvs,
-       [n]f32 zvs,
-       [n]f32 xas,
-       [n]f32 yas,
-       [n]f32 zas) =
+fun main(n_steps: i32,
+       epsilon: f32,
+       time_step: f32,
+       xps: [n]f32,
+       yps: [n]f32,
+       zps: [n]f32,
+       ms: [n]f32,
+       xvs: [n]f32,
+       yvs: [n]f32,
+       zvs: [n]f32,
+       xas: [n]f32,
+       yas: [n]f32,
+       zas: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
   let bodies  = map(wrap_body, zip(xps, yps, zps, ms, xvs, yvs, zvs, xas, yas, zas))
   let bodies' = advance_bodies_steps(n_steps, epsilon, time_step, bodies)
   let bodies'' = map(unwrap_body, bodies')
    in unzip(bodies'')
 
-entry [w][h]int render(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
-                       [n]f32 xps, [n]f32 yps, [n]f32 zps) =
+entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
+                       xps: [n]f32, yps: [n]f32, zps: [n]f32): [w][h]int =
   let (is, vs) = unzip(zipWith(renderPoint(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
   in reshape((w,h), write(is, vs, replicate(w*h, 0)))
 
-entry ([n]f32, [n]f32) test(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
-                            [n]f32 xps, [n]f32 yps, [n]f32 zps) =
+entry test(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
+                            xps: [n]f32, yps: [n]f32, zps: [n]f32): ([n]f32, [n]f32) =
   unzip(zipWith(idx(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
 
-fun (int, int) renderPoint(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
-                           f32 x, f32 y, f32 z) =
+fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
+                           x: f32, y: f32, z: f32): (int, int) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
@@ -140,8 +139,8 @@ fun (int, int) renderPoint(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
     let y'' = int(y' * f32(h))
     in (x''*h + y'', 0x00FFFFFF)
 
-entry (f32, f32) idx(int w, int h, f32 x_ul, f32 y_ul, f32 x_br, f32 y_br,
-                     f32 x, f32 y, f32 z) =
+entry idx(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
+                     x: f32, y: f32, z: f32): (f32, f32) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1f32, 0f32)
   else

@@ -8,7 +8,7 @@
 -- output @ crypt-data/keys0.txt
 
 -- Multiplicative inverse mod 0x10001.
-fun i32 inv(i16 a) =
+fun inv(a: i16): i32 =
   let a = i32(a)&0xFFFF in
   let b = 0x10001 in
   let u = 0 in
@@ -27,7 +27,7 @@ fun i32 inv(i16 a) =
 
   (if u < 0 then u + 0x10001 else u) & 0xFFFF
 
-fun [52]i16 encryptionKey([8]i16 userkey) =
+fun encryptionKey(userkey: [8]i16): [52]i16 =
   -- Key starts out blank.
   let z = replicate(52, 0i16) in
   -- First 8 subkeys are userkey itself.
@@ -52,7 +52,7 @@ fun [52]i16 encryptionKey([8]i16 userkey) =
     z in
   z
 
-fun [52]i16 decryptionKey([52]i16 z) =
+fun decryptionKey(z: [52]i16): [52]i16 =
   -- Key starts out blank.
   let dk = replicate(52, 0i16) in
   let t1 = inv(z[0]) in
@@ -91,6 +91,6 @@ fun [52]i16 decryptionKey([52]i16 z) =
   let dk[jb-5] = t1 in
   dk
 
-fun ([52]i16,[52]i16) main([8]i16 userkey) =
+fun main(userkey: [8]i16): ([52]i16,[52]i16) =
   let z = encryptionKey(userkey) in
   (z, decryptionKey(z))

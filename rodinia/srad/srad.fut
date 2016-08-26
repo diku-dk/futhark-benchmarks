@@ -22,19 +22,19 @@
 
 default(f32)
 
-fun int indexN(int rows, int i) =
+fun indexN(rows: int, i: int): int =
   if i == 0 then i else i - 1
 
-fun int indexS(int rows, int i) =
+fun indexS(rows: int, i: int): int =
   if i == rows-1 then i else i + 1
 
-fun int indexW(int cols, int j) =
+fun indexW(cols: int, j: int): int =
   if j == 0 then j else j - 1
 
-fun int indexE(int cols, int j) =
+fun indexE(cols: int, j: int): int =
   if j == cols-1 then j else j + 1
 
-fun [rows][cols]f32 main([rows][cols]int image) =
+fun main(image: [rows][cols]int): [rows][cols]f32 =
   let niter = 100 in
   let lambda = 0.5 in
   let r1 = 0 in
@@ -47,8 +47,8 @@ fun [rows][cols]f32 main([rows][cols]int image) =
   let neROI = (r2-r1+1)*(c2-c1+1) in
 
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
-  let image = map(fn [cols]f32 ([]int row) =>
-                    map(fn f32 (int pixel) =>
+  let image = map(fn (row: []int): [cols]f32  =>
+                    map(fn (pixel: int): f32  =>
                           exp32(f32(pixel)/255.0),
                         row),
                     image) in
@@ -65,9 +65,9 @@ fun [rows][cols]f32 main([rows][cols]int image) =
 
     let (dN, dS, dW, dE, c) =
       unzip(
-        zipWith(fn [cols](f32,f32,f32,f32,f32)
-                  (int i, []f32 row) =>
-                    zipWith(fn (f32,f32,f32,f32,f32) (int j, f32 jc) =>
+        zipWith(fn (i: int, row: []f32): [cols](f32,f32,f32,f32,f32)
+                   =>
+                    zipWith(fn (j: int, jc: f32): (f32,f32,f32,f32,f32)  =>
                               let dN_k = unsafe image[indexN(rows,i),j] - jc in
                               let dS_k = unsafe image[indexS(rows,i),j] - jc in
                               let dW_k = unsafe image[i, indexW(cols,j)] - jc in
@@ -89,9 +89,9 @@ fun [rows][cols]f32 main([rows][cols]int image) =
                , iota(rows), image)) in
 
     let image =
-      zipWith(fn [cols]f32
-                (int i, []f32 image_row, []f32 c_row, []f32 dN_row, []f32 dS_row, []f32 dW_row, []f32 dE_row) =>
-                zipWith(fn f32 (int j, f32 pixel, f32 c_k, f32 dN_k, f32 dS_k, f32 dW_k, f32 dE_k) =>
+      zipWith(fn (i: int, image_row: []f32, c_row: []f32, dN_row: []f32, dS_row: []f32, dW_row: []f32, dE_row: []f32): [cols]f32
+                 =>
+                zipWith(fn (j: int, pixel: f32, c_k: f32, dN_k: f32, dS_k: f32, dW_k: f32, dE_k: f32): f32  =>
                           let cN = c_k in
                           let cS = unsafe c[indexS(rows, i), j] in
                           let cW = c_k in
@@ -103,8 +103,8 @@ fun [rows][cols]f32 main([rows][cols]int image) =
     image in
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
-  let image = map(fn [cols]f32 ([]f32 row) =>
-                    map(fn f32 (f32 pixel) =>
+  let image = map(fn (row: []f32): [cols]f32  =>
+                    map(fn (pixel: f32): f32  =>
                           -- take logarithm of image, log compress.
                           -- This is where the original implementation
                           -- would round to int.

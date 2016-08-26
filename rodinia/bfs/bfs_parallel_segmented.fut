@@ -11,9 +11,9 @@
 include lib.bfs_lib
 
 
-fun [n]i32 main([n]i32 nodes_start_index,
-                  [n]i32 nodes_n_edges,
-                  [e]i32 edges_dest) =
+fun main(nodes_start_index: [n]i32,
+                  nodes_n_edges: [n]i32,
+                  edges_dest: [e]i32): [n]i32 =
   let graph_mask = replicate(n, False)
   let updating_graph_mask = replicate(n, False)
   let graph_visited = replicate(n, False)
@@ -48,14 +48,13 @@ fun [n]i32 main([n]i32 nodes_start_index,
       in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
   in cost
 
-fun (*[n]i32, *[n]bool, *[n]bool)
-  step(*[n]i32 cost,
-       [n]i32 nodes_start_index,
-       [n]i32 nodes_n_edges,
-       [e]i32 edges_dest,
-       [n]bool graph_visited,
-       *[n]bool graph_mask,
-       *[n]bool updating_graph_mask) =
+fun step(cost: *[n]i32,
+       nodes_start_index: [n]i32,
+       nodes_n_edges: [n]i32,
+       edges_dest: [e]i32,
+       graph_visited: [n]bool,
+       graph_mask: *[n]bool,
+       updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
   let n_indices = shape(active_indices)[0]
@@ -63,9 +62,9 @@ fun (*[n]i32, *[n]bool, *[n]bool)
   let graph_mask' =
     write(active_indices, replicate(n_indices, False), graph_mask)
 
-  let nodes_start_index' = map(fn i32 (i32 i) => unsafe nodes_start_index[i],
+  let nodes_start_index' = map(fn (i: i32): i32  => unsafe nodes_start_index[i],
                                active_indices)
-  let nodes_n_edges' = map(fn i32 (i32 i) => unsafe nodes_n_edges[i],
+  let nodes_n_edges' = map(fn (i: i32): i32  => unsafe nodes_n_edges[i],
                            active_indices)
 
   let offsets0 = scan(+, 0, nodes_n_edges')
@@ -79,15 +78,15 @@ fun (*[n]i32, *[n]bool, *[n]bool)
   let is1 = write(offsets, nodes_start_index', is0)
   let is2 = i32_plus_scan_segm(is1, mask)
 
-  let node_ids = map(fn i32 (i32 i) => unsafe edges_dest[i], is2)
-  let write_indices = map(fn i32 (i32 id) =>
+  let node_ids = map(fn (i: i32): i32  => unsafe edges_dest[i], is2)
+  let write_indices = map(fn (id: i32): i32  =>
                             if unsafe graph_visited[id] then -1 else id,
                           node_ids)
 
   let costs_new0 = replicate(full_length, 0)
   let costs_new1 =
     write(offsets,
-          map(fn i32 (i32 id) => unsafe cost[id] + 1, active_indices),
+          map(fn (id: i32): i32  => unsafe cost[id] + 1, active_indices),
           costs_new0)
   let costs_new = i32_plus_scan_segm(costs_new1, mask)
 
