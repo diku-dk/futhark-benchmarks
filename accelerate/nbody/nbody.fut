@@ -71,8 +71,8 @@ fun advance_body(time_step: f32, this_body: body): body =
   let (xv', yv', zv') = vel'
   in (pos', mass, vel', acc)
 
-fun advance_body_wrap(time_step: f32, this_body: body, accel: acceleration): body =
-  let (pos, mass, vel, acc) = this_body
+fun advance_body_wrap(time_step: f32, body_and_accel : (body, acceleration)): body =
+  let ((pos, mass, vel, acc), accel) = body_and_accel
   let accel' = vec_mult_factor(mass, accel)
   let body' = (pos, mass, vel, accel')
   in advance_body(time_step, body')
@@ -122,12 +122,9 @@ entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
   let (is, vs) = unzip(zipWith(renderPoint(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
   in reshape((w,h), write(is, vs, replicate(w*h, 0)))
 
-entry test(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-                            xps: [n]f32, yps: [n]f32, zps: [n]f32): ([n]f32, [n]f32) =
-  unzip(zipWith(idx(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
-
 fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-                           x: f32, y: f32, z: f32): (int, int) =
+                p: position): (int, int) =
+  let (x,y,z) = p in
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
@@ -138,16 +135,3 @@ fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
     let x'' = int(x' * f32(w))
     let y'' = int(y' * f32(h))
     in (x''*h + y'', 0x00FFFFFF)
-
-entry idx(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-                     x: f32, y: f32, z: f32): (f32, f32) =
-  -- Draw nothing if the point is outside the viewport.
-  if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1f32, 0f32)
-  else
-    -- Normalise x,y to positions in interval (0,1) within the viewport.
-    let x' = x-x_ul / x_br-x_ul
-    let y' = y-y_ul / y_br-y_ul
-    -- Convert x',y' to screen coordinate space.
-    let x'' = int(x' * f32(w))
-    let y'' = int(y' * f32(h))
-    in (f32(x), f32(y))
