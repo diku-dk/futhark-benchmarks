@@ -324,13 +324,13 @@ fun evalGenomeOnSwap (genomea:
 --  let sob_inds  = map(+sob_ini, iota(CHUNK))
 --  in  map( sobolInd(dirVct,norm_fact), sob_inds )
 
-fun sobolInd(dirVct:  []int, n: int ): f32 =
+fun sobolInd(dirVct:  [m]int, n: int ): f32 =
     -- placed norm_fact here to check that hoisting does its job!
-    let norm_fact = 1.0 / ( f32(1 << size(0,dirVct)) + 1.0 ) in
+    let norm_fact = 1.0 / ( f32(1 << m) + 1.0 ) in
     let n_gray = (n >> 1) ^ n in
     let res = 0 in
     loop (res) =
-      for i < size(0,dirVct) do
+      for i < m do
         let t = 1 << i in
         if (n_gray & t) == t
 	then res ^ dirVct[i]
@@ -375,12 +375,12 @@ fun mutate_dims_all(tup: ([]f32,[]f32,[]f32)): (*[]f32,f32) =
   let fb_rat    = reduce(*, 1.0, fb_rats)
   in  (copy(new_genome), fb_rat)
   
-fun mutate_dims_one(dim_j: int, tup: ([]f32,[]f32,[]f32)): (*[]f32,f32) = 
+fun mutate_dims_one(dim_j: int, tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) = 
   let (sob_row, orig, muta) = tup in
   let gene_bds = genomeBounds()   in
   let amplitudes= map(fn (i: int): f32  =>
 			  if i == dim_j then moves_unif_ampl_ratio() else 0.0
-		     , iota(size(0,orig)) )
+		     , iota(n) )
   in  
   let gene_rats = map( mutateHelper, zip(amplitudes,sob_row,orig,muta,gene_bds) ) in
   let (tmp_genome, fb_rats) = unzip(gene_rats) in
@@ -781,15 +781,15 @@ fun black_price(today: f32, swaption: (f32,f32,f32), vol: f32 ): f32 =
 --------------
 
 fun pricer_of_swaption(today:  f32,
-                    swaption: (f32,f32,f32),
-                    genome: (f32,f32,f32,f32,f32),
-                    x_quads: []f32,
-                    w_quads: []f32
-                  ): f32 =
+                       swaption: (f32,f32,f32),
+                       genome: (f32,f32,f32,f32,f32),
+                       x_quads: []f32,
+                       w_quads: []f32
+                      ): f32 =
     let swaption = extended_swaption_of_swaption(swaption) in
     let (maturity, schedulei, (strike,unused)) = swaption  in
 
-    let n_schedi = size(0, schedulei)                      in
+    let n_schedi = shape(schedulei)[0]                     in
     let ci = map(   fn (i: int): f32  =>
                         let (d_beg,d_end) = schedulei[i]   in
                         let tau = date_act_365(d_end,d_beg)in
