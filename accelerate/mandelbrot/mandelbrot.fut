@@ -16,48 +16,48 @@ default(f32)
 
 type complex = (f32, f32)
 
-fun f32 dot(complex c) =
+fun dot(c: complex): f32 =
   let (r, i) = c
   in r * r + i * i
 
-fun complex multComplex(complex x, complex y) =
+fun multComplex(x: complex, y: complex): complex =
   let (a, b) = x
   let (c, d) = y
   in (a*c - b * d,
       a*d + b * c)
 
-fun complex addComplex(complex x, complex y) =
+fun addComplex(x: complex, y: complex): complex =
   let (a, b) = x
   let (c, d) = y
   in (a + c,
       b + d)
 
-fun int divergence(int depth, complex c0) =
+fun divergence(depth: int, c0: complex): int =
   loop ((c, i) = (c0, 0)) = while i < depth && dot(c) < 4.0 do
     (addComplex(c0, multComplex(c, c)),
      i + 1)
   in i
 
-fun [screenX][screenY]int mandelbrot(int screenX, int screenY, int depth, (f32,f32,f32,f32) view) =
+fun mandelbrot(screenX: int, screenY: int, depth: int, view: (f32,f32,f32,f32)): [screenX][screenY]int =
   let (xmin, ymin, xmax, ymax) = view
   let sizex = xmax - xmin
   let sizey = ymax - ymin
-  in map(fn [screenY]int (int x) =>
-           map (fn int (int y) =>
+  in map(fn (x: int): [screenY]int  =>
+           map (fn (y: int): int  =>
                   let c0 = (xmin + (f32(x) * sizex) / f32(screenX),
                             ymin + (f32(y) * sizey) / f32(screenY))
                   in divergence(depth, c0)
             , iota(screenY)),
         iota(screenX))
 
-fun [screenX][screenY]int main(int screenX, int screenY, int depth, f32 xmin, f32 ymin, f32 xmax, f32 ymax) =
+fun main(screenX: int, screenY: int, depth: int, xmin: f32, ymin: f32, xmax: f32, ymax: f32): [screenX][screenY]int =
   let escapes = mandelbrot(screenX, screenY, depth, (xmin, ymin, xmax, ymax)) in
-  map(fn [screenY]int ([]int row) =>
+  map(fn (row: []int): [screenY]int  =>
         map(escapeToColour(depth), row),
       escapes)
 
 -- Returns RGB (no alpha channel).
-fun int escapeToColour(int depth, int divergence) =
+fun escapeToColour(depth: int, divergence: int): int =
   if depth == divergence
   then 0
   else

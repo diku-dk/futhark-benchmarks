@@ -11,45 +11,44 @@
 
 default(f32)
 
-fun f32 gamma() = 1.4
-fun int  iterations() = 2000
+fun gamma(): f32 = 1.4
+fun iterations(): int = 2000
 
 --#define NDIM 3
 --#define NNB 4
 
-fun int  rk() = 3	-- 3rd order rk
-fun f32 ff_mach() = 1.2
-fun f32 deg_angle_of_attack() = 0.0
+fun rk(): int = 3	-- 3rd order rk
+fun ff_mach(): f32 = 1.2
+fun deg_angle_of_attack(): f32 = 0.0
 
 -- not options
-fun int  var_density() = 0
-fun int  var_momentum()= 1
-fun int  var_density_energy() = var_momentum() + 3 --var_momentum+NDIM
-fun int  nvar() = var_density_energy() + 1
+fun var_density(): int = 0
+fun var_momentum(): int= 1
+fun var_density_energy(): int = var_momentum() + 3 --var_momentum+NDIM
+fun nvar(): int = var_density_energy() + 1
 
 -- short functions
-fun (f32,f32,f32) compute_velocity(f32 density, (f32,f32,f32) momentum) =
+fun compute_velocity(density: f32, momentum: (f32,f32,f32)): (f32,f32,f32) =
     let (momentum_x, momentum_y, momentum_z) = momentum
     in  (momentum_x / density, momentum_y / density, momentum_z / density)
 
-fun f32 compute_speed_sqd((f32,f32,f32) velocity) = 
+fun compute_speed_sqd(velocity: (f32,f32,f32)): f32 = 
     let (velocity_x, velocity_y, velocity_z) = velocity in
     velocity_x*velocity_x + velocity_y*velocity_y + velocity_z*velocity_z
 
-fun f32 compute_pressure(f32 density, f32 density_energy, f32 speed_sqd) = 
+fun compute_pressure(density: f32, density_energy: f32, speed_sqd: f32): f32 = 
     (gamma()-1.0) * (density_energy - 0.5*density*speed_sqd)
 
-fun f32 compute_speed_of_sound(f32 density, f32 pressure) =
+fun compute_speed_of_sound(density: f32, pressure: f32): f32 =
     sqrt32( gamma() * pressure / density )
 
 --
-fun [5][nelr]f32 initialize_variables(int nelr, [5]f32 ff_variable) = --[nvar]float ff_variable
-    map(fn [nelr]f32 (f32 x) => replicate(nelr, x), ff_variable)
+fun initialize_variables(nelr: int, ff_variable: [5]f32): [5][nelr]f32 = --[nvar]float ff_variable
+    map(fn (x: f32): [nelr]f32  => replicate(nelr, x), ff_variable)
 
 -- 
-fun ((f32,f32,f32),(f32,f32,f32),(f32,f32,f32),(f32,f32,f32)) 
-compute_flux_contribution( f32 density,  (f32,f32,f32) momentum, f32 density_energy, 
-                           f32 pressure, (f32,f32,f32) velocity ) =
+fun compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_energy: f32, 
+                           pressure: f32, velocity: (f32,f32,f32) ): ((f32,f32,f32),(f32,f32,f32),(f32,f32,f32),(f32,f32,f32)) =
     let (momentum_x, momentum_y, momentum_z) = momentum in
     let (velocity_x, velocity_y, velocity_z) = velocity in
 
@@ -77,8 +76,8 @@ compute_flux_contribution( f32 density,  (f32,f32,f32) momentum, f32 density_ene
     )
 
 --
-fun [nelr]f32 compute_step_factor([5][nelr]f32 variables, [nelr]f32 areas) = -- 5 == nvar
-    map(fn f32 (int i) =>
+fun compute_step_factor(variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = -- 5 == nvar
+    map(fn (i: int): f32  =>
             let density    = variables[var_density(),    i] in
             let momentum_x = variables[var_momentum()+0, i] in
             let momentum_y = variables[var_momentum()+1, i] in
@@ -93,16 +92,15 @@ fun [nelr]f32 compute_step_factor([5][nelr]f32 variables, [nelr]f32 areas) = -- 
        , iota(nelr))
     
 --5 == nvar
-fun [5][nel]f32 
-    compute_flux(   [nnb][nel]int elements_surrounding_elements
-                ,   [ndim][nnb][nel]f32 normals
-                ,   [5][nel]f32          variables   
-                ,   [5]f32                ff_variable
-                ,   (f32,f32,f32)        ff_flux_contribution_momentum_x
-                ,   (f32,f32,f32)        ff_flux_contribution_momentum_y
-                ,   (f32,f32,f32)        ff_flux_contribution_momentum_z
-                ,   (f32,f32,f32)        ff_flux_contribution_density_energy
-                ) =
+fun compute_flux(elements_surrounding_elements:    [nnb][nel]int
+                ,   normals: [ndim][nnb][nel]f32
+                ,   variables: [5][nel]f32   
+                ,   ff_variable: [5]f32
+                ,   ff_flux_contribution_momentum_x: (f32,f32,f32)
+                ,   ff_flux_contribution_momentum_y: (f32,f32,f32)
+                ,   ff_flux_contribution_momentum_z: (f32,f32,f32)
+                ,   ff_flux_contribution_density_energy: (f32,f32,f32)
+                ): [5][nel]f32 =
     let ( ff_flux_contribution_momentum_x_x, ff_flux_contribution_momentum_x_y, 
           ff_flux_contribution_momentum_x_z ) = ff_flux_contribution_momentum_x in
     let ( ff_flux_contribution_momentum_y_x, ff_flux_contribution_momentum_y_y,
@@ -113,7 +111,7 @@ fun [5][nel]f32
           ff_flux_contribution_density_energy_z ) = ff_flux_contribution_density_energy in
     let smoothing_coefficient = 0.2 in
     transpose( 
-      map(fn [5]f32 (int i) =>
+      map(fn (i: int): [5]f32  =>
             let density_i    = variables[var_density(), i]    in
             let momentum_i_x = variables[var_momentum()+0, i] in
             let momentum_i_y = variables[var_momentum()+1, i] in
@@ -275,12 +273,12 @@ fun [5][nel]f32
     )
 
 --
-fun [5][nel]f32 time_step( int j, 
-                              [5][nel]f32 old_variables, 
-                              [nel]f32 step_factors, 
-                              [5][nel]f32 fluxes  ) =
+fun time_step(j:  int, 
+                              old_variables: [5][nel]f32, 
+                              step_factors: [nel]f32, 
+                              fluxes: [5][nel]f32  ): [5][nel]f32 =
   transpose(
-    map(fn [5]f32 (int i) =>
+    map(fn (i: int): [5]f32  =>
             let factor = step_factors[i] / f32(rk()+1-j) in
             [ old_variables[var_density(),    i] + factor*fluxes[var_density(),    i]
             , old_variables[var_momentum()+0, i] + factor*fluxes[var_momentum()+0, i]
@@ -294,10 +292,9 @@ fun [5][nel]f32 time_step( int j,
 --------------------------
 ---- MAIN ENTRY POINT ----
 --------------------------
-fun [5][nel]f32 
-main(  [nel]f32       areas, 
-      [4][nel]int     elements_surrounding_elements, 
-     [3][4][nel]f32 normals ) =
+fun main(areas:   [nel]f32, 
+      elements_surrounding_elements: [4][nel]int, 
+     normals: [3][4][nel]f32 ): [5][nel]f32 =
     let ndim = 3 in
     let nnb  = 4 in
     let angle_of_attack = (3.1415926535897931 / 180.0) * deg_angle_of_attack() in

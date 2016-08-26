@@ -9,22 +9,22 @@
 -- output @ data/medium.out
 
 
-fun [n][p]f32 mult([n][m]f32 xss, [m][p]f32 yss) =
-  map(fn [p]f32 ([]f32 xs) =>
-        map(fn f32 ([]f32 ys) =>
+fun mult(xss: [n][m]f32, yss: [m][p]f32): [n][p]f32 =
+  map(fn (xs: []f32): [p]f32  =>
+        map(fn (ys: []f32): f32  =>
               reduce(+, 0f32, zipWith(*, xs, ys)),
             transpose(yss)),
       xss)
 
-fun [n][m]f32 add([n][m]f32 xss, [n][m]f32 yss) =
-  zipWith(fn [m]f32 ([]f32 xs, []f32 ys) =>
+fun add(xss: [n][m]f32, yss: [n][m]f32): [n][m]f32 =
+  zipWith(fn (xs: []f32, ys: []f32): [m]f32  =>
             zipWith(+, xs, ys),
           xss, yss)
 
-fun [n][m]f32 scale([n][m]f32 xss, f32 a) =
-  map(fn [m]f32 ([]f32 xs) =>
+fun scale(xss: [n][m]f32, a: f32): [n][m]f32 =
+  map(fn (xs: []f32): [m]f32  =>
         map(*a, xs),
       xss)
 
-fun [n][p]f32 main([n][m]f32 ass, [m][p]f32 bss, [n][p]f32 css, f32 alpha, f32 beta) =
+fun main(ass: [n][m]f32, bss: [m][p]f32, css: [n][p]f32, alpha: f32, beta: f32): [n][p]f32 =
   add(scale(css,beta), scale(mult(ass,bss), alpha))

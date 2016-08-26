@@ -12,16 +12,15 @@ include lib.bfs_main_typical
 include lib.bfs_lib
 
 
-fun i32 max(i32 a, i32 b) =
+fun max(a: i32, b: i32): i32 =
   if a > b then a else b
 
-fun (*[n]i32, *[n]bool, *[]i32)
-  step(*[n]i32 cost,
-       [n]i32 nodes_start_index,
-       [n]i32 nodes_n_edges,
-       [e]i32 edges_dest,
-       [n]bool graph_visited,
-       *[n]bool graph_mask) =
+fun step(cost: *[n]i32,
+       nodes_start_index: [n]i32,
+       nodes_n_edges: [n]i32,
+       edges_dest: [e]i32,
+       graph_visited: [n]bool,
+       graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[]i32) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
   let n_indices = shape(active_indices)[0]
@@ -31,7 +30,7 @@ fun (*[n]i32, *[n]bool, *[]i32)
   -- nested array.
   let e_max = reduceComm(max, 0, nodes_n_edges)
 
-  let changes = map(fn ([e_max]i32, [e_max]i32) (i32 i) =>
+  let changes = map(fn (i: i32): ([e_max]i32, [e_max]i32)  =>
                       node_work(i, e_max, cost, nodes_start_index,
                                 nodes_n_edges, edges_dest, graph_visited)
                    , active_indices)
@@ -50,18 +49,17 @@ fun (*[n]i32, *[n]bool, *[]i32)
 
   in (cost', graph_mask', node_ids)
 
-fun ([e_max]i32, [e_max]i32)
-  node_work(i32 tid,
-            i32 e_max,
-            [n]i32 cost,
-            [n]i32 nodes_start_index,
-            [n]i32 nodes_n_edges,
-            [e]i32 edges_dest,
-            [n]bool graph_visited) =
+fun node_work(tid: i32,
+            e_max: i32,
+            cost: [n]i32,
+            nodes_start_index: [n]i32,
+            nodes_n_edges: [n]i32,
+            edges_dest: [e]i32,
+            graph_visited: [n]bool): ([e_max]i32, [e_max]i32) =
   let start_index = unsafe nodes_start_index[tid]
   let n_edges = unsafe nodes_n_edges[tid]
   let edge_indices = map(+ start_index, iota(e_max))
-  let node_ids = map(fn i32 (i32 i) =>
+  let node_ids = map(fn (i: i32): i32  =>
                        if i < start_index + n_edges
                        then let node_id = unsafe edges_dest[i]
                             in if ! unsafe graph_visited[node_id]

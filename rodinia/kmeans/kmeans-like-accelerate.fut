@@ -2,62 +2,60 @@
 -- roughly the same algorithm as the kmeans implementation in
 -- accelerate-examples.
 
-fun f32 euclid_dist_2((f32,f32) c1, (f32,f32) c2) =
+fun euclid_dist_2(c1: (f32,f32), c2: (f32,f32)): f32 =
   let (x1,y1) = c1 in
   let (x2,y2) = c2 in
   (x2-x1)**2.0f32 + (y2-y1)**2.0f32
 
-fun (int,f32) closest_point((int,f32) p1, (int,f32) p2) =
+fun closest_point(p1: (int,f32), p2: (int,f32)): (int,f32) =
   let (_,d1) = p1 in
   let (_,d2) = p2 in
   if d1 < d2 then p1 else p2
 
-fun int find_nearest_point([k](f32,f32) pts, (f32,f32) pt) =
+fun find_nearest_point(pts: [k](f32,f32), pt: (f32,f32)): int =
   let (i, _) = reduceComm(closest_point,
                           (0, euclid_dist_2(pt,pts[0])),
                           zip(iota(k),
                               map(euclid_dist_2(pt), pts))) in
   i
 
-fun (f32,f32) add_centroids((f32,f32) c1, (f32,f32) c2) =
+fun add_centroids(c1: (f32,f32), c2: (f32,f32)): (f32,f32) =
   let (x1,y1) = c1 in
   let (x2,y2) = c2 in
   (x1+x2, y1+y2)
 
-fun *[k](f32,f32)
-  centroids_of(int k, [n](f32,f32) points, [n]int membership) =
+fun centroids_of(k: int, points: [n](f32,f32), membership: [n]int): *[k](f32,f32) =
   let (cluster_counts, cluster_points) =
-    unzip(map(fn [n](int,(f32,f32)) (int cluster) =>
-                zipWith(fn (int, (f32,f32)) (int point_cluster, (f32,f32) point) =>
+    unzip(map(fn (cluster: int): [n](int,(f32,f32))  =>
+                zipWith(fn (point_cluster: int, point: (f32,f32)): (int, (f32,f32))  =>
                           if cluster == point_cluster
                           then (1, point)
                           else (0, (0.0f32, 0.0f32)),
                         membership, points),
                 iota(k))) in
-  let cluster_sizes = map(fn int ([n]int counts) =>
+  let cluster_sizes = map(fn (counts: [n]int): int  =>
                             reduce(+, 0, counts),
                           cluster_counts) in
-  let cluster_centres = zipWith(fn (f32,f32) (int count, [n](f32,f32) my_points) =>
+  let cluster_centres = zipWith(fn (count: int, my_points: [n](f32,f32)): (f32,f32)  =>
                                   let (x,y) =
                                     reduceComm(add_centroids, (0f32, 0f32), my_points) in
                                   (x / f32(count), y / f32(count)),
                                 cluster_sizes, cluster_points) in
   cluster_centres
 
-fun f32 fabs32(f32 x) =
+fun fabs32(x: f32): f32 =
   if x < 0.0f32 then -x else x
 
-fun ([]f32,[]f32, int)
-  main(int threshold,
-       int k,
-       int max_iterations,
-       [n][d]f32 points) =
-  let points = map(fn (f32,f32) ([d]f32 point) =>
+fun main(threshold: int,
+       k: int,
+       max_iterations: int,
+       points: [n][d]f32): ([]f32,[]f32, int) =
+  let points = map(fn (point: [d]f32): (f32,f32)  =>
                      (point[0], point[1]),
                    points) in
 
   -- Assign arbitrary initial cluster centres.
-  let cluster_centres = map(fn (f32,f32) (int i) =>
+  let cluster_centres = map(fn (i: int): (f32,f32)  =>
                               unsafe points[i],
                             iota(k)) in
   -- Also assign points arbitrarily to clusters.
@@ -70,7 +68,7 @@ fun ([]f32,[]f32, int)
     -- Then, find the new centres of the clusters.
     let new_centres = centroids_of(k, points, new_membership) in
     let continue = reduce(||, False,
-                          zipWith(fn bool ((f32,f32) c1, (f32,f32) c2) =>
+                          zipWith(fn (c1: (f32,f32), c2: (f32,f32)): bool  =>
                                     let (x1,y1) = c1 in
                                     let (x2,y2) = c2 in
                                     fabs32(x1-x2) > 0.01f32 || fabs32(y1-y2) > 0.01f32,

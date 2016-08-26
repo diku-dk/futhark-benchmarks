@@ -14,8 +14,7 @@
 -- input @ indices_shuffled_1000000.in
 -- output @ indices_shuffled_1000000.out
 
-fun [n]i32
-  main([k]i32 indices,
-       [k]i32 values,
-       *[n]i32 array) =
+fun main(indices: [k]i32,
+       values: [k]i32,
+       array: *[n]i32): [n]i32 =
   write(indices, values, array)

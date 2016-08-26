@@ -26,15 +26,14 @@
 -- g : data term gradient array, size (m,n,p,q).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun [m][n][p][q]f32 
-add_descent_div3v( [m][n][p][q]f32 v
-                 , [m][n][p][q](f32,f32,f32) xi
-                 , [m][n][p][q]f32 g
-                 , f32                           tp ) =
-  map(fn [n][p][q]f32 (int i) =>
-        map(fn [p][q]f32 (int j) => 
-              map(fn [q]f32 (int k) => 
-              map(fn f32 (int l) => unsafe
+fun add_descent_div3v(v:  [m][n][p][q]f32
+                 , xi: [m][n][p][q](f32,f32,f32)
+                 , g: [m][n][p][q]f32
+                 , tp: f32 ): [m][n][p][q]f32 =
+  map(fn (i: int): [n][p][q]f32  =>
+        map(fn (j: int): [p][q]f32  => 
+              map(fn (k: int): [q]f32  => 
+              map(fn (l: int): f32  => unsafe
                     -- get current `v`, `g`, and `xi` element
                     let v_el = v[i,j,k,l] in
                     let g_el = g[i,j,k,l] in
@@ -191,20 +190,19 @@ add_descent_div3v( [m][n][p][q]f32 v
 -----------------------------------------------------
 -----------------------------------------------------
 
-fun [m][n][p][q]f32 
-            main1( [m][n][p][q]f32 v
-                 , [m][n][p][q](f32,f32,f32) xi
-                 , [m][n][p][q]f32 g
-                 , f32                           tp ) =
+fun main1(v:  [m][n][p][q]f32
+                 , xi: [m][n][p][q](f32,f32,f32)
+                 , g: [m][n][p][q]f32
+                 , tp: f32 ): [m][n][p][q]f32 =
 
     add_descent_div3v(v, xi, g, tp)
 
-fun [m][n][p][q]f32 main(int m, int n, int p, int q, int loop_count) = 
+fun main(m: int, n: int, p: int, q: int, loop_count: int): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q) in
     let v  = reshape( (m,n,p,q), map(f32, iota(mnpq)) ) in
     let g  = reshape( (m,n,p,q), map(f32, iota(mnpq)) ) in
     let xi = reshape( (m,n,p,q)
-                    , map( fn (f32,f32,f32) (int t) =>
+                    , map( fn (t: int): (f32,f32,f32)  =>
                             let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
                          , iota(mnpq) )
                     )

@@ -7,9 +7,9 @@
 -- compiled input @ data/512nodes_high_edge_variance.in
 -- output @ data/512nodes_high_edge_variance.out
 
-fun [n]i32 main([n]i32 nodes_start_index,
-                  [n]i32 nodes_n_edges,
-                  [e]i32 edges_dest) =
+fun main(nodes_start_index: [n]i32,
+                  nodes_n_edges: [n]i32,
+                  edges_dest: [e]i32): [n]i32 =
   let graph_mask = replicate(n, False)
   let updating_graph_mask = replicate(n, False)
   let graph_visited = replicate(n, False)
@@ -43,16 +43,15 @@ fun [n]i32 main([n]i32 nodes_start_index,
       in (cost', updating_graph_mask', graph_mask', graph_visited, continue')
   in cost
 
-fun (*[n]i32, *[n]bool, *[n]bool)
-  step(*[n]i32 cost,
-       [n]i32 nodes_start_index,
-       [n]i32 nodes_n_edges,
-       [e]i32 edges_dest,
-       [n]bool graph_visited,
-       *[n]bool graph_mask,
-       *[n]bool updating_graph_mask) =
+fun step(cost: *[n]i32,
+       nodes_start_index: [n]i32,
+       nodes_n_edges: [n]i32,
+       edges_dest: [e]i32,
+       graph_visited: [n]bool,
+       graph_mask: *[n]bool,
+       updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let active_indices =
-    filter(fn bool (i32 i) => graph_mask[i],
+    filter(fn (i: i32): bool  => graph_mask[i],
            iota(n))
 
   -- This loop is a kernel in Rodinia.  Futhark's regularity makes this a bit
@@ -66,15 +65,14 @@ fun (*[n]i32, *[n]bool, *[n]bool)
 
   in (cost, graph_mask, updating_graph_mask)
 
-fun (*[n]i32, *[n]bool, *[n]bool)
-  node_work(i32 tid,
-            *[n]i32 cost,
-            [n]i32 nodes_start_index,
-            [n]i32 nodes_n_edges,
-            [e]i32 edges_dest,
-            [n]bool graph_visited,
-            *[n]bool graph_mask,
-            *[n]bool updating_graph_mask) =
+fun node_work(tid: i32,
+            cost: *[n]i32,
+            nodes_start_index: [n]i32,
+            nodes_n_edges: [n]i32,
+            edges_dest: [e]i32,
+            graph_visited: [n]bool,
+            graph_mask: *[n]bool,
+            updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let start_index = nodes_start_index[tid]
   let n_edges = nodes_n_edges[tid]
   let graph_mask[tid] = False

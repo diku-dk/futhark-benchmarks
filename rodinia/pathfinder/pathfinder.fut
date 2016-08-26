@@ -6,21 +6,21 @@
 -- notravis input @ data/medium.in
 -- output @ data/medium.out
 
-fun bool in_range   (int x, int lb, int ub) = (x >= lb) && (x <= ub)
-fun int  clamp_range(int x, int lb, int ub) = if      (x < lb) then lb 
+fun in_range   (x: int, lb: int, ub: int): bool = (x >= lb) && (x <= ub)
+fun clamp_range(x: int, lb: int, ub: int): int = if      (x < lb) then lb 
                                               else if (x > ub) then ub else x
-fun int  min(int a, int b) = if (a <= b) then a else b
+fun min(a: int, b: int): int = if (a <= b) then a else b
 
 
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
-fun [30]int sobolDirVcts() = 
+fun sobolDirVcts(): [30]int = 
     [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
       524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
       512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
 
-fun int sobolInd( [30]int dirVct, int n ) =
+fun sobolInd(dirVct:  [30]int, n: int ): int =
     let n_gray = (n >> 1) ^ n in
     let res = 0 in
     loop (res) =
@@ -31,13 +31,13 @@ fun int sobolInd( [30]int dirVct, int n ) =
             else res
     in res
 
-fun [cols]int main(int cols, int rows) =
+fun main(cols: int, rows: int): [cols]int =
     let dirVct = sobolDirVcts() in
     -----------------------
     -- 1. Initialization --
     -----------------------
     let wall_flat = 
-        map( fn int (int i) => 
+        map( fn (i: int): int  => 
                 sobolInd(dirVct, i+1) % 10
            , iota(rows*cols) )
     in
@@ -48,7 +48,7 @@ fun [cols]int main(int cols, int rows) =
     -- 1. Kernel --
     ---------------
     loop (result) = for t < (rows-1) do
-        map(fn int (int i) =>
+        map(fn (i: int): int  =>
                 let res = result[i] in
                 let res = if (i >  0)     then min(res, unsafe result[i-1]) else res
                 in
