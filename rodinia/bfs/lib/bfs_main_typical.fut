@@ -42,7 +42,7 @@ fun main(nodes_start_index: [n]i32,
              graph_visited,
              graph_mask)
       
-      let n_indices = shape(updating_indices)[0]
+      let n_indices = (shape updating_indices)[0]
 
       let graph_mask'' =
         write(updating_indices, replicate(n_indices, True), graph_mask')
@@ -51,7 +51,7 @@ fun main(nodes_start_index: [n]i32,
         write(updating_indices, replicate(n_indices, True), graph_visited)
 
       let tmp_arr = map(fn (ind: i32): i32  => if ind == -1 then 0 else 1, updating_indices)
-      let n_indices' = reduce(+, 0, tmp_arr)
+      let n_indices' = reduce((+), 0, tmp_arr)
 
       let continue' = n_indices' > 0
       in (cost', graph_mask'', graph_visited', continue')

@@ -22,7 +22,7 @@ type acceleration = vec3
 type velocity = vec3
 type body = (position, mass, velocity, acceleration)
 
-fun vec_add(v1: vec3, v2: vec3): vec3 =
+fun vec_add(v1: vec3) (v2: vec3): vec3 =
   let (x1, y1, z1) = v1
   let (x2, y2, z2) = v2
   in (x1 + x2, y1 + y2, z1 + z2)
@@ -54,7 +54,7 @@ fun accel_wrap(epsilon: f32, body_i: body, body_j: body): vec3 =
   let (pj, mj, _ , _) = body_j
   in accel(epsilon, pi, mi, pj, mj)
 
-fun move(epsilon: f32, bodies: []body, this_body: body): position =
+fun move(epsilon: f32, bodies: []body) (this_body: body): position =
   let accels = map(fn (other_body: body): acceleration  =>
                      accel_wrap(epsilon, this_body, other_body),
                    bodies)
@@ -65,13 +65,13 @@ fun calc_accels(epsilon: f32, bodies: []body): []acceleration =
 
 fun advance_body(time_step: f32, this_body: body): body =
   let (pos, mass, vel, acc) = this_body
-  let pos' = vec_add(pos, vec_mult_factor(time_step, vel))
-  let vel' = vec_add(vel, vec_mult_factor(time_step, acc))
+  let pos' = vec_add pos (vec_mult_factor(time_step, vel))
+  let vel' = vec_add vel (vec_mult_factor(time_step, acc))
   let (xp', yp', zp') = pos'
   let (xv', yv', zv') = vel'
   in (pos', mass, vel', acc)
 
-fun advance_body_wrap(time_step: f32, body_and_accel : (body, acceleration)): body =
+fun advance_body_wrap(time_step: f32) (body_and_accel : (body, acceleration)): body =
   let ((pos, mass, vel, acc), accel) = body_and_accel
   let accel' = vec_mult_factor(mass, accel)
   let body' = (pos, mass, vel, accel')
@@ -122,9 +122,8 @@ entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
   let (is, vs) = unzip(zipWith(renderPoint(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
   in reshape((w,h), write(is, vs, replicate(w*h, 0)))
 
-fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-                p: position): (int, int) =
-  let (x,y,z) = p in
+fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
+                ((x,y,z):position): (int, int) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else

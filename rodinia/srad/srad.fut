@@ -54,8 +54,8 @@ fun main(image: [rows][cols]int): [rows][cols]f32 =
                     image) in
   loop (image) = for i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
-    let sum = reduce(+, 0.0, reshape((ne), image)) in
-    let sum2 = reduce(+, 0.0, map(**2.0, reshape((ne), image))) in
+    let sum = reduce((+), 0.0, reshape((ne), image)) in
+    let sum2 = reduce((+), 0.0, map((**2.0), reshape((ne), image))) in
     -- get mean (average) value of element in ROI
     let meanROI = sum / f32(neROI) in
     -- gets variance of ROI

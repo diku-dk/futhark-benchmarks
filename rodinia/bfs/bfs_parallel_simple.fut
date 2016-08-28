@@ -12,7 +12,7 @@ include lib.bfs_main_typical
 include lib.bfs_lib
 
 
-fun max(a: i32, b: i32): i32 =
+fun max(a: i32) (b: i32): i32 =
   if a > b then a else b
 
 fun step(cost: *[n]i32,
@@ -23,7 +23,7 @@ fun step(cost: *[n]i32,
        graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[]i32) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
-  let n_indices = shape(active_indices)[0]
+  let n_indices = (shape active_indices)[0]
 
   -- We calculate the maximum number of edges for a node.  This is necessary,
   -- since the number of edges are irregular, and since we want to construct a
@@ -58,7 +58,7 @@ fun node_work(tid: i32,
             graph_visited: [n]bool): ([e_max]i32, [e_max]i32) =
   let start_index = unsafe nodes_start_index[tid]
   let n_edges = unsafe nodes_n_edges[tid]
-  let edge_indices = map(+ start_index, iota(e_max))
+  let edge_indices = map((+start_index), iota(e_max))
   let node_ids = map(fn (i: i32): i32  =>
                        if i < start_index + n_edges
                        then let node_id = unsafe edges_dest[i]

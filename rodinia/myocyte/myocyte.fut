@@ -1061,8 +1061,8 @@ fun min_scale_factor(): f32 = 0.125f32
 fun max_scale_factor(): f32 = 4.0f32
 fun attempts(): int         = 12
 
-fun max(x: f32, y: f32): f32 = if ( x < y ) then y else x
-fun min(x: f32, y: f32): f32 = if ( x < y ) then x else y
+fun max(x: f32) (y: f32): f32 = if ( x < y ) then y else x
+fun min(x: f32) (y: f32): f32 = if ( x < y ) then x else y
 
 fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
   let err_exponent  = 1.0f32 / 7.0f32 in
@@ -1103,7 +1103,7 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
       
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
       let errs = map( fn (e: f32): bool  => if e > 0.0f32 then True else False, err ) in
-      let error= reduce(||, False, errs) in
+      let error= reduce((||), False, errs) in
 
 --      let {breakLoop, scale_fina} = if(!error)
 --                                    then {True,  max_scale_factor()}
@@ -1123,14 +1123,14 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
                       , zip(yy,err) )
       in
       let scale_min = reduce(min, scale_min, scale) in
-      let scale_fina = min( max(scale_min,min_scale_factor()), max_scale_factor())
+      let scale_fina = min(max scale_min (min_scale_factor())) (max_scale_factor())
       in
       -- iF WiTHiN TOLERANCE, FiNiSH attempts...
       let tmps =map ( fn (err_yyi: (f32,f32)): bool  =>
                         let (erri, yyi) = err_yyi in
                         erri <= ( tolerance * yyi )
                     , zip(err, yy) ) in
-      let breakLoop = reduce (&&, True, tmps) in
+      let breakLoop = reduce ((&&), True, tmps) in
 
       -- ...OTHERWiSE, ADJUST STEP FOR NEXT ATTEMPT
       -- scale next step in a default way
@@ -1160,11 +1160,11 @@ fun main(repeat: int, eps: f32, workload: int, xmax: int, y0: [91]f32, params: [
   let (oks, y_res) = unzip (
     map ( fn (i: int): (bool,[91]f32)  =>
             let add_fact = f32(i % repeat)*eps in
-            let y_row = map(+add_fact, y0) in
+            let y_row = map((+add_fact), y0) in
             solver(xmax, params, y_row)
         , iota(workload) ) )
   in
-  ( reduce(&&, True, oks), y_res )
+  ( reduce((&&), True, oks), y_res )
 
 
 

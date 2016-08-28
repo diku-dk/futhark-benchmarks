@@ -53,8 +53,8 @@ fun voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
   let cell = (f32(int(xy.0)), f32(int(xy.1)))
   let cellOffset = (fract(xy.0), fract(xy.1))
   let sharpness = 1f32 + 63f32 * ((1f32-smoothness) ** 4f32)
-  loop (samples = (0f32,0f32)) = for -2 <= i < 3 do
-    (loop (samples) = for -2 <= j < 3 do
+  loop (samples = (0f32,0f32)) = for (-2) <= i < 3 do
+    (loop (samples) = for (-2) <= j < 3 do
      v2Add(samples, sample(irregular, cell, cellOffset, sharpness, i, j))
      in samples)
   in samples.0 / samples.1
@@ -71,7 +71,7 @@ fun sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: int, j: 
 fun mod'(n: f32, d: f32): f32 =
   n - f32(int(n/d)) * d
 
-fun tunnel(time: f32, x: int, y: int): int =
+fun tunnel(time: f32) (x: int) (y: int): int =
   let pt2 = (1.2f32 * f32(x), 1.2f32 * f32(y))
   let rInv = 1.0f32 / norm(pt2)
   let pt3 = v2Sub((pt2.0 * rInv, pt2.1 * rInv),
@@ -88,5 +88,5 @@ fun rgb(r: f32, g: f32, b: f32, a: f32): int =
 
 fun main(time: f32, w: int, h: int): [w][h]int =
   map(fn (x: int): [h]int  =>
-        map(tunnel(time, x), map(-(h/2), iota(h))),
-      map(-(w/2), iota(w)))
+        map(tunnel time x, map((-(h/2)), iota(h))),
+      map((-(w/2)), iota(w)))

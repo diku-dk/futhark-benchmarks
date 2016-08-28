@@ -66,7 +66,7 @@ fun waves(degree: i32, phi: f32, x: f32, y: f32): f32 =
   wrap(waver(th, x, y, degree, 0.0))
 
 fun waver(th: f32, x: f32, y: f32, n: i32, acc: f32): f32 =
-  reduce(+, 0.0, (map(fn (i: i32): f32  => wave(f32(i) * th, x, y), iota(n))))
+  reduce((+), 0.0, (map(fn (i: i32): f32  => wave(f32(i) * th, x, y), iota(n))))
 
 fun wrap(n: f32): f32 =
   let n_ = i32(n) in

@@ -58,7 +58,7 @@ fun edgeStrong(): f32 = 1.0
 
 fun toGreyscale(img: [h][w]i32): [h][w]f32 =
   map(fn (row: [w]i32): [w]f32  =>
-        map(255.0*, map(luminanceOfRGBA32, row)),
+        map((255.0*), map(luminanceOfRGBA32, row)),
       img)
 
 fun gaussianX(img: [h][w]f32): [h][w]f32 =
@@ -109,7 +109,7 @@ fun gradiantMagDir(low: f32, img: [h][w]f32): [h][w](f32,int) =
 
               let mag = sqrt32(dx * dx + dy * dy)
 
-              let theta = atan2_32(dy, dx)
+              let theta = atan2_32 dy dx
               let alpha = (theta - (pi()/8.0)) * (4.0/pi())
 
               -- Normalise the angle to between [0..8)
@@ -149,8 +149,8 @@ fun selectStrong(img: [h][w]f32): []int =
                    reshape((w*h), img))
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
-  let targetIdxAndLen = scan(+, 0, strong)
-  let (targetIdx, len') = split((shape(strong)[0]-1), targetIdxAndLen)
+  let targetIdxAndLen = scan((+), 0, strong)
+  let (targetIdx, len') = split(((shape strong)[0]-1), targetIdxAndLen)
   let len = len'[0]
   let indices = iota(w*h)
   let zeros = replicate(len, 0)
