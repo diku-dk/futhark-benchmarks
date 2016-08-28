@@ -22,20 +22,20 @@ fun bpnn_output_error(target: [n]f32, output: [n]f32): (f32, [n]f32) =
                 let d = o * (1.0 - o) * (t - o) in
                 ( if d < 0.0 then 0.0-d else d, d )
             , zip(target,output) ) ) in
-    let err = reduce(+, 0.0, errs)
+    let err = reduce((+), 0.0, errs)
     in  ( err, delta )
 
 
 fun bpnn_hidden_error(delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32, [nh]f32) =
     let (errs, delta_h) = unzip (
         map ( fn (hidden_el: f32, who_row: []f32): (f32,f32)  =>
-                let prods  = zipWith( *, delta_o, who_row )       in
-                let sumrow = reduce ( +, 0.0, prods )             in
+                let prods  = zipWith( (*), delta_o, who_row )       in
+                let sumrow = reduce ( (+), 0.0, prods )             in
                 let new_el = hidden_el * (1.0-hidden_el) * sumrow in
                 ( fabs(new_el), new_el )
             , zip( hidden, who )
         ) ) in
-    let err = reduce( +, 0.0, errs)
+    let err = reduce( (+), 0.0, errs)
     in  ( err, delta_h )
 
 fun bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
@@ -57,8 +57,8 @@ fun bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32,
 fun bpnn_layerforward_GOOD(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn) in
   let res_tmp   = map ( fn (conn_tr_row: [n1]f32): f32  =>
-                            let prods = zipWith(*, conn_tr_row, l1) in
-                            reduce(+, 0.0, prods)
+                            let prods = zipWith((*), conn_tr_row, l1) in
+                            reduce((+), 0.0, prods)
                       , connT ) in
   map ( fn (pr: f32, conn0: f32): f32  => squash(pr+conn0)
       , zip(res_tmp, conn_fstrow) )
@@ -67,7 +67,7 @@ fun bpnn_layerforward_GOOD(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32)
 fun bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn) in
   let res_map   = map ( fn (conn_tr_row: [n1]f32): [n1]f32  =>
-                        zipWith(*, conn_tr_row, l1)
+                        zipWith((*), conn_tr_row, l1)
                       , connT)
   in
   -- FIXME: nasty hack to avoid fusion, which presently causes the
@@ -77,7 +77,7 @@ fun bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2
   let res_map[0,0] = x
   in
   let res_tmp   = map ( fn (res_map_row: [n1]f32): f32  =>
-                            reduce(+, 0.0, res_map_row)
+                            reduce((+), 0.0, res_map_row)
                       , res_map )
   in
   map ( fn (pr: f32, conn0: f32): f32  => squash(pr+conn0)
@@ -114,7 +114,7 @@ fun bpnn_train_kernel(input_units:  [n_in]f32
 
 ----------------------------------------------------/
 
-fun sobolIndR(dirVct:  [num_bits]int, n: int ): f32 =
+fun sobolIndR(dirVct: [num_bits]int) (n: int): f32 =
     -- placed norm_fact here to check that hoisting does its job!
     let norm_fact = 1.0 / ( f32(1 << num_bits) + 1.0 ) in
     let n_gray = (n >> 1) ^ n in
@@ -137,16 +137,16 @@ fun bpnn_randomize_weights(m: int, n: int, offset: int, dirVct: []int): ([m][n]f
                     -- (n+1) needed to create the sob num
                     -- as in the original Rodinia code.
                     let offs = i*(n+1) + offset + 1 in
-                    sobolIndR( dirVct, offs + j )
+                    sobolIndR dirVct (offs + j)
                 , iota(n) )
          , iota(m) ) in
     let vct =map( fn (i: int): f32  =>
-                    sobolIndR( dirVct, offset+i*(n+1) )
+                    sobolIndR dirVct (offset+i*(n+1))
                 , iota(m) )
     in (mat, vct)
 
 fun bpnn_randomize_row(m: int, offset: int, dirVct: []int): [m]f32 =
-    map ( sobolIndR(dirVct), map(+offset, iota(m)) )
+    map ( sobolIndR(dirVct), map((+offset), iota(m)) )
 
 fun bpnn_constant_row(m: int, value: f32): [m]f32 =
     replicate(m, value)

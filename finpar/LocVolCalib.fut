@@ -33,7 +33,7 @@ fun initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
                        let dxu = x[i+1] - x[i]  in
                        ( [ -dxu/dxl/(dxl+dxu), (dxu/dxl - dxl/dxu)/(dxl+dxu),      dxl/dxu/(dxl+dxu) ],
                          [  2.0/dxl/(dxl+dxu), -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu), 2.0/dxu/(dxl+dxu) ] )
-                   , map (+ (1), iota(n-2))) in
+                   , map ((+1), iota(n-2))) in
     let (dx_mid, dxx_mid) = unzip(dx_mids)         in
     let dxl    = x[n-1] - x[n-2] in
     let dxu    = 0.0 in
@@ -73,7 +73,7 @@ fun tridagSeq(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[]f32 =
         in  (y, b)
     in
     let y[n-1] = y[n-1]/b[n-1] in
-    loop (y) = for n-1 > i >= 0 do
+    loop (y) = for (n-1) > i >= 0 do
                  let y[i] = (y[i] - c[i]*y[i+1]) / b[i]
                  in  y
     in  y
@@ -90,8 +90,8 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
                          then (b[i], 0.0-a[i]*c[i-1], 1.0, 0.0)
                          else (1.0,  0.0,             0.0, 1.0)
                    , iota(n) ) in
-    let scmt = scan( fn (a:  (f32,f32,f32,f32),
-                                                b: (f32,f32,f32,f32) ): (f32,f32,f32,f32)  =>
+    let scmt = scan( fn (a:  (f32,f32,f32,f32))
+                         (b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  =>
                          let (a0,a1,a2,a3) = a   in
                          let (b0,b1,b2,b3) = b   in
                          let value = 1.0/(a0*b0)   in
@@ -115,7 +115,7 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
                          then (y[i], 0.0-a[i]/b[i-1])
                          else (0.0,  1.0            )
                    , iota(n) ) in
-    let cfuns= scan( fn (a: (f32,f32), b: (f32,f32)): (f32,f32)  =>
+    let cfuns= scan( fn (a: (f32,f32)) (b: (f32,f32)): (f32,f32)  =>
                          let (a0,a1) = a in
                          let (b0,b1) = b in
                          ( b0 + b1*a0, a1*b1 )
@@ -135,7 +135,7 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
                              then (y[i]/b[i], 0.0-c[i]/b[i])
                              else (0.0,       1.0          )
                    , iota(n) ) in
-    let cfuns= scan( fn (a: (f32,f32), b: (f32,f32)): (f32,f32)  =>
+    let cfuns= scan( fn (a: (f32,f32)) (b: (f32,f32)): (f32,f32)  =>
                          let (a0,a1) = a in
                          let (b0,b1) = b in
                          (b0 + b1*a0, a1*b1)
@@ -218,7 +218,7 @@ fun rollback
     let myResultTR = transpose(myResult) in
     let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR ) in
     let u = map( fn (us: []f32, vs: []f32): *[]f32  =>
-                   copy(map(+, zip(us, vs)))
+                   copy(map((+), zip(us, vs)))
                , zip(u, transpose(v))
                ) in
     -- implicitX
@@ -244,7 +244,7 @@ fun value(numX: int, numY: int, numT: int, s0: f32, strike: f32, t: f32, alpha: 
     let myResult = setPayoff(strike, myX, myY) in
 
     loop (myResult) =
-        for numT-1 > i do
+        for (numT-1) > i do
             let (myMuX, myVarX, myMuY, myVarY) =
                 updateParams(myX, myY, myTimeline, i, alpha, beta, nu) in
             let myResult = rollback(myX, myY, myTimeline, myResult,

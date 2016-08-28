@@ -11,7 +11,7 @@
 include lib.bfs_main_typical
 
 
-fun max(a: i32, b: i32): i32 =
+fun max(a: i32) (b: i32): i32 =
   if a > b then a else b
 
 fun step(cost: *[n]i32,

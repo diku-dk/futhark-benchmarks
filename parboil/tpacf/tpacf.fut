@@ -25,7 +25,7 @@ fun iota32(num: i32): [num]f64 =
 
 -- Prøv streamRed i stedet
 fun sumBins(bins: [numBinss][numBins]i32): *[numBins]i32 =
-    map(fn (binIndex: []i32): i32  => reduce(+, 0i32, binIndex), transpose(bins))
+    map(fn (binIndex: []i32): i32  => reduce((+), 0i32, binIndex), transpose(bins))
 
 fun log10(num: f64): f64 = log64(num) / log64(10.0)
 
@@ -37,7 +37,7 @@ fun doCompute(data1:
     binb: [numBBins]f64
 ): *[numBins2]i32 =
     let value = map(fn (xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32  =>
-            streamMap(fn (chunk: int, inner: []vec3): *[numBins2]i32  =>
+            streamMap(fn (chunk: int) (inner: []vec3): *[numBins2]i32  =>
                     loop (dBins = replicate(numBins2, 0i32)) = for i < chunk do
                         let (xInner, yInner, zInner) = inner[i]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner

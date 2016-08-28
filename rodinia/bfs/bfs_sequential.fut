@@ -57,7 +57,7 @@ fun step(cost: *[n]i32,
   -- This loop is a kernel in Rodinia.  Futhark's regularity makes this a bit
   -- tricky to express as a map.
   loop ((cost, graph_mask, updating_graph_mask)) =
-    for indices_i < shape(active_indices)[0] do
+    for indices_i < (shape active_indices)[0] do
       let i = active_indices[indices_i]
       in node_work(i, cost, nodes_start_index, nodes_n_edges,
                    edges_dest, graph_visited,

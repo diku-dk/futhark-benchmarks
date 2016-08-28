@@ -79,7 +79,7 @@ fun main(alpha:  f32
                                , zip(rB,qB) )
 
                           let (r1, r2, r3, r4) = 
-                            reduce( fn (a: (f32,f32,f32,f32), b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  =>
+                            reduce( fn (a: (f32,f32,f32,f32)) (b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  =>
                                         let (a1,a2,a3,a4) = a in let (b1,b2,b3,b4) = b in (a1+b1, a2+b2, a3+b3, a4+b4)
                                   , (0.0,0.0,0.0,0.0), pres)
                           let (a1, a2, a3, a4) = acc

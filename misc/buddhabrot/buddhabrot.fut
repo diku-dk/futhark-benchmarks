@@ -56,10 +56,10 @@ fun toJ(m: int, view: (f32,f32,f32,f32), x: f32): int =
   let x' = x - xmin
   in int(x' / (sizex / f32(m)))
 
-fun max(x: int, y: int): int =
+fun max(x: int) (y: int): int =
   if x < y then y else x
 
-fun colourise(max_visits: int, visits: int): int =
+fun colourise(max_visits: int) (visits: int): int =
   let c = 255-int(log32(f32(visits)) / log32(f32(max_visits)) * 255.0)
   in c << 16 | c << 8 | c
 
@@ -73,13 +73,13 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
   let escapes' = reshape((xprec*yprec), escapes)
   let visits_per_pixel =
     reshape((n*m),
-            streamRedPer(fn (ass: [n][m]int, bss: [n][m]int): [n][m]int  =>
+            streamRedPer(fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
                            zipWith(fn (as: [m]int, bs: [m]int): [m]int  =>
-                                     zipWith(+, as, bs),
+                                     zipWith((+), as, bs),
                                    ass, bss),
-                           fn (chunk: int,
-                                           acc: *[n][m]int,
-                                           inp: []([depth](f32,f32),bool)): [n][m]int  =>
+                         fn (chunk: int)
+                            (acc: *[n][m]int)
+                            (inp: []([depth](f32,f32),bool)): [n][m]int  =>
                              loop (acc) = for i < chunk do
                                (let (trajectory, escaped) = inp[i]
                                 in if escaped then (loop (acc) = for j < depth do

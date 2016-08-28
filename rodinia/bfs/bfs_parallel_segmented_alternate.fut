@@ -25,7 +25,7 @@ fun main(nodes_start_index: [n]i32,
   let cost = replicate(n, -1)
   let cost[source] = 0 in
 
-  let offsets0 = scan(+, 0, nodes_n_edges)
+  let offsets0 = scan((+), 0, nodes_n_edges)
   let offsets = i32_excl_scan_from_incl_scan(offsets0, 0)
 
   let mask0 = replicate(e, False)
@@ -54,7 +54,7 @@ fun main(nodes_start_index: [n]i32,
              node_ids,
              tids)
 
-      let n_indices = shape(updating_indices)[0]
+      let n_indices = (shape updating_indices)[0]
 
       let graph_mask'' =
         write(updating_indices, replicate(n_indices, True), graph_mask')
@@ -65,7 +65,7 @@ fun main(nodes_start_index: [n]i32,
 
       let tmp_arr = map(fn (ind: int): i32  =>
                           if ind == -1 then 0 else 1, updating_indices)
-      let n_indices' = reduce(+, 0, tmp_arr)
+      let n_indices' = reduce((+), 0, tmp_arr)
 
       let continue' = n_indices' > 0
       in (cost', graph_mask'', graph_visited', continue')

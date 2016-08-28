@@ -57,7 +57,7 @@ fun step(cost: *[n]i32,
        updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let active_indices =
     i32_filter(graph_mask, iota(n))
-  let n_indices = shape(active_indices)[0]
+  let n_indices = (shape active_indices)[0]
 
   let graph_mask' =
     write(active_indices, replicate(n_indices, False), graph_mask)
@@ -67,7 +67,7 @@ fun step(cost: *[n]i32,
   let nodes_n_edges' = map(fn (i: i32): i32  => unsafe nodes_n_edges[i],
                            active_indices)
 
-  let offsets0 = scan(+, 0, nodes_n_edges')
+  let offsets0 = scan((+), 0, nodes_n_edges')
   let full_length = offsets0[n_indices - 1]
   let offsets = i32_excl_scan_from_incl_scan(offsets0, 0)
 

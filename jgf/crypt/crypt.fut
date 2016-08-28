@@ -10,7 +10,7 @@
 fun mk16b(upper: u8, lower: u8): u16 =
   (u16(upper) & 0xFFu16) << 8u16 | (u16(lower) & 0xFFu16)
 
-fun cipher_idea_block(key: [52]u16, block: [8]u8): [8]u8 =
+fun cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
   let x1 = mk16b(block[1], block[0]) in
   let x2 = mk16b(block[3], block[2]) in
   let x3 = mk16b(block[5], block[4]) in

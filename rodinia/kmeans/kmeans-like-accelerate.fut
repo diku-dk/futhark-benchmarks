@@ -2,24 +2,24 @@
 -- roughly the same algorithm as the kmeans implementation in
 -- accelerate-examples.
 
-fun euclid_dist_2(c1: (f32,f32), c2: (f32,f32)): f32 =
+fun euclid_dist_2(c1: (f32,f32)) (c2: (f32,f32)): f32 =
   let (x1,y1) = c1 in
   let (x2,y2) = c2 in
   (x2-x1)**2.0f32 + (y2-y1)**2.0f32
 
-fun closest_point(p1: (int,f32), p2: (int,f32)): (int,f32) =
+fun closest_point(p1: (int,f32)) (p2: (int,f32)): (int,f32) =
   let (_,d1) = p1 in
   let (_,d2) = p2 in
   if d1 < d2 then p1 else p2
 
-fun find_nearest_point(pts: [k](f32,f32), pt: (f32,f32)): int =
+fun find_nearest_point(pts: [k](f32,f32)) (pt: (f32,f32)): int =
   let (i, _) = reduceComm(closest_point,
-                          (0, euclid_dist_2(pt,pts[0])),
+                          (0, euclid_dist_2 pt pts[0]),
                           zip(iota(k),
                               map(euclid_dist_2(pt), pts))) in
   i
 
-fun add_centroids(c1: (f32,f32), c2: (f32,f32)): (f32,f32) =
+fun add_centroids(c1: (f32,f32)) (c2: (f32,f32)): (f32,f32) =
   let (x1,y1) = c1 in
   let (x2,y2) = c2 in
   (x1+x2, y1+y2)
@@ -34,7 +34,7 @@ fun centroids_of(k: int, points: [n](f32,f32), membership: [n]int): *[k](f32,f32
                         membership, points),
                 iota(k))) in
   let cluster_sizes = map(fn (counts: [n]int): int  =>
-                            reduce(+, 0, counts),
+                            reduce((+), 0, counts),
                           cluster_counts) in
   let cluster_centres = zipWith(fn (count: int, my_points: [n](f32,f32)): (f32,f32)  =>
                                   let (x,y) =
@@ -59,7 +59,7 @@ fun main(threshold: int,
                               unsafe points[i],
                             iota(k)) in
   -- Also assign points arbitrarily to clusters.
-  let membership = map(% k, iota(n)) in
+  let membership = map((%k), iota(n)) in
   let continue = True in
   let i = 0 in
   loop ((membership, cluster_centres, continue, i)) = while continue && i < max_iterations do
@@ -67,11 +67,11 @@ fun main(threshold: int,
     let new_membership = map(find_nearest_point(cluster_centres), points) in
     -- Then, find the new centres of the clusters.
     let new_centres = centroids_of(k, points, new_membership) in
-    let continue = reduce(||, False,
+    let continue = reduce((||), False,
                           zipWith(fn (c1: (f32,f32), c2: (f32,f32)): bool  =>
                                     let (x1,y1) = c1 in
                                     let (x2,y2) = c2 in
                                     fabs32(x1-x2) > 0.01f32 || fabs32(y1-y2) > 0.01f32,
                                   copy(new_centres), cluster_centres)) in
     (new_membership, new_centres, continue, i+1) in
-  (unzip(cluster_centres).0, unzip(cluster_centres).1, i)
+  ((unzip(cluster_centres)).0, (unzip(cluster_centres)).1, i)
