@@ -149,12 +149,11 @@ fun bpnn_randomize_row(m: int, offset: int, dirVct: []int): [m]f32 =
     map ( sobolIndR(dirVct), map((+offset), iota(m)) )
 
 fun bpnn_constant_row(m: int, value: f32): [m]f32 =
-    replicate(m, value)
+    replicate m value
 
 fun bpnn_zero_weights(m: int, n: int): [m][n]f32 =
-    map (fn (i: int): [n]f32  => replicate(n, 0.0)
+    map (fn (i: int): [n]f32  => replicate n 0.0
         , iota(m) )
-    --reshape((m,n), replicate(m*n, 0.0))
 
 ----------------------------------------------------/
 
@@ -171,7 +170,7 @@ fun bpnn_create(n_in: int, n_inp1: int, n_hid: int, n_hidp1: int, n_out: int, of
   -- [n_in][n_hidden]f32
   let (offset, (input_weights, input_weights_fstcol)) =
     if init_zero()
-    then (  offset, (bpnn_zero_weights(n_inp1, n_hid), replicate(n_inp1, 0.0)) )
+    then (  offset, (bpnn_zero_weights(n_inp1, n_hid), replicate n_inp1 0.0) )
     else (  offset+n_inp1*n_hidp1,
             bpnn_randomize_weights(n_inp1, n_hid, offset, dirVct)  ) in
 

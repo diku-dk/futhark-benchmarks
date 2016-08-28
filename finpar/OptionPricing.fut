@@ -72,7 +72,7 @@ fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]int, lu_bds: (int,int) ): [][]f32 =
 		    , iota(ub_exc-lb_inc) 
 		    ) in
   let vct_ints = scan( fn x y: []int  => zipWith((^), x, y)
-	 	     , replicate( n, 0 )
+	 	     , replicate n 0
 		     , contribs
 		     )
   in  map( fn (xs: []int): []f32  => 
@@ -98,7 +98,7 @@ fun sobolChunk(dir_vs: [len][num_bits]int, n: int, chunk: int): [chunk][]f32 =
                         else recM(dir_vs, k+n)
                    , iota(chunk) )                 in
   let vct_ints= scan( fn x y: []int  => zipWith((^), x, y)
-                    , replicate(len, 0), contrbs ) in
+                    , replicate len 0, contrbs ) in
   map( fn (xs: []int): []f32  => 
 	     map ( fn (x: int): f32  => 
 		     f32(x) * sob_fact 
@@ -215,7 +215,7 @@ fun brownianBridgeDates (bb_inds: [3][num_dates]int,
     let lw = bb_data[1] in
     let rw = bb_data[2] in
 
-    let bbrow = replicate(num_dates, 0.0)   in
+    let bbrow = replicate num_dates 0.0   in
     let bbrow[ bi[0]-1 ] = sd[0] * gauss[0]       in
 
     loop (bbrow) =
@@ -287,7 +287,7 @@ fun mkPrices(md_starts:    [num_und]f32,
     in  map(fn (x: []f32): [num_und]f32  =>
               zipWith((*), md_starts, x)
            , scan( fn x y: []f32  => zipWith((*), x, y)
-                 , replicate(num_und, 1.0)
+                 , replicate num_und 1.0
                  , e_rows))
 
 fun blackScholes(md_c: 
@@ -341,7 +341,7 @@ fun main(contract_number:
 		      , bb_mat)
   in
   let payoff    = reduce ( fn x y: []f32  => zipWith((+), x, y)
-			 , replicate(num_models, 0.0)
+			 , replicate num_models 0.0
 			 , payoffs )
   in  map (fn (price: f32): f32  => price / f32(num_mc_it), payoff)
 
@@ -385,7 +385,7 @@ fun mainRec(contract_number:
 		              , bb_mat)
   in
   let payoff    = reduce(fn x y: []f32 => zipWith((+), x, y)
-			 , replicate(num_models, 0.0)
+			 , replicate num_models 0.0
 			 , payoffs )
   in  map (fn (price: f32): f32  => price / f32(num_mc_it), payoff)
 

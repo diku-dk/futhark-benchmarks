@@ -29,7 +29,7 @@ fun inv(a: i16): i32 =
 
 fun encryptionKey(userkey: [8]i16): [52]i16 =
   -- Key starts out blank.
-  let z = replicate(52, 0i16) in
+  let z = replicate 52 0i16 in
   -- First 8 subkeys are userkey itself.
   loop (z) = for i < 8 do
     let z[i] = userkey[i] in
@@ -54,7 +54,7 @@ fun encryptionKey(userkey: [8]i16): [52]i16 =
 
 fun decryptionKey(z: [52]i16): [52]i16 =
   -- Key starts out blank.
-  let dk = replicate(52, 0i16) in
+  let dk = replicate 52 0i16 in
   let t1 = inv(z[0]) in
   let t2 = i32(-z[1]) & 0xFFFF in
   let t3 = i32(-z[2]) & 0xFFFF in

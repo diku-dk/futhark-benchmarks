@@ -120,7 +120,7 @@ fun main(n_steps: i32,
 entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
                        xps: [n]f32, yps: [n]f32, zps: [n]f32): [w][h]int =
   let (is, vs) = unzip(zipWith(renderPoint(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
-  in reshape((w,h), write(is, vs, replicate(w*h, 0)))
+  in reshape((w,h), write(is, vs, replicate (w*h) 0))
 
 fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
                 ((x,y,z):position): (int, int) =

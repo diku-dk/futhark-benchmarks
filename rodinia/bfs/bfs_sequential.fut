@@ -10,13 +10,13 @@
 fun main(nodes_start_index: [n]i32,
                   nodes_n_edges: [n]i32,
                   edges_dest: [e]i32): [n]i32 =
-  let graph_mask = replicate(n, False)
-  let updating_graph_mask = replicate(n, False)
-  let graph_visited = replicate(n, False)
+  let graph_mask = replicate n False
+  let updating_graph_mask = replicate n False
+  let graph_visited = replicate n False
   let source = 0
   let graph_mask[source] = True
   let graph_visited[source] = True
-  let cost = replicate(n, -1)
+  let cost = replicate n (-1)
   let cost[source] = 0 in
   loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
         (cost, updating_graph_mask, graph_mask, graph_visited, True)) =

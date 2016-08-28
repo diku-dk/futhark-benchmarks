@@ -20,7 +20,7 @@ fun main(resultsCount:    int, lat: f32, lng: f32,
                 sqrt32( (lat-lat_i)*(lat-lat_i) + (lng-lng_i)*(lng-lng_i) )
          ,  locations )
   in
-  let (results_ind, results_dst) = unzip( copy(replicate( resultsCount, emptyRecord() ))  ) in
+  let (results_ind, results_dst) = unzip( copy(replicate resultsCount (emptyRecord()))  ) in
   loop ((results_ind, results_dst, distances)) = 
     for i < resultsCount do
         let (minDist, minLoc) = 

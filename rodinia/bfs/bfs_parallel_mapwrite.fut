@@ -43,11 +43,11 @@ fun step(cost: *[n]i32,
                         let already_visited = unsafe graph_visited[id]
                         in if mask && (!already_visited) then id else -1
                      , iota(e_max))
-                in (ind_mask, zip(ind_val_upd, replicate(e_max, new_cost)))
+                in (ind_mask, zip(ind_val_upd, replicate e_max new_cost))
              , iota(n)))
 
   let (inds_upd, vals_cost) = unzip(reshape((n * e_max), ind_vals_upd0))
-  let vals_mask = replicate(n, False)
+  let vals_mask = replicate n False
 
   -- Finally, the write phase.
   let graph_mask' = write(inds_mask, vals_mask, graph_mask)
