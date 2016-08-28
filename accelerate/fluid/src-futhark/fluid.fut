@@ -79,7 +79,7 @@ fun lin_solve(n_solver_steps: i32,
             a: f32,
             c: f32): [g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g in
-  loop (s1 = replicate(g, replicate(g, 0.0f32))) = for k < n_solver_steps do
+  loop (s1 = replicate g (replicate g 0.0f32)) = for k < n_solver_steps do
     reshape((g, g),
       map(fn (ij: i32): f32  =>
             let i = ij / g in
@@ -395,9 +395,9 @@ fun get_all_frames(u0: [g][g]f32,
                  viscosity: f32): ([n_steps][g][g]f32,
      [n_steps][g][g]f32,
      [n_steps][g][g]f32) =
-  let u_out = replicate(n_steps, u0) in
-  let v_out = replicate(n_steps, v0) in
-  let d_out = replicate(n_steps, d0) in
+  let u_out = replicate n_steps u0 in
+  let v_out = replicate n_steps v0 in
+  let d_out = replicate n_steps d0 in
   loop ((u_out, v_out, d_out)) = for 1 <= i < n_steps do
     let (u0, v0, d0) = (u_out[i - 1], v_out[i - 1], d_out[i - 1]) in
     let (u1, v1, d1) = step(u0, v0, d0, n_solver_steps, time_step,

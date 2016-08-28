@@ -38,7 +38,7 @@ fun doCompute(data1:
 ): *[numBins2]i32 =
     let value = map(fn (xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32  =>
             streamMap(fn (chunk: int) (inner: []vec3): *[numBins2]i32  =>
-                    loop (dBins = replicate(numBins2, 0i32)) = for i < chunk do
+                    loop (dBins = replicate numBins2 0i32) = for i < chunk do
                         let (xInner, yInner, zInner) = inner[i]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
                         loop ((min, max) = (0, numBins)) = while (min+1) < max do
@@ -69,7 +69,7 @@ fun doComputeSelf(data:
 -- loop version
     let value = map(fn (vec: vec3, index: i32): [numBins2]i32  =>
                     let (xOuter, yOuter, zOuter) = vec
-                    loop (dBins = replicate(numBins2, 0i32)) = for (index+1) <= j < numD do
+                    loop (dBins = replicate numBins2 0i32) = for (index+1) <= j < numD do
                         let (xInner, yInner, zInner) = data[j]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
                         loop ((min, max) = (0, numBins)) = while (min+1) < max do
@@ -115,7 +115,7 @@ fun main(datapointsx:
                                 (doComputeSelf(random, numBins(), numBins2, binb),
                                 doCompute(datapoints, random, numBins(), numBins2, binb)),
                                 randompoints))
-    loop ((res, dd, rr, dr) = (replicate(numBins()*3, 0i32),
+    loop ((res, dd, rr, dr) = (replicate (numBins()*3) 0i32,
                                doComputeSelf(datapoints, numBins(), numBins2, binb),
                                sumBins(rrs),
                                sumBins(drs))) = for i < numBins() do

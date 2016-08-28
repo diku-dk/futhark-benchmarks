@@ -19,7 +19,7 @@ fun addComplex(x: (f32,f32), y: (f32,f32)): (f32,f32) =
       b + d)
 
 fun divergence(depth: int, c0: (f32,f32)): ([depth](f32,f32),bool) =
-  let trajectory = replicate(depth, (0.0, 0.0))
+  let trajectory = replicate depth (0.0, 0.0)
   loop ((trajectory, c, i) = (trajectory, c0, 0)) = while i < depth && dot(c) < 4.0 do
     unsafe
     let c' = addComplex(c0, multComplex(c, c))
@@ -94,7 +94,7 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
                                                     in acc)
                                               else acc)
                              in acc,
-                         replicate(n, replicate(m, 0)), zip(trajectories', escapes')))
+                         replicate n (replicate m 0), zip(trajectories', escapes')))
   let max_visits = reduce(max, 0, reshape((n*m), visits_per_pixel))
   let coloured = map(colourise(max_visits), visits_per_pixel)
   in reshape((n,m), coloured)

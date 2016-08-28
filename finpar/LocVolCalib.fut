@@ -47,16 +47,14 @@ fun max(x: f32, y: f32): f32 = if y < x then x else y
 fun maxInt(x: int, y: int): int = if y < x then x else y
 
 fun setPayoff(strike: f32, myX: [numX]f32, myY: [numY]f32): *[numY][numX]f32 =
-  replicate(numY, map(fn (xi: f32): f32  => max(xi-strike,0.0), myX) )
---  let myres = map(fn []f32 (f32 xi) => replicate(numY, max(xi-strike,0.0)), myX) in
---  transpose(myres)
+  replicate numY (map(fn (xi: f32): f32  => max(xi-strike,0.0), myX))
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
 fun updateParams(myX:  [numX]f32, myY: [numY]f32, myTimeline: []f32,
               g: int, alpha: f32, beta: f32, nu: f32    ): ([][]f32 , [][]f32 , [][]f32 , [][]f32) =
-  let myMuY  = replicate(numX, replicate(numY, 0.0  )) in
-  let myVarY = replicate(numX, replicate(numY, nu*nu)) in
-  let myMuX  = replicate(numY, replicate(numX, 0.0  )) in
+  let myMuY  = replicate numX (replicate numY 0.0) in
+  let myVarY = replicate numX (replicate numY (nu*nu)) in
+  let myMuX  = replicate numY (replicate numX (0.0)) in
   let myVarX = map( fn (yj: f32): []f32  =>
                       map ( fn (xi: f32): f32  =>
                               exp32(2.0*(beta*log32(xi) + yj - 0.5*nu*nu*myTimeline[g]))

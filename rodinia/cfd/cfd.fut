@@ -44,7 +44,7 @@ fun compute_speed_of_sound(density: f32, pressure: f32): f32 =
 
 --
 fun initialize_variables(nelr: int, ff_variable: [5]f32): [5][nelr]f32 = --[nvar]float ff_variable
-    map(fn (x: f32): [nelr]f32  => replicate(nelr, x), ff_variable)
+    map(fn (x: f32): [nelr]f32  => replicate nelr x, ff_variable)
 
 -- 
 fun compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_energy: f32, 

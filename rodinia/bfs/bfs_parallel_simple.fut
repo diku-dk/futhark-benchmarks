@@ -45,7 +45,7 @@ fun step(cost: *[n]i32,
   let cost' = write(node_ids, costs, cost)
 
   let graph_mask' =
-    write(active_indices, replicate(n_indices, False), graph_mask)
+    write(active_indices, replicate n_indices False, graph_mask)
 
   in (cost', graph_mask', node_ids)
 
@@ -67,5 +67,5 @@ fun node_work(tid: i32,
                                else -1
                        else -1,
                      edge_indices)
-  let costs = replicate(e_max, unsafe cost[tid] + 1)
+  let costs = replicate e_max (unsafe cost[tid] + 1)
   in (node_ids, costs)

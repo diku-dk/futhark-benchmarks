@@ -43,7 +43,7 @@ fun min(x: int, y: int): int =
 
 
 entry init(world: [n][m]bool): ([n][m]bool, [n][m]int) =
-  (world, replicate(n, replicate(m, 255)))
+  (world, replicate n (replicate m 255))
 
 entry render_frame(history: [n][m]int): [n][m][3]i8 =
   map(fn (ages: []int): [m][3]i8  =>

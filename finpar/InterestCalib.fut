@@ -120,7 +120,7 @@ fun interestCalibKernel(pop:  int
                         let sob_row = map( sobolInd(sobDirVct), z5s ) in
                             mcmc_DE(s3, sob_row, genomes[i], genomes[k], genomes[l])
                     , iota(pop) ) 
-             in  (new_genomes, replicate(pop, 1.0), sob_offs+8*pop)
+             in  (new_genomes, replicate pop 1.0, sob_offs+8*pop)
         in
       let new_logLiks = 
           map ( fn (genome: []f32): f32  =>
@@ -368,7 +368,7 @@ fun mutate_dims_all(tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
   let gene_bds = genomeBounds()   in
   let amplitude = moves_unif_ampl_ratio() in
   let gene_rats = map( mutateHelper,
-                       zip(replicate(n, amplitude), sob_row,orig,muta,gene_bds) ) in
+                       zip(replicate n amplitude, sob_row,orig,muta,gene_bds) ) in
   let (tmp_genome, fb_rats) = unzip(gene_rats) in
   let new_genome= map( constrainDim, zip(tmp_genome, gene_bds) ) in
   let fb_rat    = reduce((*), 1.0, fb_rats)

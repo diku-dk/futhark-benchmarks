@@ -62,7 +62,7 @@ fun main(boxes1d: int): (f32,
           -- current home box
           let box_coef = ( k, j, i, nh ) in
           -- initialize neighbor boxes
-          let box_nngh_cur_nn = (replicate(num_nn, (0,0,0,0)), 0) in
+          let box_nngh_cur_nn = (replicate num_nn (0,0,0,0), 0) in
           loop (box_nngh_cur_nn) =
             for nn < num_nn do
               let (box_nngh, cur_nn) = box_nngh_cur_nn in 

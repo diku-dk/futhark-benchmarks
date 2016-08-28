@@ -812,7 +812,7 @@ fun fin(initvalu:     [equs]f32, initvalu_offset_ecc: int,
 --fun bool isinf(f32 x) = ( x == inf() || x == minf() )
 
 fun master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f32 =
-  let finavalu = replicate(equs, 0.0f32) in
+  let finavalu = replicate equs 0.0f32 in
   -- ecc function
   let initvalu_offset_ecc  = 0 in
   let parameter_offset_ecc = 0 in
@@ -932,7 +932,7 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
   
   -- initvalu_temp[equations]
   -- finavalu_temp[13, equations]
-  let finavalu_temp = replicate(13, replicate(equs, 0.0f32)) in
+  let finavalu_temp = replicate 13 (replicate equs 0.0f32) in
 
   loop (finavalu_temp) = for ii < 13 do
     let ( timeinst_temp, initvalu_temp ) = 
@@ -1087,7 +1087,7 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
     -- reinitialize variables
     let h          = h_init in
     let scale_fina = 1.0f32 in
-    let y_k = replicate(equs, 0.0f32) in
+    let y_k = replicate equs 0.0f32 in
     
     -- make attempts to minimize error
     let breakLoop  = False  in
@@ -1172,7 +1172,7 @@ fun main_EMBEDDED(xmax: int, y: [workload][91]f32, params: [workload][16]f32): (
     embedded_fehlberg_7_8( 0.0f32, 1.0f32, y[0], params[0])
 
 fun main_ECC_CAM(xmax: int, y: [workload][91]f32, params: [workload][16]f32): (f32, [91]f32) =
-    let finavalu = replicate(91, 0.0f32) in
+    let finavalu = replicate 91 0.0f32 in
     let finavalu = ecc( 0.0f32, y[0], 0, params[0], 0, finavalu ) in
     let (res_val, finavalu) = cam(  0.0f32, y[0], 46, params[0],  
                                     1, finavalu, y[0, 35]*1e3f32 )
