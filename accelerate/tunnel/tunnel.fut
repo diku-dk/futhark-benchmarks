@@ -87,6 +87,6 @@ fun rgb(r: f32, g: f32, b: f32, a: f32): int =
   (int(b*255f32)&0xFF)
 
 fun main(time: f32, w: int, h: int): [w][h]int =
-  map(fn (x: int): [h]int  =>
-        map(tunnel time x, map((-(h/2)), iota(h))),
-      map((-(w/2)), iota(w)))
+  map (fn (x: int): [h]int  =>
+        map (tunnel time x) (map (-(h/2)) (iota(h)))) (
+      map (-(w/2)) (iota(w)))

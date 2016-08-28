@@ -53,7 +53,7 @@ fun main(boxes1d: int): (f32,
   -- 1. Initialize boxs' data structure --
   ----------------------------------------
   let boxes = 
-    map(fn (nh: int): ( (int, int, int, int), [num_nn](int,int,int,int), int )  =>
+    map (fn (nh: int): ( (int, int, int, int), [num_nn](int,int,int,int), int )  =>
           let k = nh % boxes1d in
           let nr= nh / boxes1d in
           let j = nr % boxes1d in
@@ -86,7 +86,7 @@ fun main(boxes1d: int): (f32,
              let (box_nngh, cur_nn) = box_nngh_cur_nn
              in  ( box_coef, box_nngh, cur_nn )
 
-       , iota(number_boxes) )
+       ) (iota(number_boxes) )
   in
   let (box_coefs, box_nnghs0, box_num_nghbs) = unzip(boxes)  in
   let box_nnghs = copy(transpose(box_nnghs0)) in
@@ -94,8 +94,8 @@ fun main(boxes1d: int): (f32,
   ----------------------------------------------
   -- 2. Initialize input distances and charge --
   ----------------------------------------------
-  let rqv = map ( fn (i: int): [par_per_box](f32,(f32,f32,f32,f32))  =>
-                    map( fn (j: int): (f32, (f32,f32,f32,f32))  =>
+  let rqv = map  (fn (i: int): [par_per_box](f32,(f32,f32,f32,f32))  =>
+                    map (fn (j: int): (f32, (f32,f32,f32,f32))  =>
                            let n = (i*par_per_box + j)*5 + 1 in
                            let s1= sobolInd(dirVct, n  ) in 
                            let s2= sobolInd(dirVct, n+1) in 
@@ -106,8 +106,8 @@ fun main(boxes1d: int): (f32,
                                ( f32(s1%10 + 1) / 10.0, f32(s2%10 + 1) / 10.0
                                , f32(s3%10 + 1) / 10.0, f32(s4%10 + 1) / 10.0 )
                            )
-                       , iota(par_per_box))
-                , iota(number_boxes) )
+                       ) (iota(par_per_box))
+                ) (iota(number_boxes) )
   in
   let (qv, rv) = unzip(rqv)  in
 

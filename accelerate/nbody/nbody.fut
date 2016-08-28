@@ -55,13 +55,12 @@ fun accel_wrap(epsilon: f32, body_i: body, body_j: body): vec3 =
   in accel(epsilon, pi, mi, pj, mj)
 
 fun move(epsilon: f32, bodies: []body) (this_body: body): position =
-  let accels = map(fn (other_body: body): acceleration  =>
-                     accel_wrap(epsilon, this_body, other_body),
-                   bodies)
-  in reduceComm(vec_add, (0f32, 0f32, 0f32), accels)
+  let accels = map (fn (other_body: body): acceleration  =>
+                     accel_wrap(epsilon, this_body, other_body)) bodies
+  in reduceComm vec_add (0f32, 0f32, 0f32) accels
 
 fun calc_accels(epsilon: f32, bodies: []body): []acceleration =
-  map(move(epsilon, bodies), bodies)
+  map (move(epsilon, bodies)) bodies
 
 fun advance_body(time_step: f32, this_body: body): body =
   let (pos, mass, vel, acc) = this_body
@@ -79,7 +78,7 @@ fun advance_body_wrap(time_step: f32) (body_and_accel : (body, acceleration)): b
 
 fun advance_bodies(epsilon: f32, time_step: f32, bodies: [n]body): [n]body =
   let accels = calc_accels(epsilon, bodies)
-  in zipWith(advance_body_wrap(time_step), bodies, accels)
+  in zipWith (advance_body_wrap(time_step)) bodies accels
 
 fun advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
                                    bodies: [n]body): [n]body =
@@ -112,14 +111,14 @@ fun main(n_steps: i32,
        xas: [n]f32,
        yas: [n]f32,
        zas: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
-  let bodies  = map(wrap_body, zip(xps, yps, zps, ms, xvs, yvs, zvs, xas, yas, zas))
+  let bodies  = map wrap_body (zip(xps, yps, zps, ms, xvs, yvs, zvs, xas, yas, zas))
   let bodies' = advance_bodies_steps(n_steps, epsilon, time_step, bodies)
-  let bodies'' = map(unwrap_body, bodies')
+  let bodies'' = map unwrap_body (bodies')
    in unzip(bodies'')
 
 entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
                        xps: [n]f32, yps: [n]f32, zps: [n]f32): [w][h]int =
-  let (is, vs) = unzip(zipWith(renderPoint(w,h,x_ul,y_ul,x_br,y_br), xps, yps, zps))
+  let (is, vs) = unzip(zipWith (renderPoint(w,h,x_ul,y_ul,x_br,y_br)) xps yps zps)
   in reshape (w,h) (write is vs (replicate (w*h) 0))
 
 fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)

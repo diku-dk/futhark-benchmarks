@@ -37,9 +37,9 @@ fun main(cols: int, rows: int): [cols]int =
     -- 1. Initialization --
     -----------------------
     let wall_flat = 
-        map( fn (i: int): int  => 
+        map (fn (i: int): int  => 
                 sobolInd(dirVct, i+1) % 10
-           , iota(rows*cols) )
+           ) (iota(rows*cols) )
     in
     let wall   = reshape (rows,cols) wall_flat in
     let result = copy(wall[0]) in
@@ -48,12 +48,12 @@ fun main(cols: int, rows: int): [cols]int =
     -- 1. Kernel --
     ---------------
     loop (result) = for t < (rows-1) do
-        map(fn (i: int): int  =>
+        map (fn (i: int): int  =>
                 let res = result[i] in
                 let res = if (i >  0)     then min(res, unsafe result[i-1]) else res
                 in
                 let res = if (i < cols-1) then min(res, unsafe result[i+1]) else res
                 in
                 wall[t+1, i] + res 
-           , iota(cols) )
+           ) (iota(cols) )
     in result

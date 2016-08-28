@@ -39,19 +39,19 @@ fun pi2(): f32 = pi() * 2.0f32
 fun main(kx: [numK]f32, ky: [numK]f32, kz: [numK]f32,
                                   x: [numX]f32, y: [numX]f32, z: [numX]f32,
                                   phiR: [numK]f32, phiI: [numK]f32): ([numX]f32, [numX]f32) =
-  let phiMag = zipWith(fn (r: f32, i: f32): f32  =>
+  let phiMag = zipWith (fn (r: f32, i: f32): f32  =>
                          r*r + i*i
-                      , phiR, phiI) in
-  let expArgs = zipWith(fn (x_e: f32, y_e: f32, z_e: f32): [numK]f32  =>
-                          map((pi2()*),
-                              zipWith(fn (kx_e: f32, ky_e: f32, kz_e: f32): f32  =>
+                      ) phiR phiI in
+  let expArgs = zipWith (fn (x_e: f32, y_e: f32, z_e: f32): [numK]f32  =>
+                          map (pi2()*) (
+                              zipWith (fn (kx_e: f32, ky_e: f32, kz_e: f32): f32  =>
                                         kx_e * x_e + ky_e * y_e + kz_e * z_e
-                                     , kx, ky, kz))
-                       , x, y, z) in
-  let qr = map(fn (row: [numK]f32): f32  =>
-                 reduce((+), 0.0f32, zipWith((*), phiMag, map(cos32, row)))
-              , expArgs) in
-  let qi = map(fn (row: [numK]f32): f32  =>
-                 reduce((+), 0.0f32, zipWith((*), phiMag, map(sin32, row)))
-              , expArgs) in
+                                     ) kx ky kz)
+                       ) x y z in
+  let qr = map (fn (row: [numK]f32): f32  =>
+                 reduce (+) (0.0f32) (zipWith (*) phiMag (map cos32 row))
+              ) expArgs in
+  let qi = map (fn (row: [numK]f32): f32  =>
+                 reduce (+) (0.0f32) (zipWith (*) phiMag (map sin32 row))
+              ) expArgs in
   (qr, qi)

@@ -41,8 +41,8 @@ fun amb_temp(): f32 = 80.0
 fun single_iteration(temp: [row][col]f32, power: [row][col]f32,
                               cap: f32, rx: f32, ry: f32, rz: f32,
                               step: f32): [][]f32 =
-  map (fn (r: int): []f32  =>
-         map(fn (c: int): f32  =>
+  map  (fn (r: int): []f32  =>
+         map (fn (c: int): f32  =>
                let temp_el = temp[r,c] in
                let delta =
                  (step / cap) *
@@ -77,7 +77,7 @@ fun single_iteration(temp: [row][col]f32, power: [row][col]f32,
                      (temp[r+1,c] + temp[r-1,c] - 2.0 * temp_el) / ry) +
                   (amb_temp() - temp_el) / rz) in
                temp_el + delta
-            , iota(col)),
+            ) (iota(col))) (
          iota(row))
 
 -- Transient solver driver routine: simply converts the heat transfer
@@ -101,15 +101,14 @@ entry compute_tran_temp(num_iterations: int, temp: [row][col]f32, power: [row][c
 entry render_frame(temp: [row][col]f32): [row][col][3]i8 =
   let hottest = 360f32
   let coldest = 270f32
-  in map(fn (temp_r: []f32): [col][3]i8  =>
-           map(fn (c: f32): [3]i8  =>
+  in map (fn (temp_r: []f32): [col][3]i8  =>
+           map (fn (c: f32): [3]i8  =>
                  let c' = (if c < coldest
                            then coldest
                            else (if c > hottest then hottest else c))
                  let intensity = ((c' - coldest) / (hottest - coldest)) * 256f32
-                 in [i8(intensity), 0i8, i8(intensity)],
-               temp_r),
-           temp)
+                 in [i8(intensity), 0i8, i8(intensity)]) (
+               temp_r)) temp
 
 fun main(num_iterations: int, temp: [row][col]f32, power: [row][col]f32): [][]f32 =
   compute_tran_temp(num_iterations, temp, power)

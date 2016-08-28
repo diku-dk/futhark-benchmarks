@@ -34,13 +34,13 @@ fun trajectories(depth: int, xprec: int, yprec: int,
   let sizex = xmax - xmin
   let sizey = ymax - ymin
   let (trajectories, escapes) =
-    unzip(map (fn (i: int): ([depth](f32,f32),bool)  =>
+    unzip(map  (fn (i: int): ([depth](f32,f32),bool)  =>
                  let x = i % xprec
                  let y = i / yprec
                  let c0 = (xmin + (f32(x) * sizex) / f32(xprec),
                            ymin + (f32(y) * sizey) / f32(yprec))
                  in divergence(depth, c0)
-              , iota(xprec*yprec)))
+              ) (iota(xprec*yprec)))
   in (reshape (yprec,xprec,depth) trajectories,
       reshape (xprec,yprec) escapes)
 
@@ -73,10 +73,9 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
   let escapes' = reshape (xprec*yprec) escapes
   let visits_per_pixel =
     reshape (n*m)
-            (streamRedPer(fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
-                           zipWith(fn (as: [m]int, bs: [m]int): [m]int  =>
-                                     zipWith((+), as, bs),
-                                   ass, bss),
+            (streamRedPer (fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
+                           zipWith (fn (as: [m]int, bs: [m]int): [m]int  =>
+                                     zipWith (+) as bs) ass bss) (
                          fn (chunk: int)
                             (acc: *[n][m]int)
                             (inp: []([depth](f32,f32),bool)): [n][m]int  =>
@@ -93,10 +92,10 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
                                                           else acc)
                                                     in acc)
                                               else acc)
-                             in acc,
-                         replicate n (replicate m 0), zip(trajectories', escapes')))
-  let max_visits = reduce(max, 0, reshape (n*m) visits_per_pixel)
-  let coloured = map(colourise(max_visits), visits_per_pixel)
+                             in acc) (
+                         replicate n (replicate m 0)) (zip(trajectories', escapes')))
+  let max_visits = reduce max 0 (reshape (n*m) visits_per_pixel)
+  let coloured = map (colourise(max_visits)) (visits_per_pixel)
   in reshape (n,m) coloured
 
 fun main(n: int, m: int, v_xmin: f32, v_ymin: f32, v_xmax: f32, v_ymax: f32,

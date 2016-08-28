@@ -24,9 +24,9 @@ fun sobolInd(dirVct:  [30]int, n: int ): int =
 fun main(n: int): [n][n]f32 =
     let divisor = 2.0 ** f32(30) in
     let sobvcts = sobolDirVcts()
-    let mat = map( fn  (ind: int): f32  =>
+    let mat = map (fn  (ind: int): f32  =>
                         let x = sobolInd(sobvcts, ind+1) in
                         f32(x) / divisor
-                 , iota(n*n))
+                 ) (iota(n*n))
     in reshape (n,n) mat
 

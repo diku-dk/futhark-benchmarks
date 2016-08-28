@@ -33,7 +33,7 @@ fun add_descent_div3v(v:  [m][n][p][q]f32
                  , tp: f32 ): [m][n][p][q]f32 =
   let one = (m*m+2*m+1)/(m+1) - m in
   let res_flat = 
-    map(fn (ind: int): f32  => unsafe
+    map (fn (ind: int): f32  => unsafe
             let tmp = ind / q     in
             let l   = ind - tmp*q in
             let ind = tmp         in
@@ -46,7 +46,7 @@ fun add_descent_div3v(v:  [m][n][p][q]f32
             let j   = ind - tmp*n in
             let i   = tmp         in
 
-                    -- get current `v`, `g`, and `xi` element
+                    -- get current `v`) (`g`) (and `xi` element
                     let v_el = v[i,j,k,l] in
                     let g_el = g[i,j,k,l] in
                     let (xi_0,xi_1,xi_2) = xi[i,j,k,l] in
@@ -197,7 +197,7 @@ fun add_descent_div3v(v:  [m][n][p][q]f32
 
                     else v_el -- redundant
 
-     , iota(m*n*p*q) )
+     ) (iota(m*n*p*q) )
   in reshape (m,n,p,q) res_flat
 
 -----------------------------------------------------
@@ -213,12 +213,12 @@ fun main1( v:  [m][n][p][q]f32
 
 fun main(m: int, n: int, p: int, q: int, loop_count: int): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q) in
-    let v  = reshape (m,n,p,q) (map(f32, iota(mnpq)) ) in
-    let g  = reshape (m,n,p,q) (map(f32, iota(mnpq)) ) in
+    let v  = reshape (m,n,p,q) (map f32 (iota(mnpq)) ) in
+    let g  = reshape (m,n,p,q) (map f32 (iota(mnpq)) ) in
     let xi = reshape (m,n,p,q)
-                    (map( fn (t: int): (f32,f32,f32)  =>
+                    (map (fn (t: int): (f32,f32,f32)  =>
                             let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
-                        , iota(mnpq)))
+                        ) (iota(mnpq)))
     in
     let tp = 3.0f32 in
     loop(v) = 
