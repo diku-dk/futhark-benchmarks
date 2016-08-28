@@ -48,4 +48,4 @@ fun plus_prescan(x: [n]i32): [n]i32 =
   in scan((+), 0, xshifted)
 
 fun permute(a: [n]u32, index: [n]i32): [n]u32 =
-  write(index, a, copy(a))
+  write index a (copy(a))

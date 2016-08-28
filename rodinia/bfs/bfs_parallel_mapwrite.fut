@@ -50,7 +50,7 @@ fun step(cost: *[n]i32,
   let vals_mask = replicate n False
 
   -- Finally, the write phase.
-  let graph_mask' = write(inds_mask, vals_mask, graph_mask)
-  let cost'       = write(inds_upd,  vals_cost, cost)
+  let graph_mask' = write inds_mask vals_mask (graph_mask)
+  let cost'       = write inds_upd  vals_cost (cost)
 
   in (cost', graph_mask', inds_upd)
