@@ -30,4 +30,4 @@ fun radix_sort_step(xs: [n]u32, digit_n: i32): [n]u32 =
   let ps1_clean' = map((*), zip(bits, ps1_clean))
   let ps = map((+), zip(ps0_clean, ps1_clean'))
   let ps_actual = map(fn (p: i32): i32  => p - 1, ps)
-  in write(ps_actual, xs, copy(xs))
+  in write ps_actual xs (copy xs)

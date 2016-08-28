@@ -16,7 +16,7 @@ fun i32_filter(bs: [k]bool, ns: [k]i32): *[]i32 =
   let filter_size = is0[k - 1]
   let is1 = map(fn (i: i32, f: i32): i32  => i * f, zip(is0, flags_i))
   let is2 = map(fn (i: i32): i32  => i - 1, is1)
-  in write(is2, ns, replicate filter_size 0)
+  in write is2 ns (replicate filter_size 0)
 
 -- Convert an inclusive scan into an exclusive scan, although without the last
 -- element.

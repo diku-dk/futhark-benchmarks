@@ -160,7 +160,7 @@ fun selectStrong(img: [h][w]f32): []int =
                 then (-1, 0)
                 else (targetIdx[i], i+1),
               iota(w*h-1)))
-  in write(indices', values, zeros)
+  in write indices' values (zeros)
 
 fun main(low: f32, high: f32, img: [h][w]i32): []i32 =
   selectStrong
