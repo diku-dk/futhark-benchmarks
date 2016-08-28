@@ -26,8 +26,8 @@
 fun add_ascent_grad2s(xi:  [m][n](f32,f32)
                  , v: [m][n]f32
                  , td: f32 ): [m][n](f32,f32) =
-  map(fn (i: int): [n](f32,f32)  =>
-        map(fn (j: int): (f32,f32)  => unsafe
+  map (fn (i: int): [n](f32,f32)  =>
+        map (fn (j: int): (f32,f32)  => unsafe
                 let (elm1, elm2) = xi[i,j] in
                 -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                 let fst_elm = 
@@ -42,8 +42,8 @@ fun add_ascent_grad2s(xi:  [m][n](f32,f32)
                     else elm2
                 in
                 (fst_elm, snd_elm)
-           , iota(n) )
-     , iota(m) )
+           ) (iota(n) )
+     ) (iota(m) )
 
 
 -----------------------------------------------------------------------
@@ -59,9 +59,9 @@ fun add_ascent_grad2s(xi:  [m][n](f32,f32)
 fun add_ascent_grad2v(xi:  [m][n][k](f32,f32)
                  , v: [m][n][k]f32
                  , td: f32 ): [m][n][k](f32,f32) =
-  map(fn (i: int): [n][k](f32,f32)  =>
-        map(fn (j: int): [k](f32,f32)  =>
-                map(fn (l: int): (f32,f32)  => unsafe
+  map (fn (i: int): [n][k](f32,f32)  =>
+        map (fn (j: int): [k](f32,f32)  =>
+                map (fn (l: int): (f32,f32)  => unsafe
                         let (elm1, elm2) = xi[i,j,l] in
                         -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                         let fst_elm = 
@@ -76,9 +76,9 @@ fun add_ascent_grad2v(xi:  [m][n][k](f32,f32)
                             else elm2
                         in
                         (fst_elm, snd_elm)   
-                   , iota(k))
-           , iota(n) )
-     , iota(m) )
+                   ) (iota(k))
+           ) (iota(n) )
+     ) (iota(m) )
 
 
 -----------------------------------------------------------------------
@@ -94,9 +94,9 @@ fun add_ascent_grad2v(xi:  [m][n][k](f32,f32)
 fun add_ascent_grad3s(xi:  [m][n][p](f32,f32,f32)
                  , v: [m][n][p]f32
                  , td: f32 ): [m][n][p](f32,f32,f32) =
-  map(fn (i: int): [n][p](f32,f32,f32)  =>
-        map(fn (j: int): [p](f32,f32,f32)  =>
-                map(fn (k: int): (f32,f32,f32)  => unsafe
+  map (fn (i: int): [n][p](f32,f32,f32)  =>
+        map (fn (j: int): [p](f32,f32,f32)  =>
+                map (fn (k: int): (f32,f32,f32)  => unsafe
                         let (elm1, elm2, elm3) = xi[i,j,k] in
                         -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                         let fst_elm = 
@@ -117,9 +117,9 @@ fun add_ascent_grad3s(xi:  [m][n][p](f32,f32,f32)
                             else elm3
                         in
                         (fst_elm, snd_elm, thd_elm)   
-                   , iota(p) )
-           , iota(n) )
-     , iota(m) )
+                   ) (iota(p) )
+           ) (iota(n) )
+     ) (iota(m) )
 
 
 -----------------------------------------------------------------------
@@ -135,10 +135,10 @@ fun add_ascent_grad3s(xi:  [m][n][p](f32,f32,f32)
 fun add_ascent_grad3v(xi:  [m][n][p][k](f32,f32,f32)
                  , v: [m][n][p][k]f32
                  , td: f32 ): [m][n][p][k](f32,f32,f32) =
-  map(fn (i: int): [n][p][k](f32,f32,f32)  =>
-        map(fn (j: int): [p][k](f32,f32,f32)  =>
-              map(fn (q: int): [k](f32,f32,f32)  =>
-                    map(fn (t: int): (f32,f32,f32)  => unsafe
+  map (fn (i: int): [n][p][k](f32,f32,f32)  =>
+        map (fn (j: int): [p][k](f32,f32,f32)  =>
+              map (fn (q: int): [k](f32,f32,f32)  =>
+                    map (fn (t: int): (f32,f32,f32)  => unsafe
                             let (elm1, elm2, elm3) = xi[i,j,q,t] in
                             -- xi[0:m-1,:,:,:,0] += td*(v[1:m,:,:,:] - v[0:m-1,:,:,:])
                             let fst_elm = 
@@ -159,10 +159,10 @@ fun add_ascent_grad3v(xi:  [m][n][p][k](f32,f32,f32)
                                 else elm3
                             in
                             (fst_elm, snd_elm, thd_elm)
-                       , iota(k) )
-                 , iota(p) )
-           , iota(n) )
-     , iota(m) )
+                       ) (iota(k) )
+                 ) (iota(p) )
+           ) (iota(n) )
+     ) (iota(m) )
 
 
 fun main(xi_0:  [m][n][p][k]f32

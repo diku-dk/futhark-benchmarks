@@ -21,11 +21,11 @@ fun bins_per_dec(): f64 = 5.0f64
 fun numBins(): i32 = 20
 
 fun iota32(num: i32): [num]f64 =
-    map(f64, iota(num))
+    map f64 (iota(num))
 
 -- Prøv streamRed i stedet
 fun sumBins(bins: [numBinss][numBins]i32): *[numBins]i32 =
-    map(fn (binIndex: []i32): i32  => reduce((+), 0i32, binIndex), transpose(bins))
+    map (fn (binIndex: []i32): i32  => reduce (+) 0i32 binIndex) (transpose(bins))
 
 fun log10(num: f64): f64 = log64(num) / log64(10.0)
 
@@ -36,8 +36,8 @@ fun doCompute(data1:
     numBins2: i32,
     binb: [numBBins]f64
 ): *[numBins2]i32 =
-    let value = map(fn (xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32  =>
-            streamMap(fn (chunk: int) (inner: []vec3): *[numBins2]i32  =>
+    let value = map (fn (xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32  =>
+            streamMap (fn (chunk: int) (inner: []vec3): *[numBins2]i32  =>
                     loop (dBins = replicate numBins2 0i32) = for i < chunk do
                         let (xInner, yInner, zInner) = inner[i]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
@@ -55,8 +55,8 @@ fun doCompute(data1:
                         in
                         unsafe let dBins[index] = dBins[index] + 1i32 in dBins
                     in dBins
-                , data2)
-        , data1)
+                ) data2
+        ) data1
     in
     sumBins(value)
 
@@ -67,7 +67,7 @@ fun doComputeSelf(data:
     binb: [numBBins]f64
 ): *[numBins2]i32 =
 -- loop version
-    let value = map(fn (vec: vec3, index: i32): [numBins2]i32  =>
+    let value = map (fn (vec: vec3, index: i32): [numBins2]i32  =>
                     let (xOuter, yOuter, zOuter) = vec
                     loop (dBins = replicate numBins2 0i32) = for (index+1) <= j < numD do
                         let (xInner, yInner, zInner) = data[j]
@@ -86,7 +86,7 @@ fun doComputeSelf(data:
                         in
                         unsafe let dBins[index] = dBins[index] + 1i32 in dBins
                     in dBins
-                , zip(data, iota(numD)))
+                ) (zip(data, iota(numD)))
     in
     sumBins(value)
 
@@ -104,17 +104,16 @@ fun main(datapointsx:
     randompointsy: [numRs][numR]f64
 ): *[60]i32 =
     let numBins2 = numBins() + 2
-    let binb = map(fn (k: f64): f64  =>
-                        cos64((10.0 ** (log10(min_arcmin()) + k*1.0/bins_per_dec())) / 60.0 * dec2rad(1.0)),
+    let binb = map (fn (k: f64): f64  =>
+                        cos64((10.0 ** (log10(min_arcmin()) + k*1.0/bins_per_dec())) / 60.0 * dec2rad(1.0))) (
                     iota32(numBins() + 1))
-    let datapoints = map(fixPoints, zip(datapointsx, datapointsy))
-    let randompoints = map(fn (x: [numR]f64, y: [numR]f64): [numR]vec3  =>
-                            map(fixPoints, zip(x,y)),
+    let datapoints = map fixPoints (zip(datapointsx, datapointsy))
+    let randompoints = map (fn (x: [numR]f64, y: [numR]f64): [numR]vec3  =>
+                            map fixPoints (zip(x,y))) (
                            zip(randompointsx, randompointsy))
-    let (rrs, drs) = unzip(map(fn (random: [numR]vec3): (*[]i32, *[]i32)  =>
+    let (rrs, drs) = unzip(map (fn (random: [numR]vec3): (*[]i32, *[]i32)  =>
                                 (doComputeSelf(random, numBins(), numBins2, binb),
-                                doCompute(datapoints, random, numBins(), numBins2, binb)),
-                                randompoints))
+                                doCompute(datapoints, random, numBins(), numBins2, binb))) randompoints)
     loop ((res, dd, rr, dr) = (replicate (numBins()*3) 0i32,
                                doComputeSelf(datapoints, numBins(), numBins2, binb),
                                sumBins(rrs),

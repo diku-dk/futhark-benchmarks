@@ -27,8 +27,8 @@ fun add_descent_div2s(v:  [m][n]f32
                  , xi: [m][n](f32,f32)
                  , g: [m][n]f32
                  , tp: f32 ): [m][n]f32 =
-  map(fn (i: int): [n]f32  =>
-        map(fn (j: int): f32  => unsafe
+  map (fn (i: int): [n]f32  =>
+        map (fn (j: int): f32  => unsafe
                 let v_el = v[i,j] in
                 let g_el = g[i,j] in
                 if      (i > 0) && (i < m-1) && (j > 0) && (j < n-1) 
@@ -85,8 +85,8 @@ fun add_descent_div2s(v:  [m][n]f32
                          v_el + tp*( -xi_1 - xi_2 - g_el )
                 else v_el
 
-           , iota(n) )
-     , iota(m) )
+           ) (iota(n) )
+     ) (iota(m) )
 
 
 -----------------------------------------------------------------------
@@ -104,9 +104,9 @@ fun add_descent_div2v(v:  [m][n][k]f32
                  , xi: [m][n][k](f32,f32)
                  , g: [m][n][k]f32
                  , tp: f32 ): [m][n][k]f32 =
-  map(fn (i: int): [n][k]f32  =>
-        map(fn (j: int): [k]f32  => 
-                map(fn (q: int): f32  => unsafe
+  map (fn (i: int): [n][k]f32  =>
+        map (fn (j: int): [k]f32  => 
+                map (fn (q: int): f32  => unsafe
                         let v_el = v[i,j,q] in
                         let g_el = g[i,j,q] in
                         let (xi_0, xi_1) = xi[i,j,q] in
@@ -161,9 +161,9 @@ fun add_descent_div2v(v:  [m][n][k]f32
                                  v_el + tp*( -xi_2 - xi_3 - g_el )
                         else v_el
 
-                   , iota(k) )
-           , iota(n) )
-     , iota(m) )
+                   ) (iota(k) )
+           ) (iota(n) )
+     ) (iota(m) )
 
 -----------------------------------------------------
 -----------------------------------------------------

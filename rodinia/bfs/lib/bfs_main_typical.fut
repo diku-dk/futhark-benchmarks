@@ -50,8 +50,8 @@ fun main(nodes_start_index: [n]i32,
       let graph_visited' =
         write updating_indices (replicate n_indices True) (graph_visited)
 
-      let tmp_arr = map(fn (ind: i32): i32  => if ind == -1 then 0 else 1, updating_indices)
-      let n_indices' = reduce((+), 0, tmp_arr)
+      let tmp_arr = map (fn (ind: i32): i32  => if ind == -1 then 0 else 1) (updating_indices)
+      let n_indices' = reduce (+) 0 (tmp_arr)
 
       let continue' = n_indices' > 0
       in (cost', graph_mask'', graph_visited', continue')

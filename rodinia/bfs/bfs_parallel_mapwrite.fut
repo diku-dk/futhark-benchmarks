@@ -24,10 +24,10 @@ fun step(cost: *[n]i32,
   -- We calculate the maximum number of edges for a node.  This is necessary,
   -- since the number of edges are irregular, and since we want to construct a
   -- nested array.
-  let e_max = reduceComm(max, 0, nodes_n_edges)
+  let e_max = reduceComm max 0 (nodes_n_edges)
 
   let (inds_mask, ind_vals_upd0) =
-    unzip(map(fn (tid: int): (i32, [e_max](i32,i32))  =>
+    unzip(map (fn (tid: int): (i32, [e_max](i32,i32))  =>
                 let start_index = nodes_start_index[tid]
                 let n_edges     = nodes_n_edges[tid]
                 let new_cost    = cost[tid] + 1
@@ -35,16 +35,16 @@ fun step(cost: *[n]i32,
                 let mask        = graph_mask[tid]
                 let ind_mask    = if mask then tid else -1
                 let ind_val_upd =
-                  map(fn (k: int): i32  =>
+                  map (fn (k: int): i32  =>
                         let i  = start_index + (if k < n_edges
                                                 then k
                                                 else (n_edges - 1))
                         let id = unsafe edges_dest[i]
                         let already_visited = unsafe graph_visited[id]
                         in if mask && (!already_visited) then id else -1
-                     , iota(e_max))
+                     ) (iota(e_max))
                 in (ind_mask, zip(ind_val_upd, replicate e_max new_cost))
-             , iota(n)))
+             ) (iota(n)))
 
   let (inds_upd, vals_cost) = unzip(reshape (n * e_max) ind_vals_upd0)
   let vals_mask = replicate n False

@@ -844,11 +844,11 @@ fun master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f
   let finavalu = fin(  initvalu, initvalu_offset_ecc, 46, 61, 76, 
                        parameter, finavalu, jcaDyad, jcaSL, jcaCyt ) 
   in
-  map(fn (x: f32): f32  => 
+  map (fn (x: f32): f32  => 
         if ( isnan32(x) || isinf32(x) ) 
         then 0.0001f32
         else x 
-     , finavalu)
+     ) finavalu
 
 
 ----------------------------------------
@@ -940,99 +940,99 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
             ( timeinst, initvalu )
         else if (ii == 1) then
             let timeinst_temp = timeinst + h2_7 in
-            let initvalu_temp = map( fn (xy: (f32,f32)): f32  => let (x,y) = xy in x + h2_7 * y
-                                    , zip(initvalu,finavalu_temp[0]) ) in
+            let initvalu_temp = map (fn (xy: (f32,f32)): f32  => let (x,y) = xy in x + h2_7 * y
+                                    ) (zip(initvalu,finavalu_temp[0]) ) in
              ( timeinst_temp, initvalu_temp )
         else if (ii == 2) then
             let timeinst_temp = timeinst + a3*h in
-            let initvalu_temp = map( fn (xy: (f32,f32,f32)): f32  => 
+            let initvalu_temp = map (fn (xy: (f32,f32,f32)): f32  => 
                                         let (x,y1,y2) = xy in 
                                         x + h * ( b31*y1 + b32*y2 )
-                                   , zip(initvalu,finavalu_temp[0],finavalu_temp[1]) ) in
+                                   ) (zip(initvalu,finavalu_temp[0],finavalu_temp[1]) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 3) then
             let timeinst_temp = timeinst + a4*h in
-            let initvalu_temp = map( fn (xy: (f32,f32,f32)): f32  => 
+            let initvalu_temp = map (fn (xy: (f32,f32,f32)): f32  => 
                                         let (x,y1,y2) = xy in 
                                         x + h * ( b41*y1 + b43*y2 )
-                                   , zip(initvalu,finavalu_temp[0],finavalu_temp[2]) ) in
+                                   ) (zip(initvalu,finavalu_temp[0],finavalu_temp[2]) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 4) then
             let timeinst_temp = timeinst + a5*h in
-            let initvalu_temp = map( fn (i: int): f32  => 
+            let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b51*finavalu_temp[0,i] + 
                                         b53*finavalu_temp[2,i] + b54*finavalu_temp[3,i])
-                                   , iota(equs) ) in
+                                   ) (iota(equs) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 5) then
             let timeinst_temp = timeinst + a6*h in
-            let initvalu_temp = map( fn (i: int): f32  => 
+            let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b61*finavalu_temp[0,i] + 
                                         b64*finavalu_temp[3,i] + b65*finavalu_temp[4,i] )
-                                   , iota(equs) ) in
+                                   ) (iota(equs) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 6) then
               let timeinst_temp = timeinst + a7 * h in
-              let initvalu_temp = map( fn (i: int): f32  => 
+              let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b71*finavalu_temp[0,i] + 
                                         b74*finavalu_temp[3,i] + b75*finavalu_temp[4,i] + 
                                         b76*finavalu_temp[5,i] )
-                                     , iota(equs) ) in
+                                     ) (iota(equs) ) in
               ( timeinst_temp, initvalu_temp )
         else if (ii == 7) then
               let timeinst_temp = timeinst + a8 * h in
-              let initvalu_temp = map( fn (i: int): f32  => 
+              let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b81*finavalu_temp[0,i] + 
                                         b85*finavalu_temp[4,i] + b86*finavalu_temp[5,i] + 
                                         b87*finavalu_temp[6,i] )
-                                     , iota(equs) ) in
+                                     ) (iota(equs) ) in
               ( timeinst_temp, initvalu_temp )
         else if (ii == 8) then
             let timeinst_temp = timeinst + a9*h in
-            let initvalu_temp = map( fn (i: int): f32  => 
+            let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b91*finavalu_temp[0,i] + 
                                         b94*finavalu_temp[3,i] + b95*finavalu_temp[4,i] + 
                                         b96*finavalu_temp[5,i] + b97*finavalu_temp[6,i] + 
                                         b98*finavalu_temp[7,i] )
-                                   , iota(equs) ) in
+                                   ) (iota(equs) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 9) then
             let timeinst_temp = timeinst + a10*h in
-            let initvalu_temp = map( fn (i: int): f32  => 
+            let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b10_1*finavalu_temp[0,i] + 
                                         b10_4*finavalu_temp[3,i] + b10_5*finavalu_temp[4,i] + 
                                         b10_6*finavalu_temp[5,i] + b10_7*finavalu_temp[6,i] + 
                                         b10_8*finavalu_temp[7,i] + b10_9*finavalu_temp[8,i] )
-                                   , iota(equs) ) in
+                                   ) (iota(equs) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 10) then
             let timeinst_temp = timeinst + h in
-            let initvalu_temp = map( fn (i: int): f32  => 
+            let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b11_1*finavalu_temp[0,i] + 
                                         b11_4*finavalu_temp[3,i] + b11_5*finavalu_temp[4,i] + 
                                         b11_6*finavalu_temp[5,i] + b11_7*finavalu_temp[6,i] + 
                                         b11_8*finavalu_temp[7,i] + b11_9*finavalu_temp[8,i] + 
                                         b11_10 * finavalu_temp[9,i])
-                                   , iota(equs) ) in
+                                   ) (iota(equs) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 11) then
             let timeinst_temp = timeinst in
-            let initvalu_temp = map( fn (i: int): f32  => 
+            let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b12_1*finavalu_temp[0,i] + 
                                         b12_6*finavalu_temp[5,i] + b12_7*finavalu_temp[6,i] + 
                                         b12_8*finavalu_temp[7,i] + b12_9*finavalu_temp[8,i] + 
                                         b12_10 * finavalu_temp[9,i] )
-                                   , iota(equs) ) in
+                                   ) (iota(equs) ) in
             ( timeinst_temp, initvalu_temp )
         else -- if (ii == 12) then
             let timeinst_temp = timeinst + h in
-            let initvalu_temp = map( fn (i: int): f32  => 
+            let initvalu_temp = map (fn (i: int): f32  => 
                                         initvalu[i] + h * ( b13_1*finavalu_temp[0,i] + 
                                         b13_4*finavalu_temp[3,i] + b13_5*finavalu_temp[4,i] + 
                                         b13_6*finavalu_temp[5,i] + b13_7*finavalu_temp[6,i] + 
                                         b13_8*finavalu_temp[7,i] + b13_9*finavalu_temp[8,i] + 
                                         b13_10*finavalu_temp[9,i] + finavalu_temp[11,i] )
-                                   , iota(equs) ) in
+                                   ) (iota(equs) ) in
             ( timeinst_temp, initvalu_temp )
     in unsafe 
     let finavalu_temp[ii] = master( timeinst_temp, initvalu_temp, parameter ) in
@@ -1041,15 +1041,15 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
   -- end loop --
   --------------
   in
-  let finavalu = map( fn (i: int): f32  =>
+  let finavalu = map (fn (i: int): f32  =>
                         initvalu[i] +  h * (c_1_11 * (finavalu_temp[0,i] + finavalu_temp[10,i]) +
                             c6 * finavalu_temp[5,i] + c_7_8 * (finavalu_temp[6,i] + finavalu_temp[7,i]) +
                             c_9_10 * (finavalu_temp[8,i] + finavalu_temp[9,i]) )
-                    , iota(equs) )
+                    ) (iota(equs) )
   in 
-  let error = map( fn (i: int): f32  =>
+  let error = map (fn (i: int): f32  =>
                         fabs(err_factor * (finavalu_temp[0,i] + finavalu_temp[10,i] - finavalu_temp[11,i] - finavalu_temp[12,i]))
-                 , iota(equs) )
+                 ) (iota(equs) )
   in ( finavalu, error )
 
 
@@ -1102,8 +1102,8 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
       let (y_k, err) = reshape (equs) (embedded_fehlberg_7_8( f32(km1), h, y_km1, params)) in
       
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
-      let errs = map( fn (e: f32): bool  => if e > 0.0f32 then True else False, err ) in
-      let error= reduce((||), False, errs) in
+      let errs = map (fn (e: f32): bool  => if e > 0.0f32 then True else False) err in
+      let error= reduce (||) False errs in
 
 --      let {breakLoop, scale_fina} = if(!error)
 --                                    then {True,  max_scale_factor()}
@@ -1113,24 +1113,24 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
       then (j+1, h, y_k, True, max_scale_factor())
       else 
       -- FiGURE OUT SCALE AS THE MiNiMUM OF COMPONENT SCALES
-      let yy = map( fn (x: f32): f32  =>
+      let yy = map (fn (x: f32): f32  =>
                         if (x == 0.0f32) then tolerance else fabs(x)
-                  , y_km1 )
+                  ) (y_km1 )
       in
-      let scale = map ( fn (yy_erri: (f32,f32)): f32  =>
+      let scale = map  (fn (yy_erri: (f32,f32)): f32  =>
                             let (yyi, erri) = yy_erri in
                             0.8f32 * pow( tolerance * yyi / erri , err_exponent )
-                      , zip(yy,err) )
+                      ) (zip(yy,err) )
       in
-      let scale_min = reduce(min, scale_min, scale) in
+      let scale_min = reduce min (scale_min) scale in
       let scale_fina = min(max scale_min (min_scale_factor())) (max_scale_factor())
       in
       -- iF WiTHiN TOLERANCE, FiNiSH attempts...
-      let tmps =map ( fn (err_yyi: (f32,f32)): bool  =>
+      let tmps =map  (fn (err_yyi: (f32,f32)): bool  =>
                         let (erri, yyi) = err_yyi in
                         erri <= ( tolerance * yyi )
-                    , zip(err, yy) ) in
-      let breakLoop = reduce ((&&), True, tmps) in
+                    ) (zip(err, yy) ) in
+      let breakLoop = reduce  (&&) True tmps in
 
       -- ...OTHERWiSE, ADJUST STEP FOR NEXT ATTEMPT
       -- scale next step in a default way
@@ -1158,13 +1158,13 @@ fun parameters(): int = 16
 
 fun main(repeat: int, eps: f32, workload: int, xmax: int, y0: [91]f32, params: [16]f32): (bool, [workload][91]f32) =
   let (oks, y_res) = unzip (
-    map ( fn (i: int): (bool,[91]f32)  =>
+    map  (fn (i: int): (bool,[91]f32)  =>
             let add_fact = f32(i % repeat)*eps in
-            let y_row = map((+add_fact), y0) in
+            let y_row = map (+add_fact) y0 in
             solver(xmax, params, y_row)
-        , iota(workload) ) )
+        ) (iota(workload) ) )
   in
-  ( reduce((&&), True, oks), y_res )
+  ( reduce (&&) True oks, y_res )
 
 
 

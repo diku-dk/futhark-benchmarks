@@ -57,41 +57,40 @@ fun edgeWeak(): f32 = 0.5
 fun edgeStrong(): f32 = 1.0
 
 fun toGreyscale(img: [h][w]i32): [h][w]f32 =
-  map(fn (row: [w]i32): [w]f32  =>
-        map((255.0*), map(luminanceOfRGBA32, row)),
-      img)
+  map (fn (row: [w]i32): [w]f32  =>
+        map (255.0*) (map luminanceOfRGBA32 row)) img
 
 fun gaussianX(img: [h][w]f32): [h][w]f32 =
   unsafe
-  map(fn (x: int): [w]f32  =>
-        map(fn (y: int): f32  =>
+  map (fn (x: int): [w]f32  =>
+        map (fn (y: int): f32  =>
               let a = img[clamp(0,x-2,h-1),y] * (1.0 / 16.0)
               let b = img[clamp(0,x-1,h-1),y] * (4.0 / 16.0)
               let c = img[clamp(0,x+0,h-1),y] * (6.0 / 16.0)
               let d = img[clamp(0,x+1,h-1),y] * (4.0 / 16.0)
               let e = img[clamp(0,x+2,h-1),y] * (1.0 / 16.0)
-              in a + b + c + d + e,
-            iota(w)),
+              in a + b + c + d + e) (
+            iota(w))) (
       iota(h))
 
 fun gaussianY(img: [h][w]f32): [h][w]f32 =
   unsafe
-  map(fn (x: int): [w]f32  =>
-        map(fn (y: int): f32  =>
+  map (fn (x: int): [w]f32  =>
+        map (fn (y: int): f32  =>
               unsafe
               let a = img[x,clamp(0,y-2,w-1)] * (1.0 / 16.0)
               let b = img[x,clamp(0,y-1,w-1)] * (4.0 / 16.0)
               let c = img[x,clamp(0,y+0,w-1)] * (6.0 / 16.0)
               let d = img[x,clamp(0,y+1,w-1)] * (4.0 / 16.0)
               let e = img[x,clamp(0,y+2,w-1)] * (1.0 / 16.0)
-              in a + b + c + d + e,
-            iota(w)),
+              in a + b + c + d + e) (
+            iota(w))) (
       iota(h))
 
 fun gradiantMagDir(low: f32, img: [h][w]f32): [h][w](f32,int) =
   unsafe
-  map(fn (x: int): [w](f32,int)  =>
-        map(fn (y: int): (f32,int)  =>
+  map (fn (x: int): [w](f32,int)  =>
+        map (fn (y: int): (f32,int)  =>
               unsafe
               let v0 = img[clamp(0, x-1, h-1), clamp(0, y-1, w-1)]
               let v1 = img[clamp(0, x+0, h-1), clamp(0, y-1, w-1)]
@@ -119,14 +118,14 @@ fun gradiantMagDir(low: f32, img: [h][w]f32): [h][w](f32,int) =
                         then 0
                         else min(64 * (1 + i32(norm) % 4), 255)
 
-              in (mag, dir),
-            iota(w)),
+              in (mag, dir)) (
+            iota(w))) (
       iota(h))
 
 fun nonMaximumSuppression(low: f32, high: f32, magdir: [h][w](f32,int)): [h][w]f32 =
   unsafe
-  map(fn (x: int): [w]f32  =>
-        map(fn (y: int): f32  =>
+  map (fn (x: int): [w]f32  =>
+        map (fn (y: int): f32  =>
               let (mag, dir) = magdir[x,y]
               let offsetx = if dir > orientVert() then -1
                             else if dir < orientVert() then 1
@@ -139,26 +138,26 @@ fun nonMaximumSuppression(low: f32, high: f32, magdir: [h][w](f32,int)): [h][w]f
 
               in if dir == orientUndef() || mag < low || mag < fwd || mag < rev
                  then 0.0
-                 else if mag >= high then 1.0 else 0.5,
-         iota(w)),
+                 else if mag >= high then 1.0 else 0.5) (
+         iota(w))) (
       iota(h))
 
 fun selectStrong(img: [h][w]f32): []int =
-  let strong = map(fn (x: f32): int  =>
-                     if x == edgeStrong() then 1 else 0,
+  let strong = map (fn (x: f32): int  =>
+                     if x == edgeStrong() then 1 else 0) (
                    reshape (w*h) img)
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
-  let targetIdxAndLen = scan((+), 0, strong)
+  let targetIdxAndLen = scan (+) 0 strong
   let (targetIdx, len') = split ((shape strong)[0]-1) targetIdxAndLen
   let len = len'[0]
   let indices = iota(w*h)
   let zeros = replicate len 0
   let (indices', values) =
-    unzip(map(fn (i: int): (int, i32)  =>
+    unzip(map (fn (i: int): (int, i32)  =>
                 if unsafe strong[i+1] == 0
                 then (-1, 0)
-                else (targetIdx[i], i+1),
+                else (targetIdx[i], i+1)) (
               iota(w*h-1)))
   in write indices' values (zeros)
 

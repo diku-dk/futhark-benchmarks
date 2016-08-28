@@ -11,4 +11,4 @@
 include bfs_lib
 
 fun main(ns: [n]i32): []i32 =
-  i32_excl_scan_from_incl_scan(ns, 0)
+  i32_excl_scan_from_incl_scan ns 0
