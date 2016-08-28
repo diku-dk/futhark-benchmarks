@@ -247,17 +247,15 @@ fun brownianBridge (num_und: int,
                     bb_inds: [3][num_dates]int,
                     bb_data: [3][num_dates]f32)
                    (gaussian_arr: []f32): [num_dates][num_und]f32 =
-    let gauss2d  = reshape((num_dates,num_und), gaussian_arr) in
-    let gauss2dT = transpose(gauss2d) in
-      transpose( 
-        map( brownianBridgeDates(bb_inds, bb_data), gauss2dT ) 
-      )
+    let gauss2d  = reshape (num_dates,num_und) gaussian_arr
+    let gauss2dT = transpose gauss2d
+    in transpose (map(brownianBridgeDates(bb_inds, bb_data), gauss2dT))
 
 
 ---------------------------------
 --- Black-Scholes
 ---------------------------------
-fun take(n: int, a: []f32): [n]f32 = let (first, rest) = split((n), a) in first
+fun take(n: int, a: []f32): [n]f32 = let (first, rest) = split (n) a in first
 
 fun correlateDeltas(md_c:  [num_und][num_und]f32, 
                  zds: [num_dates][num_und]f32  
@@ -316,7 +314,7 @@ fun main(contract_number:
              bb_inds: [3][num_dates]int,
              bb_data: [3][num_dates]f32
 ): []f32 =
-  let dir_vs    = reshape( (num_dates*num_und, num_bits), dir_vs_nosz ) in
+  let dir_vs    = reshape (num_dates*num_und, num_bits) dir_vs_nosz in
  
   let sobol_mat = map ( sobolIndR(dir_vs) 
 		              , map( fn (x: int): int  => x + 1, iota(num_mc_it) ) 
@@ -361,7 +359,7 @@ fun mainRec(contract_number:
              bb_data: [3][num_dates]f32
 ): []f32 =
   let sobvctsz  = num_dates*num_und in
-  let dir_vs    = reshape( (sobvctsz,num_bits), dir_vs_nosz ) in
+  let dir_vs    = reshape (sobvctsz,num_bits) dir_vs_nosz in
   let sobol_mat = streamMap( fn (chunk: int) (ns: []int): [][sobvctsz]f32  =>
                                 sobolChunk(dir_vs, ns[0], chunk)
                            , iota(num_mc_it) ) in

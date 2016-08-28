@@ -39,8 +39,8 @@ fun step(cost: *[n]i32,
     unzip(changes)
 
   let full_length = e_max * n_indices
-  let node_ids = reshape((full_length), changes_node_ids)
-  let costs = reshape((full_length), changes_costs)
+  let node_ids = reshape (full_length) changes_node_ids
+  let costs = reshape (full_length) changes_costs
 
   let cost' = write(node_ids, costs, cost)
 

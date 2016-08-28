@@ -41,8 +41,8 @@ fun trajectories(depth: int, xprec: int, yprec: int,
                            ymin + (f32(y) * sizey) / f32(yprec))
                  in divergence(depth, c0)
               , iota(xprec*yprec)))
-  in (reshape((yprec,xprec,depth), trajectories),
-      reshape((xprec,yprec), escapes))
+  in (reshape (yprec,xprec,depth) trajectories,
+      reshape (xprec,yprec) escapes)
 
 fun toI(n: int, view: (f32,f32,f32,f32), y: f32): int =
   let (xmin, ymin, xmax, ymax) = view
@@ -69,11 +69,11 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
   let (xmin, ymin, xmax, ymax) = view
   let sizex = xmax - xmin
   let sizey = ymax - ymin
-  let trajectories' = reshape((xprec*yprec,depth), trajectories)
-  let escapes' = reshape((xprec*yprec), escapes)
+  let trajectories' = reshape (xprec*yprec,depth) trajectories
+  let escapes' = reshape (xprec*yprec) escapes
   let visits_per_pixel =
-    reshape((n*m),
-            streamRedPer(fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
+    reshape (n*m)
+            (streamRedPer(fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
                            zipWith(fn (as: [m]int, bs: [m]int): [m]int  =>
                                      zipWith((+), as, bs),
                                    ass, bss),
@@ -95,9 +95,9 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
                                               else acc)
                              in acc,
                          replicate n (replicate m 0), zip(trajectories', escapes')))
-  let max_visits = reduce(max, 0, reshape((n*m), visits_per_pixel))
+  let max_visits = reduce(max, 0, reshape (n*m) visits_per_pixel)
   let coloured = map(colourise(max_visits), visits_per_pixel)
-  in reshape((n,m), coloured)
+  in reshape (n,m) coloured
 
 fun main(n: int, m: int, v_xmin: f32, v_ymin: f32, v_xmax: f32, v_ymax: f32,
                      depth: int,

@@ -46,7 +46,7 @@ fun step(cost: *[n]i32,
                 in (ind_mask, zip(ind_val_upd, replicate e_max new_cost))
              , iota(n)))
 
-  let (inds_upd, vals_cost) = unzip(reshape((n * e_max), ind_vals_upd0))
+  let (inds_upd, vals_cost) = unzip(reshape (n * e_max) ind_vals_upd0)
   let vals_mask = replicate n False
 
   -- Finally, the write phase.
