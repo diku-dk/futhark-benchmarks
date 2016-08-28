@@ -146,11 +146,11 @@ fun nonMaximumSuppression(low: f32, high: f32, magdir: [h][w](f32,int)): [h][w]f
 fun selectStrong(img: [h][w]f32): []int =
   let strong = map(fn (x: f32): int  =>
                      if x == edgeStrong() then 1 else 0,
-                   reshape((w*h), img))
+                   reshape (w*h) img)
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
   let targetIdxAndLen = scan((+), 0, strong)
-  let (targetIdx, len') = split(((shape strong)[0]-1), targetIdxAndLen)
+  let (targetIdx, len') = split ((shape strong)[0]-1) targetIdxAndLen
   let len = len'[0]
   let indices = iota(w*h)
   let zeros = replicate len 0

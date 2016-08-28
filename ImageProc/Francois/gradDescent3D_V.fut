@@ -199,13 +199,12 @@ fun main1(v:  [m][n][p][q]f32
 
 fun main(m: int, n: int, p: int, q: int, loop_count: int): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q) in
-    let v  = reshape( (m,n,p,q), map(f32, iota(mnpq)) ) in
-    let g  = reshape( (m,n,p,q), map(f32, iota(mnpq)) ) in
-    let xi = reshape( (m,n,p,q)
-                    , map( fn (t: int): (f32,f32,f32)  =>
+    let v  = reshape (m,n,p,q) (map(f32, iota(mnpq))) in
+    let g  = reshape (m,n,p,q) (map(f32, iota(mnpq))) in
+    let xi = reshape (m,n,p,q)
+                    (map( fn (t: int): (f32,f32,f32)  =>
                             let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
-                         , iota(mnpq) )
-                    )
+                        , iota(mnpq) ))
     in
     let tp = 3.0f32 in
     loop(v) = 

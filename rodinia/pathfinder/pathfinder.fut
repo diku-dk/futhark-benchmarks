@@ -41,7 +41,7 @@ fun main(cols: int, rows: int): [cols]int =
                 sobolInd(dirVct, i+1) % 10
            , iota(rows*cols) )
     in
-    let wall   = reshape( (rows,cols), wall_flat ) in
+    let wall   = reshape (rows,cols) wall_flat in
     let result = copy(wall[0]) in
     
     ---------------

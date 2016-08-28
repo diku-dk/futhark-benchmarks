@@ -28,5 +28,5 @@ fun main(n: int): [n][n]f32 =
                         let x = sobolInd(sobvcts, ind+1) in
                         f32(x) / divisor
                  , iota(n*n))
-    in reshape((n,n), mat)
+    in reshape (n,n) mat
 

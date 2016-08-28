@@ -1099,7 +1099,7 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
       let scale_min = max_scale_factor() in
 
       -- EVALUATE ALL equations
-      let (y_k, err) = reshape( (equs), embedded_fehlberg_7_8( f32(km1), h, y_km1, params) ) in
+      let (y_k, err) = reshape (equs) (embedded_fehlberg_7_8( f32(km1), h, y_km1, params)) in
       
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
       let errs = map( fn (e: f32): bool  => if e > 0.0f32 then True else False, err ) in
