@@ -30,9 +30,9 @@ fun add_descent_div3s(v:  [m][n][p]f32
         map (fn (j: int): [p]f32  => 
               map (fn (k: int): f32  => unsafe
                     -- get current `v`) (`g`) (and `xi` element
-                    let v_el = v[i,j,k] in
-                    let g_el = g[i,j,k] in
-                    let (xi_0,xi_1,xi_2) = xi[i,j,k] in
+                    let v_el = v[i,j,k]
+                    let g_el = g[i,j,k]
+                    let (xi_0,xi_1,xi_2) = xi[i,j,k]
 
                     -- get the neighbors of the current `xi` element
                     let xi_100_0 = if i < 1 then 0.0f32

@@ -31,25 +31,25 @@ fun add_descent_div3v(v:  [m][n][p][q]f32
                  , xi: [m][n][p][q](f32,f32,f32)
                  , g: [m][n][p][q]f32
                  , tp: f32 ): [m][n][p][q]f32 =
-  let one = (m*m+2*m+1)/(m+1) - m in
+  let one = (m*m+2*m+1)/(m+1) - m
   let res_flat = 
     map (fn (ind: int): f32  => unsafe
-            let tmp = ind / q     in
-            let l   = ind - tmp*q in
-            let ind = tmp         in
+            let tmp = ind / q
+            let l   = ind - tmp*q
+            let ind = tmp
 
-            let tmp = ind / p     in
-            let k   = ind - tmp*p in
-            let ind = tmp         in
+            let tmp = ind / p
+            let k   = ind - tmp*p
+            let ind = tmp
 
-            let tmp = ind / n     in
-            let j   = ind - tmp*n in
-            let i   = tmp         in
+            let tmp = ind / n
+            let j   = ind - tmp*n
+            let i   = tmp
 
                     -- get current `v`) (`g`) (and `xi` element
-                    let v_el = v[i,j,k,l] in
-                    let g_el = g[i,j,k,l] in
-                    let (xi_0,xi_1,xi_2) = xi[i,j,k,l] in
+                    let v_el = v[i,j,k,l]
+                    let g_el = g[i,j,k,l]
+                    let (xi_0,xi_1,xi_2) = xi[i,j,k,l]
                     -- get the neighbors of the current `xi` element
                     let xi_100_0 = if i < 1 then 0.0f32
                                    else let (v_100_0, _, _) = xi[i-1,j,k,l] in v_100_0
@@ -66,11 +66,12 @@ fun add_descent_div3v(v:  [m][n][p][q]f32
                         then    v_el + tp*( xi_0 - xi_100_0 + xi_1 - xi_010_1 + xi_2 - xi_001_2 - g_el ) 
 
                     -- THE 6 FACES
-                    else let one = 1 / one in
-                         let (i,j,k) = (i * one, j * one, k * one) in
-                         let one = f32(one) in
-                         let (v_el, g_el,xi_0,xi_1,xi_2) = (v_el*one, g_el*one,xi_0*one,xi_1*one,xi_2*one) in
-                         let (xi_100_0, xi_010_1, xi_001_2) = (xi_100_0*one, xi_010_1*one, xi_001_2*one) in
+                    else let one = 1 / one
+                         let (i,j,k) = (i * one, j * one, k * one)
+                         let one = f32(one)
+                         let (v_el, g_el,xi_0,xi_1,xi_2) = (v_el*one, g_el*one,xi_0*one,xi_1*one,xi_2*one)
+                         let (xi_100_0, xi_010_1, xi_001_2) = (xi_100_0*one, xi_010_1*one, xi_001_2*one)
+                        in
                         if (i > 0) && (i < m-1) && (j > 0) && (j < n-1) && (k == 0) -- 1
                         -- v[1:m-1,1:n-1,0]   += tp*(xi[1:m-1,1:n-1, 0, 0] - xi[0:m-2,1:n-1, 0,0] + xi[1:m-1,1:n-1, 0,1] - 
                         --                           xi[1:m-1,0:n-2,  0,1] + xi[1:m-1,1:n-1,  0,2] - g[1:m-1,1:n-1,  0] );
@@ -212,15 +213,15 @@ fun main1( v:  [m][n][p][q]f32
     add_descent_div3v(v, xi, g, tp)
 
 fun main(m: int, n: int, p: int, q: int, loop_count: int): [m][n][p][q]f32 = 
-    let mnpq = (m*n*p*q) in
-    let v  = reshape (m,n,p,q) (map f32 (iota(mnpq)) ) in
-    let g  = reshape (m,n,p,q) (map f32 (iota(mnpq)) ) in
+    let mnpq = (m*n*p*q)
+    let v  = reshape (m,n,p,q) (map f32 (iota(mnpq)) )
+    let g  = reshape (m,n,p,q) (map f32 (iota(mnpq)) )
     let xi = reshape (m,n,p,q)
                     (map (fn (t: int): (f32,f32,f32)  =>
                             let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
                         ) (iota(mnpq)))
-    in
-    let tp = 3.0f32 in
+
+    let tp = 3.0f32
     loop(v) = 
         for i < loop_count do
             add_descent_div3v(v, xi, g, tp)

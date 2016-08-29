@@ -42,23 +42,23 @@ fun doCompute(data1:
                         let (xInner, yInner, zInner) = inner[i]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
                         loop ((min, max) = (0, numBins)) = while (min+1) < max do
-                            let k = (min+max) / 2 in
-                            unsafe if dot >= binb[k]
-                            then (min, k)
-                            else (k, max)
-                        in
+                            let k = (min+max) / 2
+                            in unsafe if dot >= binb[k]
+                                      then (min, k)
+                                      else (k, max)
+
                         let index = unsafe if dot >= binb[min]
                                     then min
                                     else if dot < binb[max]
                                         then max+1
                                         else max
-                        in
-                        unsafe let dBins[index] = dBins[index] + 1i32 in dBins
+
+                        in unsafe let dBins[index] = dBins[index] + 1i32 in dBins
                     in dBins
                 ) data2
         ) data1
-    in
-    sumBins(value)
+
+    in sumBins(value)
 
 fun doComputeSelf(data: 
     [numD]vec3,
@@ -73,29 +73,29 @@ fun doComputeSelf(data:
                         let (xInner, yInner, zInner) = data[j]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
                         loop ((min, max) = (0, numBins)) = while (min+1) < max do
-                            let k = (min+max) / 2 in
-                            unsafe if dot >= binb[k]
-                            then (min, k)
-                            else (k, max)
-                        in
+                            let k = (min+max) / 2
+                            in unsafe if dot >= binb[k]
+                                      then (min, k)
+                                      else (k, max)
+
                         let index = unsafe if dot >= binb[min]
                                     then min
                                     else if dot < binb[max]
                                         then max+1
                                         else max
-                        in
-                        unsafe let dBins[index] = dBins[index] + 1i32 in dBins
+
+                        in unsafe let dBins[index] = dBins[index] + 1i32 in dBins
                     in dBins
                 ) (zip data (iota(numD)))
-    in
-    sumBins(value)
+
+    in sumBins(value)
 
 fun fixPoints(ra: f64, dec: f64): vec3 =
     let rarad = dec2rad(ra)
     let decrad = dec2rad(dec)
     let cd = cos64(decrad)
-    in
-    (cos64(rarad)*cd, sin64(rarad)*cd, sin64(decrad))
+
+    in (cos64(rarad)*cd, sin64(rarad)*cd, sin64(decrad))
 
 fun main(datapointsx: 
     [numD]f64,
@@ -121,7 +121,7 @@ fun main(datapointsx:
         let res[i*3] = dd[i+1]
         let res[i*3+1] = dr[i+1]
         let res[i*3+2] = rr[i+1]
-        in
-        (res, dd, rr, dr)
-    in
-    res
+
+        in (res, dd, rr, dr)
+
+    in res

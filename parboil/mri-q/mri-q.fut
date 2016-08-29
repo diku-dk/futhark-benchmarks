@@ -1,6 +1,6 @@
 -- Port based on the CPU implementation in Parboil.
 --
--- Anyway, performance is okayish.  On the small data set, Parboil runs in
+-- Anyway, performance is okayish.  On the small data set, Parboil runs
 -- 4 seconds on the CPU, and Futhark runs in 7.5 seconds.  On the GPU, on
 -- the large dataset, we run in 39ms, and Parboil (CUDA) runs in something
 -- like 4ms (but this does not include all memsets and allocations, whilst
@@ -41,17 +41,17 @@ fun main(kx: [numK]f32, ky: [numK]f32, kz: [numK]f32,
                                   phiR: [numK]f32, phiI: [numK]f32): ([numX]f32, [numX]f32) =
   let phiMag = zipWith (fn (r: f32) (i: f32): f32  =>
                          r*r + i*i
-                      ) phiR phiI in
+                      ) phiR phiI
   let expArgs = zipWith (fn (x_e: f32) (y_e: f32) (z_e: f32): [numK]f32  =>
                           map (pi2()*) (
                               zipWith (fn (kx_e: f32) (ky_e: f32) (kz_e: f32): f32  =>
                                         kx_e * x_e + ky_e * y_e + kz_e * z_e
                                      ) kx ky kz)
-                       ) x y z in
+                       ) x y z
   let qr = map (fn (row: [numK]f32): f32  =>
                  reduce (+) (0.0f32) (zipWith (*) phiMag (map cos32 row))
-              ) expArgs in
+              ) expArgs
   let qi = map (fn (row: [numK]f32): f32  =>
                  reduce (+) (0.0f32) (zipWith (*) phiMag (map sin32 row))
-              ) expArgs in
-  (qr, qi)
+              ) expArgs
+  in (qr, qi)
