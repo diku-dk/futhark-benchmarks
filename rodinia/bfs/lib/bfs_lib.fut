@@ -14,7 +14,7 @@ fun i32_filter (bs: [k]bool) (ns: [k]i32): *[]i32 =
   let flags_i = map (fn (b: bool): i32  => if b then 1 else 0) flags
   let is0 = scan (+) 0 (flags_i)
   let filter_size = is0[k - 1]
-  let is1 = map (fn (i: i32, f: i32): i32  => i * f) (zip(is0, flags_i))
+  let is1 = map (fn (i: i32, f: i32): i32  => i * f) (zip is0 (flags_i))
   let is2 = map (fn (i: i32): i32  => i - 1) is1
   in write is2 ns (replicate filter_size 0)
 
@@ -32,7 +32,7 @@ fun i32_plus_scan_segm(array: [k]i32, mask: [k]bool): [k]i32 =
                  let a' = if m1 then a1 else a0 + a1
                  let m' = m0 || m1
                  in (a', m')) (0, False) (
-               zip(array, mask)))
+               zip array mask))
   in arrayScanned
 
 -- Get the updating indices.

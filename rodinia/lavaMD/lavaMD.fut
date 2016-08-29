@@ -39,9 +39,9 @@ fun main(alpha:  f32
       [number_boxes][par_per_box]f32,
       [number_boxes][par_per_box]f32,
       [number_boxes][par_per_box]f32) =
-  let box_coefs = zip(box_coefs_0, box_coefs_1, box_coefs_2, box_coefs_3)
-  let box_nnghs = zip@1(box_nnghs_0, box_nnghs_1, box_nnghs_2, box_nnghs_3)
-  let rv = zip@1(rv_0, rv_1, rv_2, rv_3)
+  let box_coefs = zip (box_coefs_0) (box_coefs_1) (box_coefs_2) (box_coefs_3)
+  let box_nnghs = zip@1 box_nnghs_0 box_nnghs_1 box_nnghs_2 box_nnghs_3
+  let rv = zip@1 rv_0 rv_1 rv_2 rv_3
   let a2 = 2.0*alpha*alpha in
   unzip(map (fn (l: int): [par_per_box](f32,f32,f32,f32)  =>
         let ( bl_x, bl_y, bl_bz, bl_number ) = box_coefs[l] in
@@ -76,7 +76,7 @@ fun main(alpha:  f32
                                       let fyij = fs * d_y       in
                                       let fzij = fs * d_z       in
                                       (qbj*vij, qbj*fxij, qbj*fyij, qbj*fzij)
-                               ) (zip(rB,qB) )
+                               ) (zip rB qB )
 
                           let (r1, r2, r3, r4) = 
                             reduce (fn (a: (f32,f32,f32,f32)) (b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  =>

@@ -39,8 +39,8 @@ fun initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
     let dxu    = 0.0 in
     let dx_high = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]] in
     let dxx_high= [[0.0, 0.0, 0.0 ]] in
-    let dx     = concat(concat(dx_low, dx_mid), dx_high) in
-    let dxx    = concat(concat(dxx_low, dxx_mid), dxx_high)
+    let dx     = concat (concat (dx_low) (dx_mid)) (dx_high) in
+    let dxx    = concat (concat (dxx_low) (dxx_mid)) (dxx_high)
     in  (dx, dxx)
 
 fun max(x: f32, y: f32): f32 = if y < x then x else y
@@ -166,9 +166,9 @@ fun explicitMethod(myD:  [m][3]f32,  myDD: [m][3]f32,
                          else 0.0 in
                 let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * unsafe result_row[j  ]
                 in  c1 + c2 + c3
-            ) (zip( myD, myDD, mu_row, var_row, iota(m) )
+            ) (zip myD myDD (mu_row) (var_row) (iota(m) )
             )
-     ) (zip( myMu, myVar, result ))
+     ) (zip myMu myVar result)
 
 ------------------------------------------/
 -- myD,myDD     : [m][3]f32
@@ -187,12 +187,12 @@ fun implicitMethod(myD:  [][]f32,  myDD: [][]f32,
                           , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
                           , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])
                           )
-                      ) (zip(mu_row, var_row, myD, myDD)
+                      ) (zip (mu_row) (var_row) myD myDD
                       ) in
          let (a,b,c) = unzip(abc) in
          if 1==1 then tridagSeq( a, b, c, u_row )
                  else tridagPar( a, b, c, u_row )
-     ) (zip(myMu,myVar,u)
+     ) (zip myMu myVar u
      )
 
 fun rollback
@@ -209,15 +209,15 @@ fun rollback
                     map  (fn (tup: (f32,f32)): f32  =>
                            let (u_el,res_el) = tup
                            in  dtInv*res_el + 0.5*u_el
-                        ) (zip(u_row,res_row) )
-                ) (zip(u,myResult) )
+                        ) (zip (u_row) (res_row) )
+                ) (zip u myResult )
     in
     -- explicitY
     let myResultTR = transpose(myResult) in
     let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR ) in
     let u = map (fn (us: []f32, vs: []f32): *[]f32  =>
-                   copy(map (+) (zip(us, vs)))
-               ) (zip(u, transpose(v))
+                   copy(map (+) (zip us vs))
+               ) (zip u (transpose(v))
                ) in
     -- implicitX
     let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv ) in
@@ -227,9 +227,9 @@ fun rollback
                    map (fn (uv: (f32,f32)): f32  =>
                           let (u_el,v_el) = uv
                           in  dtInv*u_el - 0.5*v_el
-                      ) (zip(u_row,v_row)
+                      ) (zip (u_row) (v_row)
                       )
-               ) (zip(transpose(u),v))
+               ) (zip (transpose(u)) v)
     in
     let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
     in  transpose(myResultTR)

@@ -941,21 +941,21 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
         else if (ii == 1) then
             let timeinst_temp = timeinst + h2_7 in
             let initvalu_temp = map (fn (xy: (f32,f32)): f32  => let (x,y) = xy in x + h2_7 * y
-                                    ) (zip(initvalu,finavalu_temp[0]) ) in
+                                    ) (zip initvalu (finavalu_temp[0]) ) in
              ( timeinst_temp, initvalu_temp )
         else if (ii == 2) then
             let timeinst_temp = timeinst + a3*h in
             let initvalu_temp = map (fn (xy: (f32,f32,f32)): f32  => 
                                         let (x,y1,y2) = xy in 
                                         x + h * ( b31*y1 + b32*y2 )
-                                   ) (zip(initvalu,finavalu_temp[0],finavalu_temp[1]) ) in
+                                   ) (zip initvalu (finavalu_temp[0]) (finavalu_temp[1]) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 3) then
             let timeinst_temp = timeinst + a4*h in
             let initvalu_temp = map (fn (xy: (f32,f32,f32)): f32  => 
                                         let (x,y1,y2) = xy in 
                                         x + h * ( b41*y1 + b43*y2 )
-                                   ) (zip(initvalu,finavalu_temp[0],finavalu_temp[2]) ) in
+                                   ) (zip initvalu (finavalu_temp[0]) (finavalu_temp[2]) ) in
             ( timeinst_temp, initvalu_temp )
         else if (ii == 4) then
             let timeinst_temp = timeinst + a5*h in
@@ -1120,7 +1120,7 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
       let scale = map  (fn (yy_erri: (f32,f32)): f32  =>
                             let (yyi, erri) = yy_erri in
                             0.8f32 * pow( tolerance * yyi / erri , err_exponent )
-                      ) (zip(yy,err) )
+                      ) (zip yy err )
       in
       let scale_min = reduce min (scale_min) scale in
       let scale_fina = min(max scale_min (min_scale_factor())) (max_scale_factor())
@@ -1129,7 +1129,7 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
       let tmps =map  (fn (err_yyi: (f32,f32)): bool  =>
                         let (erri, yyi) = err_yyi in
                         erri <= ( tolerance * yyi )
-                    ) (zip(err, yy) ) in
+                    ) (zip err yy ) in
       let breakLoop = reduce  (&&) True tmps in
 
       -- ...OTHERWiSE, ADJUST STEP FOR NEXT ATTEMPT

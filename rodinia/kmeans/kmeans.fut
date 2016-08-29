@@ -24,7 +24,7 @@ fun closest_point(p1: (int,f32)) (p2: (int,f32)): (int,f32) =
 
 fun find_nearest_point(pts: [k][d]f32) (pt: [d]f32): int =
   let (i, _) = reduceComm closest_point (0, euclid_dist_2 pt pts[0]) (
-                          zip(iota(k),
+                          zip (iota(k)) (
                               map (euclid_dist_2(pt)) pts)) in
   i
 
@@ -58,7 +58,7 @@ fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
                      acc in
                    acc) (
                  replicate k (replicate d 0.0f32)) (
-                 zip(points, membership)) in
+                 zip points membership) in
   cluster_sums
 
 fun main(threshold: int,

@@ -21,7 +21,7 @@ fun bpnn_output_error(target: [n]f32, output: [n]f32): (f32, [n]f32) =
         map ( fn (t: f32, o: f32): (f32,f32)  =>
                 let d = o * (1.0 - o) * (t - o) in
                 ( if d < 0.0 then 0.0-d else d, d ))
-            (zip(target,output) )) in
+            (zip target output )) in
     let err = reduce (+) 0.0 errs
     in  ( err, delta )
 
@@ -33,7 +33,7 @@ fun bpnn_hidden_error(delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32
                 let sumrow = reduce (+) 0.0 prods
                 let new_el = hidden_el * (1.0-hidden_el) * sumrow
                 in ( fabs(new_el), new_el ))
-            (zip( hidden, who ))) in
+            (zip hidden who)) in
     let err = reduce (+) 0.0 errs
     in  ( err, delta_h )
 
@@ -47,9 +47,9 @@ fun bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32,
             map ( fn (w_el: f32, oldw_el: f32, delta_el: f32, j: int): (f32,f32)  =>
                     let new_dw = eta()*delta_el*lyk + momentum()*oldw_el in
                     ( w_el+new_dw, new_dw ))
-                (zip(w_row,oldw_row,delta,iota(ndelta)))
+                (zip (w_row) (oldw_row) delta (iota(ndelta)))
           ))
-      (zip(w,oldw,lyext))
+      (zip w oldw lyext)
   )
 
 
@@ -60,7 +60,7 @@ fun bpnn_layerforward_GOOD(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32)
                             reduce (+) 0.0 prods)
                       connT in
   map (fn (pr: f32, conn0: f32): f32  => squash(pr+conn0))
-      (zip(res_tmp, conn_fstrow))
+      (zip (res_tmp) (conn_fstrow))
 
 
 fun bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
@@ -80,7 +80,7 @@ fun bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2
                       res_map
   in
   map ( fn (pr: f32, conn0: f32): f32  => squash(pr+conn0))
-      (zip(res_tmp, conn_fstrow))
+      (zip (res_tmp) (conn_fstrow))
 
 --------------------------------------------------------/
 
@@ -199,7 +199,7 @@ fun consColumn(mat: [m][n]f32, col: [m]f32): [m][]f32 =
                 map ( fn (k: int): f32  =>
                         if k < 1 then colelm else unsafe matrow[k-1])
                     (iota(n+1)))
-        (zip(mat,col))
+        (zip mat col)
 
 fun main(n_in: int, dirVct: [num_bits]int): ( f32, f32, [][]f32, [][]f32 ) =
     let (n_inp1, n_hid, n_hidp1, n_out) = (n_in+1, 16, 16+1, 1) in
