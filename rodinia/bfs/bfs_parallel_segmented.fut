@@ -21,7 +21,7 @@ fun main(nodes_start_index: [n]i32,
   let graph_mask[source] = True
   let graph_visited[source] = True
   let cost = replicate n (-1)
-  let cost[source] = 0 in
+  let cost[source] = 0
   loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
         (cost, updating_graph_mask, graph_mask, graph_visited, True)) =
     while continue do

@@ -17,7 +17,7 @@ fun main(nodes_start_index: [n]i32,
   let graph_mask[source] = True
   let graph_visited[source] = True
   let cost = replicate n (-1)
-  let cost[source] = 0 in
+  let cost[source] = 0
   loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
         (cost, updating_graph_mask, graph_mask, graph_visited, True)) =
     while continue do
@@ -28,9 +28,9 @@ fun main(nodes_start_index: [n]i32,
              edges_dest,
              graph_visited,
              graph_mask,
-             updating_graph_mask) in
+             updating_graph_mask)
 
-      let continue' = False in
+      let continue' = False
       loop ((graph_mask', graph_visited, updating_graph_mask', continue')) =
         for tid < n do
           if updating_graph_mask'[tid]

@@ -39,11 +39,11 @@ fun amb_temp(): f32 = 80.0
 -- advances the solution of the discretized difference equations by
 -- one time step
 fun single_iteration(temp: [row][col]f32, power: [row][col]f32,
-                              cap: f32, rx: f32, ry: f32, rz: f32,
-                              step: f32): [][]f32 =
+                     cap: f32, rx: f32, ry: f32, rz: f32,
+                     step: f32): [][]f32 =
   map  (fn (r: int): []f32  =>
          map (fn (c: int): f32  =>
-               let temp_el = temp[r,c] in
+               let temp_el = temp[r,c]
                let delta =
                  (step / cap) *
                (power[r,c] +
@@ -75,8 +75,8 @@ fun single_iteration(temp: [row][col]f32, power: [row][col]f32,
                    else
                      (temp[r,c+1] + temp[r,c-1] - 2.0 * temp_el) / rx +
                      (temp[r+1,c] + temp[r-1,c] - 2.0 * temp_el) / ry) +
-                  (amb_temp() - temp_el) / rz) in
-               temp_el + delta
+                  (amb_temp() - temp_el) / rz)
+               in temp_el + delta
             ) (iota(col))) (
          iota(row))
 
@@ -86,17 +86,17 @@ fun single_iteration(temp: [row][col]f32, power: [row][col]f32,
 --
 -- Returns a new 'temp' array.
 entry compute_tran_temp(num_iterations: int, temp: [row][col]f32, power: [row][col]f32): [row][col]f32 =
-  let grid_height = chip_height() / f32(row) in
-  let grid_width = chip_width() / f32(col) in
-  let cap = factor_chip() * spec_heat_si() * t_chip() * grid_width * grid_height in
-  let rx = grid_width / (2.0 * k_si() * t_chip() * grid_height) in
-  let ry = grid_height / (2.0 * k_si() * t_chip() * grid_width) in
-  let rz = t_chip() / (k_si() * grid_height * grid_width) in
-  let max_slope = max_pd() / (factor_chip() * t_chip() * spec_heat_si()) in
-  let step = precision() / max_slope in
+  let grid_height = chip_height() / f32(row)
+  let grid_width = chip_width() / f32(col)
+  let cap = factor_chip() * spec_heat_si() * t_chip() * grid_width * grid_height
+  let rx = grid_width / (2.0 * k_si() * t_chip() * grid_height)
+  let ry = grid_height / (2.0 * k_si() * t_chip() * grid_width)
+  let rz = t_chip() / (k_si() * grid_height * grid_width)
+  let max_slope = max_pd() / (factor_chip() * t_chip() * spec_heat_si())
+  let step = precision() / max_slope
   loop (temp) = for i < num_iterations do
-    single_iteration(temp, power, cap, rx, ry, rz, step) in
-  temp
+    single_iteration(temp, power, cap, rx, ry, rz, step)
+  in temp
 
 entry render_frame(temp: [row][col]f32): [row][col][3]i8 =
   let hottest = 360f32

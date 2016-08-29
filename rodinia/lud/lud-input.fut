@@ -9,24 +9,24 @@ fun sobolDirVcts(): [30]int =
     512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ]
 
 fun sobolInd(dirVct:  [30]int, n: int ): int =
-  let n_gray = (n >> 1) ^ n in
-  let res = 0 in
+  let n_gray = (n >> 1) ^ n
+  let res = 0
   loop (res) =
     for i < 30 do
-      let t = 1 << i in
-      if (n_gray & t) == t
-      then res ^ dirVct[i]
-      else res
+      let t = 1 << i
+      in if (n_gray & t) == t
+         then res ^ dirVct[i]
+         else res
   in res
 
 -----------------------
 -----------------------
 fun main(n: int): [n][n]f32 =
-    let divisor = 2.0 ** f32(30) in
+    let divisor = 2.0 ** f32(30)
     let sobvcts = sobolDirVcts()
     let mat = map (fn  (ind: int): f32  =>
-                        let x = sobolInd(sobvcts, ind+1) in
-                        f32(x) / divisor
+                        let x = sobolInd(sobvcts, ind+1)
+                        in f32(x) / divisor
                  ) (iota(n*n))
     in reshape (n,n) mat
 
