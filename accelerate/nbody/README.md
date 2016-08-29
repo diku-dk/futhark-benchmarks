@@ -7,9 +7,9 @@ interactive visualisation.  Just run
 
     make run
 
-and watch the dots.  Left-click to add more bodies in a tight ball
-that will immediately explode in discretisation errors.  Right-hold to
-have the mouse cursor act as a massive gravitational body.
+and watch the dots.  Left-click to add more bodies in a tight ball.
+Right-hold to have the mouse cursor act as a massive gravitational
+body.
 
 See the `benchmark` directory for how two benchmark Futhark up against
 Accelerate on different input sizes.

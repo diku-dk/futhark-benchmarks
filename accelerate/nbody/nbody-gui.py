@@ -11,13 +11,14 @@ width=1200
 height=800
 size=(width,height)
 (x_ul, y_ul, x_br, y_br) = (0.0, 0.0, width, height)
-time_step = 0.2
+time_step = 0.1
+steps_per_call = 1
 
 nb = nbody.nbody()
 render_nbody = nb.render
 step_nbody = nb.main
 N = 5000
-epsilon=0.50
+epsilon=50.0
 
 xps = numpy.random.normal(size=N,scale=width/5,loc=width/2).astype('float32')
 yps = numpy.random.normal(size=N,scale=height/5,loc=height/2).astype('float32')
@@ -46,7 +47,7 @@ def render():
     global xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas
     start = time.time()
     (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = \
-      step_nbody(1, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas)
+      step_nbody(steps_per_call, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas)
     frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps).get()
     end = time.time()
     pygame.surfarray.blit_array(surface, frame)
@@ -137,6 +138,9 @@ def mouseMass(pos):
         zps[0] = 0
     else:
         ms[0] = 0.0001
+        xps[0] = x_br
+        yps[0] = y_br
+
 
 pygame.key.set_repeat(1, 1)
 while True:
