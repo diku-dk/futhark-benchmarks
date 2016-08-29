@@ -21,18 +21,18 @@ fun sobolDirVcts(): [30]int =
       512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
 
 fun sobolInd(dirVct:  [30]int, n: int ): int =
-    let n_gray = (n >> 1) ^ n in
-    let res = 0 in
+    let n_gray = (n >> 1) ^ n
+    let res = 0
     loop (res) =
       for i < 30 do
-        let t = 1 << i in
-        if (n_gray & t) == t
-            then res ^ dirVct[i]
-            else res
+        let t = 1 << i
+        in if (n_gray & t) == t
+           then res ^ dirVct[i]
+           else res
     in res
 
 fun main(cols: int, rows: int): [cols]int =
-    let dirVct = sobolDirVcts() in
+    let dirVct = sobolDirVcts()
     -----------------------
     -- 1. Initialization --
     -----------------------
@@ -40,20 +40,20 @@ fun main(cols: int, rows: int): [cols]int =
         map (fn (i: int): int  => 
                 sobolInd(dirVct, i+1) % 10
            ) (iota(rows*cols) )
-    in
-    let wall   = reshape (rows,cols) wall_flat in
-    let result = copy(wall[0]) in
+
+    let wall   = reshape (rows,cols) wall_flat
+    let result = copy(wall[0])
     
     ---------------
     -- 1. Kernel --
     ---------------
     loop (result) = for t < (rows-1) do
         map (fn (i: int): int  =>
-                let res = result[i] in
+                let res = result[i]
                 let res = if (i >  0)     then min(res, unsafe result[i-1]) else res
-                in
+
                 let res = if (i < cols-1) then min(res, unsafe result[i+1]) else res
-                in
-                wall[t+1, i] + res 
+
+                in wall[t+1, i] + res 
            ) (iota(cols) )
     in result

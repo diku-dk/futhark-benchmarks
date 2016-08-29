@@ -6,7 +6,7 @@
 --
 --   filter(fn bool (i32 n) => bs[n], ns)
 --
--- FIXME: It *would* be nice to have a proper write-using filter built-in in
+-- FIXME: It *would* be nice to have a proper write-using filter built-in
 -- Futhark instead of an ordinary function (which cannot take an anonymous
 -- function).
 fun i32_filter (bs: [k]bool) (ns: [k]i32): *[]i32 =
