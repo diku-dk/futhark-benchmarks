@@ -63,9 +63,9 @@ fun main(image: [rows][cols]int): [rows][cols]f32 =
 
     let (dN, dS, dW, dE, c) =
       unzip(
-        zipWith (fn (i: int, row: []f32): [cols](f32,f32,f32,f32,f32)
+        zipWith (fn (i: int) (row: []f32): [cols](f32,f32,f32,f32,f32)
                    =>
-                    zipWith (fn (j: int, jc: f32): (f32,f32,f32,f32,f32)  =>
+                    zipWith (fn (j: int) (jc: f32): (f32,f32,f32,f32,f32)  =>
                               let dN_k = unsafe image[indexN(rows,i),j] - jc in
                               let dS_k = unsafe image[indexS(rows,i),j] - jc in
                               let dW_k = unsafe image[i, indexW(cols,j)] - jc in
@@ -87,9 +87,9 @@ fun main(image: [rows][cols]int): [rows][cols]f32 =
                ) (iota(rows)) image) in
 
     let image =
-      zipWith (fn (i: int, image_row: []f32, c_row: []f32, dN_row: []f32, dS_row: []f32, dW_row: []f32, dE_row: []f32): [cols]f32
+      zipWith (fn (i: int) (image_row: []f32) (c_row: []f32) (dN_row: []f32) (dS_row: []f32) (dW_row: []f32) (dE_row: []f32): [cols]f32
                  =>
-                zipWith (fn (j: int, pixel: f32, c_k: f32, dN_k: f32, dS_k: f32, dW_k: f32, dE_k: f32): f32  =>
+                zipWith (fn (j: int) (pixel: f32) (c_k: f32) (dN_k: f32) (dS_k: f32) (dW_k: f32) (dE_k: f32): f32  =>
                           let cN = c_k in
                           let cS = unsafe c[indexS(rows, i), j] in
                           let cW = c_k in

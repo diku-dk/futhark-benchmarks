@@ -70,8 +70,7 @@ fun advance_body(time_step: f32, this_body: body): body =
   let (xv', yv', zv') = vel'
   in (pos', mass, vel', acc)
 
-fun advance_body_wrap(time_step: f32) (body_and_accel : (body, acceleration)): body =
-  let ((pos, mass, vel, acc), accel) = body_and_accel
+fun advance_body_wrap(time_step: f32) ((pos, mass, vel, acc):body) (accel:acceleration): body =
   let accel' = vec_mult_factor(mass, accel)
   let body' = (pos, mass, vel, accel')
   in advance_body(time_step, body')
@@ -118,7 +117,7 @@ fun main(n_steps: i32,
 
 entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
                        xps: [n]f32, yps: [n]f32, zps: [n]f32): [w][h]int =
-  let (is, vs) = unzip(zipWith (renderPoint(w,h,x_ul,y_ul,x_br,y_br)) xps yps zps)
+  let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br)) (zip xps yps zps))
   in reshape (w,h) (write is vs (replicate (w*h) 0))
 
 fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)

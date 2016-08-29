@@ -16,7 +16,7 @@ fun mult(xss: [n][m]f32, yss: [m][p]f32): [n][p]f32 =
             transpose(yss))) xss
 
 fun add(xss: [n][m]f32, yss: [n][m]f32): [n][m]f32 =
-  zipWith (fn (xs: []f32, ys: []f32): [m]f32  =>
+  zipWith (fn (xs: []f32) (ys: []f32): [m]f32  =>
             zipWith (+) xs ys) xss yss
 
 fun scale(xss: [n][m]f32, a: f32): [n][m]f32 =
