@@ -29,7 +29,7 @@ fun xorInds(n: int) (dir_vs: [num_bits]int): int =
     let reldv_vals = map (fn (dv: int, i: int): int  => 
                             if testBit(grayCode(n),i) 
                             then dv else 0
-                        ) (zip(dir_vs,iota(num_bits)) ) in
+                        ) (zip (dir_vs) (iota(num_bits)) ) in
     reduce (^) 0 (reldv_vals )
 
 fun sobolIndI (dir_vs:  [m][num_bits]int, n: int ): [m]int =
@@ -59,7 +59,7 @@ fun sobolRecI(sob_dir_vs: [][num_bits]int, prev: []int, n: int): []int =
   map  (fn (vct_prev: ([]int,int)): int  => 
 	 let (vct_row, prev) = vct_prev in
 	 vct_row[bit] ^ prev
-      ) (zip(sob_dir_vs,prev))
+      ) (zip (sob_dir_vs) prev)
 
 fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]int, lu_bds: (int,int) ): [][]f32 =
   let (lb_inc, ub_exc) = lu_bds in 
@@ -269,14 +269,14 @@ fun correlateDeltas(md_c:  [num_und][num_und]f32,
 fun combineVs(n_row:   [num_und]f32, 
                                vol_row: [num_und]f32, 
                                dr_row: [num_und]f32 ): [num_und]f32 =
-    map (+) (zip(dr_row, map (*) (zip(n_row, vol_row ) )))
+    map (+) (zip (dr_row) (map (*) (zip (n_row) (vol_row ) )))
 
 fun mkPrices(md_starts:    [num_und]f32,
            md_vols: [num_dates][num_und]f32,
 		   md_drifts: [num_dates][num_und]f32,
            noises: [num_dates][num_und]f32
 ): [num_dates][num_und]f32 =
-    let c_rows = map combineVs (zip(noises, md_vols, md_drifts) ) in
+    let c_rows = map combineVs (zip noises (md_vols) (md_drifts) ) in
     let e_rows = map (fn (x: []f32): [num_und]f32  =>
                         map exp32 x
                     ) (c_rows --map( combineVs, zip(noises, md_vols, md_drifts) )
@@ -324,13 +324,13 @@ fun main(contract_number:
   let bb_mat    = map  (brownianBridge( num_und, bb_inds, bb_data )) (gauss_mat ) in
 
   let payoffs   = map  (fn (bb_row: [][]f32): [num_models]f32  =>
-			  let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
+			  let market_params = zip (md_cs) (md_vols) (md_drifts) (md_sts) in
 			  let bd_row =
                             map  (fn (m: ([][]f32,[][]f32,[][]f32,[]f32)): [num_dates][num_und]f32  =>
 				   let (c,vol,drift,st) = m in
 				   blackScholes(c, vol, drift, st, bb_row)
 				) (market_params) in
-                          let payoff_params = zip(md_discts, md_detvals, bd_row) in
+                          let payoff_params = zip (md_discts) (md_detvals) (bd_row) in
                           map  (fn (p: ([]f32,[]f32,[][]f32)): f32  =>
 				 let (disct, detval, bd) = p in
 				 genericPayoff(contract_number, disct, detval, bd)
@@ -368,13 +368,13 @@ fun mainRec(contract_number:
   let bb_mat    = map  (brownianBridge( num_und, bb_inds, bb_data )) (gauss_mat ) in
 
   let payoffs   = map  (fn (bb_row: [][]f32): []f32  =>
-			                let market_params = zip(md_cs, md_vols, md_drifts, md_sts) in
+			                let market_params = zip (md_cs) (md_vols) (md_drifts) (md_sts) in
 			                let bd_row = map  (fn (m: ([][]f32,[][]f32,[][]f32,[]f32)): [][]f32  =>
 				                                let (c,vol,drift,st) = m in
 					                            blackScholes(c, vol, drift, st, bb_row)
 					                         ) (market_params) 
                             in
-			                let payoff_params = zip(md_discts, md_detvals, bd_row) in  
+			                let payoff_params = zip (md_discts) (md_detvals) (bd_row) in  
                             map  (fn (p: ([]f32,[]f32,[][]f32)): f32  =>
 				                    let (disct, detval, bd) = p in
 				                    genericPayoff(contract_number, disct, detval, bd)

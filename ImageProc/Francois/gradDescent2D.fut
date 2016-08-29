@@ -174,7 +174,7 @@ fun main(v:  [m][n]f32
                     , xi_1: [m][n]f32
                     , g: [m][n]f32
                     , tp: f32 ): [m][n]f32 =
-    add_descent_div2s(v, zip@1(xi_0,xi_1), g, tp)
+    add_descent_div2s(v, zip@1 xi_0 xi_1, g, tp)
 
 fun main2(v:  [m][n][k]f32
                         , xi: [m][n][k](f32,f32)

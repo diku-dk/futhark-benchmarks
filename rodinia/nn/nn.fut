@@ -12,7 +12,7 @@ fun emptyRecord(): (int, f32) = (0, 0.0f32)
 fun main(resultsCount:    int, lat: f32, lng: f32, 
         locations_lat: [numRecords]f32, 
         locations_lng: [numRecords]f32    ): ([resultsCount]int, [resultsCount]f32) =
-  let locations    = zip(locations_lat, locations_lng) in
+  let locations    = zip (locations_lat) (locations_lng) in
   -- let resultsCount = if (resultsCount > numRecords) then numRecords else resultsCount in
   let distances = 
       map (fn (latlng: (f32,f32)): f32  =>
@@ -29,7 +29,7 @@ fun main(resultsCount:    int, lat: f32, lng: f32,
                             if(d1 < d2) then (d1, i1) 
                             else if (d2 < d1) then (d2, i2)
                                  else if (i1 < i2) then (d1, i1) else (d2, i2)
-                      ) (infty(), 0) (zip(distances, iota(numRecords)) )
+                      ) (infty(), 0) (zip distances (iota(numRecords)) )
         in
         let distances[minLoc] = infty() in
         let results_ind[i] = minLoc     in

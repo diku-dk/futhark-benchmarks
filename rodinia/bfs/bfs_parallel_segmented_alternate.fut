@@ -83,7 +83,7 @@ fun step(cost: *[n]i32,
                                 || ! unsafe graph_mask[tid])
                             then -1
                             else id) (
-                          zip(node_ids, tids))
+                          zip (node_ids) tids)
 
   let costs_new = map (fn (tid: i32): i32  =>
                         unsafe cost[tid] + 1) tids

@@ -14,7 +14,7 @@ fun closest_point(p1: (int,f32)) (p2: (int,f32)): (int,f32) =
 
 fun find_nearest_point(pts: [k](f32,f32)) (pt: (f32,f32)): int =
   let (i, _) = reduceComm closest_point (0, euclid_dist_2 pt pts[0]) (
-                          zip(iota(k),
+                          zip (iota(k)) (
                               map (euclid_dist_2(pt)) pts)) in
   i
 

@@ -21,7 +21,7 @@ fun main(pop:  int, mcmc_conv: int, l: int
         , hermWeights: []f32,   lll: int   
         , sobDirVct: []int
         ): (f32,f32,f32,f32,f32,f32,[][]f32) = 
-  let hermData  = zip(hermCoefs, hermWeights) in
+  let hermData  = zip hermCoefs hermWeights in
   interestCalibKernel(pop, mcmc_conv, swaptions, hermData, sobDirVct)
 
 ----------------------------------------------------
@@ -78,7 +78,7 @@ fun interestCalibKernel(pop:  int
                         map  (sobolInd(sobDirVct)) z5s
                     ) (iota(pop) ) in
              let new_gene_rat = 
-                 map mutate_dims_all (zip(sob_mat,genomes,proposals) ) in
+                 map mutate_dims_all (zip (sob_mat) genomes proposals ) in
              let (new_genomes, fb_rats) = unzip(new_gene_rat) 
              in  (new_genomes, fb_rats, sob_offs+5*pop)
 
@@ -94,7 +94,7 @@ fun interestCalibKernel(pop:  int
                     ) (iota(pop) ) 
              in
              let new_gene_rat = 
-                 map (mutate_dims_one(dim_j)) (zip(sob_mat, genomes, proposals) ) in
+                 map (mutate_dims_one(dim_j)) (zip (sob_mat) genomes proposals ) in
              let (new_genomes, fb_rats) = unzip(new_gene_rat) 
              in  (new_genomes, fb_rats, sob_offs+5*pop+1)
 
@@ -138,7 +138,7 @@ fun interestCalibKernel(pop:  int
                        then (new_gene, new_logLik)
                        else (gene,     logLik    )
                  in (copy(res_gene), res_logLik)
-             ) (zip(genomes, logLiks, proposals, new_logLiks, fb_rats, iota(pop))
+             ) (zip genomes logLiks proposals (new_logLiks) (fb_rats) (iota(pop))
              )
       in
       let (res_genomes, res_logLiks) = unzip(res_gene_liks) in
@@ -150,7 +150,7 @@ fun interestCalibKernel(pop:  int
       reduce (fn (t1: (int,f32)) (t2: (int,f32)): (int,f32)  =>
                 let (i1, v1) = t1 in let (i2, v2) = t2 in
                 if (v1 < v2) then (i2, v2) else (i1, v1)
-            ) (0, -infinity()) (zip( iota(pop), logLiks ) 
+            ) (0, -infinity()) (zip (iota(pop)) logLiks 
             )
   in
   let winner = genomes[winner_ind] in
@@ -271,7 +271,7 @@ fun evalGenomeOnSwap (genomea: []f32,
              ) (iota(n_schedi) ) in
   let (bas, bbs, aicis, log_aicis, scales, cs, t1_cs) = unzip(tmp_arrs) in
   let scals = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy)     in
-  let exact_arrs = zip( bas, bbs, aicis, log_aicis )                    in
+  let exact_arrs = zip bas bbs aicis (log_aicis )                    in
 
   -- exactYhat via Brent method 
   let eps = 0.5 * sigmax in
@@ -280,7 +280,7 @@ fun evalGenomeOnSwap (genomea: []f32,
   let h   = exactYhat( n_schedi, scals, exact_arrs, mux - eps ) in
 
   -- integration with Hermite polynomials
-  let herm_arrs   = zip( bbs, scales, cs, t1_cs ) in
+  let herm_arrs   = zip bbs scales cs (t1_cs ) in
   let df          = 0.5 * ( g - h ) / eps    in
   let sqrt2sigmax = sqrt32(2.0) * sigmax       in
   let t2          = rhoxy / (sigmax*rhoxycs) in
@@ -297,7 +297,7 @@ fun evalGenomeOnSwap (genomea: []f32,
                                            let fact_aici = csi                  in
                                            let expo_part = uGaussian_P_withExpFactor( -h2, expo_aici )
                                            in  fact_aici * expo_part
-                                       ) (zip( bbs, scales, cs, t1_cs )
+                                       ) (zip bbs scales cs (t1_cs )
                                        ) in
                       let accum1 = reduce (+) (0.0) accum1s in 
                       let tmp    = sqrt32(2.0) * x_quad           in
@@ -347,7 +347,7 @@ fun initGenome (rand_nums: []f32): []f32 =
                     let (r01, (g_min, g_max, g_ini)) = tup 
                     in  r01*(g_max - g_min) + g_min
                     
-               ) (zip(rand_nums, genomeBounds())
+               ) (zip (rand_nums) (genomeBounds())
                ) 
 
 fun selectMoveType(r01: f32): int = 
@@ -364,9 +364,9 @@ fun mutate_dims_all(tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
   let gene_bds = genomeBounds()   in
   let amplitude = moves_unif_ampl_ratio() in
   let gene_rats = map mutateHelper (
-                       zip(replicate n amplitude, sob_row,orig,muta,gene_bds) ) in
+                       zip (replicate n amplitude) (sob_row) orig muta (gene_bds) ) in
   let (tmp_genome, fb_rats) = unzip(gene_rats) in
-  let new_genome= map constrainDim (zip(tmp_genome, gene_bds) ) in
+  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) ) in
   let fb_rat    = reduce (*) (1.0) (fb_rats)
   in  (copy(new_genome), fb_rat)
   
@@ -377,9 +377,9 @@ fun mutate_dims_one(dim_j: int) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
                           if i == dim_j then moves_unif_ampl_ratio() else 0.0
                      ) (iota(n) )
   in  
-  let gene_rats = map mutateHelper (zip(amplitudes,sob_row,orig,muta,gene_bds) ) in
+  let gene_rats = map mutateHelper (zip amplitudes (sob_row) orig muta (gene_bds) ) in
   let (tmp_genome, fb_rats) = unzip(gene_rats) in
-  let new_genome= map constrainDim (zip(tmp_genome, gene_bds) ) in
+  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) ) in
   let fb_rat    = reduce (*) (1.0) (fb_rats)
   in  (copy(new_genome), fb_rat)
 
@@ -397,7 +397,7 @@ fun mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f3
   let tmp_genome = zipWith (perturbation(gamma1,ampl_ratio) 
                           ) (g_i) (g_k) (g_l) (sob_row) (mm_diffs  )
  
-  in  copy( map constrainDim (zip(tmp_genome, gene_bds) ) )
+  in  copy( map constrainDim (zip (tmp_genome) (gene_bds) ) )
   
 
 fun perturbation(gamma1:  f32, ampl_rat : f32)
@@ -640,7 +640,7 @@ fun extended_swaption_of_swaption(swaption: (f32,f32,f32)): (f32,[](f32,f32),(f3
                             ) (0.0, max_date(), min_date()) a12s in
 
     let (lvls, a1s, a2s) = unzip( a12s )     in
-    let swap_sched       = zip  ( a1s, a2s ) in
+    let swap_sched       = zip   a1s a2s in
     let strike     = (zc(t0) - zc(tn)) / lvl
 
     in (maturity, swap_sched, (strike,lvl))
@@ -837,11 +837,11 @@ fun pricer_of_swaption(today:  f32,
                     let scale  = -(bai + bbi*t4)                              in
                         (bai, bbi, aici, log_aici, t1_cst, scale)
 
-                ) (zip(scheduleiy, ci)
+                ) (zip scheduleiy ci
             )
         )                                                               in
 
-    let babaici = zip(bai, bbi, aici, log_aici)                         in
+    let babaici = zip bai bbi aici (log_aici)                         in
     let scals   = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy) in
 
     let eps = 0.5 * sigmax                                     in
@@ -870,7 +870,7 @@ fun pricer_of_swaption(today:  f32,
                                             let (bbii, t1_csti, scalei) = bbit1cstscale in
                                             let h2 = h1 + bbii * sigmay_rhoxycs in
                                                 t1_csti * exp32(scalei*x) * uGaussian_P(-h2)
-                                        ) (zip(bbi, t1_cst, scale)
+                                        ) (zip bbi (t1_cst) scale
                                      ) in
                         let accum = reduce (+) (0.0) tmps in
                         let integrand_res = t1 * ( uGaussian_P(-h1) - accum )
@@ -880,7 +880,7 @@ fun pricer_of_swaption(today:  f32,
 
                         in w_quad * integrand_res
 
-                  ) (zip(x_quads, w_quads)
+                  ) (zip (x_quads) (w_quads)
                   )                        in
     let sum = reduce (+) (0.0) tmps      in
             zc_mat * ( sum / sqrt32( pi() ) )
@@ -951,7 +951,7 @@ fun exactYhat(n_schedi:  int,
               let root_lb = max(yl, y0) in
               let root_ub = min(yu, y1) in
               let (root, iteration, error) =
-                    rootFinding_Brent(1, zip(scales, bbi), root_lb, root_ub, 1.0e-4, 1000) in
+                    rootFinding_Brent(1, zip scales bbi, root_lb, root_ub, 1.0e-4, 1000) in
 
               if      ( error == -infinity() ) then y0 - 1.0
               else if ( error ==  infinity() ) then y1 + 1.0

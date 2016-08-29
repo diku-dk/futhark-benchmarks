@@ -111,7 +111,7 @@ fun main(n_steps: i32,
        xas: [n]f32,
        yas: [n]f32,
        zas: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
-  let bodies  = map wrap_body (zip(xps, yps, zps, ms, xvs, yvs, zvs, xas, yas, zas))
+  let bodies  = map wrap_body (zip xps yps zps ms xvs yvs zvs xas yas zas)
   let bodies' = advance_bodies_steps(n_steps, epsilon, time_step, bodies)
   let bodies'' = map unwrap_body (bodies')
    in unzip(bodies'')

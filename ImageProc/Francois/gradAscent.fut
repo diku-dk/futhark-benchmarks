@@ -172,5 +172,5 @@ fun main(xi_0:  [m][n][p][k]f32
         , td: f32 ): ([m][n][p][k]f32,
      [m][n][p][k]f32,
      [m][n][p][k]f32) =
-  unzip(add_ascent_grad3v( zip@3(xi_0,xi_1,xi_2), v, td ))
+  unzip(add_ascent_grad3v( zip@3 xi_0 xi_1 xi_2, v, td ))
 

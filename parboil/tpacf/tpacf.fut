@@ -86,7 +86,7 @@ fun doComputeSelf(data:
                         in
                         unsafe let dBins[index] = dBins[index] + 1i32 in dBins
                     in dBins
-                ) (zip(data, iota(numD)))
+                ) (zip data (iota(numD)))
     in
     sumBins(value)
 
@@ -107,10 +107,10 @@ fun main(datapointsx:
     let binb = map (fn (k: f64): f64  =>
                         cos64((10.0 ** (log10(min_arcmin()) + k*1.0/bins_per_dec())) / 60.0 * dec2rad(1.0))) (
                     iota32(numBins() + 1))
-    let datapoints = map fixPoints (zip(datapointsx, datapointsy))
+    let datapoints = map fixPoints (zip datapointsx datapointsy)
     let randompoints = map (fn (x: [numR]f64, y: [numR]f64): [numR]vec3  =>
-                            map fixPoints (zip(x,y))) (
-                           zip(randompointsx, randompointsy))
+                            map fixPoints (zip x y)) (
+                           zip randompointsx randompointsy)
     let (rrs, drs) = unzip(map (fn (random: [numR]vec3): (*[]i32, *[]i32)  =>
                                 (doComputeSelf(random, numBins(), numBins2, binb),
                                 doCompute(datapoints, random, numBins(), numBins2, binb))) randompoints)
