@@ -7,10 +7,10 @@
 
 fun sum_of_cell_and_neighbors(i: int, j: int, board: [n][m]i8): i8 =
   unsafe
-  let above = (i - 1) % n in
-  let below = (i + 1) % n in
-  let right = (j + 1) % m in
-  let left = (j - 1) % m in
+  let above = (i - 1) % n
+  let below = (i + 1) % n
+  let right = (j + 1) % m
+  let left = (j - 1) % m
   board[above,left] + board[above,j] + board[above,right] +
   board[i,left] + board[i,j] + board[i,right] +
   board[below,left] + board[below,j] + board[below,right]
@@ -23,7 +23,7 @@ fun all_neighbour_sums(board: [n][m]i8): [n][m]i8 =
      ) (iota(n))
 
 fun iteration(board: [n][m]i8): [n][m]i8 =
-  let all_sums = all_neighbour_sums(board) in
+  let all_sums = all_neighbour_sums(board)
   map (fn (row_sums: []i8): [m]i8  =>
         map (fn (s: i8): i8  =>
               let t = [0i8,0i8,0i8,2i8,2i8,3i8,3i8,

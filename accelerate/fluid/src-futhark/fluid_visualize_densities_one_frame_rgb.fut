@@ -13,7 +13,7 @@ fun clamp(x: f32): i8 =
 
 fun draw_densities(ds: [g][g]f32,
                  g_minus_two: i32): [g_minus_two][g_minus_two][3]i8 =
-  let ks = map (fn (k: i32): i32  => k + 1) (iota(g_minus_two)) in
+  let ks = map (fn (k: i32): i32  => k + 1) (iota(g_minus_two))
   map (fn (i: i32): [g_minus_two][3]i8  =>
         map (fn (j: i32): [3]i8  =>
               let value = clamp(255.0f32 * unsafe ds[i, j])
@@ -31,7 +31,7 @@ fun draw_one_frame(u0: [g][g]f32,
      [g][g]f32,
      [g][g]f32) =
   let (u1, v1, d1) = step(u0, v0, d0, n_solver_steps,
-                       time_step, diffusion_rate, viscosity) in
+                       time_step, diffusion_rate, viscosity)
   (draw_densities(d1, g_minus_two), u1, v1, d1)
 
 fun main(u0: [g][g]f32,

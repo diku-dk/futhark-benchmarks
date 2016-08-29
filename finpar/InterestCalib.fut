@@ -13,14 +13,14 @@
 default(f32)
 
 --------------------------------------------------/
---/ ENTRY POINT 
+--/ ENTRY POINT
 --------------------------------------------------/
 fun main(pop:  int, mcmc_conv: int, l: int
-        , swaptions: [][]f32,     ll: int  
-        , hermCoefs: []f32     
-        , hermWeights: []f32,   lll: int   
+        , swaptions: [][]f32,     ll: int
+        , hermCoefs: []f32
+        , hermWeights: []f32,   lll: int
         , sobDirVct: []int
-        ): (f32,f32,f32,f32,f32,f32,[][]f32) = 
+        ): (f32,f32,f32,f32,f32,f32,[][]f32) =
   let hermData  = zip hermCoefs hermWeights in
   interestCalibKernel(pop, mcmc_conv, swaptions, hermData, sobDirVct)
 
@@ -30,7 +30,7 @@ fun main(pop:  int, mcmc_conv: int, l: int
 ----------------------------------------------------
 fun makeSummary(quote_prices: [](f32,f32)): [][]f32 =
   map (fn (qp: (f32,f32)): []f32  =>
-         let (black_price, calib_price) = qp in
+         let (black_price, calib_price) = qp
          let err_ratio =  (calib_price - black_price) / black_price in
          [10000.0*calib_price, 10000.0*black_price, 100.0*fabs(err_ratio)]
      ) (quote_prices
@@ -44,119 +44,119 @@ fun interestCalibKernel(pop:  int
                        , swaptions: [][]f32
                        , hermdata: [](f32,f32)
                        , sobDirVct: []int
-                       ): (f32,f32,f32,f32,f32,f32,[][]f32) = 
+                       ): (f32,f32,f32,f32,f32,f32,[][]f32) =
   -- initialize the genomes
   let genomes = map  (fn (i: int): []f32  =>
-                        let k   = 5*i + 1                  in
-                        let z5s = map  (+k) (iota(5) ) in
+                        let k   = 5*i + 1
+                        let z5s = map  (+k) (iota(5) )
                         let sobs= map  (sobolInd(sobDirVct)) z5s
-                        in  initGenome( copy(sobs) ) 
-                    ) (iota(pop) ) in
+                        in  initGenome( copy(sobs) )
+                    ) (iota(pop) )
   -- evaluate genomes
   let logLiks = map  (fn (genome: []f32): f32  =>
                         let qtprs = map  (evalGenomeOnSwap(genome,hermdata)
-                                        ) swaptions in 
+                                        ) swaptions
                         let terms = map  logLikelihood qtprs in
                                   reduce (+) (0.0) terms
-                    ) genomes in
+                    ) genomes
 --  logLiks
 --  genomes[pop/2]
-  let proposals = copy(genomes) in
+  let proposals = copy(genomes)
   let sob_offs = 5*pop+1        in
   loop ((genomes,proposals,logLiks,sob_offs)) =
     for j < mcmc_conv do
-      let rand01   = sobolInd sobDirVct sob_offs     in
-      let move_type= selectMoveType(rand01)          in
-      let sob_offs = sob_offs + 1                    in
+      let rand01   = sobolInd sobDirVct sob_offs
+      let move_type= selectMoveType(rand01)
+      let sob_offs = sob_offs + 1
 
       let (proposals, fb_rats, sob_offs) =
         if (move_type == 1) --  move_type == DIMS_ALL
-        then let sob_mat = 
+        then let sob_mat =
                  map (fn (i: int): []f32  =>
-                        let k   = 5*i + sob_offs          in
+                        let k   = 5*i + sob_offs
                         let z5s = map (+k) (iota(5) ) in
                         map  (sobolInd(sobDirVct)) z5s
-                    ) (iota(pop) ) in
-             let new_gene_rat = 
-                 map mutate_dims_all (zip (sob_mat) genomes proposals ) in
-             let (new_genomes, fb_rats) = unzip(new_gene_rat) 
+                    ) (iota(pop) )
+             let new_gene_rat =
+                 map mutate_dims_all (zip (sob_mat) genomes proposals )
+             let (new_genomes, fb_rats) = unzip(new_gene_rat)
              in  (new_genomes, fb_rats, sob_offs+5*pop)
 
-        else 
+        else
         if (move_type == 2) -- move_type == DIMS_ONE
-        then let s1  = sobolInd sobDirVct sob_offs in
-             let dim_j = int( s1 * f32(5) )        in
-             let sob_mat = 
+        then let s1  = sobolInd sobDirVct sob_offs
+             let dim_j = int( s1 * f32(5) )
+             let sob_mat =
                  map (fn (i: int): []f32  =>
-                        let k   = 5*i + sob_offs + 1    in
+                        let k   = 5*i + sob_offs + 1
                         let z5s = map (+k) (iota(5)) in
                         map  (sobolInd(sobDirVct)) z5s
-                    ) (iota(pop) ) 
-             in
-             let new_gene_rat = 
-                 map (mutate_dims_one(dim_j)) (zip (sob_mat) genomes proposals ) in
-             let (new_genomes, fb_rats) = unzip(new_gene_rat) 
+                    ) (iota(pop) )
+
+             let new_gene_rat =
+                 map (mutate_dims_one(dim_j)) (zip (sob_mat) genomes proposals )
+             let (new_genomes, fb_rats) = unzip(new_gene_rat)
              in  (new_genomes, fb_rats, sob_offs+5*pop+1)
 
         else                -- move_type == DEMCMC
-             let new_genomes = 
+             let new_genomes =
                  map (fn (i: int): *[]f32  =>
-                        let kk  = 8*i + sob_offs        in
-                        let s1  = sobolInd sobDirVct kk in
-                        let k = int( s1 * f32(pop-1) )  in -- random in [0,pop-1)
-                        let (k,cand_UB) = if k == i 
+                        let kk  = 8*i + sob_offs
+                        let s1  = sobolInd sobDirVct kk
+                        let k = int( s1 * f32(pop-1) )  -- random in [0,pop-1)
+                        let (k,cand_UB) = if k == i
                                           then (pop-1, pop-2)
-                                          else (k,     pop-1) 
-                        in
-                        let s2  = sobolInd sobDirVct (kk+1) in
-                        let l = int( s2*f32(cand_UB) ) in -- random in [0,cand_UB -1)
+                                          else (k,     pop-1)
+
+                        let s2  = sobolInd sobDirVct (kk+1)
+                        let l = int( s2*f32(cand_UB) ) -- random in [0,cand_UB -1)
                         let l = if (l == i) || (l == k)
                                 then cand_UB
                                 else l
-                        in
-                        let s3      = sobolInd sobDirVct (kk+2)      in
-                        let z5s     = map (+(kk+3)) (iota(5) ) in
+
+                        let s3      = sobolInd sobDirVct (kk+2)
+                        let z5s     = map (+(kk+3)) (iota(5) )
                         let sob_row = map (sobolInd(sobDirVct)) z5s in
                             mcmc_DE(s3, sob_row, genomes[i], genomes[k], genomes[l])
-                    ) (iota(pop) ) 
+                    ) (iota(pop) )
              in  (new_genomes, replicate pop 1.0, sob_offs+8*pop)
-        in
-      let new_logLiks = 
+
+      let new_logLiks =
           map  (fn (genome: []f32): f32  =>
                     let qtprs = map  (evalGenomeOnSwap(genome,hermdata)
-                                    ) swaptions in 
+                                    ) swaptions
                     let terms = map  logLikelihood qtprs in
                     reduce (+) (0.0) terms
-              ) proposals in
-      let res_gene_liks = 
+              ) proposals
+      let res_gene_liks =
           map (fn (tup: ([]f32,f32,[]f32,f32,f32,int)): (*[]f32,f32)  =>
-                 let (gene, logLik, new_gene, new_logLik, fb_rat, i) = tup    in
-                 let acceptance = min( 1.0, exp32(new_logLik - logLik)*fb_rat ) in
-                 let rand01     = sobolInd sobDirVct (sob_offs+i)           in
-                 let (res_gene, res_logLik) = 
-                       if ( rand01 < acceptance ) 
+                 let (gene, logLik, new_gene, new_logLik, fb_rat, i) = tup
+                 let acceptance = min( 1.0, exp32(new_logLik - logLik)*fb_rat )
+                 let rand01     = sobolInd sobDirVct (sob_offs+i)
+                 let (res_gene, res_logLik) =
+                       if ( rand01 < acceptance )
                        then (new_gene, new_logLik)
                        else (gene,     logLik    )
                  in (copy(res_gene), res_logLik)
              ) (zip genomes logLiks proposals (new_logLiks) (fb_rats) (iota(pop))
              )
-      in
+
       let (res_genomes, res_logLiks) = unzip(res_gene_liks) in
       (res_genomes, proposals, res_logLiks, sob_offs+pop)
   -- END OF DO LOOP!!!
 
-  in
-  let (winner_ind, winner_logLik) = 
+
+  let (winner_ind, winner_logLik) =
       reduce (fn (t1: (int,f32)) (t2: (int,f32)): (int,f32)  =>
-                let (i1, v1) = t1 in let (i2, v2) = t2 in
+                let (i1, v1) = t1 let (i2, v2) = t2 in
                 if (v1 < v2) then (i2, v2) else (i1, v1)
-            ) (0, -infinity()) (zip (iota(pop)) logLiks 
+            ) (0, -infinity()) (zip (iota(pop)) logLiks
             )
-  in
-  let winner = genomes[winner_ind] in
-  let winner_quote_prices = 
+
+  let winner = genomes[winner_ind]
+  let winner_quote_prices =
       map  (evalGenomeOnSwap(genomes[winner_ind],hermdata)
-          ) swaptions 
+          ) swaptions
   in  ( winner[0],winner[1],winner[4],winner[3],winner[2],winner_logLik
       , makeSummary(winner_quote_prices)
       )
@@ -168,7 +168,7 @@ fun eps0   (): f32 = 1.0e-3
 fun eps    (): f32 = 1.0e-5
 fun pi     (): f32 = 3.1415926535897932384626433832795
 
-fun is_cauchy_llhood  (): bool = True 
+fun is_cauchy_llhood  (): bool = True
 fun llhood_cauchy_offs(): f32 = 5.0
 fun llhood_normal_offs(): f32 = 1.0
 
@@ -197,67 +197,67 @@ fun equal(x1: f32, x2: f32): bool =
 fun evalGenomeOnSwap (genomea: []f32,
                       hermdata: [](f32,f32))
                      (swaption: []f32): (f32,f32) =
-  let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4]) in
-  let swap_freq  = swaption[1] in
-  let maturity   = add_years( today(), swaption[0] ) in
-  let n_schedi   = int(12.0 * swaption[2] / swap_freq) in
+  let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4])
+  let swap_freq  = swaption[1]
+  let maturity   = add_years( today(), swaption[0] )
+  let n_schedi   = int(12.0 * swaption[2] / swap_freq)
 
-  let tmat0      = date_act_365( maturity, today() ) in
+  let tmat0      = date_act_365( maturity, today() )
 
   ----------------------------------------
   -- Quote (black) price computation
-  -- This computation does not depend on 
+  -- This computation does not depend on
   --   the swaption and can be separated
   --   and hoisted outside the swaption
   --   and convergence loop ...
   ----------------------------------------
   let a12s = map  (fn (i: int): (f32,f32,f32)  =>
-                     let a1 = add_months( maturity, swap_freq*f32(i) ) in
+                     let a1 = add_months( maturity, swap_freq*f32(i) )
                      let a2 = add_months( a1, swap_freq ) in
                      ( zc(a2) * date_act_365(a2, a1), a1, a2 )
-                 ) (iota(n_schedi) ) in
+                 ) (iota(n_schedi) )
   let (lvl, t0, tn) = reduce (fn (tup1:  (f32,f32,f32))
                                  (tup2: (f32,f32,f32) ): (f32,f32,f32)  =>
-                                let (lvl,t0,tn) = tup1 in
+                                let (lvl,t0,tn) = tup1
                                 let (a12,a1,a2) = tup2 in
                                 ( lvl + a12, min(t0,a1), max(tn,a2) )
-                            ) (0.0, max_date(), min_date()) a12s in
+                            ) (0.0, max_date(), min_date()) a12s
 
-  let strike     = ( zc(t0) - zc(tn) ) / lvl in
-  let d1         = 0.5 * swaption[3] * tmat0 in
-  let new_quote  = lvl * strike * ( uGaussian_P(d1) - uGaussian_P(-d1) ) in
+  let strike     = ( zc(t0) - zc(tn) ) / lvl
+  let d1         = 0.5 * swaption[3] * tmat0
+  let new_quote  = lvl * strike * ( uGaussian_P(d1) - uGaussian_P(-d1) )
 
   -- starting new price compuation
-  let (v0_mat, dummy1, dummy2) = bigv( (a,b,rho,nu,sigma), tmat0 ) in
-  let mux = 0.0 - bigmx( (a,b,rho,nu,sigma), today(), maturity, today(), maturity ) in
-  let muy = 0.0 - bigmy( (a,b,rho,nu,sigma), today(), maturity, today(), maturity ) in
-  let zc_mat = zc(maturity) in
-  let sqrt_bfun_a = sqrt32( b_fun(2.0*a, tmat0) ) in
-  let sqrt_bfun_b = sqrt32( b_fun(2.0*b, tmat0) ) in
-  let rhoxy  = rho * b_fun(a+b, tmat0) / (sqrt_bfun_a * sqrt_bfun_b) in
-  let sigmax = sigma * sqrt_bfun_a  in
-  let sigmay = nu    * sqrt_bfun_b  in
+  let (v0_mat, dummy1, dummy2) = bigv( (a,b,rho,nu,sigma), tmat0 )
+  let mux = 0.0 - bigmx( (a,b,rho,nu,sigma), today(), maturity, today(), maturity )
+  let muy = 0.0 - bigmy( (a,b,rho,nu,sigma), today(), maturity, today(), maturity )
+  let zc_mat = zc(maturity)
+  let sqrt_bfun_a = sqrt32( b_fun(2.0*a, tmat0) )
+  let sqrt_bfun_b = sqrt32( b_fun(2.0*b, tmat0) )
+  let rhoxy  = rho * b_fun(a+b, tmat0) / (sqrt_bfun_a * sqrt_bfun_b)
+  let sigmax = sigma * sqrt_bfun_a
+  let sigmay = nu    * sqrt_bfun_b
   --
-  let rhoxyc = 1.0 - rhoxy * rhoxy  in -- used in reduction kernel
-  let rhoxycs= sqrt32( rhoxyc )       in -- used in reduction kernel
-  let sigmay_rhoxycs = sigmay * rhoxycs  in
-  let t4     = (rhoxy * sigmay) / sigmax in
+  let rhoxyc = 1.0 - rhoxy * rhoxy  -- used in reduction kernel
+  let rhoxycs= sqrt32( rhoxyc )       -- used in reduction kernel
+  let sigmay_rhoxycs = sigmay * rhoxycs
+  let t4     = (rhoxy * sigmay) / sigmax
 
   -- computing n_schedi-size temporary arrays
-  let tmp_arrs = 
+  let tmp_arrs =
           map (fn (i: int): (f32,f32,f32,f32,f32,f32,f32)  =>
-                 let beg_date = add_months( maturity, swap_freq*f32(i) ) in 
-                 let end_date = add_months( beg_date, swap_freq  )          in 
-                 let res      = date_act_365( end_date, beg_date ) * strike in
-                 let cii      = if i==(n_schedi-1) then 1.0 + res  else res in
+                 let beg_date = add_months( maturity, swap_freq*f32(i) )
+                 let end_date = add_months( beg_date, swap_freq  )
+                 let res      = date_act_365( end_date, beg_date ) * strike
+                 let cii      = if i==(n_schedi-1) then 1.0 + res  else res
 
-                 let date_tod1= date_act_365(end_date, today()) in
-                 let (v0_end,dummy1,dummy2) = bigv( (a,b,rho,nu,sigma), date_tod1 ) in
+                 let date_tod1= date_act_365(end_date, today())
+                 let (v0_end,dummy1,dummy2) = bigv( (a,b,rho,nu,sigma), date_tod1 )
 
-                 let date_tod2= date_act_365(end_date, maturity) in
-                 let (vt_end, baii, bbii  ) = bigv( (a,b,rho,nu,sigma), date_tod2 ) in
+                 let date_tod2= date_act_365(end_date, maturity)
+                 let (vt_end, baii, bbii  ) = bigv( (a,b,rho,nu,sigma), date_tod2 )
 
-                 let expo_aici = 0.5 * (vt_end - v0_end + v0_mat) in
+                 let expo_aici = 0.5 * (vt_end - v0_end + v0_mat)
                  let fact_aici = cii * zc(end_date) / zc_mat      in
 
                      ( baii
@@ -268,44 +268,44 @@ fun evalGenomeOnSwap (genomea: []f32,
                      , fact_aici
                      , bbii * (mux * t4 - (muy - 0.5*rhoxyc*sigmay*sigmay*bbii) ) + expo_aici
                      )
-             ) (iota(n_schedi) ) in
-  let (bas, bbs, aicis, log_aicis, scales, cs, t1_cs) = unzip(tmp_arrs) in
-  let scals = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy)     in
-  let exact_arrs = zip bas bbs aicis (log_aicis )                    in
+             ) (iota(n_schedi) )
+  let (bas, bbs, aicis, log_aicis, scales, cs, t1_cs) = unzip(tmp_arrs)
+  let scals = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy)
+  let exact_arrs = zip bas bbs aicis (log_aicis )
 
-  -- exactYhat via Brent method 
-  let eps = 0.5 * sigmax in
-  let f   = exactYhat( n_schedi, scals, exact_arrs, mux       ) in
-  let g   = exactYhat( n_schedi, scals, exact_arrs, mux + eps ) in
-  let h   = exactYhat( n_schedi, scals, exact_arrs, mux - eps ) in
+  -- exactYhat via Brent method
+  let eps = 0.5 * sigmax
+  let f   = exactYhat( n_schedi, scals, exact_arrs, mux       )
+  let g   = exactYhat( n_schedi, scals, exact_arrs, mux + eps )
+  let h   = exactYhat( n_schedi, scals, exact_arrs, mux - eps )
 
   -- integration with Hermite polynomials
-  let herm_arrs   = zip bbs scales cs (t1_cs ) in
-  let df          = 0.5 * ( g - h ) / eps    in
-  let sqrt2sigmax = sqrt32(2.0) * sigmax       in
-  let t2          = rhoxy / (sigmax*rhoxycs) in
+  let herm_arrs   = zip bbs scales cs (t1_cs )
+  let df          = 0.5 * ( g - h ) / eps
+  let sqrt2sigmax = sqrt32(2.0) * sigmax
+  let t2          = rhoxy / (sigmax*rhoxycs)
 
   let accums = map (fn (herm_el: (f32,f32)): f32  =>
-                      let (x_quad, w_quad) = herm_el      in
-                      let x  = sqrt2sigmax * x_quad + mux in
-                      let yhat_x = f + df*(x - mux)       in
-                      let h1 = ( (yhat_x - muy) / sigmay_rhoxycs ) - t2*( x - mux ) in
+                      let (x_quad, w_quad) = herm_el
+                      let x  = sqrt2sigmax * x_quad + mux
+                      let yhat_x = f + df*(x - mux)
+                      let h1 = ( (yhat_x - muy) / sigmay_rhoxycs ) - t2*( x - mux )
                       let accum1s = map (fn (tup: (f32,f32,f32,f32)): f32  =>
-                                           let (bbi, scalei, csi, t1_csi) = tup in
-                                           let h2 = h1 + bbi * sigmay_rhoxycs   in
-                                           let expo_aici = t1_csi + scalei*x    in
-                                           let fact_aici = csi                  in
+                                           let (bbi, scalei, csi, t1_csi) = tup
+                                           let h2 = h1 + bbi * sigmay_rhoxycs
+                                           let expo_aici = t1_csi + scalei*x
+                                           let fact_aici = csi
                                            let expo_part = uGaussian_P_withExpFactor( -h2, expo_aici )
                                            in  fact_aici * expo_part
                                        ) (zip bbs scales cs (t1_cs )
-                                       ) in
-                      let accum1 = reduce (+) (0.0) accum1s in 
-                      let tmp    = sqrt32(2.0) * x_quad           in
+                                       )
+                      let accum1 = reduce (+) (0.0) accum1s
+                      let tmp    = sqrt32(2.0) * x_quad
                       let t1     = exp32( - 0.5 * tmp * tmp )     in
                       w_quad * t1 * ( uGaussian_P(-h1) - accum1 )
                   ) hermdata
-  in
-  let accum = reduce (+) (0.0) accums in
+
+  let accum = reduce (+) (0.0) accums
   let new_price = zc_mat * ( accum / sqrt32( pi() ) ) in
   (new_quote, new_price)
 
@@ -313,15 +313,15 @@ fun evalGenomeOnSwap (genomea: []f32,
 --------------------------------------------------/
 --/ Sobol Random Number Generation
 --------------------------------------------------/
---fun []f32 getChunkSobNums(int sob_ini, int CHUNK, []int dirVct) = 
+--fun []f32 getChunkSobNums(int sob_ini, int CHUNK, []int dirVct) =
 --  let norm_fact = 1.0 / ( f32(1 << size(0,dirVct)) + 1.0 ) in
 --  let sob_inds  = map(+sob_ini, iota(CHUNK))
 --  in  map( sobolInd(dirVct,norm_fact), sob_inds )
 
 fun sobolInd(dirVct:  [m]int) (n: int): f32 =
     -- placed norm_fact here to check that hoisting does its job!
-    let norm_fact = 1.0 / ( f32(1 << m) + 1.0 ) in
-    let n_gray = (n >> 1) ^ n in
+    let norm_fact = 1.0 / ( f32(1 << m) + 1.0 )
+    let n_gray = (n >> 1) ^ n
     let res = 0 in
     loop (res) =
       for i < m do
@@ -330,7 +330,7 @@ fun sobolInd(dirVct:  [m]int) (n: int): f32 =
         then res ^ dirVct[i]
         else res
     in  f32(res) * norm_fact
-  
+
 --------------------------------------------------/
 --/ Genome Implementation
 --------------------------------------------------/
@@ -344,115 +344,115 @@ fun genomeBounds(): [](f32,f32,f32) =
 
 fun initGenome (rand_nums: []f32): []f32 =
   map  (fn (tup: (f32, (f32,f32,f32))): f32  =>
-                    let (r01, (g_min, g_max, g_ini)) = tup 
+                    let (r01, (g_min, g_max, g_ini)) = tup
                     in  r01*(g_max - g_min) + g_min
-                    
-               ) (zip (rand_nums) (genomeBounds())
-               ) 
 
-fun selectMoveType(r01: f32): int = 
+               ) (zip (rand_nums) (genomeBounds())
+               )
+
+fun selectMoveType(r01: f32): int =
   if r01 <= 0.2   then 1 -- r01 in [0.0, 0.2] => DIMS_ALL
-  else 
+  else
     if r01 <= 0.5 then 2 -- r01 in (0.2, 0.5] => DIMS_ONE
     else               3 -- r01 in (0.5, 1.0) => DEMCMC
 --( MV_EL_TYPE(0.2,DIMS_ALL), MV_EL_TYPE(0.5,DIMS_ONE), MV_EL_TYPE(1.0,DEMCMC) );
 
 fun moves_unif_ampl_ratio(): f32 = 0.005
 
-fun mutate_dims_all(tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) = 
-  let (sob_row, orig, muta) = tup in
-  let gene_bds = genomeBounds()   in
-  let amplitude = moves_unif_ampl_ratio() in
+fun mutate_dims_all(tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
+  let (sob_row, orig, muta) = tup
+  let gene_bds = genomeBounds()
+  let amplitude = moves_unif_ampl_ratio()
   let gene_rats = map mutateHelper (
-                       zip (replicate n amplitude) (sob_row) orig muta (gene_bds) ) in
-  let (tmp_genome, fb_rats) = unzip(gene_rats) in
-  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) ) in
+                       zip (replicate n amplitude) (sob_row) orig muta (gene_bds) )
+  let (tmp_genome, fb_rats) = unzip(gene_rats)
+  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
   let fb_rat    = reduce (*) (1.0) (fb_rats)
   in  (copy(new_genome), fb_rat)
-  
-fun mutate_dims_one(dim_j: int) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) = 
-  let (sob_row, orig, muta) = tup in
-  let gene_bds = genomeBounds()   in
+
+fun mutate_dims_one(dim_j: int) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
+  let (sob_row, orig, muta) = tup
+  let gene_bds = genomeBounds()
   let amplitudes= map (fn (i: int): f32  =>
                           if i == dim_j then moves_unif_ampl_ratio() else 0.0
                      ) (iota(n) )
-  in  
-  let gene_rats = map mutateHelper (zip amplitudes (sob_row) orig muta (gene_bds) ) in
-  let (tmp_genome, fb_rats) = unzip(gene_rats) in
-  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) ) in
+
+  let gene_rats = map mutateHelper (zip amplitudes (sob_row) orig muta (gene_bds) )
+  let (tmp_genome, fb_rats) = unzip(gene_rats)
+  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
   let fb_rat    = reduce (*) (1.0) (fb_rats)
   in  (copy(new_genome), fb_rat)
 
 
 fun mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f32 =
-  let gene_bds = genomeBounds()         in
-  let gamma_avg = 2.38 / sqrt32(2.0*5.0)    in
-  let ampl_ratio= 0.1 * moves_unif_ampl_ratio() in
-  let gamma1    = gamma_avg - 0.5 + r01 in
-  let mm_diffs  = map (fn (tup: (f32,f32,f32)): f32  => 
-                           let (g_min, g_max, uu) = tup 
+  let gene_bds = genomeBounds()
+  let gamma_avg = 2.38 / sqrt32(2.0*5.0)
+  let ampl_ratio= 0.1 * moves_unif_ampl_ratio()
+  let gamma1    = gamma_avg - 0.5 + r01
+  let mm_diffs  = map (fn (tup: (f32,f32,f32)): f32  =>
+                           let (g_min, g_max, uu) = tup
                            in  g_max - g_min
                      ) (gene_bds )
-  in 
+
   let tmp_genome = map (perturbation(gamma1,ampl_ratio))
                    (zip (g_i) (g_k) (g_l) (sob_row) (mm_diffs))
- 
+
   in  copy( map constrainDim (zip (tmp_genome) (gene_bds) ) )
-  
+
 
 fun perturbation(gamma1:  f32, ampl_rat : f32)
                 (gene: f32, gene_k: f32, gene_l: f32,   r01: f32, mm_diff: f32 ): f32 =
-  let amplitude     = fabs( mm_diff * ampl_rat ) in
-  let semiamplitude = amplitude / 2.0            in
-  let perturb       = ( amplitude * r01 - semiamplitude ) 
+  let amplitude     = fabs( mm_diff * ampl_rat )
+  let semiamplitude = amplitude / 2.0
+  let perturb       = ( amplitude * r01 - semiamplitude )
   in  gene + perturb + gamma1 * ( gene_k - gene_l )
 
 fun mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32,f32)): (f32,f32) =
-  let (g_min, g_max, g_ini) = gmm in
-  let amplitude     = fabs( (g_max - g_min) * ampl_ratio ) in
-  let semiamplitude = amplitude / 2.0 in
-  
-  let tmp_min_max = min( g_max, gene + semiamplitude ) in
-  let tmp_max_min = max( g_min, gene - semiamplitude ) in
-  let forward_range = tmp_min_max - tmp_max_min        in
+  let (g_min, g_max, g_ini) = gmm
+  let amplitude     = fabs( (g_max - g_min) * ampl_ratio )
+  let semiamplitude = amplitude / 2.0
 
-  let tmp_min_max = min( g_max, prop + semiamplitude ) in
-  let tmp_max_min = max( g_min, prop - semiamplitude ) in
-  let backward_range = tmp_min_max - tmp_max_min            in
+  let tmp_min_max = min( g_max, gene + semiamplitude )
+  let tmp_max_min = max( g_min, gene - semiamplitude )
+  let forward_range = tmp_min_max - tmp_max_min
 
-  let bf_fact = if 0.0 < semiamplitude 
-                then (backward_range / forward_range) 
+  let tmp_min_max = min( g_max, prop + semiamplitude )
+  let tmp_max_min = max( g_min, prop - semiamplitude )
+  let backward_range = tmp_min_max - tmp_max_min
+
+  let bf_fact = if 0.0 < semiamplitude
+                then (backward_range / forward_range)
                 else 1.0
   in (gene + amplitude * r01 - semiamplitude, bf_fact)
 
 
 fun constrainDim(gene:  f32, tup: (f32,f32,f32) ): f32 =
-  let (g_min, g_max, g_ini) = tup 
+  let (g_min, g_max, g_ini) = tup
   in  max( g_min, min(g_max, gene) )
 
 --------------------------------------------------------------/
 --/ Likelihood implementation
 --------------------------------------------------------------/
 fun logLikelihood(y_ref: f32, y: f32): f32 =
-  if   is_cauchy_llhood() 
+  if   is_cauchy_llhood()
   then logLikeCauchy(y_ref, y)
   else logLikeNormal(y_ref, y)
 
 fun normalPdf(z:  f32, mu: f32, sigma: f32 ): f32 =
-    let sigma  = fabs(sigma) in 
-    let res    = 1.0 / (sigma * sqrt32(2.0*pi())) in
+    let sigma  = fabs(sigma)
+    let res    = 1.0 / (sigma * sqrt32(2.0*pi()))
     let ecf    = (z-mu) * (z-mu) / (2.0 * sigma * sigma) in
     res * exp32( 0.0 - ecf )
 fun logLikeNormal(y_ref:  f32, y: f32): f32 =
-    let sigma = (y_ref / 50.0) * llhood_normal_offs() in
+    let sigma = (y_ref / 50.0) * llhood_normal_offs()
     let pdfs  = normalPdf( y, y_ref, sigma ) in
     log32(pdfs + 1.0e-20)
 
 fun cauchyPdf(z:  f32, mu: f32, gamma: f32 ): f32 = -- mu=0.0, gamma=4.0
     let x = (z-mu) / gamma in
     1.0 / ( pi() * gamma * (1.0 + x*x) )
-fun logLikeCauchy(y_ref:  f32, y: f32 ): f32 = 
-    let gamma = ( fabs(y_ref) / 50.0 ) * llhood_cauchy_offs() + 0.01 in
+fun logLikeCauchy(y_ref:  f32, y: f32 ): f32 =
+    let gamma = ( fabs(y_ref) / 50.0 ) * llhood_cauchy_offs() + 0.01
     let pdfs  = cauchyPdf( y, y_ref, gamma ) in
     log32(pdfs + 1.0e-20)
 
@@ -464,14 +464,14 @@ fun logLikeCauchy(y_ref:  f32, y: f32 ): f32 =
 -- Cumulative Distribution Function for a standard normal distribution
 
 fun uGaussian_P(x: f32): f32 =
-    let u = x / sqrt32(2.0) in
+    let u = x / sqrt32(2.0)
     let e = if (u < 0.0) then -erf(-u)
                          else  erf( u)
     in 0.5 * (1.0 + e)
 
 fun uGaussian_P_withExpFactor(x:  f32, exp_factor: f32 ): f32 =
-    let u   = fabs( x / sqrt32(2.0) ) in
-    let e   = erff_poly_only(u)     in
+    let u   = fabs( x / sqrt32(2.0) )
+    let e   = erff_poly_only(u)
     let res = 0.5 * e * exp32(exp_factor-u*u) in
     if ( 0.0 <= x )
     then exp32(exp_factor) - res
@@ -483,13 +483,13 @@ fun uGaussian_P_withExpFactor(x:  f32, exp_factor: f32 ): f32 =
 --   http:--people.math.sfu.ca/~cbm/aands/frameindex.htm
 
 fun erf(x: f32): f32 =
-    let p = 0.3275911 in
+    let p = 0.3275911
     let (a1,a2,a3,a4,a5) =
-        (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429) in
-    let t  = 1.0/(1.0+p*x)  in
-    let t2 = t  * t         in
-    let t3 = t  * t2        in
-    let t4 = t2 * t2        in
+        (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429)
+    let t  = 1.0/(1.0+p*x)
+    let t2 = t  * t
+    let t3 = t  * t2
+    let t4 = t2 * t2
     let t5 = t2 * t3        in
          1.0 - (a1*t + a2*t2 + a3*t3 + a4*t4 + a5*t5) * exp32(-(x*x))
 
@@ -497,14 +497,14 @@ fun erf(x: f32): f32 =
 -- iteration_max = 10000 (hardcoded)
 
 fun erff_poly_only(x:  f32 ): f32 =
-    let p = 0.3275911 in
-    let (a1,a2,a3,a4,a5) = 
-        (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429) in
+    let p = 0.3275911
+    let (a1,a2,a3,a4,a5) =
+        (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429)
 
-    let t  = 1.0/(1.0+p*x) in
-    let t2 = t  * t        in
-    let t3 = t  * t2       in
-    let t4 = t2 * t2       in
+    let t  = 1.0/(1.0+p*x)
+    let t2 = t  * t
+    let t3 = t  * t2
+    let t4 = t2 * t2
     let t5 = t2 * t3       in
     (a1*t + a2*t2 + a3*t3 + a4*t4 + a5*t5)
 
@@ -528,9 +528,9 @@ fun to_solve(fid: int, scalesbbi: [](f32,f32), yhat: f32): f32 =
 
 
 fun rootFinding_Brent(fid: int, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f32, iter_max: int): (f32,int,f32) =
-    let tol      = if(tol     <= 0.0) then 1.0e-9 else tol      in
-    let iter_max = if(iter_max<= 0  ) then 10000  else iter_max in
-    let (a,b)    = (lb,ub)                                      in
+    let tol      = if(tol     <= 0.0) then 1.0e-9 else tol
+    let iter_max = if(iter_max<= 0  ) then 10000  else iter_max
+    let (a,b)    = (lb,ub)
 
     -- `to_solve' is curried so it will need extra arguments!!!
     -- said fid refers to the version of `to_solve', e.g., testing or f32 implem.
@@ -542,12 +542,12 @@ fun rootFinding_Brent(fid: int, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
         if(0.0 <= a) then ( 0.0, 0,  infinity() )  -- root not bracketed above
                      else ( 0.0, 0, -infinity() )  -- root not bracketed below
     else
-    let (fa, fb, a, b) = if( fabs(fa) < fabs(fb) ) 
+    let (fa, fb, a, b) = if( fabs(fa) < fabs(fb) )
                          then (fb, fa, b, a)
-                         else (fa, fb, a, b) in
-    let (c,fc)    = (a, fa) in
-    let mflag     = True    in
-    let it        = 0       in
+                         else (fa, fb, a, b)
+    let (c,fc)    = (a, fa)
+    let mflag     = True
+    let it        = 0
     let d         = 0.0     in
 
     loop ((a,b,c,d,fa,fb,fc,mflag,it)) =
@@ -562,11 +562,11 @@ fun rootFinding_Brent(fid: int, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
                 let s = if( fa==fc || fb == fc )
                         then    b-fb*(b-a)/(fb-fa)
 
-                        else let s1 = (a*fb*fc)/( (fa-fb)*(fa-fc) ) in
-                             let s2 = (b*fa*fc)/( (fb-fa)*(fb-fc) ) in
+                        else let s1 = (a*fb*fc)/( (fa-fb)*(fa-fc) )
+                             let s2 = (b*fa*fc)/( (fb-fa)*(fb-fc) )
                              let s3 = (c*fa*fb)/( (fc-fa)*(fc-fb) ) in
                                 s1 + s2 + s3
-                                                                    in
+
 
                 let (mflag, s) = if ( ( !((3.0*a+b)/4.0 <= s && s  <= b)    ) ||
                                       (     mflag && fabs(b-c)/2.0 <= fabs(s-b) ) ||
@@ -576,20 +576,20 @@ fun rootFinding_Brent(fid: int, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
                                     )
                                  then (True,  (a+b)/2.0)
                                  else (False, s        )
-                                                                    in
+
                 -- Was previous `eval(s)', Now:
-                let fs = to_solve(fid, scalesbbi, s)                in
+                let fs = to_solve(fid, scalesbbi, s)
 
                 -- d is assigned for the first time here:
                 -- it's not used above because mflag is set
-                let d = c in let (c,fc) = (b, fb)                   in
+                let d = c let (c,fc) = (b, fb)
                 let (a,b,fa,fb) = if( fa*fs < 0.0 )
                                   then (a,s,fa,fs)
-                                  else (s,b,fs,fb)                  in
+                                  else (s,b,fs,fb)
 
                 let (a,b,fa,fb) = if( fabs(fa) < fabs(fb) )
                                   then (b,a,fb,fa) -- swap args
-                                  else (a,b,fa,fb)                  in
+                                  else (a,b,fa,fb)
 
                 -- reporting non-convergence!
                 let dummy =
@@ -622,25 +622,25 @@ fun zc(t: f32): f32 = exp32(-r() * date_act_365(t, today()))
 -- Quote (block) price computation
 ------------------------------------------/
 fun extended_swaption_of_swaption(swaption: (f32,f32,f32)): (f32,[](f32,f32),(f32,f32))  =  -- swaption = (sw_mat, freq, sw_ty)
-    let (sw_mat, freq, sw_ty) = swaption          in
-    let maturity   = add_years( today(), sw_mat ) in
-    let nschedule  = int(12.0 * sw_ty / freq)   in
+    let (sw_mat, freq, sw_ty) = swaption
+    let maturity   = add_years( today(), sw_mat )
+    let nschedule  = int(12.0 * sw_ty / freq)
 
     let a12s = map  (fn (i: int): (f32,f32,f32)  =>
-                     let a1 = add_months( maturity, freq*f32(i) ) in
+                     let a1 = add_months( maturity, freq*f32(i) )
                      let a2 = add_months( a1, freq ) in
                      ( zc(a2) * date_act_365(a2, a1), a1, a2 )
-                 ) (iota(nschedule) ) in
+                 ) (iota(nschedule) )
 
     let (lvl, t0, tn) = reduce (fn (tup1:  (f32,f32,f32))
                                    (tup2: (f32,f32,f32)): (f32,f32,f32)  =>
-                                let (lvl,t0,tn) = tup1 in
+                                let (lvl,t0,tn) = tup1
                                 let (a12,a1,a2) = tup2 in
                                 ( lvl + a12, min(t0,a1), max(tn,a2) )
-                            ) (0.0, max_date(), min_date()) a12s in
+                            ) (0.0, max_date(), min_date()) a12s
 
-    let (lvls, a1s, a2s) = unzip( a12s )     in
-    let swap_sched       = zip   a1s a2s in
+    let (lvls, a1s, a2s) = unzip( a12s )
+    let swap_sched       = zip   a1s a2s
     let strike     = (zc(t0) - zc(tn)) / lvl
 
     in (maturity, swap_sched, (strike,lvl))
@@ -649,7 +649,7 @@ fun extended_swaption_of_swaption(swaption: (f32,f32,f32)): (f32,[](f32,f32),(f3
 fun b_fun(z: f32, tau: f32): f32 = (1.0-exp32(-z*tau))/z
 
 fun t_fun(sigma: f32, x: f32, tau: f32): f32 =
-    let expxtau  = exp32(-x*tau)     in
+    let expxtau  = exp32(-x*tau)
     let exp2xtau = expxtau*expxtau in
         sigma*sigma/(x*x)*(tau+2.0/x*expxtau-1.0/(2.0*x)*exp2xtau-3.0/(2.0*x))
 
@@ -662,15 +662,15 @@ fun t_fun(sigma: f32, x: f32, tau: f32): f32 =
 --     \var(\int_t^T [x(u)+y(u)]du)
 ------------------------------------------------------------------/
 fun bigv(genome: (f32,f32,f32,f32,f32), tau: f32): (f32,f32,f32) =
-    let (g_a, g_b, g_rho, g_nu, g_sigma) = genome in
+    let (g_a, g_b, g_rho, g_nu, g_sigma) = genome
 
     -- sanity check; this check should be hoisted higher up
-    let g_sigma = if(g_sigma == 0.0) then 1.0e-10 else g_sigma in
+    let g_sigma = if(g_sigma == 0.0) then 1.0e-10 else g_sigma
 
-    let ba = b_fun(g_a,        tau) in
-    let bb = b_fun(g_b,        tau) in
-    let t1 = t_fun(g_sigma,g_a,tau) in
-    let t2 = t_fun(g_nu,   g_b,tau) in
+    let ba = b_fun(g_a,        tau)
+    let bb = b_fun(g_b,        tau)
+    let t1 = t_fun(g_sigma,g_a,tau)
+    let t2 = t_fun(g_nu,   g_b,tau)
 
     let t3 = 2.0 * g_rho * g_nu * g_sigma / (g_a * g_b)*
              ( tau - ba - bb + b_fun(g_a+g_b, tau) )
@@ -689,21 +689,21 @@ fun bigv(genome: (f32,f32,f32,f32,f32), tau: f32): (f32,f32,f32) =
 fun bigmx(genome:  (f32,f32,f32,f32,f32),
                 today: f32, tmat: f32, s: f32, t: f32
               ): f32 =
-    let (a, b, rho, nu, sigma) = genome   in
+    let (a, b, rho, nu, sigma) = genome
 
-    let ts    = date_act_365(t,    s)     in
-    let tmatt = date_act_365(tmat, t)     in
+    let ts    = date_act_365(t,    s)
+    let tmatt = date_act_365(tmat, t)
 
-    let tmat0 = date_act_365(tmat, today) in
-    let tmats = date_act_365(tmat, s)     in
-    let t0    = date_act_365(t,    today) in
-    let s0    = date_act_365(s,    today) in
+    let tmat0 = date_act_365(tmat, today)
+    let tmats = date_act_365(tmat, s)
+    let t0    = date_act_365(t,    today)
+    let s0    = date_act_365(s,    today)
 
-    let tmp1  = (sigma*sigma)/(a*a)+(sigma*rho*nu)/(a*b)          in
-    let tmp2  = 1.0 - exp32(-a * ts)                              in
-    let tmp3  = sigma * sigma / (2.0 * a * a)                     in
-    let tmp4  = rho * sigma * nu / (b * (a + b))                  in
-    let tmp5  = exp32(-a * tmatt) - exp32(-a * (tmats + ts))      in
+    let tmp1  = (sigma*sigma)/(a*a)+(sigma*rho*nu)/(a*b)
+    let tmp2  = 1.0 - exp32(-a * ts)
+    let tmp3  = sigma * sigma / (2.0 * a * a)
+    let tmp4  = rho * sigma * nu / (b * (a + b))
+    let tmp5  = exp32(-a * tmatt) - exp32(-a * (tmats + ts))
     let tmp6  = exp32(-b * tmatt) - exp32(-b*tmat0 - a*t0 + (a+b)*s0)
 
         in tmp1 * tmp2 - ( tmp3 * tmp5 ) - ( tmp4 * tmp6 )
@@ -721,20 +721,20 @@ fun bigmx(genome:  (f32,f32,f32,f32,f32),
 fun bigmy(genome:  (f32,f32,f32,f32,f32),
                 today: f32, tmat: f32, s: f32, t: f32
               ): f32 =
-    let (a, b, rho, nu, sigma) = genome   in
+    let (a, b, rho, nu, sigma) = genome
 
-    let ts    = date_act_365(t,    s)     in
-    let tmatt = date_act_365(tmat, t)     in
-    let tmat0 = date_act_365(tmat, today) in
-    let tmats = date_act_365(tmat, s)     in
-    let t0    = date_act_365(t,    today) in
-    let s0    = date_act_365(s,    today) in
+    let ts    = date_act_365(t,    s)
+    let tmatt = date_act_365(tmat, t)
+    let tmat0 = date_act_365(tmat, today)
+    let tmats = date_act_365(tmat, s)
+    let t0    = date_act_365(t,    today)
+    let s0    = date_act_365(s,    today)
 
-    let tmp1  = nu*nu/(b*b)+sigma*rho*nu/(a*b)     in
-    let tmp2  = 1.0 - exp32(-b * ts)               in
-    let tmp3  = nu * nu / (2.0 * b * b)            in
-    let tmp4  = sigma * rho * nu / (a * (a + b))         in
-    let tmp5  = exp32(-b * tmatt) - exp32(-b * (tmats + ts)) in
+    let tmp1  = nu*nu/(b*b)+sigma*rho*nu/(a*b)
+    let tmp2  = 1.0 - exp32(-b * ts)
+    let tmp3  = nu * nu / (2.0 * b * b)
+    let tmp4  = sigma * rho * nu / (a * (a + b))
+    let tmp5  = exp32(-b * tmatt) - exp32(-b * (tmats + ts))
     let tmp6  = exp32(-a * tmatt) - exp32(-a*tmat0 - b*t0 + (a+b)*s0)
 
         in tmp1 * tmp2 - ( tmp3 * tmp5 ) - ( tmp4 * tmp6 )
@@ -749,11 +749,11 @@ fun bigmy(genome:  (f32,f32,f32,f32,f32),
 
 fun black_price(today: f32, swaption: (f32,f32,f32), vol: f32 ): f32 =
     let (maturity, swap_sched, (strike,lvl)) =
-                        extended_swaption_of_swaption( swaption ) in
+                        extended_swaption_of_swaption( swaption )
 
-    let sqrtt = date_act_365(maturity, today) in
+    let sqrtt = date_act_365(maturity, today)
 
-    let d1 = 0.5*vol*sqrtt in
+    let d1 = 0.5*vol*sqrtt
     let d2 = 0.0 - d1      in
         lvl * strike * ( uGaussian_P(d1) - uGaussian_P(d2) )
 
@@ -779,100 +779,100 @@ fun pricer_of_swaption(today:  f32,
                        x_quads: []f32,
                        w_quads: []f32
                       ): f32 =
-    let swaption = extended_swaption_of_swaption(swaption) in
-    let (maturity, schedulei, (strike,unused)) = swaption  in
+    let swaption = extended_swaption_of_swaption(swaption)
+    let (maturity, schedulei, (strike,unused)) = swaption
 
-    let n_schedi = (shape schedulei)[0]                     in
+    let n_schedi = (shape schedulei)[0]
     let ci = map (fn (i: int): f32  =>
-                        let (d_beg,d_end) = schedulei[i]   in
+                        let (d_beg,d_end) = schedulei[i]
                         let tau = date_act_365(d_end,d_beg)in
                         if(i == n_schedi-1)
                         then 1.0 + tau*strike
                         else       tau*strike
                     ) (iota(n_schedi)
-                )                                       in
+                )
 --
-    let tmat0    = date_act_365( maturity, today() )    in
-    let (v0_mat, dummyA, dummyB) = bigv( genome, tmat0) in
-    let zc_mat   = zc(maturity)                         in
+    let tmat0    = date_act_365( maturity, today() )
+    let (v0_mat, dummyA, dummyB) = bigv( genome, tmat0)
+    let zc_mat   = zc(maturity)
 --
-    let (a,b,rho,nu,sigma) = genome                     in
-    let sigmax = sigma * sqrt32( b_fun(2.0*a, tmat0) )    in
-    let sigmay = nu    * sqrt32( b_fun(2.0*b, tmat0) )    in
+    let (a,b,rho,nu,sigma) = genome
+    let sigmax = sigma * sqrt32( b_fun(2.0*a, tmat0) )
+    let sigmay = nu    * sqrt32( b_fun(2.0*b, tmat0) )
     let rhoxy  = (rho * sigma * nu) / (sigmax * sigmay)
-                    * b_fun(a+b, tmat0)                 in
+                    * b_fun(a+b, tmat0)
 
-    let rhoxyc = 1.0 - rhoxy * rhoxy                    in
-    let rhoxycs= sqrt32( rhoxyc )                         in
-    let t2     = rhoxy / (sigmax*rhoxycs)               in
-    let sigmay_rhoxycs = sigmay * rhoxycs               in
-    let t4     = (rhoxy * sigmay) / sigmax              in
+    let rhoxyc = 1.0 - rhoxy * rhoxy
+    let rhoxycs= sqrt32( rhoxyc )
+    let t2     = rhoxy / (sigmax*rhoxycs)
+    let sigmay_rhoxycs = sigmay * rhoxycs
+    let t4     = (rhoxy * sigmay) / sigmax
 --
-    let mux    = -bigmx( genome, today, maturity, today, maturity ) in
-    let muy    = -bigmy( genome, today, maturity, today, maturity ) in
+    let mux    = -bigmx( genome, today, maturity, today, maturity )
+    let muy    = -bigmy( genome, today, maturity, today, maturity )
 --
-    let (scheduleix, scheduleiy) = unzip(schedulei) in
+    let (scheduleix, scheduleiy) = unzip(schedulei)
 --
     let (bai, bbi, aici, log_aici, t1_cst, scale) = unzip (
             map (fn (dc: (f32,f32)): (f32,f32,f32,f32,f32,f32)  =>
-                    let (end_date, ci) = dc                                   in
+                    let (end_date, ci) = dc
 
                   -- Begin Brigo and Mercurio: defined top p. 148
                     let (v0_end, dummyA, dummyB) =
-                            bigv( genome, date_act_365(end_date, today   ) )  in
+                            bigv( genome, date_act_365(end_date, today   ) )
 
                     let (vt_end, bai, bbi) =
-                            bigv( genome, date_act_365(end_date, maturity) )  in
+                            bigv( genome, date_act_365(end_date, maturity) )
 
                     let aa = zc(end_date) / zc_mat *
-                                exp32( 0.5 * (vt_end-v0_end+v0_mat) )         in
+                                exp32( 0.5 * (vt_end-v0_end+v0_mat) )
                   -- END Brigo and Mercurio: defined top p. 148
 
-                    let aici = ci * aa                                        in
-                    let log_aici = log32(aici)                                  in
+                    let aici = ci * aa
+                    let log_aici = log32(aici)
 
-                    let t3 = muy - 0.5*rhoxyc*sigmay*sigmay*bbi               in
-                    let cst= bbi * (mux*t4 - t3)                              in
-                    let t1_cst = aici * exp32(cst)                            in
+                    let t3 = muy - 0.5*rhoxyc*sigmay*sigmay*bbi
+                    let cst= bbi * (mux*t4 - t3)
+                    let t1_cst = aici * exp32(cst)
                     let scale  = -(bai + bbi*t4)                              in
                         (bai, bbi, aici, log_aici, t1_cst, scale)
 
                 ) (zip scheduleiy ci
             )
-        )                                                               in
+        )
 
-    let babaici = zip bai bbi aici (log_aici)                         in
-    let scals   = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy) in
+    let babaici = zip bai bbi aici (log_aici)
+    let scals   = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy)
 
-    let eps = 0.5 * sigmax                                     in
-    let f   = exactYhat( n_schedi, scals, babaici, mux       ) in
-    let g   = exactYhat( n_schedi, scals, babaici, mux + eps ) in
-    let h   = exactYhat( n_schedi, scals, babaici, mux - eps ) in
-    let df  = 0.5 * ( g - h ) / eps  in
+    let eps = 0.5 * sigmax
+    let f   = exactYhat( n_schedi, scals, babaici, mux       )
+    let g   = exactYhat( n_schedi, scals, babaici, mux + eps )
+    let h   = exactYhat( n_schedi, scals, babaici, mux - eps )
+    let df  = 0.5 * ( g - h ) / eps
 
-    let sqrt2sigmax = sqrt32(2.0) * sigmax                       in
+    let sqrt2sigmax = sqrt32(2.0) * sigmax
 
     let tmps = map (
                     fn (quad:  (f32,f32) ): f32  =>
-                        let (x_quad, w_quad) = quad       in
-                        let x = sqrt2sigmax*x_quad + mux  in
+                        let (x_quad, w_quad) = quad
+                        let x = sqrt2sigmax*x_quad + mux
 
                         ------------------------------------------/
                         -- BEGIN function integrand(x) inlined
                         ------------------------------------------/
-                        let tmp = (x - mux) / sigmax      in
-                        let t1  = exp32( -0.5 * tmp * tmp ) in
+                        let tmp = (x - mux) / sigmax
+                        let t1  = exp32( -0.5 * tmp * tmp )
 
-                        let yhat_x = f + df*(x - mux)     in
-                        let h1  = ( (yhat_x - muy) / sigmay_rhoxycs ) - t2*( x - mux ) in
+                        let yhat_x = f + df*(x - mux)
+                        let h1  = ( (yhat_x - muy) / sigmay_rhoxycs ) - t2*( x - mux )
 
                         let tmps= map (fn (bbit1cstscale:  (f32,f32,f32) ): f32  =>
-                                            let (bbii, t1_csti, scalei) = bbit1cstscale in
+                                            let (bbii, t1_csti, scalei) = bbit1cstscale
                                             let h2 = h1 + bbii * sigmay_rhoxycs in
                                                 t1_csti * exp32(scalei*x) * uGaussian_P(-h2)
                                         ) (zip bbi (t1_cst) scale
-                                     ) in
-                        let accum = reduce (+) (0.0) tmps in
+                                     )
+                        let accum = reduce (+) (0.0) tmps
                         let integrand_res = t1 * ( uGaussian_P(-h1) - accum )
                         ------------------------------------------/
                         -- END   function integrand(x) inlined
@@ -881,7 +881,7 @@ fun pricer_of_swaption(today:  f32,
                         in w_quad * integrand_res
 
                   ) (zip (x_quads) (w_quads)
-                  )                        in
+                  )
     let sum = reduce (+) (0.0) tmps      in
             zc_mat * ( sum / sqrt32( pi() ) )
 
@@ -895,45 +895,45 @@ fun exactYhat(n_schedi:  int,
                     x: f32
                   ): f32 =
     -- ugaussian_Pinv(k)=1.0e-4
-    let k=-3.71901648545568                                   in
+    let k=-3.71901648545568
 
 
     let uplos = map (fn (babaici: (f32,f32,f32,f32)): (f32,f32)  =>
-                        let (bai,bbi,aici,log_aici) = babaici in
+                        let (bai,bbi,aici,log_aici) = babaici
                         let baix                    = bai * x in
                             (   aici * exp32( -baix ),
                                 (log_aici-baix) / bbi
                             )
-                      ) babaicis                                          in
-    let (ups, los) = unzip(uplos)             in
+                      ) babaicis
+    let (ups, los) = unzip(uplos)
     let (up,  lo ) = reduce (fn (x: (f32,f32)) (y: (f32,f32)): (f32,f32)  =>
-                               let (a1, b1) = x in 
+                               let (a1, b1) = x
                                let (a2, b2) = y in
                                (a1 + a2, max(b1, b2) )
                            ) (0.0, -infinity()) uplos
 --    let up = reduce((+), 0.0, ups)           in
 --    let lo = reduce(max, -infinity(), los)    in
-    in
+
     let (bai, bbi, aici, log_aici) = unzip(babaicis) in
 
     if(n_schedi < 2) -- == 1
     then lo
     else
-         let log_s = log32(up)                  in
-         let tmp   = log_s / bbi[n_schedi-1]  in
+         let log_s = log32(up)
+         let tmp   = log_s / bbi[n_schedi-1]
          let up    = if( tmp<= 0.0 ) then tmp
                      else
                        let tmp = log_s/bbi[0] in
                        if(0.0<= tmp) then tmp
-                       else -infinity()       in
+                       else -infinity()
 
-         let yl = lo - epsilon()              in
-         let yu = up + epsilon()              in
+         let yl = lo - epsilon()
+         let yu = up + epsilon()
 
-         let (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy) = scals   in
+         let (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy) = scals
 
          -- y01 x = y0, y1 / phi(h_i(x, y0)) <= epsilon, 1 - phi(h_i(x, y1)) <= epsilon
-         let y0 = sigmay * (rhoxy*(x-mux)/sigmax+k*rhoxycs) - rhoxyc/b + muy  in
+         let y0 = sigmay * (rhoxy*(x-mux)/sigmax+k*rhoxycs) - rhoxyc/b + muy
          let y1 = sigmay * (rhoxy*(x-mux)/sigmax-k*rhoxycs) + muy             in
 
          if      (y1 <= yl) then y1 + 1.0  -- yhat is greater than y1 => 1 - phi(h_i(x, yhat)) < epsilon
@@ -947,9 +947,9 @@ fun exactYhat(n_schedi:  int,
               --                      aici * exp( -bai * x )
               --                    , zip(bai, aici)
               --                 )        in
-              let scales  = ups         in
-              let root_lb = max(yl, y0) in
-              let root_ub = min(yu, y1) in
+              let scales  = ups
+              let root_lb = max(yl, y0)
+              let root_ub = min(yu, y1)
               let (root, iteration, error) =
                     rootFinding_Brent(1, zip scales bbi, root_lb, root_ub, 1.0e-4, 1000) in
 
@@ -972,7 +972,7 @@ fun minutes_in_day  (): f32 = 24.0*60.0
 
 --                           year*month*day*hour*mins
 fun date_of_gregorian(date:  (int,int,int,int,int)): int =
-    let (year, month, day, hour, mins) = date in
+    let (year, month, day, hour, mins) = date
     let ym =
         if(month == 1 || month == 2)
         then    ( 1461 * ( year + 4800 - 1 ) ) / 4 +
@@ -980,24 +980,24 @@ fun date_of_gregorian(date:  (int,int,int,int,int)): int =
                   ( 3 * ( ( year + 4900 - 1 ) / 100 ) ) / 4
         else    ( 1461 * ( year + 4800 ) ) / 4 +
                   ( 367 * ( month - 2 ) ) / 12 -
-                  ( 3 * ( ( year + 4900 ) / 100 ) ) / 4 in
+                  ( 3 * ( ( year + 4900 ) / 100 ) ) / 4
     let tmp = ym + day - 32075 - 2444238
 
             in tmp * minutes_in_dayI() + hour * 60 + mins
 
 
 fun gregorian_of_date (minutes_since_epoch:  int ): (int,int,int,int,int) =
-    let jul = minutes_since_epoch / minutes_in_dayI() in
-    let l = jul + 68569 + 2444238 in
-    let n = ( 4 * l ) / 146097 in
-    let l = l - ( 146097 * n + 3 ) / 4 in
-    let i = ( 4000 * ( l + 1 ) ) / 1461001 in
-    let l = l - ( 1461 * i ) / 4 + 31 in
-    let j = ( 80 * l ) / 2447 in
-    let d = l - ( 2447 * j ) / 80 in
-    let l = j / 11 in
-    let m = j + 2 - ( 12 * l ) in
-    let y = 100 * ( n - 49 ) + i + l in
+    let jul = minutes_since_epoch / minutes_in_dayI()
+    let l = jul + 68569 + 2444238
+    let n = ( 4 * l ) / 146097
+    let l = l - ( 146097 * n + 3 ) / 4
+    let i = ( 4000 * ( l + 1 ) ) / 1461001
+    let l = l - ( 1461 * i ) / 4 + 31
+    let j = ( 80 * l ) / 2447
+    let d = l - ( 2447 * j ) / 80
+    let l = j / 11
+    let m = j + 2 - ( 12 * l )
+    let y = 100 * ( n - 49 ) + i + l
 
     --let daytime = minutes_since_epoch mod minutes_in_day in
     let daytime = mod( minutes_since_epoch, minutes_in_dayI() ) in
@@ -1012,8 +1012,8 @@ fun gregorian_of_date (minutes_since_epoch:  int ): (int,int,int,int,int) =
 
 
 fun check_date(year: int, month: int, day: int): bool =
-    let tmp1 = ( 1 <= day && 1 <= month && month <= 12 && 1980 <= year && year <= 2299 ) in
-    let tmp2 = ( day <= 28 ) in
+    let tmp1 = ( 1 <= day && 1 <= month && month <= 12 && 1980 <= year && year <= 2299 )
+    let tmp2 = ( day <= 28 )
 
     let tmp3 = if      ( month == 2 )
                then let tmpmod = mod(year, 100) in
@@ -1040,11 +1040,11 @@ fun end_of_month(year: int, month: int): int =
 
 
 fun add_months (date:  f32, rnbmonths: f32 ): f32 =
-    let nbmonths          = int(rnbmonths)                 in
-    let (y, m, d, h, min) = gregorian_of_date( int(date) ) in
-    let m = m + nbmonths                                     in
-    let (y, m) = (y + (m-1) / 12, mod(m-1, 12) + 1)          in
-    let (y, m) = if (m <= 0) then (y - 1, m + 12) else (y, m) in
+    let nbmonths          = int(rnbmonths)
+    let (y, m, d, h, min) = gregorian_of_date( int(date) )
+    let m = m + nbmonths
+    let (y, m) = (y + (m-1) / 12, mod(m-1, 12) + 1)
+    let (y, m) = if (m <= 0) then (y - 1, m + 12) else (y, m)
     let resmin = date_of_gregorian ( (y, m, minI( d, end_of_month(y, m) ), 12, 0) ) in
 
             f32(resmin)

@@ -35,9 +35,9 @@ fun add_descent_div3v(v:  [m][n][p][q]f32
               map (fn (k: int): [q]f32  => 
               map (fn (l: int): f32  => unsafe
                     -- get current `v`) (`g`) (and `xi` element
-                    let v_el = v[i,j,k,l] in
-                    let g_el = g[i,j,k,l] in
-                    let (xi_0,xi_1,xi_2) = xi[i,j,k,l] in
+                    let v_el = v[i,j,k,l]
+                    let g_el = g[i,j,k,l]
+                    let (xi_0,xi_1,xi_2) = xi[i,j,k,l]
                     -- get the neighbors of the current `xi` element
                     let xi_100_0 = if i < 1 then 0.0f32
                                    else let (v_100_0, _, _) = xi[i-1,j,k,l] in v_100_0
@@ -198,15 +198,15 @@ fun main1(v:  [m][n][p][q]f32
     add_descent_div3v(v, xi, g, tp)
 
 fun main(m: int, n: int, p: int, q: int, loop_count: int): [m][n][p][q]f32 = 
-    let mnpq = (m*n*p*q) in
-    let v  = reshape (m,n,p,q) (map f32 (iota(mnpq))) in
-    let g  = reshape (m,n,p,q) (map f32 (iota(mnpq))) in
+    let mnpq = (m*n*p*q)
+    let v  = reshape (m,n,p,q) (map f32 (iota(mnpq)))
+    let g  = reshape (m,n,p,q) (map f32 (iota(mnpq)))
     let xi = reshape (m,n,p,q)
                     (map (fn (t: int): (f32,f32,f32)  =>
                             let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
                         ) (iota(mnpq) ))
-    in
-    let tp = 3.0f32 in
+
+    let tp = 3.0f32
     loop(v) = 
         for i < loop_count do
             add_descent_div3v(v, xi, g, tp)

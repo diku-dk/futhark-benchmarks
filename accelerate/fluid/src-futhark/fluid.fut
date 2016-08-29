@@ -78,15 +78,15 @@ fun lin_solve(n_solver_steps: i32,
             b: i32,
             a: f32,
             c: f32): [g][g]f32 =
-  let one = (g*g+2*g+1)/(g+1) - g in
+  let one = (g*g+2*g+1)/(g+1) - g
   loop (s1 = replicate g (replicate g 0.0f32)) = for k < n_solver_steps do
     reshape (g, g)
     (map (fn (ij: i32): f32  =>
-           let i = ij / g in
-           let j = ij % g in
-           if inside(i, j, g)
-           then lin_solve_inner(i, j, s0, s1, a, c)
-           else lin_solve_outer(i/one, j/one, s0, s1, a, c, b/one)
+           let i = ij / g
+           let j = ij % g
+           in if inside(i, j, g)
+              then lin_solve_inner(i, j, s0, s1, a, c)
+              else lin_solve_outer(i/one, j/one, s0, s1, a, c, b/one)
         ) (iota(g * g)))
   in s1
 
@@ -137,8 +137,8 @@ fun diffuse(s: [g][g]f32,
           diffusion_rate_or_viscosity: f32,
           time_step: f32): [g][g]f32 =
   let a = (time_step * diffusion_rate_or_viscosity
-           * f32(g - 2) * f32(g - 2)) in
-  lin_solve(n_solver_steps, s, b, a, 1.0f32 + 4.0f32 * a)
+           * f32(g - 2) * f32(g - 2))
+  in lin_solve(n_solver_steps, s, b, a, 1.0f32 + 4.0f32 * a)
 
 
 ------------------------------------------------------------
@@ -150,16 +150,16 @@ fun advect(s0: [g][g]f32,
          v: [g][g]f32,
          b: i32,
          time_step: f32): *[g][g]f32 =
-  let one = (g*g+2*g+1)/(g+1) - g in
-  let time_step0 = time_step * f32(g - 2) in
-  reshape(g, g)
-    (map (fn (ij: i32): f32  =>
-           let i = ij / g in
-           let j = ij % g in
-           if inside(i, j, g)
-           then advect_inner(i, j, s0, u, v, time_step0)
-           else advect_outer(i/one, j/one, s0, u, v, time_step0, b/one)
-        ) (iota(g * g)))
+  let one = (g*g+2*g+1)/(g+1) - g
+  let time_step0 = time_step * f32(g - 2)
+  in reshape(g, g)
+  (map (fn (ij: i32): f32  =>
+          let i = ij / g
+          let j = ij % g
+          in if inside(i, j, g)
+             then advect_inner(i, j, s0, u, v, time_step0)
+             else advect_outer(i/one, j/one, s0, u, v, time_step0, b/one))
+   (iota(g * g)))
 
 fun advect_inner(i: i32,
                j: i32,
@@ -167,26 +167,26 @@ fun advect_inner(i: i32,
                u: [g][g]f32,
                v: [g][g]f32,
                time_step0: f32): f32 =
-  let x = f32(i) - time_step0 * unsafe u[i, j] in
-  let y = f32(j) - time_step0 * unsafe v[i, j] in
+  let x = f32(i) - time_step0 * unsafe u[i, j]
+  let y = f32(j) - time_step0 * unsafe v[i, j]
 
-  let x = if x < 0.5f32 then 0.5f32 else x in
-  let x = if x > f32(g - 2) + 0.5f32 then f32(g - 2) + 0.5f32 else x in
-  let i0 = i32(x) in
-  let i1 = i0 + 1 in
+  let x = if x < 0.5f32 then 0.5f32 else x
+  let x = if x > f32(g - 2) + 0.5f32 then f32(g - 2) + 0.5f32 else x
+  let i0 = i32(x)
+  let i1 = i0 + 1
 
-  let y = if y < 0.5f32 then 0.5f32 else y in
-  let y = if y > f32(g - 2) + 0.5f32 then f32(g - 2) + 0.5f32 else y in
-  let j0 = i32(y) in
-  let j1 = j0 + 1 in
+  let y = if y < 0.5f32 then 0.5f32 else y
+  let y = if y > f32(g - 2) + 0.5f32 then f32(g - 2) + 0.5f32 else y
+  let j0 = i32(y)
+  let j1 = j0 + 1
 
-  let s1 = x - f32(i0) in
-  let s0 = 1.0f32 - s1 in
-  let t1 = y - f32(j0) in
-  let t0 = 1.0f32 - t1 in
+  let s1 = x - f32(i0)
+  let s0 = 1.0f32 - s1
+  let t1 = y - f32(j0)
+  let t0 = 1.0f32 - t1
 
-  unsafe (s0 * (t0 * s[i0, j0] + t1 * s[i0, j1])
-          + s1 * (t0 * s[i1, j0] + t1 * s[i1, j1]))
+  in unsafe (s0 * (t0 * s[i0, j0] + t1 * s[i0, j1])
+             + s1 * (t0 * s[i1, j0] + t1 * s[i1, j1]))
 
 fun advect_outer(i: i32,
                j: i32,
@@ -211,7 +211,6 @@ fun advect_outer_base(i: i32,
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * advect_inner(i1, j1, s, u, v, time_step0)
 
-
 ------------------------------------------------------------
 -- project.
 ------------------------------------------------------------
@@ -220,22 +219,22 @@ fun project(n_solver_steps: i32,
           u0: [g][g]f32,
           v0: [g][g]f32): (*[g][g]f32,
      *[g][g]f32) =
-  let div0 = project_top(u0, v0) in
-  let p0 = lin_solve(n_solver_steps, div0, 0, 1.0f32, 4.0f32) in
-  let u1 = project_bottom(p0, u0, 1, 1, 0, -1, 0) in
-  let v1 = project_bottom(p0, v0, 2, 0, 1, 0, -1) in
-  (u1, v1)
+  let div0 = project_top(u0, v0)
+  let p0 = lin_solve(n_solver_steps, div0, 0, 1.0f32, 4.0f32)
+  let u1 = project_bottom(p0, u0, 1, 1, 0, -1, 0)
+  let v1 = project_bottom(p0, v0, 2, 0, 1, 0, -1)
+  in (u1, v1)
 
 fun project_top(u0: [g][g]f32,
               v0: [g][g]f32): [g][g]f32 =
       let one = (g*g+2*g+1)/(g+1) - g in
       reshape (g, g)
         (map (fn (ij: i32): f32  =>
-               let i = ij / g in
-               let j = ij % g in
-               if inside(i, j, g)
-               then project_top_inner(i, j, u0, v0)
-               else project_top_outer(i/one, j/one, u0, v0)
+               let i = ij / g
+               let j = ij % g
+               in if inside(i, j, g)
+                  then project_top_inner(i, j, u0, v0)
+                  else project_top_outer(i/one, j/one, u0, v0)
             ) (iota(g * g)))
 
 fun project_top_inner(i: i32,
@@ -274,12 +273,12 @@ fun project_bottom(p0: [g][g]f32,
       let one = (g*g+2*g+1)/(g+1) - g in
       reshape (g, g)
         (map (fn (ij: i32): f32  =>
-               let i = ij / g in
-               let j = ij % g in
-               if inside(i, j, g)
-               then project_bottom_inner(i, j, p0, s0, i0d, j0d, i1d, j1d)
-               else project_bottom_outer(i/one, j/one, p0, s0,
-                                         i0d/one, j0d/one, i1d/one, j1d/one, b/one)
+               let i = ij / g
+               let j = ij % g
+               in if inside(i, j, g)
+                  then project_bottom_inner(i, j, p0, s0, i0d, j0d, i1d, j1d)
+                  else project_bottom_outer(i/one, j/one, p0, s0,
+                                            i0d/one, j0d/one, i1d/one, j1d/one, b/one)
             ) (iota(g * g)))
 
 fun project_bottom_inner(i: i32,
@@ -331,9 +330,9 @@ fun dens_step(d0: [g][g]f32,
             n_solver_steps: i32,
             diffusion_rate: f32,
             time_step: f32): *[g][g]f32 =
-  let d1 = diffuse(d0, 0, n_solver_steps, diffusion_rate, time_step) in
-  let d2 = advect(d1, u0, v0, 0, time_step) in
-  d2
+  let d1 = diffuse(d0, 0, n_solver_steps, diffusion_rate, time_step)
+  let d2 = advect(d1, u0, v0, 0, time_step)
+  in d2
 
 fun vel_step(u0: [g][g]f32,
            v0: [g][g]f32,
@@ -341,13 +340,13 @@ fun vel_step(u0: [g][g]f32,
            viscosity: f32,
            time_step: f32): (*[g][g]f32,
      *[g][g]f32) =
-  let u1 = diffuse(u0, 1, n_solver_steps, viscosity, time_step) in
-  let v1 = diffuse(v0, 2, n_solver_steps, viscosity, time_step) in
-  let (u2, v2) = project(n_solver_steps, u1, v1) in
-  let u3 = advect(u2, u2, v2, 1, time_step) in
-  let v3 = advect(v2, u2, v2, 2, time_step) in
-  let (u4, v4) = project(n_solver_steps, u3, v3) in
-  (u4, v4)
+  let u1 = diffuse(u0, 1, n_solver_steps, viscosity, time_step)
+  let v1 = diffuse(v0, 2, n_solver_steps, viscosity, time_step)
+  let (u2, v2) = project(n_solver_steps, u1, v1)
+  let u3 = advect(u2, u2, v2, 1, time_step)
+  let v3 = advect(v2, u2, v2, 2, time_step)
+  let (u4, v4) = project(n_solver_steps, u3, v3)
+  in (u4, v4)
 
 fun step(u0: [g][g]f32,
           v0: [g][g]f32,
@@ -359,10 +358,10 @@ fun step(u0: [g][g]f32,
      *[g][g]f32,
      *[g][g]f32) =
   let (u1, v1) = vel_step(u0, v0, n_solver_steps,
-                          viscosity, time_step) in
+                          viscosity, time_step)
   let d1 = dens_step(d0, u0, v0, n_solver_steps,
-                     diffusion_rate, time_step) in
-  (u1, v1, d1)
+                     diffusion_rate, time_step)
+  in (u1, v1, d1)
 
 
 ------------------------------------------------------------
@@ -394,15 +393,15 @@ fun get_all_frames(u0: [g][g]f32,
                  viscosity: f32): ([n_steps][g][g]f32,
      [n_steps][g][g]f32,
      [n_steps][g][g]f32) =
-  let u_out = replicate n_steps u0 in
-  let v_out = replicate n_steps v0 in
-  let d_out = replicate n_steps d0 in
+  let u_out = replicate n_steps u0
+  let v_out = replicate n_steps v0
+  let d_out = replicate n_steps d0
   loop ((u_out, v_out, d_out)) = for 1 <= i < n_steps do
-    let (u0, v0, d0) = (u_out[i - 1], v_out[i - 1], d_out[i - 1]) in
+    let (u0, v0, d0) = (u_out[i - 1], v_out[i - 1], d_out[i - 1])
     let (u1, v1, d1) = step(u0, v0, d0, n_solver_steps, time_step,
-                            diffusion_rate, viscosity) in
-    let u_out[i] = u1 in
-    let v_out[i] = v1 in
-    let d_out[i] = d1 in
-    (u_out, v_out, d_out)
+                            diffusion_rate, viscosity)
+    let u_out[i] = u1
+    let v_out[i] = v1
+    let d_out[i] = d1
+    in (u_out, v_out, d_out)
   in (u_out, v_out, d_out)
