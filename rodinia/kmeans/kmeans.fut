@@ -28,7 +28,7 @@ fun find_nearest_point(pts: [k][d]f32) (pt: [d]f32): int =
                               map (euclid_dist_2(pt)) pts)) in
   i
 
-fun add_centroids(x: [d]f32, y: [d]f32): *[d]f32 =
+fun add_centroids(x: [d]f32) (y: [d]f32): *[d]f32 =
   zipWith (+) x y
 
 fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
@@ -47,14 +47,14 @@ fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
   let cluster_sums =
     streamRedPer (fn (acc: [k][d]f32)
                     (elem: [k][d]f32): [k][d]f32  =>
-                   zipWith (fn (x: []f32, y: []f32): [d]f32  =>
-                             add_centroids(x, y)) acc elem) (
+                   zipWith add_centroids acc elem) (
                  fn (chunk: int)
                     (acc: *[k][d]f32)
                     (inp: []([d]f32,int)): [k][d]f32  =>
                    loop (acc) = for i < chunk do
                      let (point, c) = inp[i] in
-                     unsafe let acc[c] = add_centroids(acc[c], map (/(f32(points_in_clusters[c]))) point) in
+                     unsafe let acc[c] =
+                              add_centroids acc[c] (map (/(f32(points_in_clusters[c]))) point) in
                      acc in
                    acc) (
                  replicate k (replicate d 0.0f32)) (

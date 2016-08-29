@@ -216,7 +216,7 @@ fun rollback
     let myResultTR = transpose(myResult) in
     let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR ) in
     let u = map (fn (us: []f32, vs: []f32): *[]f32  =>
-                   copy(map (+) (zip us vs))
+                   copy(zipWith (+) us vs)
                ) (zip u (transpose(v))
                ) in
     -- implicitX

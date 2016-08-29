@@ -269,7 +269,7 @@ fun correlateDeltas(md_c:  [num_und][num_und]f32,
 fun combineVs(n_row:   [num_und]f32, 
                                vol_row: [num_und]f32, 
                                dr_row: [num_und]f32 ): [num_und]f32 =
-    map (+) (zip (dr_row) (map (*) (zip (n_row) (vol_row ) )))
+    zipWith (+) dr_row (zipWith (*) n_row vol_row)
 
 fun mkPrices(md_starts:    [num_und]f32,
            md_vols: [num_dates][num_und]f32,

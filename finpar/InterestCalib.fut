@@ -394,8 +394,8 @@ fun mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f3
                            in  g_max - g_min
                      ) (gene_bds )
   in 
-  let tmp_genome = zipWith (perturbation(gamma1,ampl_ratio) 
-                          ) (g_i) (g_k) (g_l) (sob_row) (mm_diffs  )
+  let tmp_genome = map (perturbation(gamma1,ampl_ratio))
+                   (zip (g_i) (g_k) (g_l) (sob_row) (mm_diffs))
  
   in  copy( map constrainDim (zip (tmp_genome) (gene_bds) ) )
   
