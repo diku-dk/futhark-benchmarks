@@ -34,7 +34,8 @@ fun vec_mult_factor(factor: f32, (x, y, z): vec3): vec3 =
 fun dot((x1, y1, z1): vec3, (x2, y2, z2): vec3): f32 =
   x1 * x2 + y1 * y2 + z1 * z2
 
-fun accel(epsilon: f32, pi: vec3, mi: f32, pj: vec3, mj: f32): velocity =
+fun accel (epsilon: f32) ((pi, mi, _ , _):body) ((pj, mj, _ , _): body)
+          : velocity =
   let r = vec_subtract(pj, pi)
   let rsqr = dot(r, r) + epsilon * epsilon
   let invr = 1.0f32 / sqrt32(rsqr)
@@ -42,35 +43,25 @@ fun accel(epsilon: f32, pi: vec3, mi: f32, pj: vec3, mj: f32): velocity =
   let s = mj * invr3
   in vec_mult_factor(s, r)
 
-fun accel_wrap(epsilon: f32, body_i: body, body_j: body): vec3 =
-  let (pi, mi, _ , _) = body_i
-  let (pj, mj, _ , _) = body_j
-  in accel(epsilon, pi, mi, pj, mj)
-
 fun move(epsilon: f32, bodies: []body) (this_body: body): position =
-  let accels = map (fn (other_body: body): acceleration  =>
-                     accel_wrap(epsilon, this_body, other_body)) bodies
+  let accels = map (accel epsilon this_body) bodies
   in reduceComm vec_add (0f32, 0f32, 0f32) accels
 
 fun calc_accels(epsilon: f32, bodies: []body): []acceleration =
   map (move(epsilon, bodies)) bodies
 
-fun advance_body(time_step: f32, (pos, mass, vel, acc): body): body =
+fun advance_body(time_step: f32) ((pos, mass, vel, _):body) (acc:acceleration): body =
+  let acc' = vec_mult_factor(mass, acc)
   let pos' = vec_add pos(vec_mult_factor(time_step, vel))
-  let vel' = vec_add vel(vec_mult_factor(time_step, acc))
-  in (pos', mass, vel', acc)
-
-fun advance_body_wrap(time_step: f32) ((pos, mass, vel, acc):body) (accel:acceleration): body =
-  let accel' = vec_mult_factor(mass, accel)
-  let body' = (pos, mass, vel, accel')
-  in advance_body(time_step, body')
+  let vel' = vec_add vel(vec_mult_factor(time_step, acc'))
+  in (pos', mass, vel', acc')
 
 fun advance_bodies(epsilon: f32, time_step: f32, bodies: [n]body): [n]body =
   let accels = calc_accels(epsilon, bodies)
-  in zipWith (advance_body_wrap(time_step)) bodies accels
+  in zipWith (advance_body time_step) bodies accels
 
 fun advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
-                                   bodies: [n]body): [n]body =
+                         bodies: [n]body): [n]body =
   loop (bodies) = for i < n_steps do
     advance_bodies(epsilon, time_step, bodies)
   in bodies
@@ -82,26 +73,26 @@ fun wrap_body (posx: f32, posy: f32, posz: f32,
   ((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz))
 
 fun unwrap_body(((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz)): body)
-               : (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) =
+  : (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) =
   (posx, posy, posz, mass, velx, vely, velz, accx, accy, accz)
 
 fun main(n_steps: i32,
-       epsilon: f32,
-       time_step: f32,
-       xps: [n]f32,
-       yps: [n]f32,
-       zps: [n]f32,
-       ms: [n]f32,
-       xvs: [n]f32,
-       yvs: [n]f32,
-       zvs: [n]f32,
-       xas: [n]f32,
-       yas: [n]f32,
-       zas: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
+         epsilon: f32,
+         time_step: f32,
+         xps: [n]f32,
+         yps: [n]f32,
+         zps: [n]f32,
+         ms: [n]f32,
+         xvs: [n]f32,
+         yvs: [n]f32,
+         zvs: [n]f32,
+         xas: [n]f32,
+         yas: [n]f32,
+         zas: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
   let bodies  = map wrap_body (zip xps yps zps ms xvs yvs zvs xas yas zas)
   let bodies' = advance_bodies_steps(n_steps, epsilon, time_step, bodies)
   let bodies'' = map unwrap_body (bodies')
-   in unzip(bodies'')
+  in unzip(bodies'')
 
 fun rotateByMatrix(ps: [n]position) (rotation: [3][3]f32): [n]position =
   map (fn (x,y,z) =>
@@ -129,7 +120,7 @@ entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
   in reshape (w,h) (write is vs (replicate (w*h) 0))
 
 fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
-                ((x,y,z):position): (int, int) =
+  ((x,y,z):position): (int, int) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
