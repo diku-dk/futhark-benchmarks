@@ -47,7 +47,7 @@ fun inside(i: i32, j: i32, g: i32): bool =
 
 fun in_outside_corner(i: i32, j: i32, g: i32): bool =
   (i == 0 || i == g - 1) && (j == 0 || j == g - 1)
-  
+
 fun corner_index_neighbors(i: i32, j: i32, g: i32): (i32, i32, i32, i32) =
   if i == 0 && j == 0
   then (1, 0, 0, 1)
@@ -74,28 +74,28 @@ fun outermost_inner_index(i: i32, j: i32, g: i32, b: i32): (i32, i32, f32) =
 ------------------------------------------------------------
 
 fun lin_solve(n_solver_steps: i32,
-            s0: [g][g]f32,
-            b: i32,
-            a: f32,
-            c: f32): [g][g]f32 =
+              s0: [g][g]f32,
+              b: i32,
+              a: f32,
+              c: f32): [g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g
   loop (s1 = replicate g (replicate g 0.0f32)) = for k < n_solver_steps do
     reshape (g, g)
     (map (fn (ij: i32): f32  =>
-           let i = ij / g
-           let j = ij % g
-           in if inside(i, j, g)
-              then lin_solve_inner(i, j, s0, s1, a, c)
-              else lin_solve_outer(i/one, j/one, s0, s1, a, c, b/one)
-        ) (iota(g * g)))
+            let i = ij / g
+            let j = ij % g
+            in if inside(i, j, g)
+               then lin_solve_inner(i, j, s0, s1, a, c)
+               else lin_solve_outer(i/one, j/one, s0, s1, a, c, b/one)
+         ) (iota(g * g)))
   in s1
 
 fun lin_solve_inner(i: i32,
-                  j: i32,
-                  s0: [g][g]f32,
-                  s1: [g][g]f32,
-                  a: f32,
-                  c: f32): f32 =
+                    j: i32,
+                    s0: [g][g]f32,
+                    s1: [g][g]f32,
+                    a: f32,
+                    c: f32): f32 =
   -- A stencil.
   unsafe ((s0[i, j] + a *
            (s1[(i - 1), j]
@@ -104,12 +104,12 @@ fun lin_solve_inner(i: i32,
             + s1[i, (j + 1)])) / c)
 
 fun lin_solve_outer(i: i32,
-                  j: i32,
-                  s0: [g][g]f32,
-                  s1: [g][g]f32,
-                  a: f32,
-                  c: f32,
-                  b: i32): f32 =
+                    j: i32,
+                    s0: [g][g]f32,
+                    s1: [g][g]f32,
+                    a: f32,
+                    c: f32,
+                    b: i32): f32 =
   if in_outside_corner(i, j, g)
   then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (lin_solve_outer_base(i1, j1, s0, s1, a, c, b)
@@ -117,12 +117,12 @@ fun lin_solve_outer(i: i32,
   else lin_solve_outer_base(i, j, s0, s1, a, c, b)
 
 fun lin_solve_outer_base(i: i32,
-                       j: i32,
-                       s0: [g][g]f32,
-                       s1: [g][g]f32,
-                       a: f32,
-                       c: f32,
-                       b: i32): f32 =
+                         j: i32,
+                         s0: [g][g]f32,
+                         s1: [g][g]f32,
+                         a: f32,
+                         c: f32,
+                         b: i32): f32 =
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * lin_solve_inner(i1, j1, s0, s1, a, c)
 
@@ -132,10 +132,10 @@ fun lin_solve_outer_base(i: i32,
 ------------------------------------------------------------
 
 fun diffuse(s: [g][g]f32,
-          b: i32,
-          n_solver_steps: i32,
-          diffusion_rate_or_viscosity: f32,
-          time_step: f32): [g][g]f32 =
+            b: i32,
+            n_solver_steps: i32,
+            diffusion_rate_or_viscosity: f32,
+            time_step: f32): [g][g]f32 =
   let a = (time_step * diffusion_rate_or_viscosity
            * f32(g - 2) * f32(g - 2))
   in lin_solve(n_solver_steps, s, b, a, 1.0f32 + 4.0f32 * a)
@@ -146,10 +146,10 @@ fun diffuse(s: [g][g]f32,
 ------------------------------------------------------------
 
 fun advect(s0: [g][g]f32,
-         u: [g][g]f32,
-         v: [g][g]f32,
-         b: i32,
-         time_step: f32): *[g][g]f32 =
+           u: [g][g]f32,
+           v: [g][g]f32,
+           b: i32,
+           time_step: f32): *[g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g
   let time_step0 = time_step * f32(g - 2)
   in reshape(g, g)
@@ -162,11 +162,11 @@ fun advect(s0: [g][g]f32,
    (iota(g * g)))
 
 fun advect_inner(i: i32,
-               j: i32,
-               s: [g][g]f32,
-               u: [g][g]f32,
-               v: [g][g]f32,
-               time_step0: f32): f32 =
+                 j: i32,
+                 s: [g][g]f32,
+                 u: [g][g]f32,
+                 v: [g][g]f32,
+                 time_step0: f32): f32 =
   let x = f32(i) - time_step0 * unsafe u[i, j]
   let y = f32(j) - time_step0 * unsafe v[i, j]
 
@@ -189,12 +189,12 @@ fun advect_inner(i: i32,
              + s1 * (t0 * s[i1, j0] + t1 * s[i1, j1]))
 
 fun advect_outer(i: i32,
-               j: i32,
-               s: [g][g]f32,
-               u: [g][g]f32,
-               v: [g][g]f32,
-               time_step0: f32,
-               b: i32): f32 =
+                 j: i32,
+                 s: [g][g]f32,
+                 u: [g][g]f32,
+                 v: [g][g]f32,
+                 time_step0: f32,
+                 b: i32): f32 =
   if in_outside_corner(i, j, g)
   then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (advect_outer_base(i1, j1, s, u, v, time_step0, b)
@@ -202,12 +202,12 @@ fun advect_outer(i: i32,
   else advect_outer_base(i, j, s, u, v, time_step0, b)
 
 fun advect_outer_base(i: i32,
-                    j: i32,
-                    s: [g][g]f32,
-                    u: [g][g]f32,
-                    v: [g][g]f32,
-                    time_step0: f32,
-                    b: i32): f32 =
+                      j: i32,
+                      s: [g][g]f32,
+                      u: [g][g]f32,
+                      v: [g][g]f32,
+                      time_step0: f32,
+                      b: i32): f32 =
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * advect_inner(i1, j1, s, u, v, time_step0)
 
@@ -216,9 +216,8 @@ fun advect_outer_base(i: i32,
 ------------------------------------------------------------
 
 fun project(n_solver_steps: i32,
-          u0: [g][g]f32,
-          v0: [g][g]f32): (*[g][g]f32,
-     *[g][g]f32) =
+            u0: [g][g]f32,
+            v0: [g][g]f32): (*[g][g]f32, *[g][g]f32) =
   let div0 = project_top(u0, v0)
   let p0 = lin_solve(n_solver_steps, div0, 0, 1.0f32, 4.0f32)
   let u1 = project_bottom(p0, u0, 1, 1, 0, -1, 0)
@@ -226,30 +225,30 @@ fun project(n_solver_steps: i32,
   in (u1, v1)
 
 fun project_top(u0: [g][g]f32,
-              v0: [g][g]f32): [g][g]f32 =
-      let one = (g*g+2*g+1)/(g+1) - g in
-      reshape (g, g)
-        (map (fn (ij: i32): f32  =>
-               let i = ij / g
-               let j = ij % g
-               in if inside(i, j, g)
-                  then project_top_inner(i, j, u0, v0)
-                  else project_top_outer(i/one, j/one, u0, v0)
-            ) (iota(g * g)))
+                v0: [g][g]f32): [g][g]f32 =
+  let one = (g*g+2*g+1)/(g+1) - g in
+  reshape (g, g)
+  (map (fn (ij: i32): f32  =>
+          let i = ij / g
+          let j = ij % g
+          in if inside(i, j, g)
+             then project_top_inner(i, j, u0, v0)
+             else project_top_outer(i/one, j/one, u0, v0)
+       ) (iota(g * g)))
 
 fun project_top_inner(i: i32,
-                    j: i32,
-                    u0: [g][g]f32,
-                    v0: [g][g]f32): f32 =
+                      j: i32,
+                      u0: [g][g]f32,
+                      v0: [g][g]f32): f32 =
   unsafe (-0.5f32 * (u0[i + 1, j]
                      - u0[i - 1, j]
                      + v0[i, j + 1]
                      - v0[i, j - 1]) / f32(g))
 
 fun project_top_outer(i: i32,
-                    j: i32,
-                    u0: [g][g]f32,
-                    v0: [g][g]f32): f32 =
+                      j: i32,
+                      u0: [g][g]f32,
+                      v0: [g][g]f32): f32 =
   if in_outside_corner(i, j, g)
   then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (project_top_outer_base(i1, j1, u0, v0)
@@ -257,50 +256,50 @@ fun project_top_outer(i: i32,
   else project_top_outer_base(i, j, u0, v0)
 
 fun project_top_outer_base(i: i32,
-                         j: i32,
-                         u0: [g][g]f32,
-                         v0: [g][g]f32): f32 =
+                           j: i32,
+                           u0: [g][g]f32,
+                           v0: [g][g]f32): f32 =
   let (i1, j1, f) = outermost_inner_index(i, j, g, 0)
   in project_top_inner(i1, j1, u0, v0)
 
 fun project_bottom(p0: [g][g]f32,
-                 s0: [g][g]f32,
-                 b: i32,
-                 i0d: i32,
-                 j0d: i32,
-                 i1d: i32,
-                 j1d: i32): *[g][g]f32 =
-      let one = (g*g+2*g+1)/(g+1) - g in
-      reshape (g, g)
-        (map (fn (ij: i32): f32  =>
-               let i = ij / g
-               let j = ij % g
-               in if inside(i, j, g)
-                  then project_bottom_inner(i, j, p0, s0, i0d, j0d, i1d, j1d)
-                  else project_bottom_outer(i/one, j/one, p0, s0,
-                                            i0d/one, j0d/one, i1d/one, j1d/one, b/one)
-            ) (iota(g * g)))
+                   s0: [g][g]f32,
+                   b: i32,
+                   i0d: i32,
+                   j0d: i32,
+                   i1d: i32,
+                   j1d: i32): *[g][g]f32 =
+  let one = (g*g+2*g+1)/(g+1) - g in
+  reshape (g, g)
+  (map (fn (ij: i32): f32  =>
+          let i = ij / g
+          let j = ij % g
+          in if inside(i, j, g)
+             then project_bottom_inner(i, j, p0, s0, i0d, j0d, i1d, j1d)
+             else project_bottom_outer(i/one, j/one, p0, s0,
+                                       i0d/one, j0d/one, i1d/one, j1d/one, b/one)
+       ) (iota(g * g)))
 
 fun project_bottom_inner(i: i32,
-                       j: i32,
-                       p0: [g][g]f32,
-                       s0: [g][g]f32,
-                       i0d: i32,
-                       j0d: i32,
-                       i1d: i32,
-                       j1d: i32): f32 =
+                         j: i32,
+                         p0: [g][g]f32,
+                         s0: [g][g]f32,
+                         i0d: i32,
+                         j0d: i32,
+                         i1d: i32,
+                         j1d: i32): f32 =
   unsafe (s0[i, j] - 0.5f32 * f32(g - 2)
           * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
 
 fun project_bottom_outer(i: i32,
-                       j: i32,
-                       p0: [g][g]f32,
-                       s0: [g][g]f32,
-                       i0d: i32,
-                       j0d: i32,
-                       i1d: i32,
-                       j1d: i32,
-                       b: i32): f32 =
+                         j: i32,
+                         p0: [g][g]f32,
+                         s0: [g][g]f32,
+                         i0d: i32,
+                         j0d: i32,
+                         i1d: i32,
+                         j1d: i32,
+                         b: i32): f32 =
   if in_outside_corner(i, j, g)
   then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (project_bottom_outer_base(i1, j1, p0, s0, i0d, j0d, i1d, j1d, b)
@@ -308,14 +307,14 @@ fun project_bottom_outer(i: i32,
   else project_bottom_outer_base(i, j, p0, s0, i0d, j0d, i1d, j1d, b)
 
 fun project_bottom_outer_base(i: i32,
-                            j: i32,
-                            p0: [g][g]f32,
-                            s0: [g][g]f32,
-                            i0d: i32,
-                            j0d: i32,
-                            i1d: i32,
-                            j1d: i32,
-                            b: i32): f32 =
+                              j: i32,
+                              p0: [g][g]f32,
+                              s0: [g][g]f32,
+                              i0d: i32,
+                              j0d: i32,
+                              i1d: i32,
+                              j1d: i32,
+                              b: i32): f32 =
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * project_bottom_inner(i1, j1, p0, s0, i0d, j0d, i1d, j1d)
 
@@ -325,21 +324,21 @@ fun project_bottom_outer_base(i: i32,
 ------------------------------------------------------------
 
 fun dens_step(d0: [g][g]f32,
-            u0: [g][g]f32,
-            v0: [g][g]f32,
-            n_solver_steps: i32,
-            diffusion_rate: f32,
-            time_step: f32): *[g][g]f32 =
+              u0: [g][g]f32,
+              v0: [g][g]f32,
+              n_solver_steps: i32,
+              diffusion_rate: f32,
+              time_step: f32): *[g][g]f32 =
   let d1 = diffuse(d0, 0, n_solver_steps, diffusion_rate, time_step)
   let d2 = advect(d1, u0, v0, 0, time_step)
   in d2
 
 fun vel_step(u0: [g][g]f32,
-           v0: [g][g]f32,
-           n_solver_steps: i32,
-           viscosity: f32,
-           time_step: f32): (*[g][g]f32,
-     *[g][g]f32) =
+             v0: [g][g]f32,
+             n_solver_steps: i32,
+             viscosity: f32,
+             time_step: f32): (*[g][g]f32,
+                               *[g][g]f32) =
   let u1 = diffuse(u0, 1, n_solver_steps, viscosity, time_step)
   let v1 = diffuse(v0, 2, n_solver_steps, viscosity, time_step)
   let (u2, v2) = project(n_solver_steps, u1, v1)
@@ -349,14 +348,14 @@ fun vel_step(u0: [g][g]f32,
   in (u4, v4)
 
 fun step(u0: [g][g]f32,
-          v0: [g][g]f32,
-          d0: [g][g]f32,
-          n_solver_steps: i32,
-          time_step: f32,
-          diffusion_rate: f32,
-          viscosity: f32): (*[g][g]f32,
-     *[g][g]f32,
-     *[g][g]f32) =
+         v0: [g][g]f32,
+         d0: [g][g]f32,
+         n_solver_steps: i32,
+         time_step: f32,
+         diffusion_rate: f32,
+         viscosity: f32): (*[g][g]f32,
+                           *[g][g]f32,
+                           *[g][g]f32) =
   let (u1, v1) = vel_step(u0, v0, n_solver_steps,
                           viscosity, time_step)
   let d1 = dens_step(d0, u0, v0, n_solver_steps,
@@ -369,30 +368,30 @@ fun step(u0: [g][g]f32,
 ------------------------------------------------------------
 
 fun get_end_frame(u0: [g][g]f32,
-                v0: [g][g]f32,
-                d0: [g][g]f32,
-                n_steps: i32,
-                n_solver_steps: i32,
-                time_step: f32,
-                diffusion_rate: f32,
-                viscosity: f32): ([g][g]f32,
-     [g][g]f32,
-     [g][g]f32) =
+                  v0: [g][g]f32,
+                  d0: [g][g]f32,
+                  n_steps: i32,
+                  n_solver_steps: i32,
+                  time_step: f32,
+                  diffusion_rate: f32,
+                  viscosity: f32): ([g][g]f32,
+                                    [g][g]f32,
+                                    [g][g]f32) =
   loop ((u0, v0, d0)) = for i < n_steps do
     step(u0, v0, d0, n_solver_steps, time_step,
          diffusion_rate, viscosity)
   in (u0, v0, d0)
 
 fun get_all_frames(u0: [g][g]f32,
-                 v0: [g][g]f32,
-                 d0: [g][g]f32,
-                 n_steps: i32,
-                 n_solver_steps: i32,
-                 time_step: f32,
-                 diffusion_rate: f32,
-                 viscosity: f32): ([n_steps][g][g]f32,
-     [n_steps][g][g]f32,
-     [n_steps][g][g]f32) =
+                   v0: [g][g]f32,
+                   d0: [g][g]f32,
+                   n_steps: i32,
+                   n_solver_steps: i32,
+                   time_step: f32,
+                   diffusion_rate: f32,
+                   viscosity: f32): ([n_steps][g][g]f32,
+                                     [n_steps][g][g]f32,
+                                     [n_steps][g][g]f32) =
   let u_out = replicate n_steps u0
   let v_out = replicate n_steps v0
   let d_out = replicate n_steps d0
