@@ -9,8 +9,10 @@ import sys
 
 width=1200
 height=800
+x_rotation=0.0
+y_rotation=0.0
 size=(width,height)
-(x_ul, y_ul, x_br, y_br) = (0.0, 0.0, width, height)
+(x_ul, y_ul, x_br, y_br) = (-width/2, -height/2, width/2, height/2)
 time_step = 0.1
 steps_per_call = 1
 
@@ -20,8 +22,8 @@ step_nbody = nb.main
 N = 5000
 epsilon=50.0
 
-xps = numpy.random.normal(size=N,scale=width/5,loc=width/2).astype('float32')
-yps = numpy.random.normal(size=N,scale=height/5,loc=height/2).astype('float32')
+xps = numpy.random.normal(size=N,scale=width/5,loc=0).astype('float32')
+yps = numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32')
 zps = numpy.random.rand(N).astype('float32')
 ms = numpy.random.rand(N).astype('float32')
 xvs = numpy.zeros(N).astype('float32')
@@ -44,11 +46,11 @@ def showText(what, where):
     screen.blit(text, where)
 
 def render():
-    global xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas
+    global xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas,angle
     start = time.time()
     (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = \
       step_nbody(steps_per_call, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas)
-    frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps).get()
+    frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps, x_rotation, y_rotation).get()
     end = time.time()
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
@@ -152,20 +154,30 @@ while True:
         elif event.type == pygame.KEYDOWN:
             repeats = 5 if pygame.key.get_mods() & pygame.KMOD_CTRL else 1
             for i in range(repeats):
-              if event.key == pygame.K_RIGHT:
-                  moveRight()
-              if event.key == pygame.K_LEFT:
-                  moveLeft()
-              if event.key == pygame.K_UP:
-                  moveUp()
-              if event.key == pygame.K_DOWN:
-                  moveDown()
-              if event.key == pygame.K_HOME:
-                  resetPos()
-              if event.unicode == '+':
-                  zoomIn()
-              if event.unicode == '-':
-                  zoomOut()
+                if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    if event.key == pygame.K_RIGHT:
+                        x_rotation += 0.01
+                    if event.key == pygame.K_LEFT:
+                        x_rotation -= 0.01
+                    if event.key == pygame.K_UP:
+                        y_rotation += 0.01
+                    if event.key == pygame.K_DOWN:
+                        y_rotation -= 0.01
+                else:
+                    if event.key == pygame.K_RIGHT:
+                        moveRight()
+                    if event.key == pygame.K_LEFT:
+                        moveLeft()
+                    if event.key == pygame.K_UP:
+                        moveUp()
+                    if event.key == pygame.K_DOWN:
+                        moveDown()
+                if event.key == pygame.K_HOME:
+                    resetPos()
+                if event.unicode == '+':
+                    zoomIn()
+                if event.unicode == '-':
+                    zoomOut()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 BOOM(pygame.mouse.get_pos())

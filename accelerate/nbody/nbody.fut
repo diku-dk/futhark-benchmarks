@@ -103,9 +103,29 @@ fun main(n_steps: i32,
   let bodies'' = map unwrap_body (bodies')
    in unzip(bodies'')
 
+fun rotateByMatrix(ps: [n]position) (rotation: [3][3]f32): [n]position =
+  map (fn (x,y,z) =>
+         (x*rotation[0,0] + x*rotation[1,0] + y*rotation[2,0],
+          y*rotation[0,1] + y*rotation[1,1] + y*rotation[2,1],
+          z*rotation[0,2] + z*rotation[1,2] + z*rotation[2,2]))
+  ps
+
+fun rotateX(ps: [n]position) (angle: f32): [n]position =
+  rotateByMatrix ps (transpose([[1f32, 0f32, 0f32],
+                                [0f32, cos32 angle, -sin32 angle],
+                                [0f32, sin32 angle, cos32 angle]]))
+
+fun rotateY(ps: [n]position) (angle: f32): [n]position =
+  rotateByMatrix ps (transpose([[cos32 angle, 0f32, sin32 angle],
+                                [0f32, 1f32, 0f32],
+                                [-sin32 angle, 0f32, cos32 angle]]))
+
+
 entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-                       xps: [n]f32, yps: [n]f32, zps: [n]f32): [w][h]int =
-  let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br)) (zip xps yps zps))
+             xps: [n]f32, yps: [n]f32, zps: [n]f32,
+             x_rotation: f32, y_rotation: f32): [w][h]int =
+  let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br))
+                       (rotateY (rotateX (zip xps yps zps) x_rotation) y_rotation))
   in reshape (w,h) (write is vs (replicate (w*h) 0))
 
 fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
