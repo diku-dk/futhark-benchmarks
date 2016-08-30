@@ -22,24 +22,17 @@ type acceleration = vec3
 type velocity = vec3
 type body = (position, mass, velocity, acceleration)
 
-fun vec_add(v1: vec3) (v2: vec3): vec3 =
-  let (x1, y1, z1) = v1
-  let (x2, y2, z2) = v2
-  in (x1 + x2, y1 + y2, z1 + z2)
+fun vec_add((x1, y1, z1): vec3) ((x2, y2, z2): vec3): vec3 =
+  (x1 + x2, y1 + y2, z1 + z2)
 
-fun vec_subtract(v1: vec3, v2: vec3): vec3 =
-  let (x1, y1, z1) = v1
-  let (x2, y2, z2) = v2
-  in (x1 - x2, y1 - y2, z1 - z2)
+fun vec_subtract((x1, y1, z1): vec3, (x2, y2, z2): vec3): vec3 =
+  (x1 - x2, y1 - y2, z1 - z2)
 
-fun vec_mult_factor(factor: f32, v: vec3): vec3 =
-  let (x, y, z) = v
-  in (x * factor, y * factor, z * factor)
+fun vec_mult_factor(factor: f32, (x, y, z): vec3): vec3 =
+  (x * factor, y * factor, z * factor)
 
-fun dot(v1: vec3, v2: vec3): f32 =
-  let (x1, y1, z1) = v1
-  let (x2, y2, z2) = v2
-  in x1 * x2 + y1 * y2 + z1 * z2
+fun dot((x1, y1, z1): vec3, (x2, y2, z2): vec3): f32 =
+  x1 * x2 + y1 * y2 + z1 * z2
 
 fun accel(epsilon: f32, pi: vec3, mi: f32, pj: vec3, mj: f32): velocity =
   let r = vec_subtract(pj, pi)
@@ -62,12 +55,9 @@ fun move(epsilon: f32, bodies: []body) (this_body: body): position =
 fun calc_accels(epsilon: f32, bodies: []body): []acceleration =
   map (move(epsilon, bodies)) bodies
 
-fun advance_body(time_step: f32, this_body: body): body =
-  let (pos, mass, vel, acc) = this_body
-  let pos' = vec_add pos (vec_mult_factor(time_step, vel))
-  let vel' = vec_add vel (vec_mult_factor(time_step, acc))
-  let (xp', yp', zp') = pos'
-  let (xv', yv', zv') = vel'
+fun advance_body(time_step: f32, (pos, mass, vel, acc): body): body =
+  let pos' = vec_add pos(vec_mult_factor(time_step, vel))
+  let vel' = vec_add vel(vec_mult_factor(time_step, acc))
   in (pos', mass, vel', acc)
 
 fun advance_body_wrap(time_step: f32) ((pos, mass, vel, acc):body) (accel:acceleration): body =
@@ -86,16 +76,14 @@ fun advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
   in bodies
 
 fun wrap_body (posx: f32, posy: f32, posz: f32,
-                    mass: f32,
-                    velx: f32, vely: f32, velz: f32,
-                    accx: f32, accy: f32, accz: f32): body =
+               mass: f32,
+               velx: f32, vely: f32, velz: f32,
+               accx: f32, accy: f32, accz: f32): body =
   ((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz))
 
-fun unwrap_body(this_body: body): (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) =
-  let ((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz)) = this_body
-  in (posx, posy, posz, mass, velx, vely, velz, accx, accy, accz)
-
-
+fun unwrap_body(((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz)): body)
+               : (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) =
+  (posx, posy, posz, mass, velx, vely, velz, accx, accy, accz)
 
 fun main(n_steps: i32,
        epsilon: f32,
