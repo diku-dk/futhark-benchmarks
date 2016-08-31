@@ -13,7 +13,7 @@ x_rotation=0.0
 y_rotation=0.0
 size=(width,height)
 (x_ul, y_ul, x_br, y_br) = (-width/2, -height/2, width/2, height/2)
-time_step = 0.1
+default_time_step = 0.1
 steps_per_call = 1
 
 nb = nbody.nbody()
@@ -22,16 +22,39 @@ step_nbody = nb.main
 N = 5000
 epsilon=50.0
 
-xps = numpy.random.normal(size=N,scale=width/5,loc=0).astype('float32')
-yps = numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32')
-zps = numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32')
-ms = numpy.random.rand(N).astype('float32')
-xvs = numpy.zeros(N).astype('float32')
-yvs = numpy.zeros(N).astype('float32')
-zvs = numpy.zeros(N).astype('float32')
-xas = numpy.zeros(N).astype('float32')
-yas = numpy.zeros(N).astype('float32')
-zas = numpy.zeros(N).astype('float32')
+def random_points():
+    return (numpy.random.normal(size=N,scale=width/5,loc=0).astype('float32'),
+            numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32'),
+            numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32'),
+
+            numpy.random.rand(N).astype('float32'),
+
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'))
+
+def random_points_orbit():
+    xs = numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32')
+    return (xs,
+            numpy.random.normal(size=N,scale=height/200,loc=0).astype('float32') * (xs/100),
+            numpy.random.normal(size=N,scale=height/200,loc=0).astype('float32') * (xs/10),
+
+            numpy.random.rand(N).astype('float32'),
+
+            numpy.zeros(N).astype('float32'),
+            numpy.sign(xs).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'))
+
+
+(xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
 
 pygame.init()
 pygame.display.set_caption('N-body')
@@ -45,7 +68,7 @@ def showText(what, where):
     text = font.render(what, 1, (255, 255, 255))
     screen.blit(text, where)
 
-def render():
+def render(time_step):
     global xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas,angle
     start = time.time()
     (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = \
@@ -55,7 +78,8 @@ def render():
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
 
-    speedmessage = "Futhark call took %.2fms (N=%d)" % ((end-start)*1000, N)
+    speedmessage = "Futhark call took %.2fms (N=%d) %s" % \
+                   ((end-start)*1000, N, "(paused)" if time_step == 0 else "")
     showText(speedmessage, (10, 10))
 
     pygame.display.flip()
@@ -156,9 +180,10 @@ def mouseMass(pos):
 
 
 pygame.key.set_repeat(1, 1)
+time_step = default_time_step
 while True:
     curtime += 0.005
-    render()
+    render(time_step)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -183,12 +208,25 @@ while True:
                         moveUp()
                     if event.key == pygame.K_DOWN:
                         moveDown()
-                if event.key == pygame.K_HOME:
-                    resetPos()
                 if event.unicode == '+':
                     zoomIn()
                 if event.unicode == '-':
                     zoomOut()
+            if event.unicode == 'c':
+                N = 1
+                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
+            if event.unicode == 'r':
+                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
+            if event.unicode == 'o':
+                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_orbit()
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_SPACE:
+                if time_step > 0:
+                    time_step = 0
+                else:
+                    time_step = default_time_step
+            if event.key == pygame.K_HOME:
+                resetPos()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 BOOM(pygame.mouse.get_pos())
