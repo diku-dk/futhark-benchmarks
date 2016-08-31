@@ -94,33 +94,42 @@ fun main(n_steps: i32,
   let bodies'' = map unwrap_body (bodies')
   in unzip(bodies'')
 
-fun rotateByMatrix(ps: [n]position) (rotation: [3][3]f32): [n]position =
-  map (fn (x,y,z) =>
-         (x*rotation[0,0] + x*rotation[1,0] + y*rotation[2,0],
-          y*rotation[0,1] + y*rotation[1,1] + y*rotation[2,1],
-          z*rotation[0,2] + z*rotation[1,2] + z*rotation[2,2]))
-  ps
+fun rotatePointByMatrix (rotation: [3][3]f32) ((x,y,z): position): position =
+  (x*rotation[0,0] + y*rotation[1,0] + z*rotation[2,0],
+   x*rotation[0,1] + y*rotation[1,1] + z*rotation[2,1],
+   x*rotation[0,2] + y*rotation[1,2] + z*rotation[2,2])
 
-fun rotateX(ps: [n]position) (angle: f32): [n]position =
-  rotateByMatrix ps (transpose([[1f32, 0f32, 0f32],
-                                [0f32, cos32 angle, -sin32 angle],
-                                [0f32, sin32 angle, cos32 angle]]))
+fun rotatePointsByMatrix (rotation: [3][3]f32)(ps: [n]position): [n]position =
+  map (rotatePointByMatrix rotation) ps
 
-fun rotateY(ps: [n]position) (angle: f32): [n]position =
-  rotateByMatrix ps (transpose([[cos32 angle, 0f32, sin32 angle],
-                                [0f32, 1f32, 0f32],
-                                [-sin32 angle, 0f32, cos32 angle]]))
+fun rotateXMatrix (angle: f32): [3][3]f32 =
+  [[1f32,        0f32,         0f32],
+   [0f32, cos32 angle, -sin32 angle],
+   [0f32, sin32 angle,  cos32 angle]]
 
+fun rotateYMatrix (angle: f32): [3][3]f32 =
+  [[cos32 angle,  0f32, sin32 angle],
+   [0f32,         1f32,        0f32],
+   [-sin32 angle, 0f32, cos32 angle]]
+
+fun rotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
+  matmult (rotateXMatrix x_rotation) (rotateYMatrix y_rotation)
+
+entry rotatePoint (x: f32, y: f32, z: f32, x_rotation: f32, y_rotation: f32): position =
+  rotatePointByMatrix (rotationMatrix x_rotation y_rotation) (x,y,z)
+
+fun rotatePoints(ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
+  rotatePointsByMatrix (rotationMatrix x_rotation y_rotation) ps
 
 entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
              xps: [n]f32, yps: [n]f32, zps: [n]f32,
              x_rotation: f32, y_rotation: f32): [w][h]int =
   let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br))
-                       (rotateY (rotateX (zip xps yps zps) x_rotation) y_rotation))
+                       (rotatePoints (zip xps yps zps) x_rotation y_rotation))
   in reshape (w,h) (write is vs (replicate (w*h) 0))
 
 fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
-  ((x,y,z):position): (int, int) =
+               ((x,y,z):position): (int, int) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
@@ -131,3 +140,9 @@ fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
     let x'' = int(x' * f32(w))
     let y'' = int(y' * f32(h))
     in (x''*h + y'', 0x00FFFFFF)
+
+fun matmult(x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
+  map (fn (xr) =>
+        map (fn (yc) => reduce (+) 0f32 (zipWith (*) xr yc))
+            (transpose(y)))
+      x
