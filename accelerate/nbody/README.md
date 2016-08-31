@@ -9,7 +9,9 @@ interactive visualisation.  Just run
 
 and watch the dots.  Left-click to add more bodies in a tight ball.
 Right-hold to have the mouse cursor act as a massive gravitational
-body.
+body.  Hold shift and use the arrow keys to rotate the particles.
+After rotation, left- and right-clicking becomes quite inaccurate.  If
+you are competent at 3D geometry, please contribute a fix!
 
 See the `benchmark` directory for how two benchmark Futhark up against
 Accelerate on different input sizes.

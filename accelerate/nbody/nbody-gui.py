@@ -24,7 +24,7 @@ epsilon=50.0
 
 xps = numpy.random.normal(size=N,scale=width/5,loc=0).astype('float32')
 yps = numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32')
-zps = numpy.random.rand(N).astype('float32')
+zps = numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32')
 ms = numpy.random.rand(N).astype('float32')
 xvs = numpy.zeros(N).astype('float32')
 yvs = numpy.zeros(N).astype('float32')
@@ -34,7 +34,7 @@ yas = numpy.zeros(N).astype('float32')
 zas = numpy.zeros(N).astype('float32')
 
 pygame.init()
-pygame.display.set_caption('Nbody')
+pygame.display.set_caption('N-body')
 screen = pygame.display.set_mode(size)
 surface = pygame.Surface(size)
 font = pygame.font.Font(None, 36)
@@ -60,6 +60,9 @@ def render():
 
     pygame.display.flip()
 
+def point(x,y,z):
+    return nb.rotatePoint(x, y, z, -x_rotation, -y_rotation)
+
 def BOOM(pos):
     global N, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas
     x_dist = float(x_br-x_ul)
@@ -67,6 +70,7 @@ def BOOM(pos):
     x,y = pos
     x = x_ul + (float(x) / width) * x_dist
     y = y_ul + (float(y) / height) * y_dist
+    (x,y,z) = point(x,y,0)
     BOOM_N = 100
 
     angles = numpy.random.rand(BOOM_N).astype('float32') * numpy.pi * 2
@@ -74,7 +78,7 @@ def BOOM(pos):
 
     xps = numpy.concatenate((xps.get(), x + lengths * numpy.cos(angles)))
     yps = numpy.concatenate((yps.get(), y + lengths * numpy.sin(angles)))
-    zps = numpy.concatenate((zps.get(), numpy.zeros(BOOM_N).astype('float32')))
+    zps = numpy.concatenate((zps.get(), z + lengths * numpy.sin(angles)))
     ms = numpy.concatenate((ms.get(), numpy.random.rand(BOOM_N).astype('float32')))
     xvs = numpy.concatenate((xvs.get(),  numpy.zeros(BOOM_N).astype('float32')))
     yvs = numpy.concatenate((yvs.get(), numpy.zeros(BOOM_N).astype('float32')))
@@ -133,10 +137,17 @@ mass_active = False
 def mouseMass(pos):
     global ms, xps, yps, zps
 
+    x_dist = float(x_br-x_ul)
+    y_dist = float(y_br-y_ul)
+    x,y = pos
+    x = x_ul + (float(x) / width) * x_dist
+    y = y_ul + (float(y) / height) * y_dist
+    (x,y,_) = point(x,y,0)
+
     if mass_active and pos:
         ms[0] = 10000
-        xps[0] = pos[0]
-        yps[0] = pos[1]
+        xps[0] = x
+        yps[0] = y
         zps[0] = 0
     else:
         ms[0] = 0.0001
@@ -156,13 +167,13 @@ while True:
             for i in range(repeats):
                 if pygame.key.get_mods() & pygame.KMOD_SHIFT:
                     if event.key == pygame.K_RIGHT:
-                        x_rotation += 0.01
-                    if event.key == pygame.K_LEFT:
-                        x_rotation -= 0.01
-                    if event.key == pygame.K_UP:
                         y_rotation += 0.01
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_LEFT:
                         y_rotation -= 0.01
+                    if event.key == pygame.K_UP:
+                        x_rotation += 0.01
+                    if event.key == pygame.K_DOWN:
+                        x_rotation -= 0.01
                 else:
                     if event.key == pygame.K_RIGHT:
                         moveRight()
