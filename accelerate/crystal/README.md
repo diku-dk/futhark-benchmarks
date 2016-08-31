@@ -3,6 +3,12 @@
 Based on Accelerate's version at
 https://github.com/AccelerateHS/accelerate-examples/tree/master/examples/crystal
 
+Do
+
+    make run
+
+for a nice interactive visualisation.  Use the arrow keys to modify
+the parameters of the visualisation.
 
 ## Program structure
 
