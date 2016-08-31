@@ -48,8 +48,3 @@ as a recursive function.
       Accelerate: 126700.0us
       Futhark:     60564.4us
       Futhark speedup: 2.0x
-
-
-## Visualization
-
-Run `./crystal-make-images.py` to make some pretty pictures.
