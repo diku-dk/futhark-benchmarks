@@ -173,6 +173,9 @@ def mouseMass(pos):
         xps[0] = x
         yps[0] = y
         zps[0] = 0
+        xvs[0] = 0
+        yvs[0] = 0
+        zvs[0] = 0
     else:
         ms[0] = 0.0001
         xps[0] = x_br
