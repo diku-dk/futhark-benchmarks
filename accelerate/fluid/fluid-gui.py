@@ -157,6 +157,14 @@ class FluidGUI:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:
                     self.clear()
+                if event.key == pygame.K_q:
+                    self.diffusion_rate += 0.00001
+                if event.key == pygame.K_a:
+                    self.diffusion_rate -= 0.00001
+                if event.key == pygame.K_w:
+                    self.viscosity += 0.00001
+                if event.key == pygame.K_s:
+                    self.viscosity -= 0.00001
 
         pos_new = pygame.mouse.get_pos()
 
@@ -183,6 +191,8 @@ class FluidGUI:
         pygame.surfarray.blit_array(self.surface, frame)
         self.screen.blit(self.surface, (0, 0))
         self.show_text('Futhark took {:.2f} ms.'.format(diff_ms), (5, 5))
+        self.show_text('Diffusion rate {:.5f} (q/a)'.format(self.diffusion_rate), (5, 20))
+        self.show_text('Viscosity {:.5f} (w/s)'.format(self.viscosity), (5, 35))
         pygame.display.flip()
 
     def show_text(self, what, where, color=(255, 0, 255), antialias=True):
@@ -204,6 +214,7 @@ def main(args):
         print 'Add particles with right click.'
         print 'Add forces with left click.'
         print 'Press C to clear all particles and forces.'
+        print 'Press Q/A and W/S to modify diffusion rate and viscosity.'
         print
         print 'Example: Create a 256x256 fluid simulation.'
         print '  ./fluid-gui.py 256'
