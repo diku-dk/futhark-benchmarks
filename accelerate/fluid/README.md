@@ -8,7 +8,8 @@ http://www.dgp.toronto.edu/people/stam/reality/Research/pdf/GDC03.pdf
 
 `make run` to run the GUI.  Draw with the right mouse button pressed
 to add particles.  Move the cursor with the left mouse button pressed
-to add forces.  Press C to clear all particles and forces.
+to add forces.  Press C to clear all particles and forces.  Use Q/A
+and W/S to modify viscosity and diffusion of the simulated fluid.
 
 Note that the simulation is fairly heavyweight, so while you can
 increase the size if you have a beefy GPU, you probably cannot run at
