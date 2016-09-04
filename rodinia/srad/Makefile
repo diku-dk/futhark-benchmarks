@@ -1,8 +1,8 @@
-srad: srad_core.py
-	@touch srad
+srad.py: srad.fut
+	futhark-pyopencl --library srad.fut
 
-srad_core.py: srad_core.fut
-	futhark-pyopencl --real-as-single --library srad_core.fut
+run: srad.py
+	python3 srad-gui.py
 
 clean:
-	rm -f srad_core.py
+	rm -f *.pyc srad.py
