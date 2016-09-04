@@ -29,16 +29,16 @@ fun main(nodes_start_index: [n]i32,
   let offsets = i32_excl_scan_from_incl_scan offsets0 0
 
   let mask0 = replicate e False
-  let mask = write offsets (replicate n True) (mask0)
+  let mask = write offsets (replicate n True) mask0
 
   let is0 = replicate e 1
-  let is1 = write offsets nodes_start_index (is0)
+  let is1 = write offsets nodes_start_index is0
   let is2 = i32_plus_scan_segm(is1, mask)
 
   let node_ids = map (fn (i: i32): i32  => unsafe edges_dest[i]) is2
 
   let tids0 = replicate e 0
-  let tids1 = write offsets (iota n) (tids0)
+  let tids1 = write offsets (iota n) tids0
   let tids = i32_plus_scan_segm(tids1, mask)
 
   loop ((cost, graph_mask, graph_visited, continue) =
@@ -57,10 +57,10 @@ fun main(nodes_start_index: [n]i32,
       let n_indices = (shape updating_indices)[0]
 
       let graph_mask'' =
-        write updating_indices (replicate n_indices True) (graph_mask')
+        write updating_indices (replicate n_indices True) graph_mask'
 
       let graph_visited' =
-        write updating_indices (replicate n_indices True) (graph_visited)
+        write updating_indices (replicate n_indices True) graph_visited
 
       let tmp_arr = map (fn (ind: int): i32  =>
                           if ind == -1 then 0 else 1) (updating_indices)
@@ -79,21 +79,19 @@ fun step(cost: *[n]i32,
        node_ids: [e]i32,
        tids: [e]i32): (*[n]i32, *[n]bool, *[]i32) =
   let write_indices = map (fn (id: i32, tid: i32): i32  =>
-                            if (unsafe graph_visited[id]
-                                || ! unsafe graph_mask[tid])
-                            then -1
-                            else id) (
-                          zip (node_ids) tids)
+                             if (unsafe graph_visited[id]
+                                 || ! unsafe graph_mask[tid])
+                             then -1
+                             else id) (zip node_ids tids)
 
   let costs_new = map (fn (tid: i32): i32  =>
-                        unsafe cost[tid] + 1) tids
+                         unsafe cost[tid] + 1) tids
 
-  let cost' = write write_indices costs_new (cost)
+  let cost' = write write_indices costs_new cost
 
   let masked_indices = map (fn (i: i32): i32  =>
-                             if unsafe graph_mask[i] then i else -1) (
-                           iota(n))
+                              if unsafe graph_mask[i] then i else -1) (iota n)
   let graph_mask' =
-    write masked_indices (replicate n False) (graph_mask)
+    write masked_indices (replicate n False) graph_mask
 
   in (cost', graph_mask', write_indices)

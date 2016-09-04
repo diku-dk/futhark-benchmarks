@@ -22,7 +22,7 @@ fun step(cost: *[n]i32,
        graph_visited: [n]bool,
        graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[]i32) =
   let active_indices =
-    i32_filter (graph_mask) (iota(n))
+    i32_filter (graph_mask) (iota n)
   let n_indices = (shape active_indices)[0]
 
   -- We calculate the maximum number of edges for a node.  This is necessary,
@@ -42,10 +42,10 @@ fun step(cost: *[n]i32,
   let node_ids = reshape (full_length) changes_node_ids
   let costs = reshape (full_length) changes_costs
 
-  let cost' = write node_ids costs (cost)
+  let cost' = write node_ids costs cost
 
   let graph_mask' =
-    write active_indices (replicate n_indices False) (graph_mask)
+    write active_indices (replicate n_indices False) graph_mask
 
   in (cost', graph_mask', node_ids)
 
@@ -58,7 +58,7 @@ fun node_work(tid: i32,
             graph_visited: [n]bool): ([e_max]i32, [e_max]i32) =
   let start_index = unsafe nodes_start_index[tid]
   let n_edges = unsafe nodes_n_edges[tid]
-  let edge_indices = map (+start_index) (iota(e_max))
+  let edge_indices = map (+start_index) (iota e_max)
   let node_ids = map (fn (i: i32): i32  =>
                        if i < start_index + n_edges
                        then let node_id = unsafe edges_dest[i]

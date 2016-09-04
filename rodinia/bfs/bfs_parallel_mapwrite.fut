@@ -36,21 +36,21 @@ fun step(cost: *[n]i32,
                 let ind_mask    = if mask then tid else -1
                 let ind_val_upd =
                   map (fn (k: int): i32  =>
-                        let i  = start_index + (if k < n_edges
-                                                then k
-                                                else (n_edges - 1))
-                        let id = unsafe edges_dest[i]
-                        let already_visited = unsafe graph_visited[id]
-                        in if mask && (!already_visited) then id else -1
-                     ) (iota(e_max))
-                in (ind_mask, zip (ind_val_upd) (replicate e_max new_cost))
-             ) (iota(n)))
+                         let i  = start_index + (if k < n_edges
+                                                 then k
+                                                 else (n_edges - 1))
+                         let id = unsafe edges_dest[i]
+                         let already_visited = unsafe graph_visited[id]
+                         in if mask && (!already_visited) then id else -1)
+                  (iota e_max)
+                in (ind_mask, zip (ind_val_upd) (replicate e_max new_cost)))
+          (iota n))
 
   let (inds_upd, vals_cost) = unzip(reshape (n * e_max) ind_vals_upd0)
   let vals_mask = replicate n False
 
   -- Finally, the write phase.
-  let graph_mask' = write inds_mask vals_mask (graph_mask)
-  let cost'       = write inds_upd  vals_cost (cost)
+  let graph_mask' = write inds_mask vals_mask graph_mask
+  let cost'       = write inds_upd  vals_cost cost
 
   in (cost', graph_mask', inds_upd)
