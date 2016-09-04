@@ -34,9 +34,7 @@ fun indexW(cols: int, j: int): int =
 fun indexE(cols: int, j: int): int =
   if j == cols-1 then j else j + 1
 
-fun main(image: [rows][cols]int): [rows][cols]f32 =
-  let niter = 100
-  let lambda = 0.5
+fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
   let r1 = 0
   let r2 = rows - 1
   let c1 = 0
@@ -47,8 +45,8 @@ fun main(image: [rows][cols]int): [rows][cols]f32 =
   let neROI = (r2-r1+1)*(c2-c1+1)
 
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
-  let image = map (fn (row: []int): [cols]f32  =>
-                    map (fn (pixel: int): f32  =>
+  let image = map (fn (row: []u8): [cols]f32  =>
+                    map (fn (pixel: u8): f32  =>
                           exp32(f32(pixel)/255.0)) row) image
   loop (image) = for i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
@@ -87,17 +85,16 @@ fun main(image: [rows][cols]int): [rows][cols]f32 =
                ) (iota(rows)) image)
 
     let image =
-      zipWith (fn (i: int) (image_row: []f32) (c_row: []f32) (dN_row: []f32) (dS_row: []f32) (dW_row: []f32) (dE_row: []f32): [cols]f32
-                 =>
-                zipWith (fn (j: int) (pixel: f32) (c_k: f32) (dN_k: f32) (dS_k: f32) (dW_k: f32) (dE_k: f32): f32  =>
+      zipWith (fn i image_row c_row dN_row dS_row dW_row dE_row: [cols]f32 =>
+                zipWith (fn j pixel c_k dN_k dS_k dW_k dE_k  =>
                           let cN = c_k
                           let cS = unsafe c[indexS(rows, i), j]
                           let cW = c_k
                           let cE = unsafe c[i, indexE(cols,j)]
                           let d = cN*dN_k + cS*dS_k + cW*dW_k + cE*dE_k
-                          in pixel + 0.25 * lambda * d
-                        ) (iota(cols)) (image_row) (c_row) (dN_row) (dS_row) (dW_row) (dE_row))
-                        (iota(rows)) image c dN dS dW dE
+                          in pixel + 0.25 * lambda * d)
+                        (iota cols) image_row c_row dN_row dS_row dW_row dE_row)
+                        (iota rows) image c dN dS dW dE
     in image
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
@@ -108,3 +105,13 @@ fun main(image: [rows][cols]int): [rows][cols]f32 =
                           -- would round to int.
                            log32(pixel)*255.0) row) image
   in image
+
+fun main(image: [rows][cols]u8): [rows][cols]f32 =
+  let niter = 100
+  let lambda = 0.5
+  in do_srad(niter, lambda, image)
+
+-- Entry point for interactive demo.  Here we can return an RGBA image.
+entry srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]int =
+  map (fn row => map (fn p => (int(p) << 16) | (int(p) << 8) | (int(p))) row)
+      (do_srad(niter, lambda, image))
