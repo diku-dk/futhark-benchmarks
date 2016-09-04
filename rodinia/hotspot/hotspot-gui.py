@@ -91,12 +91,14 @@ class HotSpot:
         self.making_temp = False
         self.pos_old = None
 
+        self.drawing_power = 10.0
+
     def run(self):
         g = self.grid_resolution
         self.power = np.zeros((g, g), dtype=np.float32)
 
-        # Arbitrary random initial temperatures.
-        self.temp = 200 + np.random.rand(g,g).astype(np.float32) * 160
+        # The world is initially cold.
+        self.temp = self.simulation.ambient_temps(g, g)
 
         pygame.init()
         pygame.display.set_caption('HotSpot!')
@@ -122,16 +124,21 @@ class HotSpot:
                           (x_new+1, y_new+1))
 
         for x,y in points:
-            self.power[x,y] = 1.0
+            if x >= 0 and x < self.power.shape[0] and y >= 0 and y < self.power.shape[1]:
+                self.power[x,y] = self.drawing_power
 
     def react_power(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 raise HotSpotQuit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 self.making_temp = True
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.making_temp = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 4:
+                self.drawing_power += 0.05
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 5:
+                self.drawing_power -= 0.05
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     self.state = SIMULATING_TEMPERATURE
@@ -167,6 +174,7 @@ class HotSpot:
         pygame.surfarray.blit_array(self.surface, frame)
         self.screen.blit(self.surface, (0, 0))
         self.show_text('Draw with the mouse.  Press Space to run', (10,10))
+        self.show_text('Drawing power: {}'.format(self.drawing_power), (10,30))
         pygame.display.flip()
 
     def render_temp(self):

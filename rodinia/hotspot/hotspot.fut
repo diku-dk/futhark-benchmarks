@@ -98,16 +98,19 @@ entry compute_tran_temp(num_iterations: int, temp: [row][col]f32, power: [row][c
     single_iteration(temp, power, cap, rx, ry, rz, step)
   in temp
 
+entry ambient_temps(row: int, col: int): [row][col]f32 =
+  reshape (row,col) (replicate (row*col) (amb_temp ()))
+
 entry render_frame(temp: [row][col]f32): [row][col][3]i8 =
-  let hottest = 360f32
-  let coldest = 270f32
+  let hottest = 400f32
+  let coldest = amb_temp ()
   in map (fn (temp_r: []f32): [col][3]i8  =>
            map (fn (c: f32): [3]i8  =>
                  let c' = (if c < coldest
                            then coldest
                            else (if c > hottest then hottest else c))
                  let intensity = ((c' - coldest) / (hottest - coldest)) * 256f32
-                 in [i8(intensity), 0i8, i8(intensity)]) (
+                 in [i8(intensity), i8(intensity/2f32), i8(intensity/2f32)]) (
                temp_r)) temp
 
 fun main(num_iterations: int, temp: [row][col]f32, power: [row][col]f32): [][]f32 =
