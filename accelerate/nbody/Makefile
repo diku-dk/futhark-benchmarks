@@ -6,7 +6,7 @@ nbody.py: nbody.fut
 	futhark-pyopencl --library nbody.fut
 
 clean:
-	rm -f nbody.py
+	rm -f nbody.py *.pyc
 
 run: nbody.py
 	@python nbody-gui.py
