@@ -38,7 +38,7 @@ def random_points():
             numpy.zeros(N).astype('float32'))
 
 def random_points_orbit():
-    xs = numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32')
+    xs = numpy.random.normal(size=N,scale=width/10,loc=0).astype('float32')
     return (xs,
             numpy.random.normal(size=N,scale=height/200,loc=0).astype('float32') * (xs/100),
             numpy.random.normal(size=N,scale=height/200,loc=0).astype('float32') * (xs/10),
@@ -46,7 +46,7 @@ def random_points_orbit():
             numpy.random.rand(N).astype('float32'),
 
             numpy.zeros(N).astype('float32'),
-            numpy.sign(xs).astype('float32'),
+            xs/width*10,
             numpy.zeros(N).astype('float32'),
 
             numpy.zeros(N).astype('float32'),
