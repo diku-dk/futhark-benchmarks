@@ -79,9 +79,9 @@ fun tunnel(time: f32) (x: int) (y: int): int =
   let c1 = (0.659f32, 0.772f32, 1f32)
   let c2 = (let x = voronoise((5f32*pt3.0, 5f32*pt3.1), 1f32, 1f32) + 0.240f32*rInv
             in (c1.0 * x, c1.1 * x, c1.2 * x))
-  in rgb(c2.0, c2.1, c2.2, 0f32)
+  in rgb(c2.0, c2.1, c2.2)
 
-fun rgb(r: f32, g: f32, b: f32, a: f32): int =
+fun rgb(r: f32, g: f32, b: f32): int =
   (int(r*255f32)&0xFF) << 16 |
   (int(g*255f32)&0xFF) << 8 |
   (int(b*255f32)&0xFF)

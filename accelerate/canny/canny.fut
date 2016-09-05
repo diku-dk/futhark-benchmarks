@@ -151,7 +151,6 @@ fun selectStrong(img: [h][w]f32): []int =
   let targetIdxAndLen = scan (+) 0 strong
   let (targetIdx, len') = split ((shape strong)[0]-1) targetIdxAndLen
   let len = len'[0]
-  let indices = iota(w*h)
   let zeros = replicate len 0
   let (indices', values) =
     unzip(map (fn (i: int): (int, i32)  =>

@@ -79,7 +79,7 @@ fun lin_solve(n_solver_steps: i32,
               a: f32,
               c: f32): [g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g
-  loop (s1 = replicate g (replicate g 0.0f32)) = for k < n_solver_steps do
+  loop (s1 = replicate g (replicate g 0.0f32)) = for _k < n_solver_steps do
     reshape (g, g)
     (map (fn (ij: i32): f32  =>
             let i = ij / g
@@ -259,7 +259,7 @@ fun project_top_outer_base(i: i32,
                            j: i32,
                            u0: [g][g]f32,
                            v0: [g][g]f32): f32 =
-  let (i1, j1, f) = outermost_inner_index(i, j, g, 0)
+  let (i1, j1, _f) = outermost_inner_index(i, j, g, 0)
   in project_top_inner(i1, j1, u0, v0)
 
 fun project_bottom(p0: [g][g]f32,
@@ -377,7 +377,7 @@ fun get_end_frame(u0: [g][g]f32,
                   viscosity: f32): ([g][g]f32,
                                     [g][g]f32,
                                     [g][g]f32) =
-  loop ((u0, v0, d0)) = for i < n_steps do
+  loop ((u0, v0, d0)) = for _i < n_steps do
     step(u0, v0, d0, n_solver_steps, time_step,
          diffusion_rate, viscosity)
   in (u0, v0, d0)
