@@ -63,9 +63,9 @@ fun quasicrystal(scale: f32, degree: i32, time: f32, x: f32, y: f32): u32 =
 
 fun waves(degree: i32, phi: f32, x: f32, y: f32): f32 =
   let th = pi() / phi
-  in wrap(waver(th, x, y, degree, 0.0))
+  in wrap(waver(th, x, y, degree))
 
-fun waver(th: f32, x: f32, y: f32, n: i32, acc: f32): f32 =
+fun waver(th: f32, x: f32, y: f32, n: i32): f32 =
   reduce (+) (0.0) (map (fn i  => wave(f32(i) * th, x, y)) (iota n))
 
 fun wrap(n: f32): f32 =

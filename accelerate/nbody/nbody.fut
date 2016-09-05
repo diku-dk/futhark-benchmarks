@@ -34,7 +34,7 @@ fun vec_mult_factor(factor: f32, (x, y, z): vec3): vec3 =
 fun dot((x1, y1, z1): vec3, (x2, y2, z2): vec3): f32 =
   x1 * x2 + y1 * y2 + z1 * z2
 
-fun accel (epsilon: f32) ((pi, mi, _ , _):body) ((pj, mj, _ , _): body)
+fun accel (epsilon: f32) ((pi, _, _ , _):body) ((pj, mj, _ , _): body)
           : velocity =
   let r = vec_subtract(pj, pi)
   let rsqr = dot(r, r) + epsilon * epsilon
@@ -62,7 +62,7 @@ fun advance_bodies(epsilon: f32, time_step: f32, bodies: [n]body): [n]body =
 
 fun advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
                          bodies: [n]body): [n]body =
-  loop (bodies) = for i < n_steps do
+  loop (bodies) = for _i < n_steps do
     advance_bodies(epsilon, time_step, bodies)
   in bodies
 
@@ -129,7 +129,7 @@ entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
   in reshape (w,h) (write is vs (replicate (w*h) 0))
 
 fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
-               ((x,y,z):position): (int, int) =
+               ((x,y,_z):position): (int, int) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
