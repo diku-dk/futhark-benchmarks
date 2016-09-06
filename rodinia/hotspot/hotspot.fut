@@ -94,7 +94,7 @@ entry compute_tran_temp(num_iterations: int, temp: [row][col]f32, power: [row][c
   let rz = t_chip() / (k_si() * grid_height * grid_width)
   let max_slope = max_pd() / (factor_chip() * t_chip() * spec_heat_si())
   let step = precision() / max_slope
-  loop (temp) = for i < num_iterations do
+  loop (temp) = for _i < num_iterations do
     single_iteration(temp, power, cap, rx, ry, rz, step)
   in temp
 
