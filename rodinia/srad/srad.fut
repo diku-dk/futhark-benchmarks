@@ -22,13 +22,13 @@
 
 default(f32)
 
-fun indexN(rows: int, i: int): int =
+fun indexN(_rows: int, i: int): int =
   if i == 0 then i else i - 1
 
 fun indexS(rows: int, i: int): int =
   if i == rows-1 then i else i + 1
 
-fun indexW(cols: int, j: int): int =
+fun indexW(_cols: int, j: int): int =
   if j == 0 then j else j - 1
 
 fun indexE(cols: int, j: int): int =
@@ -48,7 +48,7 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
   let image = map (fn (row: []u8): [cols]f32  =>
                     map (fn (pixel: u8): f32  =>
                           exp32(f32(pixel)/255.0)) row) image
-  loop (image) = for i < niter do
+  loop (image) = for _i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
     let sum = reduce (+) (0.0) (reshape (ne) image)
     let sum2 = reduce (+) (0.0) (map (**2.0) (reshape (ne) image))
