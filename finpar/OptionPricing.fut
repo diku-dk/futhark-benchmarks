@@ -363,9 +363,9 @@ fun mainRec(contract_number:
 -- PAYOFF FUNCTIONS
 ----------------------------------------
 fun genericPayoff(contract: int, md_disct: []f32, md_detval: []f32, xss: [][]f32): f32 =
-  if      (contract == 1) then payoff1(md_disct, md_detval, xss)
-  else if (contract == 2) then payoff2(md_disct, xss)
-  else if (contract == 3) then payoff3(md_disct, xss)
+  if      (contract == 1) then unsafe payoff1(md_disct, md_detval, xss)
+  else if (contract == 2) then unsafe payoff2(md_disct, xss)
+  else if (contract == 3) then unsafe payoff3(md_disct, xss)
   else 0.0
 
 fun payoff1(md_disct: []f32, md_detval: []f32, xss: [1][1]f32): f32 =
