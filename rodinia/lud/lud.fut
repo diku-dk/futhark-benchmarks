@@ -1,9 +1,16 @@
 -- Sequential LU-decomposition.
 --
 -- ==
--- tags { nobench }
--- compiled input @ data/16by16.in
+-- input @ data/16by16.in
 -- output @ data/16by16.out
+-- compiled input @ data/64.in
+-- output @ data/64.out
+-- compiled input @ data/256.in
+-- output @ data/256.out
+-- compiled input @ data/512.in
+-- output @ data/512.out
+-- compiled input @ data/2048.in
+-- output @ data/2048.out
 
 
 -------------------------------------------
