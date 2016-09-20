@@ -17,7 +17,7 @@ size = (width, height)
 x_rotation=0.0
 y_rotation=0.0
 (x_ul, y_ul, x_br, y_br) = (-width/2, -height/2, width/2, height/2)
-default_time_step = 0.1
+default_time_step = 1.0
 steps_per_call = 1
 
 nb = nbody.nbody()
