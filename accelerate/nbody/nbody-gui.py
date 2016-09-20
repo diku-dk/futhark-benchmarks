@@ -7,11 +7,16 @@ import pygame
 import time
 import sys
 
-width=1200
-height=800
+pygame.init()
+pygame.display.set_caption('N-body')
+screen = pygame.display.set_mode()
+width = screen.get_width()
+height = screen.get_height()
+size = (width, height)
+surface = pygame.Surface(size)
+
 x_rotation=0.0
 y_rotation=0.0
-size=(width,height)
 (x_ul, y_ul, x_br, y_br) = (-width/2, -height/2, width/2, height/2)
 default_time_step = 0.1
 steps_per_call = 1
@@ -21,6 +26,7 @@ render_nbody = nb.render
 step_nbody = nb.main
 N = 5000
 epsilon=50.0
+max_mass=1.0
 
 def random_points():
     return (numpy.random.normal(size=N,scale=width/5,loc=0).astype('float32'),
@@ -53,13 +59,27 @@ def random_points_orbit():
             numpy.zeros(N).astype('float32'),
             numpy.zeros(N).astype('float32'))
 
+def random_points_donut():
+    angles = numpy.random.rand(N).astype('float32') * numpy.pi * 2
+    tangents = numpy.pi*2 - angles
+    lengthscales = numpy.random.normal(size=N).astype('float32')
+    lengths = lengthscales*min(width,height)/10 + min(width,height)/2
+    return (lengths * numpy.sin(angles),
+            lengths * numpy.cos(angles),
+            numpy.random.rand(N).astype('float32') * width / 10,
+
+            numpy.random.rand(N).astype('float32'),
+
+            numpy.sin(angles-numpy.pi/2)*2*numpy.abs(lengthscales),
+            numpy.cos(angles-numpy.pi/2)*2*numpy.abs(lengthscales),
+            numpy.zeros(N).astype('float32'),
+
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'))
 
 (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
 
-pygame.init()
-pygame.display.set_caption('N-body')
-screen = pygame.display.set_mode(size)
-surface = pygame.Surface(size)
 font = pygame.font.Font(None, 36)
 
 curtime=0
@@ -73,21 +93,22 @@ def render(time_step):
     start = time.time()
     (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = \
       step_nbody(steps_per_call, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas)
-    frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps, x_rotation, y_rotation).get()
+    frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps, ms, x_rotation, y_rotation, max_mass).get()
     end = time.time()
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
 
-    speedmessage = "Futhark call took %.2fms (N=%d) %s" % \
-                   ((end-start)*1000, N, "(paused)" if time_step == 0 else "")
+    speedmessage = "Futhark call took %.2fms (N=%d, timestep=%s)" % \
+                   ((end-start)*1000, N,
+                    "(paused)" if time_step == 0 else str(time_step))
     showText(speedmessage, (10, 10))
 
     pygame.display.flip()
 
 def point(x,y,z):
-    return nb.rotatePoint(x, y, z, -x_rotation, -y_rotation)
+    return nb.inverseRotatePoint(x, y, z, -x_rotation, -y_rotation)
 
-def BOOM(pos):
+def blob(pos):
     global N, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas
     x_dist = float(x_br-x_ul)
     y_dist = float(y_br-y_ul)
@@ -95,23 +116,24 @@ def BOOM(pos):
     x = x_ul + (float(x) / width) * x_dist
     y = y_ul + (float(y) / height) * y_dist
     (x,y,z) = point(x,y,0)
-    BOOM_N = 100
+    blob_N = 100
 
-    angles = numpy.random.rand(BOOM_N).astype('float32') * numpy.pi * 2
-    lengths = numpy.random.rand(BOOM_N).astype('float32')
+    angles = numpy.random.rand(blob_N).astype('float32') * numpy.pi * 2
+    z_angles = numpy.random.rand(blob_N).astype('float32') * numpy.pi * 2
+    lengths = numpy.random.rand(blob_N).astype('float32') * min(width,height)/100
 
     xps = numpy.concatenate((xps.get(), x + lengths * numpy.cos(angles)))
     yps = numpy.concatenate((yps.get(), y + lengths * numpy.sin(angles)))
-    zps = numpy.concatenate((zps.get(), z + lengths * numpy.sin(angles)))
-    ms = numpy.concatenate((ms.get(), numpy.random.rand(BOOM_N).astype('float32')))
-    xvs = numpy.concatenate((xvs.get(),  numpy.zeros(BOOM_N).astype('float32')))
-    yvs = numpy.concatenate((yvs.get(), numpy.zeros(BOOM_N).astype('float32')))
-    zvs = numpy.concatenate((zvs.get(), numpy.zeros(BOOM_N).astype('float32')))
-    xas = numpy.concatenate((xas.get(), numpy.zeros(BOOM_N).astype('float32')))
-    yas = numpy.concatenate((yas.get(), numpy.zeros(BOOM_N).astype('float32')))
-    zas = numpy.concatenate((zas.get(), numpy.zeros(BOOM_N).astype('float32')))
+    zps = numpy.concatenate((zps.get(), z + lengths * numpy.sin(z_angles)))
+    ms = numpy.concatenate((ms.get(), numpy.random.rand(blob_N).astype('float32')))
+    xvs = numpy.concatenate((xvs.get(),  numpy.zeros(blob_N).astype('float32')))
+    yvs = numpy.concatenate((yvs.get(), numpy.zeros(blob_N).astype('float32')))
+    zvs = numpy.concatenate((zvs.get(), numpy.zeros(blob_N).astype('float32')))
+    xas = numpy.concatenate((xas.get(), numpy.zeros(blob_N).astype('float32')))
+    yas = numpy.concatenate((yas.get(), numpy.zeros(blob_N).astype('float32')))
+    zas = numpy.concatenate((zas.get(), numpy.zeros(blob_N).astype('float32')))
 
-    N += BOOM_N
+    N += blob_N
 
 def zoomOut():
     global x_br,x_ul,y_br,y_ul
@@ -166,13 +188,13 @@ def mouseMass(pos):
     x,y = pos
     x = x_ul + (float(x) / width) * x_dist
     y = y_ul + (float(y) / height) * y_dist
-    (x,y,_) = point(x,y,0)
+    (x,y,z) = point(x,y,0)
 
     if mass_active and pos:
         ms[0] = 10000
         xps[0] = x
         yps[0] = y
-        zps[0] = 0
+        zps[0] = z
         xvs[0] = 0
         yvs[0] = 0
         zvs[0] = 0
@@ -222,17 +244,26 @@ while True:
                 (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
             if event.unicode == 'o':
                 (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_orbit()
+            if event.unicode == 'd':
+                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_donut()
+            if event.unicode == 'q':
+                time_step -= 0.01
+            if event.unicode == 'w':
+                time_step += 0.01
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 if time_step > 0:
+                    default_time_step = time_step
                     time_step = 0
                 else:
                     time_step = default_time_step
             if event.key == pygame.K_HOME:
-                resetPos()
+                x_rotation=0.0
+                y_rotation=0.0
+                (x_ul, y_ul, x_br, y_br) = (-width/2, -height/2, width/2, height/2)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
-                BOOM(pygame.mouse.get_pos())
+                blob(pygame.mouse.get_pos())
             mass_active = pygame.mouse.get_pressed()[2] == 1
         elif event.type == pygame.MOUSEBUTTONUP:
             mass_active = pygame.mouse.get_pressed()[2] == 1

@@ -115,21 +115,25 @@ fun rotateYMatrix (angle: f32): [3][3]f32 =
 fun rotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
   matmult (rotateXMatrix x_rotation) (rotateYMatrix y_rotation)
 
-entry rotatePoint (x: f32, y: f32, z: f32, x_rotation: f32, y_rotation: f32): position =
-  rotatePointByMatrix (rotationMatrix x_rotation y_rotation) (x,y,z)
+fun inverseRotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
+  matmult (rotateYMatrix y_rotation) (rotateXMatrix x_rotation)
+
+entry inverseRotatePoint (x: f32, y: f32, z: f32, x_rotation: f32, y_rotation: f32): position =
+  rotatePointByMatrix (inverseRotationMatrix x_rotation y_rotation) (x,y,z)
 
 fun rotatePoints(ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
   rotatePointsByMatrix (rotationMatrix x_rotation y_rotation) ps
 
 entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-             xps: [n]f32, yps: [n]f32, zps: [n]f32,
-             x_rotation: f32, y_rotation: f32): [w][h]int =
-  let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br))
-                       (rotatePoints (zip xps yps zps) x_rotation y_rotation))
+             xps: [n]f32, yps: [n]f32, zps: [n]f32, ms: [n]f32,
+             x_rotation: f32, y_rotation: f32,
+             max_mass: f32): [w][h]int =
+  let (is, vs) = unzip(zipWith (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
+                       (rotatePoints (zip xps yps zps) x_rotation y_rotation) ms)
   in reshape (w,h) (write is vs (replicate (w*h) 0))
 
-fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
-               ((x,y,_z):position): (int, int) =
+fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_mass: f32)
+               ((x,y,_z):position) (m: f32): (int, int) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
@@ -139,7 +143,13 @@ fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32)
     -- Convert x',y' to screen coordinate space.
     let x'' = int(x' * f32(w))
     let y'' = int(y' * f32(h))
-    in (x''*h + y'', 0x00FFFFFF)
+    let intensity = if m >= max_mass
+                    then 255
+                    else 128 + int((m / max_mass) * 128f32)
+    let colour = intensity * 0x10000 +
+                 intensity * 0x100 +
+                 0xFF
+    in (x''*h + y'', colour)
 
 fun matmult(x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
   map (fn (xr) =>
