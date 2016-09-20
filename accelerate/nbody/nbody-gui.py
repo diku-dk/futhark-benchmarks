@@ -13,7 +13,6 @@ screen = pygame.display.set_mode()
 width = screen.get_width()
 height = screen.get_height()
 size = (width, height)
-surface = pygame.Surface(size)
 
 x_rotation=0.0
 y_rotation=0.0
@@ -95,11 +94,14 @@ def render(time_step):
       step_nbody(steps_per_call, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas)
     frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps, ms, x_rotation, y_rotation, max_mass).get()
     end = time.time()
-    pygame.surfarray.blit_array(surface, frame)
-    screen.blit(surface, (0, 0))
+    futhark_time = (end-start)*1000
+    start = time.time()
+    pygame.surfarray.blit_array(screen, frame)
+    end = time.time()
+    blit_time = (end-start)*1000
 
-    speedmessage = "Futhark call took %.2fms (N=%d, timestep=%s)" % \
-                   ((end-start)*1000, N,
+    speedmessage = "Futhark call took %.2fms; blitting %.2fms (N=%d, timestep=%s)" % \
+                   (futhark_time, blit_time, N,
                     "(paused)" if time_step == 0 else str(time_step))
     showText(speedmessage, (10, 10))
 
