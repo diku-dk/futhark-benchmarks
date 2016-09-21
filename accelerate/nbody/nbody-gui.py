@@ -77,6 +77,24 @@ def random_points_donut():
             numpy.zeros(N).astype('float32'),
             numpy.zeros(N).astype('float32'))
 
+def random_points_spiral():
+    lengths = numpy.arange(N).astype('float32') / (N/(min(width,height)/2))
+    angles = lengths / (3*numpy.pi)
+    return (lengths * numpy.sin(angles),
+            lengths * numpy.cos(angles),
+            numpy.random.rand(N).astype('float32') * width / 10,
+
+            numpy.random.rand(N).astype('float32'),
+
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'),
+            numpy.zeros(N).astype('float32'))
+
+
 (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
 
 font = pygame.font.Font(None, 36)
@@ -248,6 +266,8 @@ while True:
                 (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_orbit()
             if event.unicode == 'd':
                 (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_donut()
+            if event.unicode == 's':
+                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_spiral()
             if event.unicode == 'q':
                 time_step -= 0.01
             if event.unicode == 'w':
