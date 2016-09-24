@@ -16,7 +16,6 @@ render_tunnel = tunnel.tunnel().main
 pygame.init()
 pygame.display.set_caption('Tunnel')
 screen = pygame.display.set_mode(size)
-surface = pygame.Surface(size)
 font = pygame.font.Font(None, 36)
 
 curtime=0
@@ -29,8 +28,7 @@ def render():
     start = time.time()
     frame = render_tunnel(curtime, width, height).get()
     end = time.time()
-    pygame.surfarray.blit_array(surface, frame)
-    screen.blit(surface, (0, 0))
+    pygame.surfarray.blit_array(screen, frame)
 
     speedmessage = "Futhark call took %.2fms" % ((end-start)*1000)
     showText(speedmessage, (10, 10))
