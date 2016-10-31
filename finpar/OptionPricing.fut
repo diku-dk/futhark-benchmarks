@@ -42,14 +42,14 @@ fun sobolIndR(dir_vs: [m][num_bits]int) (n: int): [m]f32 =
 ---- STRENGTH-REDUCED FORMULA
 --------------------------------
 fun index_of_least_significant_0(num_bits: int, n: int): int =
-  let (goon,k) = (True,0)
+  let (goon,k) = (true,0)
   loop ((goon,k,n)) =
     for i < num_bits do
       if(goon)
       then if (n & 1) == 1
-           then (True, k+1, n>>1)
-           else (False,k,   n   )
-      else      (False,k,   n   )
+           then (true, k+1, n>>1)
+           else (false,k,   n   )
+      else      (false,k,   n   )
   in k
 
 fun sobolRecI(sob_dir_vs: [][num_bits]int, prev: []int, n: int): []int =
@@ -393,7 +393,7 @@ fun payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
                       (x[1] <= 8288.0)             ||
                       (x[2] <=  840.0))
                    xss
-  let cond  = reduce  (||) False conds
+  let cond  = reduce  (||) false conds
   let price1= trajInner(100.0,  0, md_disct)
   let goto40= cond && ( (xss[366,0] < 3758.05) ||
                         (xss[366,1] < 11840.0) ||

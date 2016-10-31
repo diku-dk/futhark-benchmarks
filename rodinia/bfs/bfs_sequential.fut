@@ -10,16 +10,16 @@
 fun main(nodes_start_index: [n]i32,
                   nodes_n_edges: [n]i32,
                   edges_dest: [e]i32): [n]i32 =
-  let graph_mask = replicate n False
-  let updating_graph_mask = replicate n False
-  let graph_visited = replicate n False
+  let graph_mask = replicate n false
+  let updating_graph_mask = replicate n false
+  let graph_visited = replicate n false
   let source = 0
-  let graph_mask[source] = True
-  let graph_visited[source] = True
+  let graph_mask[source] = true
+  let graph_visited[source] = true
   let cost = replicate n (-1)
   let cost[source] = 0
   loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
-        (cost, updating_graph_mask, graph_mask, graph_visited, True)) =
+        (cost, updating_graph_mask, graph_mask, graph_visited, true)) =
     while continue do
       let (cost', graph_mask', updating_graph_mask') =
         step(cost,
@@ -30,14 +30,14 @@ fun main(nodes_start_index: [n]i32,
              graph_mask,
              updating_graph_mask)
 
-      let continue' = False
+      let continue' = false
       loop ((graph_mask', graph_visited, updating_graph_mask', continue')) =
         for tid < n do
           if updating_graph_mask'[tid]
-          then let graph_mask'[tid] = True
-               let graph_visited[tid] = True
-               let updating_graph_mask'[tid] = False
-               in (graph_mask', graph_visited, updating_graph_mask', True)
+          then let graph_mask'[tid] = true
+               let graph_visited[tid] = true
+               let updating_graph_mask'[tid] = false
+               in (graph_mask', graph_visited, updating_graph_mask', true)
           else (graph_mask', graph_visited, updating_graph_mask', continue')
 
       in (cost', updating_graph_mask', graph_mask', graph_visited, continue')
@@ -74,7 +74,7 @@ fun node_work(tid: i32,
             updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let start_index = nodes_start_index[tid]
   let n_edges = nodes_n_edges[tid]
-  let graph_mask[tid] = False
+  let graph_mask[tid] = false
   loop ((cost, updating_graph_mask)) =
     for start_index <= i < start_index + n_edges do
       let id = edges_dest[i]
@@ -82,7 +82,7 @@ fun node_work(tid: i32,
       in if ! visited
          then
            let cost[id] = cost[tid] + 1
-           let updating_graph_mask[id] = True
+           let updating_graph_mask[id] = true
            in (cost, updating_graph_mask)
          else
            (cost, updating_graph_mask)

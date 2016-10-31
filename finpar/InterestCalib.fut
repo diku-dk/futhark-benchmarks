@@ -168,7 +168,7 @@ fun eps0   (): f32 = 1.0e-3
 fun eps    (): f32 = 1.0e-5
 fun pi     (): f32 = 3.1415926535897932384626433832795
 
-fun is_cauchy_llhood  (): bool = True
+fun is_cauchy_llhood  (): bool = true
 fun llhood_cauchy_offs(): f32 = 5.0
 fun llhood_normal_offs(): f32 = 1.0
 
@@ -546,7 +546,7 @@ fun rootFinding_Brent(fid: int, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
                          then (fb, fa, b, a)
                          else (fa, fb, a, b)
     let (c,fc)    = (a, fa)
-    let mflag     = True
+    let mflag     = true
     let it        = 0
     let d         = 0.0     in
 
@@ -574,8 +574,8 @@ fun rootFinding_Brent(fid: int, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
                                       (     mflag && fabs(b-c)     <= fabs(tol) ) ||
                                       ( !mflag && fabs(c-d)        <= fabs(tol) )
                                     )
-                                 then (True,  (a+b)/2.0)
-                                 else (False, s        )
+                                 then (true,  (a+b)/2.0)
+                                 else (false, s        )
 
                 -- Was previous `eval(s)', Now:
                 let fs = to_solve(fid, scalesbbi, s)

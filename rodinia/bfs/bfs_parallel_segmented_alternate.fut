@@ -16,20 +16,20 @@ include lib.bfs_lib
 fun main(nodes_start_index: [n]i32,
                   nodes_n_edges: [n]i32,
                   edges_dest: [e]i32): [n]i32 =
-  let graph_mask = replicate n False
-  let updating_graph_mask = replicate n False
-  let graph_visited = replicate n False
+  let graph_mask = replicate n false
+  let updating_graph_mask = replicate n false
+  let graph_visited = replicate n false
   let source = 0
-  let graph_mask[source] = True
-  let graph_visited[source] = True
+  let graph_mask[source] = true
+  let graph_visited[source] = true
   let cost = replicate n (-1)
   let cost[source] = 0
 
   let offsets0 = scan (+) 0 (nodes_n_edges)
   let offsets = i32_excl_scan_from_incl_scan offsets0 0
 
-  let mask0 = replicate e False
-  let mask = write offsets (replicate n True) mask0
+  let mask0 = replicate e false
+  let mask = write offsets (replicate n true) mask0
 
   let is0 = replicate e 1
   let is1 = write offsets nodes_start_index is0
@@ -42,7 +42,7 @@ fun main(nodes_start_index: [n]i32,
   let tids = i32_plus_scan_segm(tids1, mask)
 
   loop ((cost, graph_mask, graph_visited, continue) =
-        (cost, graph_mask, graph_visited, True)) =
+        (cost, graph_mask, graph_visited, true)) =
     while continue do
       let (cost', graph_mask', updating_indices) =
         step(cost,
@@ -57,10 +57,10 @@ fun main(nodes_start_index: [n]i32,
       let n_indices = (shape updating_indices)[0]
 
       let graph_mask'' =
-        write updating_indices (replicate n_indices True) graph_mask'
+        write updating_indices (replicate n_indices true) graph_mask'
 
       let graph_visited' =
-        write updating_indices (replicate n_indices True) graph_visited
+        write updating_indices (replicate n_indices true) graph_visited
 
       let tmp_arr = map (fn (ind: int): i32  =>
                           if ind == -1 then 0 else 1) (updating_indices)
@@ -92,6 +92,6 @@ fun step(cost: *[n]i32,
   let masked_indices = map (fn (i: i32): i32  =>
                               if unsafe graph_mask[i] then i else -1) (iota n)
   let graph_mask' =
-    write masked_indices (replicate n False) graph_mask
+    write masked_indices (replicate n false) graph_mask
 
   in (cost', graph_mask', write_indices)
