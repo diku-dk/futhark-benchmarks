@@ -1,6 +1,6 @@
 -- Interest rate calibration
 -- ==
--- tags { notravis nobench }
+-- tags { notravis nobench no_opencl }
 -- compiled input @ InterestCalib-data/small.in
 -- output @ InterestCalib-data/small.out
 --
@@ -792,7 +792,7 @@ fun pricer_of_swaption(today:  f32,
                     ) (iota(n_schedi)
                 )
 --
-    let tmat0    = date_act_365( maturity, today() )
+    let tmat0    = date_act_365( maturity, today )
     let (v0_mat, dummyA, dummyB) = bigv( genome, tmat0)
     let zc_mat   = zc(maturity)
 --
