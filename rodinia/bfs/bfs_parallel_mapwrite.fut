@@ -47,7 +47,7 @@ fun step(cost: *[n]i32,
           (iota n))
 
   let (inds_upd, vals_cost) = unzip(reshape (n * e_max) ind_vals_upd0)
-  let vals_mask = replicate n False
+  let vals_mask = replicate n false
 
   -- Finally, the write phase.
   let graph_mask' = write inds_mask vals_mask graph_mask

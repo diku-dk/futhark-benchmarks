@@ -45,7 +45,7 @@ fun step(cost: *[n]i32,
   let cost' = write node_ids costs cost
 
   let graph_mask' =
-    write active_indices (replicate n_indices False) graph_mask
+    write active_indices (replicate n_indices false) graph_mask
 
   in (cost', graph_mask', node_ids)
 

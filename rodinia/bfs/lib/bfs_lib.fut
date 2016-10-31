@@ -31,7 +31,7 @@ fun i32_plus_scan_segm(array: [k]i32, mask: [k]bool): [k]i32 =
                  let (a1, m1) = arg1
                  let a' = if m1 then a1 else a0 + a1
                  let m' = m0 || m1
-                 in (a', m')) (0, False) (
+                 in (a', m')) (0, false) (
                zip array mask))
   in arrayScanned
 

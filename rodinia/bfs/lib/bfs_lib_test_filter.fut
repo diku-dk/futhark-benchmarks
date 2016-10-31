@@ -2,7 +2,7 @@
 -- ==
 -- tags { nobench }
 -- input {
---   [False, True, False, False, True, True, False]
+--   [false, true, false, false, true, true, false]
 --   [0, 1, 2, 3, 4, 5, 6]
 -- }
 -- output {

@@ -57,14 +57,14 @@ fun main(threshold: int,
                             iota(k))
   -- Also assign points arbitrarily to clusters.
   let membership = map (%k) (iota(n))
-  let continue = True
+  let continue = true
   let i = 0
   loop ((membership, cluster_centres, continue, i)) = while continue && i < max_iterations do
     -- For each point, find the cluster with the closest centroid.
     let new_membership = map (find_nearest_point(cluster_centres)) points
     -- Then, find the new centres of the clusters.
     let new_centres = centroids_of(k, points, new_membership)
-    let continue = reduce (||) False (
+    let continue = reduce (||) false (
                           zipWith (fn (c1: (f32,f32)) (c2: (f32,f32)): bool  =>
                                     let (x1,y1) = c1
                                     let (x2,y2) = c2

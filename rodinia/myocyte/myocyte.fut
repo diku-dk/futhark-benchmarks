@@ -1072,15 +1072,15 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
   let tolerance = 10.0f32 / f32(xmax-xmin)
   let y_km1  = y0 in -- copy(y0)
 
-  if (xmax < xmin || h <= 0.0f32) then ( False, y_km1 )
-  else if ( xmax == xmin ) then ( True, y_km1 )
+  if (xmax < xmin || h <= 0.0f32) then ( false, y_km1 )
+  else if ( xmax == xmin ) then ( true, y_km1 )
   else 
   let (h, last_interval) = if (h > f32(xmax - xmin) )
                            then ( f32(xmax - xmin), 1.0f32 )
                            else ( h, last_interval )
 
   -- initialize return and loop-variant params
-  let failed = False
+  let failed = false
   let km1    = 0
   loop((km1, failed, y_km1)) = while ( (!failed) && (km1 < xmax) ) do -- for km1 < xmax do
     -- reinitialize variables
@@ -1089,7 +1089,7 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
     let y_k = replicate equs 0.0f32
     
     -- make attempts to minimize error
-    let breakLoop  = False
+    let breakLoop  = false
     let j = 0
     loop((j,h,y_k,breakLoop,scale_fina)) = while ( (!breakLoop) && (j < attempts()) ) do
       -- REiNiTiALiZE ALL VAriABLES
@@ -1101,15 +1101,15 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
       let (y_k, err) = reshape (equs) (embedded_fehlberg_7_8( f32(km1), h, y_km1, params))
       
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
-      let errs = map (fn (e: f32): bool  => if e > 0.0f32 then True else False) err
-      let error= reduce (||) False errs
+      let errs = map (fn (e: f32): bool  => if e > 0.0f32 then true else false) err
+      let error= reduce (||) false errs
 
 --      let {breakLoop, scale_fina} = if(!error)
---                                    then {True,  max_scale_factor()}
---                                    else {False, scale_fina}
+--                                    then {true,  max_scale_factor()}
+--                                    else {false, scale_fina}
       in
       if (!error)
-      then (j+1, h, y_k, True, max_scale_factor())
+      then (j+1, h, y_k, true, max_scale_factor())
       else 
       -- FiGURE OUT SCALE AS THE MiNiMUM OF COMPONENT SCALES
       let yy = map (fn (x: f32): f32  =>
@@ -1129,7 +1129,7 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
                         let (erri, yyi) = err_yyi
                         in erri <= ( tolerance * yyi )
                     ) (zip err yy )
-      let breakLoop = reduce  (&&) True tmps
+      let breakLoop = reduce  (&&) true tmps
 
       -- ...OTHERWiSE, ADJUST STEP FOR NEXT ATTEMPT
       -- scale next step in a default way
@@ -1163,7 +1163,7 @@ fun main(repeat: int, eps: f32, workload: int, xmax: int, y0: [91]f32, params: [
           in solver(xmax, params, y_row)
         ) (iota(workload) ) )
 
-  in ( reduce (&&) True oks, y_res )
+  in ( reduce (&&) true oks, y_res )
 
 
 
