@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#
+# There is some joystick support, but it's hardwired for a USB NES
+# controller I keep on my desk.
 
 import nbody
 
@@ -175,29 +178,29 @@ def zoomIn():
     y_br -= y_dist * 0.01
     y_ul += y_dist * 0.01
 
-def moveLeft():
+def moveLeft(delta):
     global x_ul, x_br
     x_dist = abs(x_br-x_ul)
-    x_ul -= x_dist * 0.01
-    x_br -= x_dist * 0.01
+    x_ul -= x_dist * delta
+    x_br -= x_dist * delta
 
-def moveRight():
+def moveRight(delta):
     global x_ul, x_br
     x_dist = abs(x_br-x_ul)
-    x_ul += x_dist * 0.01
-    x_br += x_dist * 0.01
+    x_ul += x_dist * delta
+    x_br += x_dist * delta
 
-def moveUp():
+def moveUp(delta):
     global y_ul, y_br
     y_dist = abs(y_br-x_ul)
-    y_ul -= y_dist * 0.01
-    y_br -= y_dist * 0.01
+    y_ul -= y_dist * delta
+    y_br -= y_dist * delta
 
-def moveDown():
+def moveDown(delta):
     global y_ul, y_br
     y_dist = abs(y_br-x_ul)
-    y_ul += y_dist * 0.01
-    y_br += y_dist * 0.01
+    y_ul += y_dist * delta
+    y_br += y_dist * delta
 
 mass_active = False
 def mouseMass(pos):
@@ -225,9 +228,30 @@ def mouseMass(pos):
 
 
 pygame.key.set_repeat(1, 1)
+
+# Joystick stuff.
+pygame.joystick.init()
+
+JOYSTICK_X_AXIS=0
+JOYSTICK_Y_AXIS=1
+JOYSTICK_ROTATE_BUTTON=1
+
+joystick = None
+joystick_count = pygame.joystick.get_count()
+for i in range(joystick_count):
+    joystick = pygame.joystick.Joystick(i)
+    joystick.init()
+
 time_step = default_time_step
+time_then = time.time()
 while True:
-    curtime += 0.005
+    time_now = time.time()
+    time_delta = time_now - time_then
+    time_then = time_now
+
+    rotating_x = 0.0
+    rotating_y = 0.0
+
     render(time_step)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -246,13 +270,13 @@ while True:
                         x_rotation -= 0.01
                 else:
                     if event.key == pygame.K_RIGHT:
-                        moveRight()
+                        moveRight(time_delta)
                     if event.key == pygame.K_LEFT:
-                        moveLeft()
+                        moveLeft(time_delta)
                     if event.key == pygame.K_UP:
-                        moveUp()
+                        moveUp(time_delta)
                     if event.key == pygame.K_DOWN:
-                        moveDown()
+                        moveDown(time_delta)
                 if event.unicode == '+':
                     zoomIn()
                 if event.unicode == '-':
@@ -289,4 +313,12 @@ while True:
             mass_active = pygame.mouse.get_pressed()[2] == 1
         elif event.type == pygame.MOUSEBUTTONUP:
             mass_active = pygame.mouse.get_pressed()[2] == 1
+
+    if joystick:
+        rotating_y = joystick.get_axis(JOYSTICK_X_AXIS)
+        rotating_x = joystick.get_axis(JOYSTICK_Y_AXIS)
+
+    x_rotation += rotating_x * time_delta
+    y_rotation += rotating_y * time_delta
+
     mouseMass(pygame.mouse.get_pos())
