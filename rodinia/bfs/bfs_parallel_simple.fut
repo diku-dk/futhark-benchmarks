@@ -22,7 +22,7 @@ fun step(cost: *[n]i32,
        graph_visited: [n]bool,
        graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[]i32) =
   let active_indices =
-    i32_filter (graph_mask) (iota n)
+    filter (fn i => graph_mask[i]) (iota n)
   let n_indices = (shape active_indices)[0]
 
   -- We calculate the maximum number of edges for a node.  This is necessary,

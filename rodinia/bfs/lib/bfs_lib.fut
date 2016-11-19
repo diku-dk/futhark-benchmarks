@@ -2,22 +2,6 @@
 -- ==
 -- tags { disable }
 
--- `i32_filter` corresponds to this expression:
---
---   filter(fn bool (i32 n) => bs[n], ns)
---
--- FIXME: It *would* be nice to have a proper write-using filter built-in
--- Futhark instead of an ordinary function (which cannot take an anonymous
--- function).
-fun i32_filter (bs: [k]bool) (ns: [k]i32): *[]i32 =
-  let flags = map (fn (n: i32): bool  => unsafe bs[n]) ns
-  let flags_i = map (fn (b: bool): i32  => if b then 1 else 0) flags
-  let is0 = scan (+) 0 (flags_i)
-  let filter_size = is0[k - 1]
-  let is1 = map (fn (i: i32, f: i32): i32  => i * f) (zip is0 (flags_i))
-  let is2 = map (fn (i: i32): i32  => i - 1) is1
-  in write is2 ns (replicate filter_size 0)
-
 -- Convert an inclusive scan into an exclusive scan, although without the last
 -- element.
 fun i32_excl_scan_from_incl_scan (scanned: [k]i32) (ne: i32): [k]i32 =
@@ -41,7 +25,7 @@ fun get_updating_indices(updating_graph_mask: []bool): (*[]i32, i32) =
   
 -- Get the updating indices through a filter.
 fun get_updating_indices_alt0(updating_graph_mask: [n]bool): (*[]i32, i32) =
-  let updating_indices = i32_filter (updating_graph_mask) (iota(n))
+  let updating_indices = filter (fn i => updating_graph_mask[i]) (iota(n))
   let n_indices = (shape updating_indices)[0]
   in (updating_indices, n_indices)
 
