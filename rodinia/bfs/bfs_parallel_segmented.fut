@@ -56,7 +56,7 @@ fun step(cost: *[n]i32,
        graph_mask: *[n]bool,
        updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let active_indices =
-    i32_filter (graph_mask) (iota n)
+    filter (fn i => graph_mask[i]) (iota n)
   let n_indices = (shape active_indices)[0]
 
   let graph_mask' =
