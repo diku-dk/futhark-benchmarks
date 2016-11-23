@@ -29,8 +29,8 @@ fun all_neighbours(board: [n][m]bool): [n][m]int =
 
 fun iteration(board: [n][m]bool): [n][m]bool =
   let lives = all_neighbours(board)
-  in zipWith (fn (lives_r: []int) (board_r: []bool): []bool  =>
-                zipWith (fn (neighbors: int) (alive: bool): bool  =>
+  in map (fn (lives_r: []int) (board_r: []bool): []bool  =>
+                map (fn (neighbors: int) (alive: bool): bool  =>
                            if neighbors < 2
                            then false
                            else if neighbors == 3 then true
@@ -60,8 +60,8 @@ entry render_frame(history: [n][m]int): [n][m][3]i8 =
 entry steps(world: [n][m]bool, history: [n][m]int, steps: int): ([n][m]bool, [n][m]int) =
   loop ((world, history)) = for i < steps do
     (let world' = iteration(world)
-     let history' = zipWith (fn (xs: []int) (alives: []bool): [m]int  =>
-                              zipWith (fn (x: int) (alive: bool): int  =>
+     let history' = map (fn (xs: []int) (alives: []bool): [m]int  =>
+                              map (fn (x: int) (alive: bool): int  =>
                                         if alive then 0 else x + 1) xs alives) history (world')
      in (world', history'))
   in (world, history)

@@ -26,7 +26,7 @@ fun testBit(n: int, ind: int): bool =
 ----    not allow fusing the filter with reduce => redomap,
 -----------------------------------------------------------------
 fun xorInds(n: int) (dir_vs: [num_bits]int): int =
-  let reldv_vals = zipWith (fn dv i  => if testBit(grayCode(n),i) then dv else 0)
+  let reldv_vals = map (fn dv i  => if testBit(grayCode(n),i) then dv else 0)
   dir_vs (iota num_bits)
   in reduce (^) 0 reldv_vals
 
@@ -54,7 +54,7 @@ fun index_of_least_significant_0(num_bits: int, n: int): int =
 
 fun sobolRecI(sob_dir_vs: [][num_bits]int, prev: []int, n: int): []int =
   let bit = index_of_least_significant_0(num_bits,n)
-  in zipWith (fn vct_row prev => vct_row[bit] ^ prev) sob_dir_vs prev
+  in map (fn vct_row prev => vct_row[bit] ^ prev) sob_dir_vs prev
 
 fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]int, (lb_inc, ub_exc): (int,int) ): [][]f32 =
   -- the if inside may be particularly ugly for
@@ -63,12 +63,12 @@ fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]int, (lb_inc, ub_exc): (int,int) ):
                               then sobolIndI(dir_vs,lb_inc+1)
                               else recM(dir_vs,k+lb_inc))
                      (iota (ub_exc-lb_inc))
-  let vct_ints = scan (fn x y => zipWith (^) x y) (replicate n 0) contribs
+  let vct_ints = scan (fn x y => map (^) x y) (replicate n 0) contribs
   in  map (fn xs => map (fn x => f32(x) * sob_fact) xs) vct_ints
 
 fun sobolRecI2(sob_dirs: [][]int, prev: []int, i: int): []int=
   let col = recM(sob_dirs, i)
-  in zipWith (^) prev col
+  in map (^) prev col
 
 fun recM(sob_dirs:  [][num_bits]int, i: int ): []int =
   let bit = index_of_least_significant_0(num_bits,i)
@@ -83,7 +83,7 @@ fun sobolChunk(dir_vs: [len][num_bits]int, n: int, chunk: int): [chunk][]f32 =
                        in if k==0 then sob_beg
                           else recM(dir_vs, k+n))
                     (iota chunk)
-  let vct_ints= scan (fn x y => zipWith (^) x y) (replicate len 0) contrbs
+  let vct_ints= scan (fn x y => map (^) x y) (replicate len 0) contrbs
   in map (fn xs => map (fn x => f32(x) * sob_fact) xs) vct_ints
 
 ----------------------------------------
@@ -243,7 +243,7 @@ fun correlateDeltas(md_c:  [num_und][num_und]f32,
                    : [num_dates][num_und]f32 =
   map (fn (zi: [num_und]f32): [num_und]f32  =>
          map (fn (j: int): f32  =>
-                let x = zipWith (*) (take(j+1,zi)) (take(j+1,md_c[j]) )
+                let x = map (*) (take(j+1,zi)) (take(j+1,md_c[j]) )
                 in  reduce (+) (0.0) x
              ) (iota num_und))
       zds
@@ -251,7 +251,7 @@ fun correlateDeltas(md_c:  [num_und][num_und]f32,
 fun combineVs(n_row:   [num_und]f32,
               vol_row: [num_und]f32,
               dr_row:  [num_und]f32): [num_und]f32 =
-  zipWith (+) dr_row (zipWith (*) n_row vol_row)
+  map (+) dr_row (map (*) n_row vol_row)
 
 fun mkPrices(md_starts:    [num_und]f32,
              md_vols: [num_dates][num_und]f32,
@@ -261,8 +261,8 @@ fun mkPrices(md_starts:    [num_und]f32,
   let c_rows = map combineVs (zip noises (md_vols) (md_drifts) )
   let e_rows = map (fn x: [num_und]f32 => map exp32 x) c_rows
   in  map (fn (x: []f32): [num_und]f32  =>
-             zipWith (*) (md_starts) x)
-          (scan (fn x y => zipWith (*) x y)
+             map (*) (md_starts) x)
+          (scan (fn x y => map (*) x y)
                 (replicate num_und 1.0) e_rows)
 
 fun blackScholes(md_c: [num_und][num_und]f32,
@@ -313,7 +313,7 @@ fun main(contract_number: int,
                                   ) payoff_params
                        ) (bb_mat)
 
-  let payoff    = reduce  (fn x y: []f32  => zipWith (+) x y
+  let payoff    = reduce  (fn x y: []f32  => map (+) x y
                           ) (replicate num_models 0.0
                             ) payoffs
   in  map  (fn price => price / f32(num_mc_it)) payoff
@@ -355,7 +355,7 @@ fun mainRec(contract_number:
                                   ) (payoff_params)
                        ) bb_mat
 
-  let payoff    = reduce (fn x y: []f32 => zipWith (+) x y)
+  let payoff    = reduce (fn x y: []f32 => map (+) x y)
                          (replicate num_models 0.0) payoffs
   in  map  (fn price => price / f32(num_mc_it)) payoff
 
@@ -405,7 +405,7 @@ fun payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
   in price1 + price2
 
 fun fminPayoff(xs: []f32): f32 =
-  --    MIN( zipWith(/, xss, {3758.05, 11840.0, 1200.0}) )
+  --    MIN( map(/, xss, {3758.05, 11840.0, 1200.0}) )
   let (a,b,c) = ( xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0)
   in if a < b
      then if a < c then a else c

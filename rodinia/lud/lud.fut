@@ -45,8 +45,8 @@ fun lud_diagonal0(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
         let a_rows[i] = it_row in
         let a_cols[i] = it_col in
         (a_rows,a_cols)
-    in zipWith (fn  (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: int): [b]f32  =>
-                    zipWith (fn  (row_el: f32) (col_el: f32) (j: int): f32  =>
+    in map (fn  (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: int): [b]f32  =>
+                    map (fn  (row_el: f32) (col_el: f32) (j: int): f32  =>
                                 if (i <= j) then row_el else col_el
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose(a_cols)) (iota(b) )
@@ -88,8 +88,8 @@ fun lud_diagonal1(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
                ) (iota(b*b) )
         ) in
     let (a_rows, a_cols) = ( reshape (b,b) a_rows0, reshape (b,b) a_cols0 )
-    in zipWith (fn  (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: int): [b]f32  =>
-                    zipWith (fn  (row_el: f32) (col_el: f32) (j: int): f32  =>
+    in map (fn  (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: int): [b]f32  =>
+                    map (fn  (row_el: f32) (col_el: f32) (j: int): f32  =>
                                 if (i <= j) then row_el else col_el
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose a_cols) (iota b)
@@ -305,7 +305,7 @@ fun lud_internal2(d:  int, top_per0t: [mp1][b][b]f32, lft_per0: [mp1][b][b]f32, 
         map (fn  (top: [b][b]f32, jj: int): [b][b]f32  =>
                 map  (fn  (lft_row: [b]f32, i: int): [b]f32  =>
                         map  (fn  (top_row: [b]f32, j: int): f32  =>
-                                let prods = zipWith (*) (lft_row) (top_row)     in
+                                let prods = map (*) (lft_row) (top_row)     in
                                 let sum   = reduce (+) (0.0f32) prods in
                                 mat[ii+1,jj+1,i,j] - sum
 
@@ -325,7 +325,7 @@ fun lud_internal(d:  int, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat:
         map (fn  (mat_blk: [b][b]f32, top: [b][b]f32, jj: int): [b][b]f32  =>
                 map  (fn  (mat_row: [b]f32, lft_row: [b]f32, i: int): [b]f32  =>
                         map  (fn  (mat_el: f32, top_row: [b]f32, j: int): f32  =>
-                                let prods = zipWith (*) (lft_row) (top_row) in
+                                let prods = map (*) (lft_row) (top_row) in
                                 let sum   = reduce (+) (0.0f32) prods     in
                                 mat_el - sum --mat_slice[ii,jj,i,j] - sum
                             ) (zip (mat_row) top (iota(b)) )
