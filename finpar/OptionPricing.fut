@@ -412,7 +412,7 @@ fun fminPayoff(xs: []f32): f32 =
      else if b < c then b else c
 
 fun min(arr: []f32): f32 =
-  reduce (fn x y: f32  => if x<y then x else y) arr[0] arr
+  reduce (fn x y: f32  => if x<y then x else y) (arr[0]) arr
 
 fun minint(x: int, y: int): int = if x < y then x else y
 
