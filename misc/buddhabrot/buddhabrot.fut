@@ -74,8 +74,8 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
   let visits_per_pixel =
     reshape (n*m)
             (streamRedPer (fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
-                           zipWith (fn (as: [m]int) (bs: [m]int): [m]int  =>
-                                     zipWith (+) as bs) ass bss) (
+                           map (fn (as: [m]int) (bs: [m]int): [m]int  =>
+                                     map (+) as bs) ass bss) (
                          fn (chunk: int)
                             (acc: *[n][m]int)
                             (inp: []([depth](f32,f32),bool)): [n][m]int  =>

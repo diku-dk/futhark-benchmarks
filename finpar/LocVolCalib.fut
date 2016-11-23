@@ -181,8 +181,8 @@ fun explicitMethod(myD:  [m][3]f32,  myDD: [m][3]f32,
 fun implicitMethod(myD:  [][]f32,  myDD: [][]f32,
                    myMu: [][]f32, myVar: [][]f32,
                    u: *[][]f32,    dtInv: f32  ): *[][]f32 =
-  zipWith (fn mu_row var_row (u_row: *[]f32): *[]f32  =>
-             let abc = zipWith (fn mu var d dd: (f32,f32,f32)  =>
+  map (fn mu_row var_row (u_row: *[]f32): *[]f32  =>
+             let abc = map (fn mu var d dd: (f32,f32,f32)  =>
                                   ( 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
                                   , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
                                   , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])
@@ -204,22 +204,22 @@ fun rollback
 
   -- explicitX
   let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult )
-  let u = zipWith (fn u_row res_row: []f32  =>
-                     zipWith (fn u_el res_el  => dtInv*res_el + 0.5*u_el)
+  let u = map (fn u_row res_row: []f32  =>
+                     map (fn u_el res_el  => dtInv*res_el + 0.5*u_el)
                              u_row res_row)
                    u myResult
 
   -- explicitY
   let myResultTR = transpose(myResult)
   let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR )
-  let u = zipWith (fn us vs: *[]f32  =>
-                     copy(zipWith (+) us vs))
+  let u = map (fn us vs: *[]f32  =>
+                     copy(map (+) us vs))
                      u (transpose v)
   -- implicitX
   let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv )
   -- implicitY
-  let y = zipWith (fn u_row v_row: []f32  =>
-                     zipWith (fn u_el v_el => dtInv*u_el - 0.5*v_el) u_row v_row)
+  let y = map (fn u_row v_row: []f32  =>
+                     map (fn u_el v_el => dtInv*u_el - 0.5*v_el) u_row v_row)
                   (transpose u) v
 
   let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )

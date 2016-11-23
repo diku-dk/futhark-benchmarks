@@ -15,7 +15,7 @@
 -- output @ data/kdd_cup.out
 
 fun euclid_dist_2 (pt1: [numdims]f32) (pt2: [numdims]f32): f32 =
-  reduce (+) 0.0f32 (map (**2.0f32) (zipWith (-) pt1 pt2))
+  reduce (+) 0.0f32 (map (**2.0f32) (map (-) pt1 pt2))
 
 fun closest_point (p1: (int,f32)) (p2: (int,f32)): (int,f32) =
   if p1.1 < p2.1 then p1 else p2
@@ -26,12 +26,12 @@ fun find_nearest_point(pts: [k][d]f32) (pt: [d]f32): int =
   in i
 
 fun add_centroids(x: [d]f32) (y: [d]f32): *[d]f32 =
-  zipWith (+) x y
+  map (+) x y
 
 fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
   let points_in_clusters =
      streamRedPer (fn (acc: [k]int) (x: [k]int) =>
-                     zipWith (+) acc x)
+                     map (+) acc x)
                   (fn chunk (acc: *[k]int) (inp: []int) =>
                      loop (acc) = for i < chunk do
                        let c = inp[i]
@@ -41,7 +41,7 @@ fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
                   (replicate k 0) membership
   let cluster_sums =
     streamRedPer (fn (acc: [k][d]f32) (elem: [k][d]f32) =>
-                    zipWith add_centroids acc elem)
+                    map add_centroids acc elem)
                  (fn chunk (acc: *[k][d]f32) (inp: []([d]f32,int)) =>
                    loop (acc) = for i < chunk do
                      let (point, c) = inp[i]
@@ -70,6 +70,6 @@ fun main(threshold: int, k: int, max_iterations: int,
       let new_centres = centroids_of(k, points, new_membership)
       let delta = reduce (+) 0 (map (fn (b: bool): int  =>
                                        if b then 0 else 1)
-                                (zipWith (==) membership new_membership))
+                                (map (==) membership new_membership))
       in (new_membership, new_centres, delta, i+1)
   in (cluster_centres, i)

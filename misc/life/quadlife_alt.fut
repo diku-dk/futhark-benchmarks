@@ -70,7 +70,7 @@ fun update_history(history: int) (now: i8): int =
 entry steps(world: [n][m]i8, history: [n][m]int, steps: int): ([n][m]i8, [n][m]int) =
   loop ((world, history)) = for i < steps do
     (let world' = iteration(world)
-     let history' = zipWith (fn (row_history: []int) (row: []i8): [m]int  =>
-                              zipWith update_history row_history row) history world'
+     let history' = map (fn (row_history: []int) (row: []i8): [m]int  =>
+                              map update_history row_history row) history world'
      in (world', history'))
   in (world, history)

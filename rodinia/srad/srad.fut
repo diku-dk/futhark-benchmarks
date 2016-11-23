@@ -61,9 +61,9 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
 
     let (dN, dS, dW, dE, c) =
       unzip(
-        zipWith (fn (i: int) (row: []f32): [cols](f32,f32,f32,f32,f32)
+        map (fn (i: int) (row: []f32): [cols](f32,f32,f32,f32,f32)
                    =>
-                    zipWith (fn (j: int) (jc: f32): (f32,f32,f32,f32,f32)  =>
+                    map (fn (j: int) (jc: f32): (f32,f32,f32,f32,f32)  =>
                               let dN_k = unsafe image[indexN(rows,i),j] - jc
                               let dS_k = unsafe image[indexS(rows,i),j] - jc
                               let dW_k = unsafe image[i, indexW(cols,j)] - jc
@@ -85,8 +85,8 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
                ) (iota(rows)) image)
 
     let image =
-      zipWith (fn i image_row c_row dN_row dS_row dW_row dE_row: [cols]f32 =>
-                zipWith (fn j pixel c_k dN_k dS_k dW_k dE_k  =>
+      map (fn i image_row c_row dN_row dS_row dW_row dE_row: [cols]f32 =>
+                map (fn j pixel c_k dN_k dS_k dW_k dE_k  =>
                           let cN = c_k
                           let cS = unsafe c[indexS(rows, i), j]
                           let cW = c_k
