@@ -76,9 +76,8 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
             (streamRedPer (fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
                            map (fn (as: [m]int) (bs: [m]int): [m]int  =>
                                      map (+) as bs) ass bss) (
-                         fn (chunk: int)
-                            (acc: *[n][m]int)
-                            (inp: []([depth](f32,f32),bool)): [n][m]int  =>
+                         fn (acc: *[n][m]int)
+                            (inp: [chunk]([depth](f32,f32),bool)): [n][m]int  =>
                              loop (acc) = for i < chunk do
                                (let (trajectory, escaped) = inp[i]
                                 in if escaped then (loop (acc) = for j < depth do
