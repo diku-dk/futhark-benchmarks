@@ -32,7 +32,7 @@ fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
   let points_in_clusters =
      streamRedPer (fn (acc: [k]int) (x: [k]int) =>
                      map (+) acc x)
-                  (fn chunk (acc: *[k]int) (inp: []int) =>
+                  (fn (acc: *[k]int) (inp: [chunk]int) =>
                      loop (acc) = for i < chunk do
                        let c = inp[i]
                        in unsafe let acc[c] = acc[c] + 1
@@ -42,7 +42,7 @@ fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
   let cluster_sums =
     streamRedPer (fn (acc: [k][d]f32) (elem: [k][d]f32) =>
                     map add_centroids acc elem)
-                 (fn chunk (acc: *[k][d]f32) (inp: []([d]f32,int)) =>
+                 (fn (acc: *[k][d]f32) (inp: [chunk]([d]f32,int)) =>
                    loop (acc) = for i < chunk do
                      let (point, c) = inp[i]
                      in unsafe let acc[c] =

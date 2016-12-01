@@ -72,7 +72,7 @@ fun sobolRecI2(sob_dirs: [][]int, prev: []int, i: int): []int=
 
 fun recM(sob_dirs:  [][num_bits]int, i: int ): []int =
   let bit = index_of_least_significant_0(num_bits,i)
-  in map (fn row => row[bit]) sob_dirs
+  in map (fn row => unsafe row[bit]) sob_dirs
 
 -- computes sobol numbers: n,..,n+chunk-1
 fun sobolChunk(dir_vs: [len][num_bits]int, n: int, chunk: int): [chunk][]f32 =
@@ -333,7 +333,7 @@ fun mainRec(contract_number:
            : []f32 =
   let sobvctsz  = num_dates*num_und
   let dir_vs    = reshape (sobvctsz,num_bits) dir_vs_nosz
-  let sobol_mat = streamMap (fn (chunk: int) (ns: []int): [][sobvctsz]f32  =>
+  let sobol_mat = streamMap (fn (ns: [chunk]int): [chunk][sobvctsz]f32  =>
                                sobolChunk(dir_vs, ns[0], chunk)
                             ) (iota(num_mc_it) )
 
