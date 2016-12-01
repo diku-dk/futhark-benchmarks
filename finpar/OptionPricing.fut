@@ -41,19 +41,14 @@ fun sobolIndR(dir_vs: [m][num_bits]int) (n: int): [m]f32 =
 --------------------------------
 ---- STRENGTH-REDUCED FORMULA
 --------------------------------
-fun index_of_least_significant_0(num_bits: int, n: int): int =
-  let (goon,k) = (true,0)
-  loop ((goon,k,n)) =
-    for i < num_bits do
-      if(goon)
-      then if (n & 1) == 1
-           then (true, k+1, n>>1)
-           else (false,k,   n   )
-      else      (false,k,   n   )
-  in k
+fun index_of_least_significant_0(x: int): int =
+  loop (i = 0) =
+    while i < 32 && ((x>>i)&1) != 0 do
+      i + 1
+  in i
 
-fun sobolRecI(sob_dir_vs: [][num_bits]int, prev: []int, n: int): []int =
-  let bit = index_of_least_significant_0(num_bits,n)
+fun sobolRecI(sob_dir_vs: [][num_bits]int, prev: []int, x: int): []int =
+  let bit = index_of_least_significant_0 x
   in map (fn vct_row prev => vct_row[bit] ^ prev) sob_dir_vs prev
 
 fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]int, (lb_inc, ub_exc): (int,int) ): [][]f32 =
@@ -71,7 +66,7 @@ fun sobolRecI2(sob_dirs: [][]int, prev: []int, i: int): []int=
   in map (^) prev col
 
 fun recM(sob_dirs:  [][num_bits]int, i: int ): []int =
-  let bit = index_of_least_significant_0(num_bits,i)
+  let bit = index_of_least_significant_0 i
   in map (fn row => unsafe row[bit]) sob_dirs
 
 -- computes sobol numbers: n,..,n+chunk-1
