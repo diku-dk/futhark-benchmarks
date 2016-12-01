@@ -277,7 +277,7 @@ fun blackScholes(md_c: [num_und][num_und]f32,
 ----------------------------------------
 -- MAIN
 ----------------------------------------
-fun main(contract_number: int,
+fun mainOld(contract_number: int,
          num_mc_it: int,
          dir_vs_nosz: [][num_bits]int,
          md_cs: [num_models][num_und][num_und]f32,
@@ -318,18 +318,17 @@ fun main(contract_number: int,
                             ) payoffs
   in  map  (fn price => price / f32(num_mc_it)) payoff
 
-fun mainRec(contract_number:
-            int,
-            num_mc_it: int,
-            dir_vs_nosz: [][num_bits]int,
-            md_cs: [num_models][num_und][num_und]f32,
-            md_vols: [num_models][num_dates][num_und]f32,
-            md_drifts: [num_models][num_dates][num_und]f32,
-            md_sts: [num_models][num_und]f32,
-            md_detvals: [num_models][]f32,
-            md_discts: [num_models][]f32,
-            bb_inds: [3][num_dates]int,
-            bb_data: [3][num_dates]f32)
+fun main(contract_number: int,
+         num_mc_it: int,
+         dir_vs_nosz: [][num_bits]int,
+         md_cs: [num_models][num_und][num_und]f32,
+         md_vols: [num_models][num_dates][num_und]f32,
+         md_drifts: [num_models][num_dates][num_und]f32,
+         md_sts: [num_models][num_und]f32,
+         md_detvals: [num_models][]f32,
+         md_discts: [num_models][]f32,
+         bb_inds: [3][num_dates]int,
+         bb_data: [3][num_dates]f32)
            : []f32 =
   let sobvctsz  = num_dates*num_und
   let dir_vs    = reshape (sobvctsz,num_bits) dir_vs_nosz
