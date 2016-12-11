@@ -1,14 +1,12 @@
 -- An implementation of the tpacf benchmark from the parboil benchmark suite
 --
 -- ==
--- compiled input @ small/input-data
--- output @ small/output-data
--- compiled input @ medium/input-data
--- output @ medium/output-data
--- compiled input @ large/input-data
--- output @ large/output-data
-
---default(f32)
+-- compiled input @ data/small.in
+-- output @ data/small.out
+-- compiled input @ data/medium.in
+-- output @ data/medium.out
+-- compiled input @ data/large.in
+-- output @ data/large.out
 
 type vec3 = (f64, f64, f64)
 
