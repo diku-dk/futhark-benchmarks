@@ -16,6 +16,8 @@
 -- compiled input @ data/few_nodes_many_edges_1000n_1000e.in
 --
 -- compiled input @ data/higher_edge_variance_5K.in
+-- input @ data/graph1MW_6.in
+-- output @ data/graph1MW_6.out
 
 include bfs_parallel_segmented
 
