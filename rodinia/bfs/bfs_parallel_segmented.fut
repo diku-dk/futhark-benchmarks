@@ -7,6 +7,8 @@
 -- output @ data/4096nodes.out
 -- input @ data/512nodes_high_edge_variance.in
 -- output @ data/512nodes_high_edge_variance.out
+-- input @ data/graph1MW_6.in
+-- output @ data/graph1MW_6.out
 
 include lib.bfs_lib
 
