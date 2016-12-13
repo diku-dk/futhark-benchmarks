@@ -76,9 +76,8 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
             (streamRedPer (fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
                            map (fn (as: [m]int) (bs: [m]int): [m]int  =>
                                      map (+) as bs) ass bss) (
-                         fn (acc: *[n][m]int)
-                            (inp: [chunk]([depth](f32,f32),bool)): [n][m]int  =>
-                             loop (acc) = for i < chunk do
+                         fn (inp: [chunk]([depth](f32,f32),bool)): [n][m]int  =>
+                             loop (acc = replicate n (replicate m 0)) = for i < chunk do
                                (let (trajectory, escaped) = inp[i]
                                 in if escaped then (loop (acc) = for j < depth do
                                                       (unsafe
@@ -91,8 +90,7 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
                                                           else acc)
                                                     in acc)
                                               else acc)
-                             in acc) (
-                         replicate n (replicate m 0)) (zip (trajectories') (escapes')))
+                             in acc) (zip (trajectories') (escapes')))
   let max_visits = reduce max 0 (reshape (n*m) visits_per_pixel)
   let coloured = map (colourise(max_visits)) (visits_per_pixel)
   in reshape (n,m) coloured
