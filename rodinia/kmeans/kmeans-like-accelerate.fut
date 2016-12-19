@@ -71,4 +71,4 @@ fun main(threshold: int,
                                     in fabs32(x1-x2) > 0.01f32 || fabs32(y1-y2) > 0.01f32) (
                                   copy(new_centres)) (cluster_centres))
     in (new_membership, new_centres, continue, i+1)
-  in ((unzip(cluster_centres)).0, (unzip(cluster_centres)).1, i)
+  in (#0 (unzip(cluster_centres)), #1 (unzip(cluster_centres)), i)

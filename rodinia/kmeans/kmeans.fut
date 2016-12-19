@@ -18,7 +18,7 @@ fun euclid_dist_2 (pt1: [numdims]f32) (pt2: [numdims]f32): f32 =
   reduce (+) 0.0f32 (map (**2.0f32) (map (-) pt1 pt2))
 
 fun closest_point (p1: (int,f32)) (p2: (int,f32)): (int,f32) =
-  if p1.1 < p2.1 then p1 else p2
+  if #1 p1 < #1 p2 then p1 else p2
 
 fun find_nearest_point(pts: [k][d]f32) (pt: [d]f32): int =
   let (i, _) = reduceComm closest_point (0, euclid_dist_2 pt pts[0])
