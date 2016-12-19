@@ -113,21 +113,21 @@ fun main(boxes1d: int): (f32,
 
   in ( alpha,
 
-       (unzip(box_coefs)).0,
-       (unzip(box_coefs)).1,
-       (unzip(box_coefs)).2,
-       (unzip(box_coefs)).3,
+       #0(unzip(box_coefs)),
+       #1(unzip(box_coefs)),
+       #2(unzip(box_coefs)),
+       #3(unzip(box_coefs)),
 
-       (unzip(box_nnghs)).0,
-       (unzip(box_nnghs)).1,
-       (unzip(box_nnghs)).2,
-       (unzip(box_nnghs)).3,
+       #0(unzip(box_nnghs)),
+       #1(unzip(box_nnghs)),
+       #2(unzip(box_nnghs)),
+       #3(unzip(box_nnghs))
 
        box_num_nghbs,
 
-       (unzip(rv)).0,
-       (unzip(rv)).1,
-       (unzip(rv)).2,
-       (unzip(rv)).3,
+       #0(unzip(rv)),
+       #1(unzip(rv)),
+       #2(unzip(rv)),
+       #3(unzip(rv)),
 
        qv)
