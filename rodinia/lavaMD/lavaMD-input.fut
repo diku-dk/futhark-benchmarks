@@ -121,7 +121,7 @@ fun main(boxes1d: int): (f32,
        #0(unzip(box_nnghs)),
        #1(unzip(box_nnghs)),
        #2(unzip(box_nnghs)),
-       #3(unzip(box_nnghs))
+       #3(unzip(box_nnghs)),
 
        box_num_nghbs,
 
