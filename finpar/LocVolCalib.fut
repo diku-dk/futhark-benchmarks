@@ -25,8 +25,7 @@ fun initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: int, numY: int, numT: i
 
 -- make the innermost dimension of the result of size 4 instead of 3?
 fun initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
-  let dxu    = x[1] - x[0]
-  let dxl    = 0.0
+  let dxu     = x[1] - x[0]
   let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]]
   let dxx_low = [[0.0, 0.0, 0.0]]
   let dx_mids = map (fn (i: int): ([]f32,[]f32)  =>
@@ -36,10 +35,9 @@ fun initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
                             [  2.0/dxl/(dxl+dxu), -2.0*(1.0/dxl + 1.0/dxu)/(dxl+dxu), 2.0/dxu/(dxl+dxu) ] )
                     ) (map (+1) (iota(n-2)))
   let (dx_mid, dxx_mid) = unzip dx_mids
-  let dxl    = x[n-1] - x[n-2]
-  let dxu    = 0.0
-  let dx_high = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]]
-  let dxx_high= [[0.0, 0.0, 0.0 ]]
+  let dxl      = x[n-1] - x[n-2]
+  let dx_high  = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]]
+  let dxx_high = [[0.0, 0.0, 0.0 ]]
   let dx     = concat (concat dx_low dx_mid) dx_high
   let dxx    = concat (concat dxx_low dxx_mid) dxx_high
   in  (dx, dxx)
@@ -47,12 +45,12 @@ fun initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
 fun max(x: f32, y: f32): f32 = if y < x then x else y
 fun maxInt(x: int, y: int): int = if y < x then x else y
 
-fun setPayoff(strike: f32, myX: [numX]f32, myY: [numY]f32): *[numY][numX]f32 =
+fun setPayoff(strike: f32, myX: [numX]f32, _myY: [numY]f32): *[numY][numX]f32 =
   replicate numY (map (fn xi: f32  => max(xi-strike, 0.0)) myX)
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
 fun updateParams(myX:  [numX]f32, myY: [numY]f32, myTimeline: []f32,
-                 g: int, alpha: f32, beta: f32, nu: f32)
+                 g: int, _alpha: f32, beta: f32, nu: f32)
   : ([][]f32, [][]f32, [][]f32, [][]f32) =
   let myMuY  = replicate numX (replicate numY 0.0)
   let myVarY = replicate numX (replicate numY (nu*nu))
@@ -189,13 +187,13 @@ fun implicitMethod(myD:  [][]f32,  myDD: [][]f32,
                                   )
                                ) mu_row var_row myD myDD
              let (a,b,c) = unzip(abc)
-             in if 1==1
+             in if 1==0
                 then tridagSeq( a, b, c, u_row )
                 else tridagPar( a, b, c, u_row )
           ) myMu myVar u
 
 fun rollback
-  (myX: [numX]f32, myY: [numY]f32, myTimeline: []f32, myResult: *[][]f32,
+  (_myX: [numX]f32, _myY: [numY]f32, myTimeline: []f32, myResult: *[][]f32,
    myMuX: [][]f32, myDx: [][]f32, myDxx: [][]f32, myVarX: [][]f32,
    myMuY: [][]f32, myDy: [][]f32, myDyy: [][]f32, myVarY: [][]f32, g: int)
   : *[numY][numX]f32 =
@@ -244,7 +242,7 @@ fun value(numX: int, numY: int, numT: int, s0: f32, strike: f32, t: f32, alpha: 
   in myResult[myYindex,myXindex]
 
 fun main (outer_loop_count: int, numX: int, numY: int, numT: int,
-          s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): []f32 =
+          s0: f32, _strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): []f32 =
   let strikes = map (fn i  => 0.001*f32 i) (iota outer_loop_count)
   let res = map (fn x  => value(numX, numY, numT, s0, x, t, alpha, nu, beta)) strikes
   in res
