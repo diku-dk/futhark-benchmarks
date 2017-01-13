@@ -41,8 +41,8 @@ fun amb_temp(): f32 = 80.0
 fun single_iteration(temp: [row][col]f32, power: [row][col]f32,
                      cap: f32, rx: f32, ry: f32, rz: f32,
                      step: f32): [][]f32 =
-  map  (fn (r: int): []f32  =>
-         map (fn (c: int): f32  =>
+  map  (\(r: int): []f32  ->
+         map (\(c: int): f32  ->
                let temp_el = temp[r,c]
                let delta =
                  (step / cap) *
@@ -104,8 +104,8 @@ entry ambient_temps(row: int, col: int): [row][col]f32 =
 entry render_frame(temp: [row][col]f32): [row][col][3]i8 =
   let hottest = 400f32
   let coldest = amb_temp ()
-  in map (fn (temp_r: []f32): [col][3]i8  =>
-           map (fn (c: f32): [3]i8  =>
+  in map (\(temp_r: []f32): [col][3]i8  ->
+           map (\(c: f32): [3]i8  ->
                  let c' = (if c < coldest
                            then coldest
                            else (if c > hottest then hottest else c))

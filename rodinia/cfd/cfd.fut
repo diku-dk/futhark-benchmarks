@@ -44,7 +44,7 @@ fun compute_speed_of_sound(density: f32, pressure: f32): f32 =
 
 --
 fun initialize_variables(nelr: int, ff_variable: [5]f32): [5][nelr]f32 = --[nvar]float ff_variable
-    map (fn (x: f32): [nelr]f32  => replicate nelr x) (ff_variable)
+    map (\(x: f32): [nelr]f32  -> replicate nelr x) (ff_variable)
 
 -- 
 fun compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_energy: f32, 
@@ -77,7 +77,7 @@ fun compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_e
 
 --
 fun compute_step_factor(variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = -- 5 == nvar
-    map (fn (i: int): f32  =>
+    map (\(i: int): f32  ->
             let density    = variables[var_density(),    i]
             let momentum_x = variables[var_momentum()+0, i]
             let momentum_y = variables[var_momentum()+1, i]
@@ -112,7 +112,7 @@ fun compute_flux(elements_surrounding_elements:    [nnb][nel]int
     let smoothing_coefficient = 0.2
     in
     transpose( 
-      map (fn (i: int): [5]f32  =>
+      map (\(i: int): [5]f32  ->
             let density_i    = variables[var_density(), i]
             let momentum_i_x = variables[var_momentum()+0, i]
             let momentum_i_y = variables[var_momentum()+1, i]
@@ -279,7 +279,7 @@ fun time_step(j:  int,
                               step_factors: [nel]f32, 
                               fluxes: [5][nel]f32  ): [5][nel]f32 =
   transpose(
-    map (fn (i: int): [5]f32  =>
+    map (\(i: int): [5]f32  ->
             let factor = step_factors[i] / f32(rk()+1-j)
             in [ old_variables[var_density(),    i] + factor*fluxes[var_density(),    i]
                , old_variables[var_momentum()+0, i] + factor*fluxes[var_momentum()+0, i]

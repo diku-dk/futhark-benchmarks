@@ -33,7 +33,7 @@ fun main(array_rows: int): ([array_rows]f64,[array_rows]f64) =
   let first = [(TrapezoidIntegrate (0.0, 2.0, 1000, 0.0, 0) / 2.0,
                 0.0) -- never set in reference implementation
               ]
-  let rest = map (fn i => (TrapezoidIntegrate (0.0, 2.0, 1000, omega * f64 i, 1),
+  let rest = map (\i -> (TrapezoidIntegrate (0.0, 2.0, 1000, omega * f64 i, 1),
                            TrapezoidIntegrate (0.0, 2.0, 1000, omega * f64 i, 2)))
                  (map (1+) (iota (array_rows-1)))
   in unzip (concat first rest)

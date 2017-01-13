@@ -30,9 +30,9 @@ fun add_centroids(x: [d]f32) (y: [d]f32): *[d]f32 =
 
 fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
   let points_in_clusters =
-     streamRedPer (fn (acc: [k]int) (x: [k]int) =>
+     streamRedPer (\(acc: [k]int) (x: [k]int) ->
                      map (+) acc x)
-                  (fn (inp: [chunk]int) =>
+                  (\(inp: [chunk]int) ->
                      loop (acc = (replicate k 0)) = for i < chunk do
                        let c = inp[i]
                        in unsafe let acc[c] = acc[c] + 1
@@ -40,9 +40,9 @@ fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
                      in acc)
                   membership
   let cluster_sums =
-    streamRedPer (fn (acc: [k][d]f32) (elem: [k][d]f32) =>
+    streamRedPer (\(acc: [k][d]f32) (elem: [k][d]f32) ->
                     map add_centroids acc elem)
-                 (fn (inp: [chunk]([d]f32,int)) =>
+                 (\(inp: [chunk]([d]f32,int)) ->
                    loop (acc = (replicate k (replicate d 0.0f32))) = for i < chunk do
                      let (point, c) = inp[i]
                      in unsafe let acc[c] =
@@ -55,7 +55,7 @@ fun centroids_of(k: int, points: [n][d]f32, membership: [n]int): *[k][d]f32 =
 fun main(threshold: int, k: int, max_iterations: int,
          points: [n][d]f32): ([][]f32, int) =
   -- Assign arbitrary initial cluster centres.
-  let cluster_centres = map (fn (i: int): [d]f32  =>
+  let cluster_centres = map (\(i: int): [d]f32  ->
                                unsafe points[i])
                             (iota k)
   -- Also assign points arbitrarily to clusters.
@@ -68,7 +68,7 @@ fun main(threshold: int, k: int, max_iterations: int,
       let new_membership = map (find_nearest_point cluster_centres) points
       -- Then, find the new centres of the clusters.
       let new_centres = centroids_of(k, points, new_membership)
-      let delta = reduce (+) 0 (map (fn (b: bool): int  =>
+      let delta = reduce (+) 0 (map (\(b: bool): int  ->
                                        if b then 0 else 1)
                                 (map (==) membership new_membership))
       in (new_membership, new_centres, delta, i+1)

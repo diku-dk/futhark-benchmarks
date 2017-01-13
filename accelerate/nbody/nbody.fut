@@ -152,7 +152,7 @@ fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_
     in (x''*h + y'', colour)
 
 fun matmult(x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
-  map (fn (xr) =>
-        map (fn (yc) => reduce (+) 0f32 (map (*) xr yc))
+  map (\(xr) ->
+        map (\(yc) -> reduce (+) 0f32 (map (*) xr yc))
             (transpose(y)))
       x

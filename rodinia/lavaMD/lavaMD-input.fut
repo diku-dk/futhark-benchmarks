@@ -53,7 +53,7 @@ fun main(boxes1d: int): (f32,
   -- 1. Initialize boxs' data structure --
   ----------------------------------------
   let boxes = 
-    map (fn (nh: int): ( (int, int, int, int), [num_nn](int,int,int,int), int )  =>
+    map (\(nh: int): ( (int, int, int, int), [num_nn](int,int,int,int), int )  ->
           let k = nh % boxes1d
           let nr= nh / boxes1d
           let j = nr % boxes1d
@@ -94,8 +94,8 @@ fun main(boxes1d: int): (f32,
   ----------------------------------------------
   -- 2. Initialize input distances and charge --
   ----------------------------------------------
-  let rqv = map  (fn (i: int): [par_per_box](f32,(f32,f32,f32,f32))  =>
-                    map (fn (j: int): (f32, (f32,f32,f32,f32))  =>
+  let rqv = map  (\(i: int): [par_per_box](f32,(f32,f32,f32,f32))  ->
+                    map (\(j: int): (f32, (f32,f32,f32,f32))  ->
                            let n = (i*par_per_box + j)*5 + 1
                            let s1= sobolInd(dirVct, n  )
                            let s2= sobolInd(dirVct, n+1)
