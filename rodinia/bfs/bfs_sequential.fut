@@ -54,7 +54,7 @@ fun step(cost: *[n]i32,
        graph_mask: *[n]bool,
        updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let active_indices =
-    filter (fn (i: i32): bool  => graph_mask[i]) (iota n)
+    filter (\(i: i32): bool  -> graph_mask[i]) (iota n)
 
   -- This loop is a kernel in Rodinia.  Futhark's regularity makes this a bit
   -- tricky to express as a map.

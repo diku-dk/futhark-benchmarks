@@ -26,7 +26,7 @@ fun lud_diagonal0(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let a_rows = copy(a) in
     loop( (a_rows,a_cols) ) = for i < b do
-        let it_row = map (fn  (j: int): f32  =>
+        let it_row = map (\ (j: int): f32  ->
                             if j < i then 0.0f32 else
                             let sum = 0.0f32 in
                             loop(sum) = for k < i do
@@ -34,7 +34,7 @@ fun lud_diagonal0(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
                             in  a_rows[i,j]-sum
                         ) (iota(b) )
         in
-        let it_col = map (fn  (j: int): f32  =>
+        let it_col = map (\ (j: int): f32  ->
                             if j < (i+1) then 0.0f32 else
                             let sum = 0.0f32 in
                             loop(sum) = for k < i do
@@ -45,8 +45,8 @@ fun lud_diagonal0(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
         let a_rows[i] = it_row in
         let a_cols[i] = it_col in
         (a_rows,a_cols)
-    in map (fn  (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: int): [b]f32  =>
-                    map (fn  (row_el: f32) (col_el: f32) (j: int): f32  =>
+    in map (\ (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: int): [b]f32  ->
+                    map (\ (row_el: f32) (col_el: f32) (j: int): f32  ->
                                 if (i <= j) then row_el else col_el
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose(a_cols)) (iota(b) )
@@ -54,15 +54,15 @@ fun lud_diagonal0(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
 fun lud_diagonal1(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let b2 = 2*b in
-    let a_rc = map (fn  (i: int): [b2]f32  =>
-                        map (fn  (j: int): f32  =>
+    let a_rc = map (\ (i: int): [b2]f32  ->
+                        map (\ (j: int): f32  ->
                                 if j < b
                                 then unsafe a[i,j  ]
                                 else unsafe a_cols[i,j-b]
                            ) (iota(b2) )
                   ) (iota(b) )
     loop( a_rc ) = for i < (b-1) do
-        let it_rc  = map (fn  (j: int): f32  =>
+        let it_rc  = map (\ (j: int): f32  ->
                             if (j < b) -- row case
                             then let i = i + 1 in
                                  if j < i then 0.0f32 else
@@ -81,15 +81,15 @@ fun lud_diagonal1(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
         a_rc
     in
     let (a_rows0, a_cols0) = unzip(
-            map (fn  (ind: int): (f32,f32)  =>
+            map (\ (ind: int): (f32,f32)  ->
                     let i = ind / b in let j = ind % b in unsafe
                     let r_el = if i == 0 then a[i,j] else a_rc[i-1,j] in
                     (r_el, a_rc[i,j+b])
                ) (iota(b*b) )
         ) in
     let (a_rows, a_cols) = ( reshape (b,b) a_rows0, reshape (b,b) a_cols0 )
-    in map (fn  (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: int): [b]f32  =>
-                    map (fn  (row_el: f32) (col_el: f32) (j: int): f32  =>
+    in map (\ (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: int): [b]f32  ->
+                    map (\ (row_el: f32) (col_el: f32) (j: int): f32  ->
                                 if (i <= j) then row_el else col_el
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose a_cols) (iota b)
@@ -98,7 +98,7 @@ fun lud_diagonal1(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
 fun lud_diagonal2(ain: [b][b]f32, m: int): *[b][b]f32 =  -- CORRECT
     let one = (m*m+2*m+1)/(m+1) - m in
     let ains= copy(replicate one ain) in
-    let ress= map (fn  (a: *[b][b]f32, q: int): *[b][b]f32  => unsafe
+    let ress= map (\ (a: *[b][b]f32, q: int): *[b][b]f32  -> unsafe
                      loop(a) = for i < b do
                         loop(a) = for i <= j < b do
                             loop(sum=0.0f32) = for k < i do
@@ -121,8 +121,8 @@ fun lud_diagonal2(ain: [b][b]f32, m: int): *[b][b]f32 =  -- CORRECT
 fun lud_diagonal(a: [b][b]f32, step: int): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let b2 = 2*b in
-    let a_rc = map (fn  (i: int): [b2]f32  =>
-                        map (fn  (j: int): f32  =>
+    let a_rc = map (\ (i: int): [b2]f32  ->
+                        map (\ (j: int): f32  ->
                                 if j < b
                                 then unsafe a[i,j  ]
                                 else unsafe a_cols[i,j-b]
@@ -130,7 +130,7 @@ fun lud_diagonal(a: [b][b]f32, step: int): *[b][b]f32 =  -- CORRECT
                   ) (iota(b) )
     loop( a_rc ) = for i < b do
         let row_col =
-            map (fn  (j: int): f32  =>
+            map (\ (j: int): f32  ->
                     if j < b
                     then
                         if j < i then 0.0f32 else
@@ -150,8 +150,8 @@ fun lud_diagonal(a: [b][b]f32, step: int): *[b][b]f32 =  -- CORRECT
         in
         let a_rc[i] = row_col in
         a_rc
-    in map (fn  (i: int): [b]f32  =>
-            map (fn  (j: int): f32  =>
+    in map (\ (i: int): [b]f32  ->
+            map (\ (j: int): f32  ->
                     if (i <= j) then a_rc[i,j] else a_rc[j,i+b]
                ) (iota(b) )
           ) (iota(b) )
@@ -168,10 +168,10 @@ fun lud_diagonal(a: [b][b]f32, step: int): *[b][b]f32 =  -- CORRECT
 fun lud_perimeter_upper0(step: int, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 = copy(a0s)
 
 fun lud_perimeter_upper(step: int, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 =
-    let a1s = map (fn  (x: [b][b]f32): [b][b]f32  => transpose(x)) a0s in
+    let a1s = map (\ (x: [b][b]f32): [b][b]f32  -> transpose(x)) a0s in
     let a2s =
-        map  (fn  (a1: [b][b]f32, jj: int): *[b][b]f32  =>
-        map  (fn  (row0: [b]f32): *[b]f32  =>   -- Upper
+        map  (\ (a1: [b][b]f32, jj: int): *[b][b]f32  ->
+        map  (\ (row0: [b]f32): *[b]f32  ->   -- Upper
                 loop(row=replicate b 0.0f32) = for i < b do
                     loop(sum=0.0f32) = for k < i do
                         sum + diag[i,k] * row[k]
@@ -181,12 +181,12 @@ fun lud_perimeter_upper(step: int, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][
                 in row
             ) a1
             ) (zip a1s (iota(m)) )
-    in map (fn  (x: [b][b]f32): [b][b]f32  => transpose(x)) a2s
+    in map (\ (x: [b][b]f32): [b][b]f32  -> transpose(x)) a2s
 
 fun lud_perimeter_upper2(step: int, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 =
     let a2s =
-        map  (fn  (blk: [b][b]f32, jj: int): *[b][b]f32  =>
-        map  (fn  (j: int): *[b]f32  =>   -- Upper
+        map  (\ (blk: [b][b]f32, jj: int): *[b][b]f32  ->
+        map  (\ (j: int): *[b]f32  ->   -- Upper
                 loop(row=replicate b 0.0f32) = for i < b do
                     loop(sum=0.0f32) = for k < i do
                         sum + diag[i,k] * row[k]
@@ -196,7 +196,7 @@ fun lud_perimeter_upper2(step: int, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b]
                 in row
             ) (iota(b) )
             ) (zip a0s (iota(m)) )
-    in map (fn  (x: [b][b]f32): [b][b]f32  => transpose(x)) a2s
+    in map (\ (x: [b][b]f32): [b][b]f32  -> transpose(x)) a2s
 
 
 ------------------------------
@@ -214,8 +214,8 @@ fun lud_perimeter_lower0(step: int, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m]
 
 fun lud_perimeter_lower1(step: int, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 =
   let slice = mat[0:m,0] in
-  map  (fn  (blk: [b][b]f32, ii: int): *[b][b]f32  =>
-        map  (fn  (row0: [b]f32): *[b]f32  =>   -- Lower
+  map  (\ (blk: [b][b]f32, ii: int): *[b][b]f32  ->
+        map  (\ (row0: [b]f32): *[b]f32  ->   -- Lower
                 loop(row=replicate b 0.0f32) = for j < b do
                         loop(sum=0.0f32) = for k < j do
                             sum + diag[k,j] * row[k]
@@ -228,7 +228,7 @@ fun lud_perimeter_lower1(step: int, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m]
 
 fun lud_perimeter_lower(step: int, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 =
   let slice = mat[0:m,0] in
---  let slice0 = map (fn f32 (int ind) =>
+--  let slice0 = map (\f32 (int ind) ->
 --                        let ii = ind / (b*b) in
 --                        let tmp= ind % (b*b) in
 --                        let (i,j)=(tmp/b, tmp%b) in
@@ -236,8 +236,8 @@ fun lud_perimeter_lower(step: int, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][
 --                   , iota(m*b*b))
 --  in
 --  let slice = copy(reshape((m,b,b),slice0)) in
-  map  (fn  (blk: [b][b]f32, ii: int): *[b][b]f32  =>
-        map  (fn  (row0: [b]f32): *[b]f32  =>   -- Lower
+  map  (\ (blk: [b][b]f32, ii: int): *[b][b]f32  ->
+        map  (\ (row0: [b]f32): *[b]f32  ->   -- Lower
                 loop(row=replicate b 0.0f32) = for j < b do
                         loop(sum=0.0f32) = for k < j do
                             sum + diag[k,j] * row[k]
@@ -262,12 +262,12 @@ fun lud_perimeter_lower(step: int, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][
 
 fun lud_internal0(d:  int, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
   let m = mp1 - 1 in
-  map (fn  (ii: int): [m][b][b]f32  =>
-        map (fn  (jj: int): [b][b]f32  =>
+  map (\ (ii: int): [m][b][b]f32  ->
+        map (\ (jj: int): [b][b]f32  ->
                let top = top_per[jj+1] in
                let lft = lft_per[ii+1] in
-                map  (fn  (i: int): [b]f32  =>
-                        map  (fn  (j: int): f32  =>
+                map  (\ (i: int): [b]f32  ->
+                        map  (\ (j: int): f32  ->
                                 loop (sum = 0.0f32) = for k < b do
                                          sum + lft[i,k] * top[k,j]
                                 in mat[ii+1,jj+1,i,j] - sum
@@ -283,10 +283,10 @@ fun lud_internal1(d:  int, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat
   let top_slice = top_per[1:mp1] in
   let lft_slice = lft_per[1:mp1] in
   let mat_slice = mat[1:mp1,1:mp1] in
-  map (fn  (mat_arr: [m][b][b]f32, lft: [b][b]f32, ii: int): [m][b][b]f32  =>
-        map (fn  (mat_blk: [b][b]f32, top: [b][b]f32, jj: int): [b][b]f32  =>
-                map  (fn  (mat_row: [b]f32, i: int): [b]f32  =>
-                        map  (fn  (mat_el: f32, j: int): f32  =>
+  map (\ (mat_arr: [m][b][b]f32, lft: [b][b]f32, ii: int): [m][b][b]f32  ->
+        map (\ (mat_blk: [b][b]f32, top: [b][b]f32, jj: int): [b][b]f32  ->
+                map  (\ (mat_row: [b]f32, i: int): [b]f32  ->
+                        map  (\ (mat_el: f32, j: int): f32  ->
                                 loop (sum = 0.0f32) = for k < b do
                                          sum + lft[i,k] * top[k,j]
                                 in mat_el - sum
@@ -301,10 +301,10 @@ fun lud_internal2(d:  int, top_per0t: [mp1][b][b]f32, lft_per0: [mp1][b][b]f32, 
   let (tmp,top_per0) = split (1) top_per0t in
   let top_per = rearrange (0,2,1) top_per0
   let (tmp,lft_per) = split (1) lft_per0 in
-  map (fn  (lft: [b][b]f32, ii: int): [m][b][b]f32  =>
-        map (fn  (top: [b][b]f32, jj: int): [b][b]f32  =>
-                map  (fn  (lft_row: [b]f32, i: int): [b]f32  =>
-                        map  (fn  (top_row: [b]f32, j: int): f32  =>
+  map (\ (lft: [b][b]f32, ii: int): [m][b][b]f32  ->
+        map (\ (top: [b][b]f32, jj: int): [b][b]f32  ->
+                map  (\ (lft_row: [b]f32, i: int): [b]f32  ->
+                        map  (\ (top_row: [b]f32, j: int): f32  ->
                                 let prods = map (*) (lft_row) (top_row)     in
                                 let sum   = reduce (+) (0.0f32) prods in
                                 mat[ii+1,jj+1,i,j] - sum
@@ -321,10 +321,10 @@ fun lud_internal(d:  int, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat:
   let top_slice = rearrange (0,2,1) top_slice0 in
   let lft_slice = lft_per[1:mp1] in
   let mat_slice = mat[1:mp1,1:mp1] in
-  map (fn  (mat_arr: [m][b][b]f32, lft: [b][b]f32, ii: int): [m][b][b]f32  =>
-        map (fn  (mat_blk: [b][b]f32, top: [b][b]f32, jj: int): [b][b]f32  =>
-                map  (fn  (mat_row: [b]f32, lft_row: [b]f32, i: int): [b]f32  =>
-                        map  (fn  (mat_el: f32, top_row: [b]f32, j: int): f32  =>
+  map (\ (mat_arr: [m][b][b]f32, lft: [b][b]f32, ii: int): [m][b][b]f32  ->
+        map (\ (mat_blk: [b][b]f32, top: [b][b]f32, jj: int): [b][b]f32  ->
+                map  (\ (mat_row: [b]f32, lft_row: [b]f32, i: int): [b]f32  ->
+                        map  (\ (mat_el: f32, top_row: [b]f32, j: int): f32  ->
                                 let prods = map (*) (lft_row) (top_row) in
                                 let sum   = reduce (+) (0.0f32) prods     in
                                 mat_el - sum --mat_slice[ii,jj,i,j] - sum
@@ -346,10 +346,10 @@ fun main(mat: [n][n]f32): [n][n]f32 =
     ---- the blocks of the lower part            ----
     -------------------------------------------------
     let matb =
-        map  (fn  (i_b: int): [num_blocks][b][b]f32  =>
-                map  (fn  (j_b: int): [b][b]f32  =>
-                        map (fn  (i: int): [b]f32  =>
-                                map  (fn  (j: int): f32  =>
+        map  (\ (i_b: int): [num_blocks][b][b]f32  ->
+                map  (\ (j_b: int): [b][b]f32  ->
+                        map (\ (i: int): [b]f32  ->
+                                map  (\ (j: int): f32  ->
                                         unsafe mat[i_b*b+i, j_b*b + j]
                                     ) (iota(b) )
                            ) (iota(b) )
@@ -372,7 +372,7 @@ fun main(mat: [n][n]f32): [n][n]f32 =
         ----------------------------------------
         let top_per_irreg = lud_perimeter_upper(step, diag, matb[0]) in
         let top_per_all =
-            map  (fn  (ind: int): f32  =>
+            map  (\ (ind: int): f32  ->
                     let jj = ind / (b*b) in
                     let tmp= ind % (b*b) in
                     let i  = tmp / b     in
@@ -391,7 +391,7 @@ fun main(mat: [n][n]f32): [n][n]f32 =
         ----------------------------------------
         let lft_per_irreg = lud_perimeter_lower(step, diag, matb) in
         let lft_per_all =
-            map  (fn  (ind: int): f32  =>
+            map  (\ (ind: int): f32  ->
                     let ii = ind / (b*b) in
                     let tmp= ind % (b*b) in
                     let i  = tmp / b     in
@@ -414,8 +414,8 @@ fun main(mat: [n][n]f32): [n][n]f32 =
     let last_step = (n / b) - 1 in
     let upper[last_step,last_step] =
             lud_diagonal( reshape (b,b) matb, last_step ) in
-    map  (fn  (i_ind: int): [n]f32  =>
-            map  (fn  (j_ind: int): f32  =>
+    map  (\ (i_ind: int): [n]f32  ->
+            map  (\ (j_ind: int): f32  ->
                     let (ii, jj) = (i_ind/b, j_ind/b) in
                     let ( i,  j) = (i_ind - ii*b, j_ind - jj*b) in
                     if (ii <= jj)

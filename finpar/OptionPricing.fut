@@ -23,10 +23,10 @@ fun testBit(n: int, ind: int): bool =
 ---- INDEPENDENT FORMULA:
 ----    filter is redundantly computed inside map.
 ----    Currently Futhark hoists it outside, but this will
-----    not allow fusing the filter with reduce => redomap,
+----    not allow fusing the filter with reduce -> redomap,
 -----------------------------------------------------------------
 fun xorInds(n: int) (dir_vs: [num_bits]int): int =
-  let reldv_vals = map (fn dv i  => if testBit(grayCode(n),i) then dv else 0)
+  let reldv_vals = map (\dv i  -> if testBit(grayCode(n),i) then dv else 0)
   dir_vs (iota num_bits)
   in reduce (^) 0 reldv_vals
 
@@ -36,7 +36,7 @@ fun sobolIndI (dir_vs: [m][num_bits]int, n: int): [m]int =
 fun sobolIndR(dir_vs: [m][num_bits]int) (n: int): [m]f32 =
   let divisor = 2.0 ** f32(num_bits)
   let arri    = sobolIndI( dir_vs, n )
-  in map (fn x => f32(x) / divisor) arri
+  in map (\x -> f32(x) / divisor) arri
 
 --------------------------------
 ---- STRENGTH-REDUCED FORMULA
@@ -49,17 +49,17 @@ fun index_of_least_significant_0(x: int): int =
 
 fun sobolRecI(sob_dir_vs: [][num_bits]int, prev: []int, x: int): []int =
   let bit = index_of_least_significant_0 x
-  in map (fn vct_row prev => vct_row[bit] ^ prev) sob_dir_vs prev
+  in map (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
 
 fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]int, (lb_inc, ub_exc): (int,int) ): [][]f32 =
   -- the if inside may be particularly ugly for
   -- flattening since it introduces control flow!
-  let contribs = map (fn k => if k==0
+  let contribs = map (\k -> if k==0
                               then sobolIndI(dir_vs,lb_inc+1)
                               else recM(dir_vs,k+lb_inc))
                      (iota (ub_exc-lb_inc))
-  let vct_ints = scan (fn x y => map (^) x y) (replicate n 0) contribs
-  in  map (fn xs => map (fn x => f32(x) * sob_fact) xs) vct_ints
+  let vct_ints = scan (\x y -> map (^) x y) (replicate n 0) contribs
+  in  map (\xs -> map (\x -> f32(x) * sob_fact) xs) vct_ints
 
 fun sobolRecI2(sob_dirs: [][]int, prev: []int, i: int): []int=
   let col = recM(sob_dirs, i)
@@ -67,19 +67,19 @@ fun sobolRecI2(sob_dirs: [][]int, prev: []int, i: int): []int=
 
 fun recM(sob_dirs:  [][num_bits]int, i: int ): []int =
   let bit = index_of_least_significant_0 i
-  in map (fn row => unsafe row[bit]) sob_dirs
+  in map (\row -> unsafe row[bit]) sob_dirs
 
 -- computes sobol numbers: n,..,n+chunk-1
 fun sobolChunk(dir_vs: [len][num_bits]int, n: int, chunk: int): [chunk][]f32 =
   let sob_fact= 1.0 / f32(1 << num_bits)
   let sob_beg = sobolIndI(dir_vs, n+1)
-  let contrbs = map (fn (k: int): []int  =>
+  let contrbs = map (\(k: int): []int  ->
                        let sob = k + n
                        in if k==0 then sob_beg
                           else recM(dir_vs, k+n))
                     (iota chunk)
-  let vct_ints= scan (fn x y => map (^) x y) (replicate len 0) contrbs
-  in map (fn xs => map (fn x => f32(x) * sob_fact) xs) vct_ints
+  let vct_ints= scan (\x y -> map (^) x y) (replicate len 0) contrbs
+  in map (\xs -> map (\x -> f32(x) * sob_fact) xs) vct_ints
 
 ----------------------------------------
 --- Inverse Gaussian
@@ -236,8 +236,8 @@ fun take(n: int, a: []f32): [n]f32 = let (first, rest) = split (n) a in first
 fun correlateDeltas(md_c:  [num_und][num_und]f32,
                     zds:   [num_dates][num_und]f32)
                    : [num_dates][num_und]f32 =
-  map (fn (zi: [num_und]f32): [num_und]f32  =>
-         map (fn (j: int): f32  =>
+  map (\(zi: [num_und]f32): [num_und]f32  ->
+         map (\(j: int): f32  ->
                 let x = map (*) (take(j+1,zi)) (take(j+1,md_c[j]) )
                 in  reduce (+) (0.0) x
              ) (iota num_und))
@@ -254,10 +254,10 @@ fun mkPrices(md_starts:    [num_und]f32,
              noises: [num_dates][num_und]f32)
             : [num_dates][num_und]f32 =
   let c_rows = map combineVs (zip noises (md_vols) (md_drifts) )
-  let e_rows = map (fn x: [num_und]f32 => map exp32 x) c_rows
-  in  map (fn (x: []f32): [num_und]f32  =>
+  let e_rows = map (\x: [num_und]f32 -> map exp32 x) c_rows
+  in  map (\(x: []f32): [num_und]f32  ->
              map (*) (md_starts) x)
-          (scan (fn x y => map (*) x y)
+          (scan (\x y -> map (*) x y)
                 (replicate num_und 1.0) e_rows)
 
 fun blackScholes(md_c: [num_und][num_und]f32,
@@ -287,31 +287,31 @@ fun mainOld(contract_number: int,
   let dir_vs    = reshape (num_dates*num_und, num_bits) dir_vs_nosz
 
   let sobol_mat = map  (sobolIndR(dir_vs)
-                       ) (map (fn (x: int): int  => x + 1) (iota(num_mc_it) )
+                       ) (map (\(x: int): int  -> x + 1) (iota(num_mc_it) )
                          )
 
   let gauss_mat = map  ugaussian (sobol_mat )
 
   let bb_mat    = map  (brownianBridge(num_und, bb_inds, bb_data)) gauss_mat
 
-  let payoffs   = map  (fn (bb_row: [][]f32): [num_models]f32  =>
+  let payoffs   = map  (\(bb_row: [][]f32): [num_models]f32  ->
                           let market_params = zip md_cs md_vols md_drifts md_sts
                           let bd_row =
-                            map  (fn (m: ([][]f32,[][]f32,[][]f32,[]f32)): [num_dates][num_und]f32  =>
+                            map  (\(m: ([][]f32,[][]f32,[][]f32,[]f32)): [num_dates][num_und]f32  ->
                                     let (c,vol,drift,st) = m
                                     in blackScholes(c, vol, drift, st, bb_row)
                                  ) market_params
                           let payoff_params = zip (md_discts) (md_detvals) (bd_row)
-                          in map  (fn (p: ([]f32,[]f32,[][]f32)): f32  =>
+                          in map  (\(p: ([]f32,[]f32,[][]f32)): f32  ->
                                      let (disct, detval, bd) = p
                                      in genericPayoff(contract_number, disct, detval, bd)
                                   ) payoff_params
                        ) (bb_mat)
 
-  let payoff    = reduce  (fn x y: []f32  => map (+) x y
+  let payoff    = reduce  (\x y: []f32  -> map (+) x y
                           ) (replicate num_models 0.0
                             ) payoffs
-  in  map  (fn price => price / f32(num_mc_it)) payoff
+  in  map  (\price -> price / f32(num_mc_it)) payoff
 
 fun main(contract_number: int,
          num_mc_it: int,
@@ -327,7 +327,7 @@ fun main(contract_number: int,
            : []f32 =
   let sobvctsz  = num_dates*num_und
   let dir_vs    = reshape (sobvctsz,num_bits) dir_vs_nosz
-  let sobol_mat = streamMap (fn (ns: [chunk]int): [chunk][sobvctsz]f32  =>
+  let sobol_mat = streamMap (\(ns: [chunk]int): [chunk][sobvctsz]f32  ->
                                sobolChunk(dir_vs, ns[0], chunk)
                             ) (iota(num_mc_it) )
 
@@ -335,23 +335,23 @@ fun main(contract_number: int,
 
   let bb_mat    = map  (brownianBridge( num_und, bb_inds, bb_data )) (gauss_mat )
 
-  let payoffs   = map  (fn (bb_row: [][]f32): []f32  =>
+  let payoffs   = map  (\(bb_row: [][]f32): []f32  ->
                           let market_params = zip (md_cs) (md_vols) (md_drifts) (md_sts)
-                          let bd_row = map  (fn (m: ([][]f32,[][]f32,[][]f32,[]f32)): [][]f32  =>
+                          let bd_row = map  (\(m: ([][]f32,[][]f32,[][]f32,[]f32)): [][]f32  ->
                                                let (c,vol,drift,st) = m
                                                in blackScholes(c, vol, drift, st, bb_row)
                                             ) (market_params)
 
                           let payoff_params = zip (md_discts) (md_detvals) (bd_row)
-                          in map  (fn (p: ([]f32,[]f32,[][]f32)): f32  =>
+                          in map  (\(p: ([]f32,[]f32,[][]f32)): f32  ->
                                      let (disct, detval, bd) = p
                                      in genericPayoff(contract_number, disct, detval, bd)
                                   ) (payoff_params)
                        ) bb_mat
 
-  let payoff    = reduce (fn x y: []f32 => map (+) x y)
+  let payoff    = reduce (\x y: []f32 -> map (+) x y)
                          (replicate num_models 0.0) payoffs
-  in  map  (fn price => price / f32(num_mc_it)) payoff
+  in  map  (\price -> price / f32(num_mc_it)) payoff
 
 ----------------------------------------
 -- PAYOFF FUNCTIONS
@@ -382,7 +382,7 @@ fun payoff2 (md_disc: []f32, xss: [5][3]f32): f32 =
          in  trajInner(amount, date, md_disc)
 
 fun payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
-  let conds  = map (fn (x: []f32): bool  =>
+  let conds  = map (\(x: []f32): bool  ->
                       (x[0] <= 2630.6349999999998) ||
                       (x[1] <= 8288.0)             ||
                       (x[2] <=  840.0))
@@ -406,7 +406,7 @@ fun fminPayoff(xs: []f32): f32 =
      else if b < c then b else c
 
 fun min(arr: []f32): f32 =
-  reduce (fn x y: f32  => if x<y then x else y) (arr[0]) arr
+  reduce (\x y: f32  -> if x<y then x else y) (arr[0]) arr
 
 fun minint(x: int, y: int): int = if x < y then x else y
 

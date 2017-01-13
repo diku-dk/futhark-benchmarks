@@ -58,15 +58,15 @@ fun step(cost: *[n]i32,
        graph_mask: *[n]bool,
        updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let active_indices =
-    filter (fn i => graph_mask[i]) (iota n)
+    filter (\i -> graph_mask[i]) (iota n)
   let n_indices = (shape active_indices)[0]
 
   let graph_mask' =
     write active_indices (replicate n_indices false) graph_mask
 
-  let nodes_start_index' = map (fn (i: i32): i32  => unsafe nodes_start_index[i]) (
+  let nodes_start_index' = map (\(i: i32): i32  -> unsafe nodes_start_index[i]) (
                                active_indices)
-  let nodes_n_edges' = map (fn (i: i32): i32  => unsafe nodes_n_edges[i]) (
+  let nodes_n_edges' = map (\(i: i32): i32  -> unsafe nodes_n_edges[i]) (
                            active_indices)
 
   let offsets0 = scan (+) 0 (nodes_n_edges')
@@ -80,15 +80,15 @@ fun step(cost: *[n]i32,
   let is1 = write offsets nodes_start_index' is0
   let is2 = i32_plus_scan_segm(is1, mask)
 
-  let node_ids = map (fn (i: i32): i32  => unsafe edges_dest[i]) is2
-  let write_indices = map (fn (id: i32): i32  =>
+  let node_ids = map (\(i: i32): i32  -> unsafe edges_dest[i]) is2
+  let write_indices = map (\(id: i32): i32  ->
                             if unsafe graph_visited[id] then -1 else id) (
                           node_ids)
 
   let costs_new0 = replicate full_length 0
   let costs_new1 =
     write offsets
-          (map (fn (id: i32): i32  => unsafe cost[id] + 1) (active_indices))
+          (map (\(id: i32): i32  -> unsafe cost[id] + 1) (active_indices))
           costs_new0
   let costs_new = i32_plus_scan_segm(costs_new1, mask)
 

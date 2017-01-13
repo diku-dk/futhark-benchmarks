@@ -43,11 +43,11 @@ fun main(alpha:  f32
   let box_nnghs = zip@1 box_nnghs_0 box_nnghs_1 box_nnghs_2 box_nnghs_3
   let rv = zip@1 rv_0 rv_1 rv_2 rv_3
   let a2 = 2.0*alpha*alpha in
-  unzip(map (fn (l: int): [par_per_box](f32,f32,f32,f32)  =>
+  unzip(map (\(l: int): [par_per_box](f32,f32,f32,f32)  ->
         let ( bl_x, bl_y, bl_bz, bl_number ) = box_coefs[l]
         let rA = rv[l]
         in
-        map  (fn (rA_el:  (f32,f32,f32,f32) ): (f32,f32,f32,f32)  => --(int i) =>
+        map  (\(rA_el:  (f32,f32,f32,f32) ): (f32,f32,f32,f32)  -> --(int i) ->
                 let (rai_v, rai_x, rai_y, rai_z) = rA_el in -- rA[i]
                 let acc = (0.0,0.0,0.0,0.0)
                 loop(acc) = 
@@ -61,10 +61,10 @@ fun main(alpha:  f32
                           let qB = unsafe qv[first_j]
                           ---------------------------------------------------------
                           -- Important note: rB and qB are invariant to the      --
-                          -- second map on rA => can be blocked in shared memory --
+                          -- second map on rA -> can be blocked in shared memory --
                           ---------------------------------------------------------
                           let pres = 
-                            map (fn (tup:  ( (f32,f32,f32,f32), f32 )): (f32,f32,f32,f32)  =>
+                            map (\(tup:  ( (f32,f32,f32,f32), f32 )): (f32,f32,f32,f32)  ->
                                       let ( (rbj_v,rbj_x,rbj_y,rbj_z), qbj ) = tup
                                       let r2   = rai_v + rbj_v - dot((rai_x,rai_y,rai_z), (rbj_x,rbj_y,rbj_z))
                                       let u2   = a2*r2
@@ -80,7 +80,7 @@ fun main(alpha:  f32
                                ) (zip rB qB )
 
                           let (r1, r2, r3, r4) = 
-                            reduce (fn (a: (f32,f32,f32,f32)) (b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  =>
+                            reduce (\(a: (f32,f32,f32,f32)) (b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  ->
                                         let (a1,a2,a3,a4) = a in let (b1,b2,b3,b4) = b in (a1+b1, a2+b2, a3+b3, a4+b4)
                                   ) (0.0,0.0,0.0,0.0) pres
                           let (a1, a2, a3, a4) = acc

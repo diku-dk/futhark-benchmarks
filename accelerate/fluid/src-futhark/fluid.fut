@@ -81,7 +81,7 @@ fun lin_solve(n_solver_steps: i32,
   let one = (g*g+2*g+1)/(g+1) - g
   loop (s1 = replicate g (replicate g 0.0f32)) = for _k < n_solver_steps do
     reshape (g, g)
-    (map (fn (ij: i32): f32  =>
+    (map (\(ij: i32): f32  ->
             let i = ij / g
             let j = ij % g
             in if inside(i, j, g)
@@ -153,7 +153,7 @@ fun advect(s0: [g][g]f32,
   let one = (g*g+2*g+1)/(g+1) - g
   let time_step0 = time_step * f32(g - 2)
   in reshape(g, g)
-  (map (fn (ij: i32): f32  =>
+  (map (\(ij: i32): f32  ->
           let i = ij / g
           let j = ij % g
           in if inside(i, j, g)
@@ -228,7 +228,7 @@ fun project_top(u0: [g][g]f32,
                 v0: [g][g]f32): [g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g in
   reshape (g, g)
-  (map (fn (ij: i32): f32  =>
+  (map (\(ij: i32): f32  ->
           let i = ij / g
           let j = ij % g
           in if inside(i, j, g)
@@ -271,7 +271,7 @@ fun project_bottom(p0: [g][g]f32,
                    j1d: i32): *[g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g in
   reshape (g, g)
-  (map (fn (ij: i32): f32  =>
+  (map (\(ij: i32): f32  ->
           let i = ij / g
           let j = ij % g
           in if inside(i, j, g)

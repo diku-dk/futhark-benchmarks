@@ -37,7 +37,7 @@ fun main(cols: int, rows: int): [cols]int =
     -- 1. Initialization --
     -----------------------
     let wall_flat = 
-        map (fn (i: int): int  => 
+        map (\(i: int): int  -> 
                 sobolInd(dirVct, i+1) % 10
            ) (iota(rows*cols) )
 
@@ -48,7 +48,7 @@ fun main(cols: int, rows: int): [cols]int =
     -- 1. Kernel --
     ---------------
     loop (result) = for t < (rows-1) do
-        map (fn (i: int): int  =>
+        map (\(i: int): int  ->
                 let res = result[i]
                 let res = if (i >  0)     then min(res, unsafe result[i-1]) else res
 

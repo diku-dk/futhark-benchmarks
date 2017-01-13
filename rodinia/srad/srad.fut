@@ -45,8 +45,8 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
   let neROI = (r2-r1+1)*(c2-c1+1)
 
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
-  let image = map (fn (row: []u8): [cols]f32  =>
-                    map (fn (pixel: u8): f32  =>
+  let image = map (\(row: []u8): [cols]f32  ->
+                    map (\(pixel: u8): f32  ->
                           exp32(f32(pixel)/255.0)) row) image
   loop (image) = for _i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
@@ -61,9 +61,9 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
 
     let (dN, dS, dW, dE, c) =
       unzip(
-        map (fn (i: int) (row: []f32): [cols](f32,f32,f32,f32,f32)
-                   =>
-                    map (fn (j: int) (jc: f32): (f32,f32,f32,f32,f32)  =>
+        map (\(i: int) (row: []f32): [cols](f32,f32,f32,f32,f32)
+                   ->
+                    map (\(j: int) (jc: f32): (f32,f32,f32,f32,f32)  ->
                               let dN_k = unsafe image[indexN(rows,i),j] - jc
                               let dS_k = unsafe image[indexS(rows,i),j] - jc
                               let dW_k = unsafe image[i, indexW(cols,j)] - jc
@@ -85,8 +85,8 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
                ) (iota(rows)) image)
 
     let image =
-      map (fn i image_row c_row dN_row dS_row dW_row dE_row: [cols]f32 =>
-                map (fn j pixel c_k dN_k dS_k dW_k dE_k  =>
+      map (\i image_row c_row dN_row dS_row dW_row dE_row: [cols]f32 ->
+                map (\j pixel c_k dN_k dS_k dW_k dE_k  ->
                           let cN = c_k
                           let cS = unsafe c[indexS(rows, i), j]
                           let cW = c_k
@@ -98,8 +98,8 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
     in image
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
-  let image = map (fn (row: []f32): [cols]f32  =>
-                    map (fn (pixel: f32): f32  =>
+  let image = map (\(row: []f32): [cols]f32  ->
+                    map (\(pixel: f32): f32  ->
                           -- take logarithm of image (log compress).
                           -- This is where the original implementation
                           -- would round to int.
@@ -113,5 +113,5 @@ fun main(image: [rows][cols]u8): [rows][cols]f32 =
 
 -- Entry point for interactive demo.  Here we can return an RGBA image.
 entry srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]int =
-  map (fn row => map (fn p => (int(p) << 16) | (int(p) << 8) | (int(p))) row)
+  map (\row -> map (\p -> (int(p) << 16) | (int(p) << 8) | (int(p))) row)
       (do_srad(niter, lambda, image))

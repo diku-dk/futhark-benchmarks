@@ -66,7 +66,7 @@ fun waves(degree: i32, phi: f32, x: f32, y: f32): f32 =
   in wrap(waver(th, x, y, degree))
 
 fun waver(th: f32, x: f32, y: f32, n: i32): f32 =
-  reduce (+) (0.0) (map (fn i  => wave(f32(i) * th, x, y)) (iota n))
+  reduce (+) (0.0) (map (\i  -> wave(f32(i) * th, x, y)) (iota n))
 
 fun wrap(n: f32): f32 =
   let n' = n - f32(i32(n))
@@ -96,7 +96,7 @@ fun normalize_index(i: i32, field_size: i32): f32 =
 
 fun main(field_size: i32, scale: f32, degree: i32,
          n_steps: i32, time_delta: f32): [n_steps][field_size][field_size]u32 =
-  map (fn step_i: [field_size][field_size]u32  =>
+  map (\step_i: [field_size][field_size]u32  ->
          let time = f32(step_i) * time_delta
          in render_frame(field_size, scale, degree, time))
   (iota(n_steps))
@@ -104,8 +104,8 @@ fun main(field_size: i32, scale: f32, degree: i32,
 entry render_frame(field_size: i32, scale: f32, degree: i32, time: f32)
                   : [field_size][field_size]u32 =
   let ks = iota(field_size)
-  in map (fn (y: i32): [field_size]u32  =>
-            map (fn (x: i32): u32  =>
+  in map (\(y: i32): [field_size]u32  ->
+            map (\(x: i32): u32  ->
                    quasicrystal(scale, degree, time,
                                 normalize_index(x, field_size),
                                 normalize_index(y, field_size)))

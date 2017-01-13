@@ -18,7 +18,7 @@ fun fabs   (x: f32): f32 = if x < 0.0 then 0.0 - x else x
 
 fun bpnn_output_error(target: [n]f32, output: [n]f32): (f32, [n]f32) =
     let (errs, delta) = unzip (
-        map ( fn (t: f32, o: f32): (f32,f32)  =>
+        map ( \(t: f32, o: f32): (f32,f32)  ->
                 let d = o * (1.0 - o) * (t - o)
                 in ( if d < 0.0 then 0.0-d else d, d ))
             (zip target output ))
@@ -28,7 +28,7 @@ fun bpnn_output_error(target: [n]f32, output: [n]f32): (f32, [n]f32) =
 
 fun bpnn_hidden_error(delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32, [nh]f32) =
     let (errs, delta_h) = unzip (
-        map ( fn (hidden_el: f32, who_row: []f32): (f32,f32)  =>
+        map ( \(hidden_el: f32, who_row: []f32): (f32,f32)  ->
                 let prods  = map (*) delta_o who_row
                 let sumrow = reduce (+) 0.0 prods
                 let new_el = hidden_el * (1.0-hidden_el) * sumrow
@@ -38,11 +38,11 @@ fun bpnn_hidden_error(delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32
     in  ( err, delta_h )
 
 fun bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
-  let lyext = map( fn (k: int): f32  =>
+  let lyext = map( \(k: int): f32  ->
                         if k < 1 then 1.0 else unsafe ly[k-1])
                  (iota nly)
-  in unzip (map ( fn (w_row: []f32, oldw_row: []f32, lyk: f32): ([]f32,[]f32)  =>
-                    unzip (map ( fn (w_el: f32, oldw_el: f32, delta_el: f32, j: int): (f32,f32)  =>
+  in unzip (map ( \(w_row: []f32, oldw_row: []f32, lyk: f32): ([]f32,[]f32)  ->
+                    unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32, j: int): (f32,f32)  ->
                                    let new_dw = eta()*delta_el*lyk + momentum()*oldw_el
                                    in ( w_el+new_dw, new_dw ))
                            (zip (w_row) (oldw_row) delta (iota(ndelta)))))
@@ -51,17 +51,17 @@ fun bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32,
 
 fun bpnn_layerforward_GOOD(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
-  let res_tmp   = map ( fn (conn_tr_row: [n1]f32): f32  =>
+  let res_tmp   = map ( \(conn_tr_row: [n1]f32): f32  ->
                             let prods = map (*) conn_tr_row l1
                             in reduce (+) 0.0 prods)
                       connT
-  in map (fn (pr: f32, conn0: f32): f32  => squash(pr+conn0))
+  in map (\(pr: f32, conn0: f32): f32  -> squash(pr+conn0))
   (zip (res_tmp) (conn_fstrow))
 
 
 fun bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
-  let res_map   = map ( fn (conn_tr_row: [n1]f32): [n1]f32  =>
+  let res_map   = map ( \(conn_tr_row: [n1]f32): [n1]f32  ->
                         map (*) conn_tr_row l1)
                       connT
 
@@ -71,11 +71,11 @@ fun bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2
   let res_map[0,0] = res_map[0,1]
   let res_map[0,0] = x
 
-  let res_tmp   = map ( fn (res_map_row: [n1]f32): f32  =>
+  let res_tmp   = map ( \(res_map_row: [n1]f32): f32  ->
                             reduce (+) 0.0 res_map_row)
                       res_map
 
-  in map ( fn (pr: f32, conn0: f32): f32  => squash(pr+conn0))
+  in map ( \(pr: f32, conn0: f32): f32  -> squash(pr+conn0))
   (zip (res_tmp) (conn_fstrow))
 
 --------------------------------------------------------/
@@ -127,15 +127,15 @@ fun bpnn_randomize_weights(m: int, n: int, offset: int, dirVct: []int): ([m][n]f
     --in  reshape((m,n), linw)
     -- OR with better structure:
     let mat =
-      map( fn (i: int): [n]f32  =>
-             map( fn (j: int): f32  =>
+      map( \(i: int): [n]f32  ->
+             map( \(j: int): f32  ->
                     -- (n+1) needed to create the sob num
                     -- as in the original Rodinia code.
                     let offs = i*(n+1) + offset + 1
                     in sobolIndR dirVct (offs + j))
                 (iota n))
          (iota m)
-    let vct =map( fn (i: int): f32  =>
+    let vct =map( \(i: int): f32  ->
                     sobolIndR dirVct (offset+i*(n+1)))
                 (iota m)
     in (mat, vct)
@@ -147,7 +147,7 @@ fun bpnn_constant_row(m: int, value: f32): [m]f32 =
     replicate m value
 
 fun bpnn_zero_weights(m: int, n: int): [m][n]f32 =
-    map (fn (i: int): [n]f32  => replicate n 0.0)
+    map (\(i: int): [n]f32  -> replicate n 0.0)
         (iota m)
 
 ----------------------------------------------------/
@@ -190,8 +190,8 @@ fun bpnn_create(n_in: int, n_inp1: int, n_hid: int, n_hidp1: int, n_out: int, of
 
 fun consColumn(mat: [m][n]f32, col: [m]f32): [m][]f32 =
     let np1 = n+1
-    in map ( fn (matrow: []f32, colelm: f32): []f32  =>
-               map ( fn (k: int): f32  =>
+    in map ( \(matrow: []f32, colelm: f32): []f32  ->
+               map ( \(k: int): f32  ->
                        if k < 1 then colelm else unsafe matrow[k-1])
              (iota(n+1)))
              (zip mat col)

@@ -34,7 +34,7 @@ fun trajectories(depth: int, xprec: int, yprec: int,
   let sizex = xmax - xmin
   let sizey = ymax - ymin
   let (trajectories, escapes) =
-    unzip(map  (fn (i: int): ([depth](f32,f32),bool)  =>
+    unzip(map  (\(i: int): ([depth](f32,f32),bool)  ->
                  let x = i % xprec
                  let y = i / yprec
                  let c0 = (xmin + (f32(x) * sizex) / f32(xprec),
@@ -73,10 +73,10 @@ fun visualise(n: int, m: int, view: (f32,f32,f32,f32),
   let escapes' = reshape (xprec*yprec) escapes
   let visits_per_pixel =
     reshape (n*m)
-            (streamRedPer (fn (ass: [n][m]int) (bss: [n][m]int): [n][m]int  =>
-                           map (fn (as: [m]int) (bs: [m]int): [m]int  =>
+            (streamRedPer (\(ass: [n][m]int) (bss: [n][m]int): [n][m]int  ->
+                           map (\(as: [m]int) (bs: [m]int): [m]int  ->
                                      map (+) as bs) ass bss) (
-                         fn (inp: [chunk]([depth](f32,f32),bool)): [n][m]int  =>
+                         \(inp: [chunk]([depth](f32,f32),bool)): [n][m]int  ->
                              loop (acc = replicate n (replicate m 0)) = for i < chunk do
                                (let (trajectory, escaped) = inp[i]
                                 in if escaped then (loop (acc) = for j < depth do

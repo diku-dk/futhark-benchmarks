@@ -10,17 +10,17 @@
 
 
 fun mult(xss: [n][m]f32, yss: [m][p]f32): [n][p]f32 =
-  map (fn (xs: []f32): [p]f32  =>
-        map (fn (ys: []f32): f32  =>
+  map (\(xs: []f32): [p]f32  ->
+        map (\(ys: []f32): f32  ->
               reduce (+) 0f32 (map (*) xs ys)) (
             transpose(yss))) xss
 
 fun add(xss: [n][m]f32, yss: [n][m]f32): [n][m]f32 =
-  map (fn (xs: []f32) (ys: []f32): [m]f32  =>
+  map (\(xs: []f32) (ys: []f32): [m]f32  ->
             map (+) xs ys) xss yss
 
 fun scale(xss: [n][m]f32, a: f32): [n][m]f32 =
-  map (fn (xs: []f32): [m]f32  =>
+  map (\(xs: []f32): [m]f32  ->
         map (*a) xs) xss
 
 fun main(ass: [n][m]f32, bss: [m][p]f32, css: [n][p]f32, alpha: f32, beta: f32): [n][p]f32 =

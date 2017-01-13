@@ -30,6 +30,6 @@ fun main (iterations: int) (nx: int) (A0_slice: [ny][nz]f32): [ny][nz]f32 =
   let c1=1.0f32/6.0f32/6.0f32
 
   loop (A0 = replicate nx A0_slice) = for _i < iterations do
-    map (fn i => map (fn j => map (fn k => next c0 c1 A0 i j k) (iota nz)) (iota ny)) (iota nx)
+    map (\i -> map (\j -> map (\k -> next c0 c1 A0 i j k) (iota nz)) (iota ny)) (iota nx)
 
   in A0[0]

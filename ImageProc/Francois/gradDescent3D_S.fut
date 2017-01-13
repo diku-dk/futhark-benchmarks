@@ -26,9 +26,9 @@ fun add_descent_div3s(v:  [m][n][p]f32
                  , xi: [m][n][p](f32,f32,f32)
                  , g: [m][n][p]f32
                  , tp: f32 ): [m][n][p]f32 =
-  map (fn (i: int): [n][p]f32  =>
-        map (fn (j: int): [p]f32  => 
-              map (fn (k: int): f32  => unsafe
+  map (\(i: int): [n][p]f32  ->
+        map (\(j: int): [p]f32  -> 
+              map (\(k: int): f32  -> unsafe
                     -- get current `v`) (`g`) (and `xi` element
                     let v_el = v[i,j,k]
                     let g_el = g[i,j,k]
