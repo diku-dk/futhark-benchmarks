@@ -64,7 +64,7 @@ fun node_work(tid: i32,
   let node_ids = map (\(i: i32): i32  ->
                        if i < start_index + n_edges
                        then let node_id = unsafe edges_dest[i]
-                            in if ! unsafe graph_visited[node_id]
+                            in if !(unsafe graph_visited[node_id])
                                then node_id
                                else -1
                        else -1) (
