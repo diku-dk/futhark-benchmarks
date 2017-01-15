@@ -82,7 +82,7 @@ fun step(cost: *[n]i32,
        tids: [e]i32): (*[n]i32, *[n]bool, *[]i32) =
   let write_indices = map (\(id: i32, tid: i32): i32  ->
                              if (unsafe graph_visited[id]
-                                 || ! unsafe graph_mask[tid])
+                                 || !(unsafe graph_mask[tid]))
                              then -1
                              else id) (zip node_ids tids)
 
