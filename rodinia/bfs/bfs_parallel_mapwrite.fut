@@ -29,7 +29,7 @@ fun step(cost: *[n]i32,
   let e_max = reduceComm max 0 (nodes_n_edges)
 
   let (inds_mask, ind_vals_upd0) =
-    unzip(map (\(tid: int): (i32, [e_max](i32,i32))  ->
+    unzip(map (\(tid: i32): (i32, [e_max](i32,i32))  ->
                 let start_index = nodes_start_index[tid]
                 let n_edges     = nodes_n_edges[tid]
                 let new_cost    = cost[tid] + 1
@@ -37,7 +37,7 @@ fun step(cost: *[n]i32,
                 let mask        = graph_mask[tid]
                 let ind_mask    = if mask then tid else -1
                 let ind_val_upd =
-                  map (\(k: int): i32  ->
+                  map (\(k: i32): i32  ->
                          let i  = start_index + (if k < n_edges
                                                  then k
                                                  else (n_edges - 1))

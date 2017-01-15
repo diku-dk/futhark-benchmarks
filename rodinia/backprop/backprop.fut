@@ -38,11 +38,11 @@ fun bpnn_hidden_error(delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32
     in  ( err, delta_h )
 
 fun bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
-  let lyext = map( \(k: int): f32  ->
+  let lyext = map( \(k: i32): f32  ->
                         if k < 1 then 1.0 else unsafe ly[k-1])
                  (iota nly)
   in unzip (map ( \(w_row: []f32, oldw_row: []f32, lyk: f32): ([]f32,[]f32)  ->
-                    unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32, j: int): (f32,f32)  ->
+                    unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32, j: i32): (f32,f32)  ->
                                    let new_dw = eta()*delta_el*lyk + momentum()*oldw_el
                                    in ( w_el+new_dw, new_dw ))
                            (zip (w_row) (oldw_row) delta (iota(ndelta)))))
@@ -109,7 +109,7 @@ fun bpnn_train_kernel( input_units:  [n_in]f32
 
 ----------------------------------------------------/
 
-fun sobolIndR(dirVct: [num_bits]int) (n: int): f32 =
+fun sobolIndR(dirVct: [num_bits]i32) (n: i32): f32 =
     -- placed norm_fact here to check that hoisting does its job!
     let norm_fact = 1.0 / ( f32(1 << num_bits) + 1.0 )
     let n_gray = (n >> 1) ^ n
@@ -122,37 +122,37 @@ fun sobolIndR(dirVct: [num_bits]int) (n: int): f32 =
            else res
     in f32(res) * norm_fact
 
-fun bpnn_randomize_weights(m: int, n: int, offset: int, dirVct: []int): ([m][n]f32,[m]f32) =
+fun bpnn_randomize_weights(m: i32, n: i32, offset: i32, dirVct: []i32): ([m][n]f32,[m]f32) =
     --let linw = map(sobolIndR(dirVct), map(+offset, iota(m*n)))
     --in  reshape((m,n), linw)
     -- OR with better structure:
     let mat =
-      map( \(i: int): [n]f32  ->
-             map( \(j: int): f32  ->
+      map( \(i: i32): [n]f32  ->
+             map( \(j: i32): f32  ->
                     -- (n+1) needed to create the sob num
                     -- as in the original Rodinia code.
                     let offs = i*(n+1) + offset + 1
                     in sobolIndR dirVct (offs + j))
                 (iota n))
          (iota m)
-    let vct =map( \(i: int): f32  ->
+    let vct =map( \(i: i32): f32  ->
                     sobolIndR dirVct (offset+i*(n+1)))
                 (iota m)
     in (mat, vct)
 
-fun bpnn_randomize_row(m: int, offset: int, dirVct: []int): [m]f32 =
+fun bpnn_randomize_row(m: i32, offset: i32, dirVct: []i32): [m]f32 =
     map (sobolIndR(dirVct)) (map (+offset) (iota m))
 
-fun bpnn_constant_row(m: int, value: f32): [m]f32 =
+fun bpnn_constant_row(m: i32, value: f32): [m]f32 =
     replicate m value
 
-fun bpnn_zero_weights(m: int, n: int): [m][n]f32 =
-    map (\(i: int): [n]f32  -> replicate n 0.0)
+fun bpnn_zero_weights(m: i32, n: i32): [m][n]f32 =
+    map (\(i: i32): [n]f32  -> replicate n 0.0)
         (iota m)
 
 ----------------------------------------------------/
 
-fun bpnn_create(n_in: int, n_inp1: int, n_hid: int, n_hidp1: int, n_out: int, offset: int, dirVct: []int): ( [n_in]f32
+fun bpnn_create(n_in: i32, n_inp1: i32, n_hid: i32, n_hidp1: i32, n_out: i32, offset: i32, dirVct: []i32): ( [n_in]f32
     , [n_out]f32
     ,([n_inp1][n_hid]f32, [n_inp1]f32)
     ,([n_hidp1][n_out]f32, [n_hidp1]f32)
@@ -191,12 +191,12 @@ fun bpnn_create(n_in: int, n_inp1: int, n_hid: int, n_hidp1: int, n_out: int, of
 fun consColumn(mat: [m][n]f32, col: [m]f32): [m][]f32 =
     let np1 = n+1
     in map ( \(matrow: []f32, colelm: f32): []f32  ->
-               map ( \(k: int): f32  ->
+               map ( \(k: i32): f32  ->
                        if k < 1 then colelm else unsafe matrow[k-1])
              (iota(n+1)))
              (zip mat col)
 
-fun main(n_in: int, dirVct: [num_bits]int): ( f32, f32, [][]f32, [][]f32 ) =
+fun main(n_in: i32, dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
     let (n_inp1, n_hid, n_hidp1, n_out) = (n_in+1, 16, 16+1, 1)
     let (   input_units, target,
            ( input_weights,  input_weights_fstcol),

@@ -15,11 +15,11 @@ default(f32)
 --------------------------------------------------/
 --/ ENTRY POINT
 --------------------------------------------------/
-fun main(pop:  int, mcmc_conv: int, l: int
-        , swaptions: [][]f32,     ll: int
+fun main(pop:  i32, mcmc_conv: i32, l: i32
+        , swaptions: [][]f32,     ll: i32
         , hermCoefs: []f32
-        , hermWeights: []f32,   lll: int
-        , sobDirVct: []int
+        , hermWeights: []f32,   lll: i32
+        , sobDirVct: []i32
         ): (f32,f32,f32,f32,f32,f32,[][]f32) =
   let hermData  = zip hermCoefs hermWeights in
   interestCalibKernel(pop, mcmc_conv, swaptions, hermData, sobDirVct)
@@ -39,14 +39,14 @@ fun makeSummary(quote_prices: [](f32,f32)): [][]f32 =
 ----------------------------------------------------
 --/ COMPUTATIONAL KERNEL
 ----------------------------------------------------
-fun interestCalibKernel(pop:  int
-                       , mcmc_conv: int
+fun interestCalibKernel(pop:  i32
+                       , mcmc_conv: i32
                        , swaptions: [][]f32
                        , hermdata: [](f32,f32)
-                       , sobDirVct: []int
+                       , sobDirVct: []i32
                        ): (f32,f32,f32,f32,f32,f32,[][]f32) =
   -- initialize the genomes
-  let genomes = map  (\(i: int): []f32  ->
+  let genomes = map  (\(i: i32): []f32  ->
                         let k   = 5*i + 1
                         let z5s = map  (+k) (iota(5) )
                         let sobs= map  (sobolInd(sobDirVct)) z5s
@@ -72,7 +72,7 @@ fun interestCalibKernel(pop:  int
       let (proposals, fb_rats, sob_offs) =
         if (move_type == 1) --  move_type == DIMS_ALL
         then let sob_mat =
-                 map (\(i: int): []f32  ->
+                 map (\(i: i32): []f32  ->
                         let k   = 5*i + sob_offs
                         let z5s = map (+k) (iota(5) ) in
                         map  (sobolInd(sobDirVct)) z5s
@@ -85,9 +85,9 @@ fun interestCalibKernel(pop:  int
         else
         if (move_type == 2) -- move_type == DIMS_ONE
         then let s1  = sobolInd sobDirVct sob_offs
-             let dim_j = int( s1 * f32(5) )
+             let dim_j = i32( s1 * f32(5) )
              let sob_mat =
-                 map (\(i: int): []f32  ->
+                 map (\(i: i32): []f32  ->
                         let k   = 5*i + sob_offs + 1
                         let z5s = map (+k) (iota(5)) in
                         map  (sobolInd(sobDirVct)) z5s
@@ -100,16 +100,16 @@ fun interestCalibKernel(pop:  int
 
         else                -- move_type == DEMCMC
              let new_genomes =
-                 map (\(i: int): *[]f32  ->
+                 map (\(i: i32): *[]f32  ->
                         let kk  = 8*i + sob_offs
                         let s1  = sobolInd sobDirVct kk
-                        let k = int( s1 * f32(pop-1) )  -- random in [0,pop-1)
+                        let k = i32( s1 * f32(pop-1) )  -- random in [0,pop-1)
                         let (k,cand_UB) = if k == i
                                           then (pop-1, pop-2)
                                           else (k,     pop-1)
 
                         let s2  = sobolInd sobDirVct (kk+1)
-                        let l = int( s2*f32(cand_UB) ) -- random in [0,cand_UB -1)
+                        let l = i32( s2*f32(cand_UB) ) -- random in [0,cand_UB -1)
                         let l = if (l == i) || (l == k)
                                 then cand_UB
                                 else l
@@ -129,7 +129,7 @@ fun interestCalibKernel(pop:  int
                     reduce (+) (0.0) terms
               ) proposals
       let res_gene_liks =
-          map (\(tup: ([]f32,f32,[]f32,f32,f32,int)): (*[]f32,f32)  ->
+          map (\(tup: ([]f32,f32,[]f32,f32,f32,i32)): (*[]f32,f32)  ->
                  let (gene, logLik, new_gene, new_logLik, fb_rat, i) = tup
                  let acceptance = min( 1.0, exp32(new_logLik - logLik)*fb_rat )
                  let rand01     = sobolInd sobDirVct (sob_offs+i)
@@ -147,7 +147,7 @@ fun interestCalibKernel(pop:  int
 
 
   let (winner_ind, winner_logLik) =
-      reduce (\(t1: (int,f32)) (t2: (int,f32)): (int,f32)  ->
+      reduce (\(t1: (i32,f32)) (t2: (i32,f32)): (i32,f32)  ->
                 let (i1, v1) = t1 let (i2, v2) = t2 in
                 if (v1 < v2) then (i2, v2) else (i1, v1)
             ) (0, -infinity()) (zip (iota(pop)) logLiks
@@ -176,14 +176,14 @@ fun r       (): f32 = 0.03
 fun infinity(): f32 = 1.0e49
 fun epsilon (): f32 = eps()
 
-fun itMax   (): int = 10000
+fun itMax   (): i32 = 10000
 
 
 fun min(a: f32, b: f32): f32 = if(a < b) then a else b
 fun max(a: f32, b: f32): f32 = if(a < b) then b else a
 
-fun minI(a: int, b: int): int = if(a < b) then a else b
-fun maxI(a: int, b: int): int = if(a < b) then b else a
+fun minI(a: i32, b: i32): i32 = if(a < b) then a else b
+fun maxI(a: i32, b: i32): i32 = if(a < b) then b else a
 
 fun fabs(a: f32): f32 = if(a < 0.0) then -a else a
 
@@ -200,7 +200,7 @@ fun evalGenomeOnSwap (genomea: []f32,
   let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4])
   let swap_freq  = swaption[1]
   let maturity   = add_years( today(), swaption[0] )
-  let n_schedi   = int(12.0 * swaption[2] / swap_freq)
+  let n_schedi   = i32(12.0 * swaption[2] / swap_freq)
 
   let tmat0      = date_act_365( maturity, today() )
 
@@ -211,7 +211,7 @@ fun evalGenomeOnSwap (genomea: []f32,
   --   and hoisted outside the swaption
   --   and convergence loop ...
   ----------------------------------------
-  let a12s = map  (\(i: int): (f32,f32,f32)  ->
+  let a12s = map  (\(i: i32): (f32,f32,f32)  ->
                      let a1 = add_months( maturity, swap_freq*f32(i) )
                      let a2 = add_months( a1, swap_freq ) in
                      ( zc(a2) * date_act_365(a2, a1), a1, a2 )
@@ -245,7 +245,7 @@ fun evalGenomeOnSwap (genomea: []f32,
 
   -- computing n_schedi-size temporary arrays
   let tmp_arrs =
-          map (\(i: int): (f32,f32,f32,f32,f32,f32,f32)  ->
+          map (\(i: i32): (f32,f32,f32,f32,f32,f32,f32)  ->
                  let beg_date = add_months( maturity, swap_freq*f32(i) )
                  let end_date = add_months( beg_date, swap_freq  )
                  let res      = date_act_365( end_date, beg_date ) * strike
@@ -313,12 +313,12 @@ fun evalGenomeOnSwap (genomea: []f32,
 --------------------------------------------------/
 --/ Sobol Random Number Generation
 --------------------------------------------------/
---fun []f32 getChunkSobNums(int sob_ini, int CHUNK, []int dirVct) =
+--fun []f32 getChunkSobNums(i32 sob_ini, i32 CHUNK, []i32 dirVct) =
 --  let norm_fact = 1.0 / ( f32(1 << size(0,dirVct)) + 1.0 ) in
 --  let sob_inds  = map(+sob_ini, iota(CHUNK))
 --  in  map( sobolInd(dirVct,norm_fact), sob_inds )
 
-fun sobolInd(dirVct:  [m]int) (n: int): f32 =
+fun sobolInd(dirVct:  [m]i32) (n: i32): f32 =
     -- placed norm_fact here to check that hoisting does its job!
     let norm_fact = 1.0 / ( f32(1 << m) + 1.0 )
     let n_gray = (n >> 1) ^ n
@@ -350,7 +350,7 @@ fun initGenome (rand_nums: []f32): []f32 =
                ) (zip (rand_nums) (genomeBounds())
                )
 
-fun selectMoveType(r01: f32): int =
+fun selectMoveType(r01: f32): i32 =
   if r01 <= 0.2   then 1 -- r01 in [0.0, 0.2] -> DIMS_ALL
   else
     if r01 <= 0.5 then 2 -- r01 in (0.2, 0.5] -> DIMS_ONE
@@ -370,10 +370,10 @@ fun mutate_dims_all(tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
   let fb_rat    = reduce (*) (1.0) (fb_rats)
   in  (copy(new_genome), fb_rat)
 
-fun mutate_dims_one(dim_j: int) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
+fun mutate_dims_one(dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
   let (sob_row, orig, muta) = tup
   let gene_bds = genomeBounds()
-  let amplitudes= map (\(i: int): f32  ->
+  let amplitudes= map (\(i: i32): f32  ->
                           if i == dim_j then moves_unif_ampl_ratio() else 0.0
                      ) (iota(n) )
 
@@ -513,7 +513,7 @@ fun erff_poly_only(x:  f32 ): f32 =
 -- otherwise follows the f32 implementation
 ------------------------------------------------------------------------
 
-fun to_solve(fid: int, scalesbbi: [](f32,f32), yhat: f32): f32 =
+fun to_solve(fid: i32, scalesbbi: [](f32,f32), yhat: f32): f32 =
     if(fid == 33) then (yhat+3.0)*(yhat-1.0)*(yhat-1.0)
     else
         let tmps = map (\(scalesbbi:  (f32,f32) ): f32  ->
@@ -527,7 +527,7 @@ fun to_solve(fid: int, scalesbbi: [](f32,f32), yhat: f32): f32 =
 --------------------------------------------------------/
 
 
-fun rootFinding_Brent(fid: int, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f32, iter_max: int): (f32,int,f32) =
+fun rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f32, iter_max: i32): (f32,i32,f32) =
     let tol      = if(tol     <= 0.0) then 1.0e-9 else tol
     let iter_max = if(iter_max<= 0  ) then 10000  else iter_max
     let (a,b)    = (lb,ub)
@@ -624,9 +624,9 @@ fun zc(t: f32): f32 = exp32(-r() * date_act_365(t, today()))
 fun extended_swaption_of_swaption(swaption: (f32,f32,f32)): (f32,[](f32,f32),(f32,f32))  =  -- swaption = (sw_mat, freq, sw_ty)
     let (sw_mat, freq, sw_ty) = swaption
     let maturity   = add_years( today(), sw_mat )
-    let nschedule  = int(12.0 * sw_ty / freq)
+    let nschedule  = i32(12.0 * sw_ty / freq)
 
-    let a12s = map  (\(i: int): (f32,f32,f32)  ->
+    let a12s = map  (\(i: i32): (f32,f32,f32)  ->
                      let a1 = add_months( maturity, freq*f32(i) )
                      let a2 = add_months( a1, freq ) in
                      ( zc(a2) * date_act_365(a2, a1), a1, a2 )
@@ -783,7 +783,7 @@ fun pricer_of_swaption(today:  f32,
     let (maturity, schedulei, (strike,unused)) = swaption
 
     let n_schedi = (shape schedulei)[0]
-    let ci = map (\(i: int): f32  ->
+    let ci = map (\(i: i32): f32  ->
                         let (d_beg,d_end) = schedulei[i]
                         let tau = date_act_365(d_end,d_beg)in
                         if(i == n_schedi-1)
@@ -889,7 +889,7 @@ fun pricer_of_swaption(today:  f32,
 --------------------------
 -- Root finder
 --------------------------
-fun exactYhat(n_schedi:  int,
+fun exactYhat(n_schedi:  i32,
                     scals: (f32,f32,f32,f32,f32,f32,f32,f32),
                     babaicis: [](f32,f32,f32,f32),
                     x: f32
@@ -961,17 +961,17 @@ fun exactYhat(n_schedi:  int,
 ----   Date: Gregorian calendar
 ------------------------------------------------------
 
-fun mod(x: int, y: int): int = x - (x/y)*y
+fun mod(x: i32, y: i32): i32 = x - (x/y)*y
 
-fun hours_in_dayI   (): int = 24
-fun minutes_in_dayI (): int = hours_in_dayI() * 60
-fun minutes_to_noonI(): int = (hours_in_dayI() / 2) * 60
+fun hours_in_dayI   (): i32 = 24
+fun minutes_in_dayI (): i32 = hours_in_dayI() * 60
+fun minutes_to_noonI(): i32 = (hours_in_dayI() / 2) * 60
 
 fun minutes_in_day  (): f32 = 24.0*60.0
 
 
 --                           year*month*day*hour*mins
-fun date_of_gregorian(date:  (int,int,int,int,int)): int =
+fun date_of_gregorian(date:  (i32,i32,i32,i32,i32)): i32 =
     let (year, month, day, hour, mins) = date
     let ym =
         if(month == 1 || month == 2)
@@ -986,7 +986,7 @@ fun date_of_gregorian(date:  (int,int,int,int,int)): int =
             in tmp * minutes_in_dayI() + hour * 60 + mins
 
 
-fun gregorian_of_date (minutes_since_epoch:  int ): (int,int,int,int,int) =
+fun gregorian_of_date (minutes_since_epoch:  i32 ): (i32,i32,i32,i32,i32) =
     let jul = minutes_since_epoch / minutes_in_dayI()
     let l = jul + 68569 + 2444238
     let n = ( 4 * l ) / 146097
@@ -1011,7 +1011,7 @@ fun gregorian_of_date (minutes_since_epoch:  int ): (int,int,int,int,int) =
     else (y, m, d, daytime / 60, mod(daytime, 60) )
 
 
-fun check_date(year: int, month: int, day: int): bool =
+fun check_date(year: i32, month: i32, day: i32): bool =
     let tmp1 = ( 1 <= day && 1 <= month && month <= 12 && 1980 <= year && year <= 2299 )
     let tmp2 = ( day <= 28 )
 
@@ -1030,9 +1030,9 @@ fun days_between(t1: f32, t2: f32): f32 =
 
 fun date_act_365(t1: f32, t2: f32): f32 = days_between(t1, t2) / 365.0
 
-fun leap(y: int): bool = ( mod(y,4) == 0  && ( (!(mod(y,100)==0)) || (mod(y,400)==0) ) )
+fun leap(y: i32): bool = ( mod(y,4) == 0  && ( (!(mod(y,100)==0)) || (mod(y,400)==0) ) )
 
-fun end_of_month(year: int, month: int): int =
+fun end_of_month(year: i32, month: i32): i32 =
     if      ( month == 2 && leap(year) )                           then 29
     else if ( month == 2)                                          then 28
     else if ( month == 4 || month == 6 || month == 9 || month == 11 ) then 30
@@ -1040,8 +1040,8 @@ fun end_of_month(year: int, month: int): int =
 
 
 fun add_months (date:  f32, rnbmonths: f32 ): f32 =
-    let nbmonths          = int(rnbmonths)
-    let (y, m, d, h, min) = gregorian_of_date( int(date) )
+    let nbmonths          = i32(rnbmonths)
+    let (y, m, d, h, min) = gregorian_of_date( i32(date) )
     let m = m + nbmonths
     let (y, m) = (y + (m-1) / 12, mod(m-1, 12) + 1)
     let (y, m) = if (m <= 0) then (y - 1, m + 12) else (y, m)

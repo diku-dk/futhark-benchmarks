@@ -1,17 +1,17 @@
 default(f32)
 
-fun num_neighbors(): int      = 27
-fun number_par_per_box(): int = 100
+fun num_neighbors(): i32      = 27
+fun number_par_per_box(): i32 = 100
 
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
-fun sobolDirVcts(): [30]int = 
+fun sobolDirVcts(): [30]i32 = 
   [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
     524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
     512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
 
-fun sobolInd(dirVct:  [30]int, n: int ): int =
+fun sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
   let n_gray = (n >> 1) ^ n
   let res = 0
   loop (res) =
@@ -24,7 +24,7 @@ fun sobolInd(dirVct:  [30]int, n: int ): int =
 
 -----------------------
 -----------------------
-fun main(boxes1d: int): (f32,
+fun main(boxes1d: i32): (f32,
                          []i32,
                          []i32,
                          []i32,
@@ -53,7 +53,7 @@ fun main(boxes1d: int): (f32,
   -- 1. Initialize boxs' data structure --
   ----------------------------------------
   let boxes = 
-    map (\(nh: int): ( (int, int, int, int), [num_nn](int,int,int,int), int )  ->
+    map (\(nh: i32): ( (i32, i32, i32, i32), [num_nn](i32,i32,i32,i32), i32 )  ->
           let k = nh % boxes1d
           let nr= nh / boxes1d
           let j = nr % boxes1d
@@ -94,8 +94,8 @@ fun main(boxes1d: int): (f32,
   ----------------------------------------------
   -- 2. Initialize input distances and charge --
   ----------------------------------------------
-  let rqv = map  (\(i: int): [par_per_box](f32,(f32,f32,f32,f32))  ->
-                    map (\(j: int): (f32, (f32,f32,f32,f32))  ->
+  let rqv = map  (\(i: i32): [par_per_box](f32,(f32,f32,f32,f32))  ->
+                    map (\(j: i32): (f32, (f32,f32,f32,f32))  ->
                            let n = (i*par_per_box + j)*5 + 1
                            let s1= sobolInd(dirVct, n  )
                            let s2= sobolInd(dirVct, n+1)

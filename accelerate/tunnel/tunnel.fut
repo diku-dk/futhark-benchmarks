@@ -24,7 +24,7 @@ fun norm(x: v2): f32 =
 
 -- Fractional part of a number.
 fun fract(x: f32): f32 =
-  x - f32(int(x))
+  x - f32(i32(x))
 
 fun clamp(lower: f32, x: f32, upper: f32): f32 =
   if x < lower then lower
@@ -50,7 +50,7 @@ fun rand1(p: v2): f32 =
   in fract(sin32(dot(p,z)) * 833458.57832f32)
 
 fun voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
-  let cell = (f32(int(#0 xy)), f32(int(#1 xy)))
+  let cell = (f32(i32(#0 xy)), f32(i32(#1 xy)))
   let cellOffset = (fract(#0 xy), fract(#1 xy))
   let sharpness = 1f32 + 63f32 * ((1f32-smoothness) ** 4f32)
   loop (samples = (0f32,0f32)) = for (-2) <= i < 3 do
@@ -59,7 +59,7 @@ fun voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
      in samples)
   in #0 samples / #1 samples
 
-fun sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: int, j: int): v2 =
+fun sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: i32, j: i32): v2 =
   let samplePos = (f32(i), f32(j))
   let centre = (let u = rand2(v2Add(cell, samplePos))
                 in (#0 u * irregular, #1 u * irregular))
@@ -69,9 +69,9 @@ fun sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: int, j: 
   in (colour * det, det)
 
 fun mod'(n: f32, d: f32): f32 =
-  n - f32(int(n/d)) * d
+  n - f32(i32(n/d)) * d
 
-fun tunnel(time: f32) (x: int) (y: int): int =
+fun tunnel(time: f32) (x: i32) (y: i32): i32 =
   let pt2 = (1.2f32 * f32(x), 1.2f32 * f32(y))
   let rInv = 1.0f32 / norm(pt2)
   let pt3 = v2Sub((#0 pt2 * rInv, #1 pt2 * rInv),
@@ -81,12 +81,12 @@ fun tunnel(time: f32) (x: int) (y: int): int =
             in (#0 c1 * x, #1 c1 * x, #2 c1 * x))
   in rgb(#0 c2, #1 c2, #2 c2)
 
-fun rgb(r: f32, g: f32, b: f32): int =
-  (int(r*255f32)&0xFF) << 16 |
-  (int(g*255f32)&0xFF) << 8 |
-  (int(b*255f32)&0xFF)
+fun rgb(r: f32, g: f32, b: f32): i32 =
+  (i32(r*255f32)&0xFF) << 16 |
+  (i32(g*255f32)&0xFF) << 8 |
+  (i32(b*255f32)&0xFF)
 
-fun main(time: f32, w: int, h: int): [w][h]int =
-  map (\(x: int): [h]int  ->
+fun main(time: f32, w: i32, h: i32): [w][h]i32 =
+  map (\(x: i32): [h]i32  ->
         map (tunnel time x) (map (-(h/2)) (iota(h)))) (
       map (-(w/2)) (iota(w)))

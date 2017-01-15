@@ -5,7 +5,7 @@
 -- ==
 -- tags { disable }
 
-fun sum_of_cell_and_neighbors(i: int, j: int, board: [n][m]i8): i8 =
+fun sum_of_cell_and_neighbors(i: i32, j: i32, board: [n][m]i8): i8 =
   unsafe
   let above = (i - 1) % n
   let below = (i + 1) % n
@@ -16,8 +16,8 @@ fun sum_of_cell_and_neighbors(i: int, j: int, board: [n][m]i8): i8 =
      board[below,left] + board[below,j] + board[below,right]
 
 fun all_neighbour_sums(board: [n][m]i8): [n][m]i8 =
-  map (\(i: int): [m]i8  ->
-        map (\(j: int): i8  ->
+  map (\(i: i32): [m]i8  ->
+        map (\(j: i32): i8  ->
               sum_of_cell_and_neighbors(i,j,board)
            ) (iota(m))
      ) (iota(n))
@@ -30,25 +30,25 @@ fun iteration(board: [n][m]i8): [n][m]i8 =
                        1i8,1i8,1i8,1i8,1i8,0i8,0i8,
                        2i8,0i8,2i8,2i8,2i8,2i8,2i8,
                        0i8,2i8,1i8,2i8,3i8,3i8,3i8]
-              in unsafe t[int(s)]
+              in unsafe t[i32(s)]
            ) (row_sums)
      ) (all_sums)
 
-fun min(x: int, y: int): int =
+fun min(x: i32, y: i32): i32 =
   if x < y then x else y
 
-entry init(world: [n][m]bool): ([n][m]i8, [n][m]int) =
+entry init(world: [n][m]bool): ([n][m]i8, [n][m]i32) =
   (map (\(row: []bool): [m]i8  ->
          map (\(b: bool): i8  ->
                if b then 1i8 else 0i8) row) world,
    replicate n (replicate m (255 << 2)))
 
-entry render_frame(all_history: [n][m]int): [n][m][3]i8 =
-  map (\(row_history: []int): [m][3]i8  ->
+entry render_frame(all_history: [n][m]i32): [n][m][3]i8 =
+  map (\(row_history: []i32): [m][3]i8  ->
          map colour_history row_history)
       all_history
 
-fun colour_history(history: int): [3]i8 =
+fun colour_history(history: i32): [3]i8 =
   let used_to_be = history & 3 -- Last two bits encode the previous live cell.
   let age = history >> 2
   let colours = [[0i8,   255i8, 0i8],
@@ -58,18 +58,18 @@ fun colour_history(history: int): [3]i8 =
   let colour = unsafe colours[used_to_be]
   in map (-i8(age)) colour
 
-fun update_history(history: int) (now: i8): int =
+fun update_history(history: i32) (now: i8): i32 =
   let used_to_be = history & 3 -- Last two bits encode the previous live cell.
   let age = history >> 2
   in if now == 1i8
      then (if age != 0 then (min(age + 1, 255) << 2) | used_to_be
                        else (128 << 2) | used_to_be)
-     else int(now)
+     else i32(now)
 
-entry steps(world: [n][m]i8, history: [n][m]int, steps: int): ([n][m]i8, [n][m]int) =
+entry steps(world: [n][m]i8, history: [n][m]i32, steps: i32): ([n][m]i8, [n][m]i32) =
   loop ((world, history)) = for i < steps do
     (let world' = iteration(world)
-     let history' = map (\(row_history: []int) (row: []i8): [m]int  ->
+     let history' = map (\(row_history: []i32) (row: []i8): [m]i32  ->
                               map update_history row_history row) history world'
      in (world', history'))
   in (world, history)

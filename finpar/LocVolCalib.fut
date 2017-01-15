@@ -11,14 +11,14 @@
 
 default(f32)
 
-fun initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: int, numY: int, numT: int)
-  : (int, int, [numX]f32, [numY]f32, [numT]f32) =
+fun initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: i32, numY: i32, numT: i32)
+  : (i32, i32, [numX]f32, [numY]f32, [numT]f32) =
   let logAlpha = log32 alpha
   let myTimeline = map (\i: f32  -> t * f32 i / (f32 numT - 1.0)) (iota numT)
   let (stdX, stdY) = (20.0 * alpha * s0 * sqrt32(t),
                       10.0 * nu         * sqrt32(t))
   let (dx, dy) = (stdX / f32 numX, stdY / f32 numY)
-  let (myXindex, myYindex) = (int(s0 / dx), numY / 2)
+  let (myXindex, myYindex) = (i32(s0 / dx), numY / 2)
   let myX = map (\i: f32 -> f32(i) * dx - f32 myXindex * dx + s0) (iota numX)
   let myY = map (\i: f32 -> f32(i) * dy - f32 myYindex * dy + logAlpha) (iota numY)
   in (myXindex, myYindex, myX, myY, myTimeline)
@@ -28,7 +28,7 @@ fun initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
   let dxu     = x[1] - x[0]
   let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]]
   let dxx_low = [[0.0, 0.0, 0.0]]
-  let dx_mids = map (\(i: int): ([]f32,[]f32)  ->
+  let dx_mids = map (\(i: i32): ([]f32,[]f32)  ->
                        let dxl = x[i] - x[i-1]
                        let dxu = x[i+1] - x[i]
                        in ( [ -dxu/dxl/(dxl+dxu), (dxu/dxl - dxl/dxu)/(dxl+dxu),      dxl/dxu/(dxl+dxu) ],
@@ -43,14 +43,14 @@ fun initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
   in  (dx, dxx)
 
 fun max(x: f32, y: f32): f32 = if y < x then x else y
-fun maxInt(x: int, y: int): int = if y < x then x else y
+fun maxInt(x: i32, y: i32): i32 = if y < x then x else y
 
 fun setPayoff(strike: f32, myX: [numX]f32, _myY: [numY]f32): *[numY][numX]f32 =
   replicate numY (map (\xi: f32  -> max(xi-strike, 0.0)) myX)
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
 fun updateParams(myX:  [numX]f32, myY: [numY]f32, myTimeline: []f32,
-                 g: int, _alpha: f32, beta: f32, nu: f32)
+                 g: i32, _alpha: f32, beta: f32, nu: f32)
   : ([][]f32, [][]f32, [][]f32, [][]f32) =
   let myMuY  = replicate numX (replicate numY 0.0)
   let myVarY = replicate numX (replicate numY (nu*nu))
@@ -83,7 +83,7 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
   --   solved by scan with 2x2 matrix mult operator --
   ----------------------------------------------------
   let b0   = b[0]
-  let mats = map  (\(i: int): (f32,f32,f32,f32)  ->
+  let mats = map  (\(i: i32): (f32,f32,f32,f32)  ->
                      if 0 < i
                      then (b[i], 0.0-a[i]*c[i-1], 1.0, 0.0)
                      else (1.0,  0.0,             0.0, 1.0)
@@ -108,7 +108,7 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
   --   solved by scan with linear func comp operator  --
   ------------------------------------------------------
   let y0   = y[0]
-  let lfuns= map  (\(i: int): (f32,f32)  ->
+  let lfuns= map  (\(i: i32): (f32,f32)  ->
                      if 0 < i
                      then (y[i], 0.0-a[i]/b[i-1])
                      else (0.0,  1.0            )
@@ -127,7 +127,7 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
   --             scan with linear func comp operator  --
   ------------------------------------------------------
   let yn   = y[n-1]/b[n-1]
-  let lfuns= map  (\(k: int): (f32,f32)  ->
+  let lfuns= map  (\(k: i32): (f32,f32)  ->
                      let i = n-k-1
                      in  if   0 < k
                          then (y[i]/b[i], 0.0-c[i]/b[i])
@@ -142,7 +142,7 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
                      let (a,b) = tup
                      in a + b*yn
                   ) cfuns
-  let y    = map  (\(i: int): f32  -> y[n-i-1]) (iota n)
+  let y    = map  (\(i: i32): f32  -> y[n-i-1]) (iota n)
   in y
 
 ------------------------------------------/
@@ -156,7 +156,7 @@ fun explicitMethod(myD:  [m][3]f32,  myDD: [m][3]f32,
   -- 0 <= i < m AND 0 <= j < n
   map (\(tup:  ([]f32,[]f32,[]f32) ): []f32  ->
          let (mu_row, var_row, result_row) = tup in
-         map (\(tup: ([]f32, []f32, f32, f32, int)): f32  ->
+         map (\(tup: ([]f32, []f32, f32, f32, i32)): f32  ->
                 let ( dx, dxx, mu, var, j ) = tup
                 let c1 = if 0 < j
                          then ( mu*dx[0] + 0.5*var*dxx[0] ) * unsafe result_row[j-1]
@@ -195,7 +195,7 @@ fun implicitMethod(myD:  [][]f32,  myDD: [][]f32,
 fun rollback
   (_myX: [numX]f32, _myY: [numY]f32, myTimeline: []f32, myResult: *[][]f32,
    myMuX: [][]f32, myDx: [][]f32, myDxx: [][]f32, myVarX: [][]f32,
-   myMuY: [][]f32, myDy: [][]f32, myDyy: [][]f32, myVarY: [][]f32, g: int)
+   myMuY: [][]f32, myDy: [][]f32, myDyy: [][]f32, myVarY: [][]f32, g: i32)
   : *[numY][numX]f32 =
 
   let dtInv = 1.0/(myTimeline[g+1]-myTimeline[g])
@@ -223,7 +223,7 @@ fun rollback
   let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
   in  transpose(myResultTR)
 
-fun value(numX: int, numY: int, numT: int, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =
+fun value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =
   let (myXindex, myYindex, myX, myY, myTimeline) =
     initGrid(s0, alpha, nu, t, numX, numY, numT)
   let (myDx, myDxx) = initOperator(myX)
@@ -241,7 +241,7 @@ fun value(numX: int, numY: int, numT: int, s0: f32, strike: f32, t: f32, alpha: 
       in myResult
   in myResult[myYindex,myXindex]
 
-fun main (outer_loop_count: int, numX: int, numY: int, numT: int,
+fun main (outer_loop_count: i32, numX: i32, numY: i32, numT: i32,
           s0: f32, _strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): []f32 =
   let strikes = map (\i  -> 0.001*f32 i) (iota outer_loop_count)
   let res = map (\x  -> value(numX, numY, numT, s0, x, t, alpha, nu, beta)) strikes

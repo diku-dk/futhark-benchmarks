@@ -30,10 +30,10 @@ fun add_descent_div3v(v:  [m][n][p][q]f32
                  , xi: [m][n][p][q](f32,f32,f32)
                  , g: [m][n][p][q]f32
                  , tp: f32 ): [m][n][p][q]f32 =
-  map (\(i: int): [n][p][q]f32  ->
-        map (\(j: int): [p][q]f32  -> 
-              map (\(k: int): [q]f32  -> 
-              map (\(l: int): f32  -> unsafe
+  map (\(i: i32): [n][p][q]f32  ->
+        map (\(j: i32): [p][q]f32  -> 
+              map (\(k: i32): [q]f32  -> 
+              map (\(l: i32): f32  -> unsafe
                     -- get current `v`) (`g`) (and `xi` element
                     let v_el = v[i,j,k,l]
                     let g_el = g[i,j,k,l]
@@ -197,12 +197,12 @@ fun main1(v:  [m][n][p][q]f32
 
     add_descent_div3v(v, xi, g, tp)
 
-fun main(m: int, n: int, p: int, q: int, loop_count: int): [m][n][p][q]f32 = 
+fun main(m: i32, n: i32, p: i32, q: i32, loop_count: i32): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q)
     let v  = reshape (m,n,p,q) (map f32 (iota(mnpq)))
     let g  = reshape (m,n,p,q) (map f32 (iota(mnpq)))
     let xi = reshape (m,n,p,q)
-                    (map (\(t: int): (f32,f32,f32)  ->
+                    (map (\(t: i32): (f32,f32,f32)  ->
                             let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
                         ) (iota(mnpq) ))
 

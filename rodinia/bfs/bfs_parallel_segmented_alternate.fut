@@ -64,7 +64,7 @@ fun main(nodes_start_index: [n]i32,
       let graph_visited' =
         write updating_indices (replicate n_indices true) graph_visited
 
-      let tmp_arr = map (\(ind: int): i32  ->
+      let tmp_arr = map (\(ind: i32): i32  ->
                           if ind == -1 then 0 else 1) (updating_indices)
       let n_indices' = reduce (+) 0 (tmp_arr)
 

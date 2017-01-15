@@ -15,12 +15,12 @@
 fun pow(x: f32, y: f32): f32 = x ** y
 fun log10(x: f32): f32 = log32(x) / log32(10.0f32)
 
-fun fmod(a: f32, b: f32): f32 = ( a - b * f32(int(a / b)) )
+fun fmod(a: f32, b: f32): f32 = ( a - b * f32(i32(a / b)) )
 
 fun fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
-fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: int,
-                    parameter: [pars]f32, parameter_offset: int, finavalu: *[equs]f32 ): *[equs]f32 =
+fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
+                    parameter: [pars]f32, parameter_offset: i32, finavalu: *[equs]f32 ): *[equs]f32 =
   unsafe 
   -- variable references
   let offset_1  = initvalu_offset
@@ -530,8 +530,8 @@ fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: int,
 ----------------------
 
 fun cam(timeinst:  f32, initvalu: [equs]f32, 
-                            initvalu_offset: int,
-                            parameter: [pars]f32, parameter_offset: int, 
+                            initvalu_offset: i32,
+                            parameter: [pars]f32, parameter_offset: i32, 
                             finavalu: *[equs]f32, ca: f32 ): (f32, *[equs]f32) =
   unsafe 
 
@@ -729,9 +729,9 @@ fun cam(timeinst:  f32, initvalu: [equs]f32,
 ----- Fin MODULE -----
 ----------------------
 
-fun fin(initvalu:     [equs]f32, initvalu_offset_ecc: int,
-                        initvalu_offset_Dyad: int, initvalu_offset_SL: int,
-                        initvalu_offset_Cyt: int, parameter: [pars]f32,
+fun fin(initvalu:     [equs]f32, initvalu_offset_ecc: i32,
+                        initvalu_offset_Dyad: i32, initvalu_offset_SL: i32,
+                        initvalu_offset_Cyt: i32, parameter: [pars]f32,
                         finavalu: *[equs]f32, jcaDyad: f32, jcaSL: f32, jcaCyt: f32 ): *[equs]f32 =
   unsafe
 
@@ -959,21 +959,21 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 4) then
             let timeinst_temp = timeinst + a5*h
-            let initvalu_temp = map (\(i: int): f32  -> 
+            let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b51*finavalu_temp[0,i] + 
                                         b53*finavalu_temp[2,i] + b54*finavalu_temp[3,i])
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 5) then
             let timeinst_temp = timeinst + a6*h
-            let initvalu_temp = map (\(i: int): f32  -> 
+            let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b61*finavalu_temp[0,i] + 
                                         b64*finavalu_temp[3,i] + b65*finavalu_temp[4,i] )
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 6) then
               let timeinst_temp = timeinst + a7 * h
-              let initvalu_temp = map (\(i: int): f32  -> 
+              let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b71*finavalu_temp[0,i] + 
                                         b74*finavalu_temp[3,i] + b75*finavalu_temp[4,i] + 
                                         b76*finavalu_temp[5,i] )
@@ -981,7 +981,7 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
               in ( timeinst_temp, initvalu_temp )
         else if (ii == 7) then
               let timeinst_temp = timeinst + a8 * h
-              let initvalu_temp = map (\(i: int): f32  -> 
+              let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b81*finavalu_temp[0,i] + 
                                         b85*finavalu_temp[4,i] + b86*finavalu_temp[5,i] + 
                                         b87*finavalu_temp[6,i] )
@@ -989,7 +989,7 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
               in ( timeinst_temp, initvalu_temp )
         else if (ii == 8) then
             let timeinst_temp = timeinst + a9*h
-            let initvalu_temp = map (\(i: int): f32  -> 
+            let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b91*finavalu_temp[0,i] + 
                                         b94*finavalu_temp[3,i] + b95*finavalu_temp[4,i] + 
                                         b96*finavalu_temp[5,i] + b97*finavalu_temp[6,i] + 
@@ -998,7 +998,7 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 9) then
             let timeinst_temp = timeinst + a10*h
-            let initvalu_temp = map (\(i: int): f32  -> 
+            let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b10_1*finavalu_temp[0,i] + 
                                         b10_4*finavalu_temp[3,i] + b10_5*finavalu_temp[4,i] + 
                                         b10_6*finavalu_temp[5,i] + b10_7*finavalu_temp[6,i] + 
@@ -1007,7 +1007,7 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 10) then
             let timeinst_temp = timeinst + h
-            let initvalu_temp = map (\(i: int): f32  -> 
+            let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b11_1*finavalu_temp[0,i] + 
                                         b11_4*finavalu_temp[3,i] + b11_5*finavalu_temp[4,i] + 
                                         b11_6*finavalu_temp[5,i] + b11_7*finavalu_temp[6,i] + 
@@ -1017,7 +1017,7 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 11) then
             let timeinst_temp = timeinst
-            let initvalu_temp = map (\(i: int): f32  -> 
+            let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b12_1*finavalu_temp[0,i] + 
                                         b12_6*finavalu_temp[5,i] + b12_7*finavalu_temp[6,i] + 
                                         b12_8*finavalu_temp[7,i] + b12_9*finavalu_temp[8,i] + 
@@ -1026,7 +1026,7 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
             in ( timeinst_temp, initvalu_temp )
         else -- if (ii == 12) then
             let timeinst_temp = timeinst + h
-            let initvalu_temp = map (\(i: int): f32  -> 
+            let initvalu_temp = map (\(i: i32): f32  -> 
                                         initvalu[i] + h * ( b13_1*finavalu_temp[0,i] + 
                                         b13_4*finavalu_temp[3,i] + b13_5*finavalu_temp[4,i] + 
                                         b13_6*finavalu_temp[5,i] + b13_7*finavalu_temp[6,i] + 
@@ -1040,13 +1040,13 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
   -- end loop --
   --------------
 
-  let finavalu = map (\(i: int): f32  ->
+  let finavalu = map (\(i: i32): f32  ->
                         initvalu[i] +  h * (c_1_11 * (finavalu_temp[0,i] + finavalu_temp[10,i]) +
                             c6 * finavalu_temp[5,i] + c_7_8 * (finavalu_temp[6,i] + finavalu_temp[7,i]) +
                             c_9_10 * (finavalu_temp[8,i] + finavalu_temp[9,i]) )
                     ) (iota(equs) )
 
-  let error = map (\(i: int): f32  ->
+  let error = map (\(i: i32): f32  ->
                         fabs(err_factor * (finavalu_temp[0,i] + finavalu_temp[10,i] - finavalu_temp[11,i] - finavalu_temp[12,i]))
                  ) (iota(equs) )
   in ( finavalu, error )
@@ -1058,12 +1058,12 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
 
 fun min_scale_factor(): f32 = 0.125f32
 fun max_scale_factor(): f32 = 4.0f32
-fun attempts(): int         = 12
+fun attempts(): i32         = 12
 
 fun max(x: f32) (y: f32): f32 = if ( x < y ) then y else x
 fun min(x: f32) (y: f32): f32 = if ( x < y ) then x else y
 
-fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
+fun solver(xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
   let err_exponent  = 1.0f32 / 7.0f32
   let last_interval = 0.0f32
   let h_init = 1.0f32
@@ -1152,12 +1152,12 @@ fun solver(xmax: int, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
 ----- MAiN MODULE -----
 -----------------------
 
-fun equations (): int = 91
-fun parameters(): int = 16
+fun equations (): i32 = 91
+fun parameters(): i32 = 16
 
-fun main(repeat: int, eps: f32, workload: int, xmax: int, y0: [91]f32, params: [16]f32): (bool, [workload][91]f32) =
+fun main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [16]f32): (bool, [workload][91]f32) =
   let (oks, y_res) = unzip (
-    map  (\(i: int): (bool,[91]f32)  ->
+    map  (\(i: i32): (bool,[91]f32)  ->
             let add_fact = f32(i % repeat)*eps
             let y_row = map (+add_fact) y0
           in solver(xmax, params, y_row)
@@ -1167,15 +1167,15 @@ fun main(repeat: int, eps: f32, workload: int, xmax: int, y0: [91]f32, params: [
 
 
 
-fun main_EMBEDDED(xmax: int, y: [workload][91]f32, params: [workload][16]f32): ([91]f32, [91]f32) =
+fun main_EMBEDDED(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): ([91]f32, [91]f32) =
     embedded_fehlberg_7_8( 0.0f32, 1.0f32, y[0], params[0])
 
-fun main_ECC_CAM(xmax: int, y: [workload][91]f32, params: [workload][16]f32): (f32, [91]f32) =
+fun main_ECC_CAM(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): (f32, [91]f32) =
     let finavalu = replicate 91 0.0f32
     let finavalu = ecc( 0.0f32, y[0], 0, params[0], 0, finavalu )
     let (res_val, finavalu) = cam(  0.0f32, y[0], 46, params[0],  
                                     1, finavalu, y[0, 35]*1e3f32 )
     in (res_val, finavalu)
 
-fun main_MASTER(xmax: int, y: [workload][91]f32, params: [workload][16]f32): [91]f32 =
+fun main_MASTER(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): [91]f32 =
     master( 0.0f32, y[0], params[0] ) 

@@ -7,11 +7,11 @@
 -- output @ data/medium.out
 
 fun infty(): f32 = 1.0f32 / 0.0f32
-fun emptyRecord(): (int, f32) = (0, 0.0f32)
+fun emptyRecord(): (i32, f32) = (0, 0.0f32)
 
-fun main(resultsCount:    int, lat: f32, lng: f32, 
+fun main(resultsCount:    i32, lat: f32, lng: f32, 
         locations_lat: [numRecords]f32, 
-        locations_lng: [numRecords]f32    ): ([resultsCount]int, [resultsCount]f32) =
+        locations_lng: [numRecords]f32    ): ([resultsCount]i32, [resultsCount]f32) =
   let locations    = zip (locations_lat) (locations_lng)
   -- let resultsCount = if (resultsCount > numRecords) then numRecords else resultsCount
   let distances = 
@@ -24,7 +24,7 @@ fun main(resultsCount:    int, lat: f32, lng: f32,
   loop ((results_ind, results_dst, distances)) = 
     for i < resultsCount do
         let (minDist, minLoc) = 
-            reduceComm (\(di1: (f32,int)) (di2: (f32,int)): (f32, int)  ->
+            reduceComm (\(di1: (f32,i32)) (di2: (f32,i32)): (f32, i32)  ->
                             let( (d1, i1), (d2,i2) ) = ( di1, di2 )
                             in if(d1 < d2) then (d1, i1) 
                                else if (d2 < d1) then (d2, i2)
