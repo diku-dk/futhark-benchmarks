@@ -124,16 +124,16 @@ entry inverseRotatePoint (x: f32, y: f32, z: f32, x_rotation: f32, y_rotation: f
 fun rotatePoints(ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
   rotatePointsByMatrix (rotationMatrix x_rotation y_rotation) ps
 
-entry render(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
+entry render(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
              xps: [n]f32, yps: [n]f32, zps: [n]f32, ms: [n]f32,
              x_rotation: f32, y_rotation: f32,
-             max_mass: f32): [w][h]int =
+             max_mass: f32): [w][h]i32 =
   let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
                        (rotatePoints (zip xps yps zps) x_rotation y_rotation) ms)
   in reshape (w,h) (write is vs (replicate (w*h) 0))
 
-fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_mass: f32)
-               ((x,y,_z):position) (m: f32): (int, int) =
+fun renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_mass: f32)
+               ((x,y,_z):position) (m: f32): (i32, i32) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
@@ -141,11 +141,11 @@ fun renderPoint(w: int, h: int, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_
     let x' = (x-x_ul) / (x_br-x_ul)
     let y' = (y-y_ul) / (y_br-y_ul)
     -- Convert x',y' to screen coordinate space.
-    let x'' = int(x' * f32(w))
-    let y'' = int(y' * f32(h))
+    let x'' = i32(x' * f32(w))
+    let y'' = i32(y' * f32(h))
     let intensity = if m >= max_mass
                     then 255
-                    else 128 + int((m / max_mass) * 128f32)
+                    else 128 + i32((m / max_mass) * 128f32)
     let colour = intensity * 0x10000 +
                  intensity * 0x100 +
                  0xFF

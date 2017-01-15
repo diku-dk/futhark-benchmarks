@@ -26,8 +26,8 @@
 fun add_ascent_grad2s(xi:  [m][n](f32,f32)
                  , v: [m][n]f32
                  , td: f32 ): [m][n](f32,f32) =
-  map (\(i: int): [n](f32,f32)  ->
-        map (\(j: int): (f32,f32)  -> unsafe
+  map (\(i: i32): [n](f32,f32)  ->
+        map (\(j: i32): (f32,f32)  -> unsafe
                 let (elm1, elm2) = xi[i,j]
                 -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                 let fst_elm = 
@@ -59,9 +59,9 @@ fun add_ascent_grad2s(xi:  [m][n](f32,f32)
 fun add_ascent_grad2v(xi:  [m][n][k](f32,f32)
                  , v: [m][n][k]f32
                  , td: f32 ): [m][n][k](f32,f32) =
-  map (\(i: int): [n][k](f32,f32)  ->
-        map (\(j: int): [k](f32,f32)  ->
-                map (\(l: int): (f32,f32)  -> unsafe
+  map (\(i: i32): [n][k](f32,f32)  ->
+        map (\(j: i32): [k](f32,f32)  ->
+                map (\(l: i32): (f32,f32)  -> unsafe
                         let (elm1, elm2) = xi[i,j,l]
                         -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                         let fst_elm = 
@@ -94,9 +94,9 @@ fun add_ascent_grad2v(xi:  [m][n][k](f32,f32)
 fun add_ascent_grad3s(xi:  [m][n][p](f32,f32,f32)
                  , v: [m][n][p]f32
                  , td: f32 ): [m][n][p](f32,f32,f32) =
-  map (\(i: int): [n][p](f32,f32,f32)  ->
-        map (\(j: int): [p](f32,f32,f32)  ->
-                map (\(k: int): (f32,f32,f32)  -> unsafe
+  map (\(i: i32): [n][p](f32,f32,f32)  ->
+        map (\(j: i32): [p](f32,f32,f32)  ->
+                map (\(k: i32): (f32,f32,f32)  -> unsafe
                         let (elm1, elm2, elm3) = xi[i,j,k]
                         -- xi[0:m-1,:,:,0] += td*(v[1:m,:,:] - v[0:m-1,:,:])
                         let fst_elm = 
@@ -135,10 +135,10 @@ fun add_ascent_grad3s(xi:  [m][n][p](f32,f32,f32)
 fun add_ascent_grad3v(xi:  [m][n][p][k](f32,f32,f32)
                  , v: [m][n][p][k]f32
                  , td: f32 ): [m][n][p][k](f32,f32,f32) =
-  map (\(i: int): [n][p][k](f32,f32,f32)  ->
-        map (\(j: int): [p][k](f32,f32,f32)  ->
-              map (\(q: int): [k](f32,f32,f32)  ->
-                    map (\(t: int): (f32,f32,f32)  -> unsafe
+  map (\(i: i32): [n][p][k](f32,f32,f32)  ->
+        map (\(j: i32): [p][k](f32,f32,f32)  ->
+              map (\(q: i32): [k](f32,f32,f32)  ->
+                    map (\(t: i32): (f32,f32,f32)  -> unsafe
                             let (elm1, elm2, elm3) = xi[i,j,q,t]
                             -- xi[0:m-1,:,:,:,0] += td*(v[1:m,:,:,:] - v[0:m-1,:,:,:])
                             let fst_elm = 

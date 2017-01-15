@@ -11,12 +11,12 @@
 
 default(f32)
 
-fun grayCode(x: int): int = (x >> 1) ^ x
+fun grayCode(x: i32): i32 = (x >> 1) ^ x
 
 ----------------------------------------
 --- Sobol Generator
 ----------------------------------------
-fun testBit(n: int, ind: int): bool =
+fun testBit(n: i32, ind: i32): bool =
   let t = (1 << ind) in (n & t) == t
 
 -----------------------------------------------------------------
@@ -25,15 +25,15 @@ fun testBit(n: int, ind: int): bool =
 ----    Currently Futhark hoists it outside, but this will
 ----    not allow fusing the filter with reduce -> redomap,
 -----------------------------------------------------------------
-fun xorInds(n: int) (dir_vs: [num_bits]int): int =
+fun xorInds(n: i32) (dir_vs: [num_bits]i32): i32 =
   let reldv_vals = map (\dv i  -> if testBit(grayCode(n),i) then dv else 0)
   dir_vs (iota num_bits)
   in reduce (^) 0 reldv_vals
 
-fun sobolIndI (dir_vs: [m][num_bits]int, n: int): [m]int =
+fun sobolIndI (dir_vs: [m][num_bits]i32, n: i32): [m]i32 =
   map (xorInds n) dir_vs
 
-fun sobolIndR(dir_vs: [m][num_bits]int) (n: int): [m]f32 =
+fun sobolIndR(dir_vs: [m][num_bits]i32) (n: i32): [m]f32 =
   let divisor = 2.0 ** f32(num_bits)
   let arri    = sobolIndI( dir_vs, n )
   in map (\x -> f32(x) / divisor) arri
@@ -41,17 +41,17 @@ fun sobolIndR(dir_vs: [m][num_bits]int) (n: int): [m]f32 =
 --------------------------------
 ---- STRENGTH-REDUCED FORMULA
 --------------------------------
-fun index_of_least_significant_0(x: int): int =
+fun index_of_least_significant_0(x: i32): i32 =
   loop (i = 0) =
     while i < 32 && ((x>>i)&1) != 0 do
       i + 1
   in i
 
-fun sobolRecI(sob_dir_vs: [][num_bits]int, prev: []int, x: int): []int =
+fun sobolRecI(sob_dir_vs: [][num_bits]i32, prev: []i32, x: i32): []i32 =
   let bit = index_of_least_significant_0 x
   in map (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
 
-fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]int, (lb_inc, ub_exc): (int,int) ): [][]f32 =
+fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
   -- the if inside may be particularly ugly for
   -- flattening since it introduces control flow!
   let contribs = map (\k -> if k==0
@@ -61,19 +61,19 @@ fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]int, (lb_inc, ub_exc): (int,int) ):
   let vct_ints = scan (\x y -> map (^) x y) (replicate n 0) contribs
   in  map (\xs -> map (\x -> f32(x) * sob_fact) xs) vct_ints
 
-fun sobolRecI2(sob_dirs: [][]int, prev: []int, i: int): []int=
+fun sobolRecI2(sob_dirs: [][]i32, prev: []i32, i: i32): []i32=
   let col = recM(sob_dirs, i)
   in map (^) prev col
 
-fun recM(sob_dirs:  [][num_bits]int, i: int ): []int =
+fun recM(sob_dirs:  [][num_bits]i32, i: i32 ): []i32 =
   let bit = index_of_least_significant_0 i
   in map (\row -> unsafe row[bit]) sob_dirs
 
 -- computes sobol numbers: n,..,n+chunk-1
-fun sobolChunk(dir_vs: [len][num_bits]int, n: int, chunk: int): [chunk][]f32 =
+fun sobolChunk(dir_vs: [len][num_bits]i32, n: i32, chunk: i32): [chunk][]f32 =
   let sob_fact= 1.0 / f32(1 << num_bits)
   let sob_beg = sobolIndI(dir_vs, n+1)
-  let contrbs = map (\(k: int): []int  ->
+  let contrbs = map (\(k: i32): []i32  ->
                        let sob = k + n
                        in if k==0 then sob_beg
                           else recM(dir_vs, k+n))
@@ -180,7 +180,7 @@ fun ugaussian(ps: [n]f32): [n]f32 = map ugaussianEl ps
 ---------------------------------
 --- Brownian Bridge
 ---------------------------------
-fun brownianBridgeDates (bb_inds: [3][num_dates]int,
+fun brownianBridgeDates (bb_inds: [3][num_dates]i32,
                          bb_data: [3][num_dates]f32)
   (gauss: [num_dates]f32): [num_dates]f32 =
   let bi = bb_inds[0]
@@ -218,8 +218,8 @@ fun brownianBridgeDates (bb_inds: [3][num_dates]int,
          in  bbrow
      in bbrow
 
-fun brownianBridge (num_und: int,
-                    bb_inds: [3][num_dates]int,
+fun brownianBridge (num_und: i32,
+                    bb_inds: [3][num_dates]i32,
                     bb_data: [3][num_dates]f32)
                    (gaussian_arr: []f32)
                    : [num_dates][num_und]f32 =
@@ -231,13 +231,13 @@ fun brownianBridge (num_und: int,
 ---------------------------------
 --- Black-Scholes
 ---------------------------------
-fun take(n: int, a: []f32): [n]f32 = let (first, rest) = split (n) a in first
+fun take(n: i32, a: []f32): [n]f32 = let (first, rest) = split (n) a in first
 
 fun correlateDeltas(md_c:  [num_und][num_und]f32,
                     zds:   [num_dates][num_und]f32)
                    : [num_dates][num_und]f32 =
   map (\(zi: [num_und]f32): [num_und]f32  ->
-         map (\(j: int): f32  ->
+         map (\(j: i32): f32  ->
                 let x = map (*) (take(j+1,zi)) (take(j+1,md_c[j]) )
                 in  reduce (+) (0.0) x
              ) (iota num_und))
@@ -272,22 +272,22 @@ fun blackScholes(md_c: [num_und][num_und]f32,
 ----------------------------------------
 -- MAIN
 ----------------------------------------
-fun mainOld(contract_number: int,
-         num_mc_it: int,
-         dir_vs_nosz: [][num_bits]int,
+fun mainOld(contract_number: i32,
+         num_mc_it: i32,
+         dir_vs_nosz: [][num_bits]i32,
          md_cs: [num_models][num_und][num_und]f32,
          md_vols: [num_models][num_dates][num_und]f32,
          md_drifts: [num_models][num_dates][num_und]f32,
          md_sts: [num_models][num_und]f32,
          md_detvals: [num_models][]f32,
          md_discts: [num_models][]f32,
-         bb_inds: [3][num_dates]int,
+         bb_inds: [3][num_dates]i32,
          bb_data: [3][num_dates]f32)
         : []f32 =
   let dir_vs    = reshape (num_dates*num_und, num_bits) dir_vs_nosz
 
   let sobol_mat = map  (sobolIndR(dir_vs)
-                       ) (map (\(x: int): int  -> x + 1) (iota(num_mc_it) )
+                       ) (map (\(x: i32): i32  -> x + 1) (iota(num_mc_it) )
                          )
 
   let gauss_mat = map  ugaussian (sobol_mat )
@@ -313,21 +313,21 @@ fun mainOld(contract_number: int,
                             ) payoffs
   in  map  (\price -> price / f32(num_mc_it)) payoff
 
-fun main(contract_number: int,
-         num_mc_it: int,
-         dir_vs_nosz: [][num_bits]int,
+fun main(contract_number: i32,
+         num_mc_it: i32,
+         dir_vs_nosz: [][num_bits]i32,
          md_cs: [num_models][num_und][num_und]f32,
          md_vols: [num_models][num_dates][num_und]f32,
          md_drifts: [num_models][num_dates][num_und]f32,
          md_sts: [num_models][num_und]f32,
          md_detvals: [num_models][]f32,
          md_discts: [num_models][]f32,
-         bb_inds: [3][num_dates]int,
+         bb_inds: [3][num_dates]i32,
          bb_data: [3][num_dates]f32)
            : []f32 =
   let sobvctsz  = num_dates*num_und
   let dir_vs    = reshape (sobvctsz,num_bits) dir_vs_nosz
-  let sobol_mat = streamMap (\(ns: [chunk]int): [chunk][sobvctsz]f32  ->
+  let sobol_mat = streamMap (\(ns: [chunk]i32): [chunk][sobvctsz]f32  ->
                                sobolChunk(dir_vs, ns[0], chunk)
                             ) (iota(num_mc_it) )
 
@@ -356,7 +356,7 @@ fun main(contract_number: int,
 ----------------------------------------
 -- PAYOFF FUNCTIONS
 ----------------------------------------
-fun genericPayoff(contract: int, md_disct: []f32, md_detval: []f32, xss: [][]f32): f32 =
+fun genericPayoff(contract: i32, md_disct: []f32, md_detval: []f32, xss: [][]f32): f32 =
   if      (contract == 1) then unsafe payoff1(md_disct, md_detval, xss)
   else if (contract == 2) then unsafe payoff2(md_disct, xss)
   else if (contract == 3) then unsafe payoff3(md_disct, xss)
@@ -408,6 +408,6 @@ fun fminPayoff(xs: []f32): f32 =
 fun min(arr: []f32): f32 =
   reduce (\x y: f32  -> if x<y then x else y) (arr[0]) arr
 
-fun minint(x: int, y: int): int = if x < y then x else y
+fun minint(x: i32, y: i32): i32 = if x < y then x else y
 
-fun trajInner(amount: f32, ind: int, disc: []f32): f32 = amount * unsafe disc[ind]
+fun trajInner(amount: f32, ind: i32, disc: []f32): f32 = amount * unsafe disc[ind]

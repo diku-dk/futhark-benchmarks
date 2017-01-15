@@ -9,8 +9,8 @@
 
 default(f32)
 
-fun num_neighbors(): int      = 27
-fun number_par_per_box(): int = 100 
+fun num_neighbors(): i32      = 27
+fun number_par_per_box(): i32 = 100 
 
 fun dot(a: (f32,f32,f32), b: (f32,f32,f32)): f32 =
   let (ax,ay,az) = a
@@ -21,15 +21,15 @@ fun dot(a: (f32,f32,f32), b: (f32,f32,f32)): f32 =
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
 fun main(alpha:  f32
-            , box_coefs_0: [number_boxes]int
-            , box_coefs_1: [number_boxes]int
-            , box_coefs_2: [number_boxes]int
-            , box_coefs_3: [number_boxes]int
-            , box_nnghs_0 : [][number_boxes]int  -- outer dim should be num_neighbors
-            , box_nnghs_1 : [][number_boxes]int  -- outer dim should be num_neighbors
-            , box_nnghs_2 : [][number_boxes]int  -- outer dim should be num_neighbors
-            , box_nnghs_3 : [][number_boxes]int  -- outer dim should be num_neighbors
-            , box_num_nghbs: [number_boxes]int
+            , box_coefs_0: [number_boxes]i32
+            , box_coefs_1: [number_boxes]i32
+            , box_coefs_2: [number_boxes]i32
+            , box_coefs_3: [number_boxes]i32
+            , box_nnghs_0 : [][number_boxes]i32  -- outer dim should be num_neighbors
+            , box_nnghs_1 : [][number_boxes]i32  -- outer dim should be num_neighbors
+            , box_nnghs_2 : [][number_boxes]i32  -- outer dim should be num_neighbors
+            , box_nnghs_3 : [][number_boxes]i32  -- outer dim should be num_neighbors
+            , box_num_nghbs: [number_boxes]i32
             , rv_0: [number_boxes][par_per_box]f32
             , rv_1: [number_boxes][par_per_box]f32
             , rv_2: [number_boxes][par_per_box]f32
@@ -43,11 +43,11 @@ fun main(alpha:  f32
   let box_nnghs = zip@1 box_nnghs_0 box_nnghs_1 box_nnghs_2 box_nnghs_3
   let rv = zip@1 rv_0 rv_1 rv_2 rv_3
   let a2 = 2.0*alpha*alpha in
-  unzip(map (\(l: int): [par_per_box](f32,f32,f32,f32)  ->
+  unzip(map (\(l: i32): [par_per_box](f32,f32,f32,f32)  ->
         let ( bl_x, bl_y, bl_bz, bl_number ) = box_coefs[l]
         let rA = rv[l]
         in
-        map  (\(rA_el:  (f32,f32,f32,f32) ): (f32,f32,f32,f32)  -> --(int i) ->
+        map  (\(rA_el:  (f32,f32,f32,f32) ): (f32,f32,f32,f32)  -> --(i32 i) ->
                 let (rai_v, rai_x, rai_y, rai_z) = rA_el in -- rA[i]
                 let acc = (0.0,0.0,0.0,0.0)
                 loop(acc) = 

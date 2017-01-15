@@ -22,19 +22,19 @@
 
 default(f32)
 
-fun indexN(_rows: int, i: int): int =
+fun indexN(_rows: i32, i: i32): i32 =
   if i == 0 then i else i - 1
 
-fun indexS(rows: int, i: int): int =
+fun indexS(rows: i32, i: i32): i32 =
   if i == rows-1 then i else i + 1
 
-fun indexW(_cols: int, j: int): int =
+fun indexW(_cols: i32, j: i32): i32 =
   if j == 0 then j else j - 1
 
-fun indexE(cols: int, j: int): int =
+fun indexE(cols: i32, j: i32): i32 =
   if j == cols-1 then j else j + 1
 
-fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
+fun do_srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
   let r1 = 0
   let r2 = rows - 1
   let c1 = 0
@@ -61,9 +61,9 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
 
     let (dN, dS, dW, dE, c) =
       unzip(
-        map (\(i: int) (row: []f32): [cols](f32,f32,f32,f32,f32)
+        map (\(i: i32) (row: []f32): [cols](f32,f32,f32,f32,f32)
                    ->
-                    map (\(j: int) (jc: f32): (f32,f32,f32,f32,f32)  ->
+                    map (\(j: i32) (jc: f32): (f32,f32,f32,f32,f32)  ->
                               let dN_k = unsafe image[indexN(rows,i),j] - jc
                               let dS_k = unsafe image[indexS(rows,i),j] - jc
                               let dW_k = unsafe image[i, indexW(cols,j)] - jc
@@ -102,7 +102,7 @@ fun do_srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
                     map (\(pixel: f32): f32  ->
                           -- take logarithm of image (log compress).
                           -- This is where the original implementation
-                          -- would round to int.
+                          -- would round to i32.
                            log32(pixel)*255.0) row) image
   in image
 
@@ -112,6 +112,6 @@ fun main(image: [rows][cols]u8): [rows][cols]f32 =
   in do_srad(niter, lambda, image)
 
 -- Entry point for interactive demo.  Here we can return an RGBA image.
-entry srad(niter: int, lambda: f32, image: [rows][cols]u8): [rows][cols]int =
-  map (\row -> map (\p -> (int(p) << 16) | (int(p) << 8) | (int(p))) row)
+entry srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]i32 =
+  map (\row -> map (\p -> (i32(p) << 16) | (i32(p) << 8) | (i32(p))) row)
       (do_srad(niter, lambda, image))
