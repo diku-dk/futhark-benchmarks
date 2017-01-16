@@ -895,7 +895,7 @@ fun exactYhat(n_schedi:  i32,
                     x: f32
                   ): f32 =
     -- ugaussian_Pinv(k)=1.0e-4
-    let k=-3.71901648545568
+    let k= -3.71901648545568
 
 
     let uplos = map (\(babaici: (f32,f32,f32,f32)): (f32,f32)  ->

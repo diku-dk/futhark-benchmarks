@@ -278,7 +278,7 @@ fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
                                    1.0f32/(0.13f32*(1.0f32+exp32(-(initvalu_39+10.66f32)/11.1f32))),
                                    0.3f32*exp32(-2.535e-7f32*initvalu_39)/(1.0f32+exp32(-0.1f32*(initvalu_39+32.0f32))) 
                                  )
-                            else ( 0.135f32*exp32((80.0f32+initvalu_39)/-6.8f32),
+                            else ( 0.135f32*exp32((80.0f32+initvalu_39)/(-6.8f32)),
                                    ( -127140.0f32*exp32(0.2444f32*initvalu_39) - 3.474e-5f32*exp32(-0.04391f32*initvalu_39) ) *
                                         (initvalu_39+37.78f32)/(1.0f32+exp32(0.311f32*(initvalu_39+79.23f32))),
                                    3.56f32*exp32(0.079f32*initvalu_39)+3.1e5f32*exp32(0.35f32*initvalu_39),
