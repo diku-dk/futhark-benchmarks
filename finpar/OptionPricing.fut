@@ -47,7 +47,7 @@ fun index_of_least_significant_0(x: i32): i32 =
       i + 1
   in i
 
-fun sobolRecI(sob_dir_vs: [][num_bits]i32, prev: []i32, x: i32): []i32 =
+fun sobolRecI(sob_dir_vs: [][num_bits]i32, prev: [n]i32, x: i32): [n]i32 =
   let bit = index_of_least_significant_0 x
   in map (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
 
@@ -61,16 +61,16 @@ fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i32) ):
   let vct_ints = scan (\x y -> map (^) x y) (replicate n 0) contribs
   in  map (\xs -> map (\x -> f32(x) * sob_fact) xs) vct_ints
 
-fun sobolRecI2(sob_dirs: [][]i32, prev: []i32, i: i32): []i32=
+fun sobolRecI2(sob_dirs: [][]i32, prev: [n]i32, i: i32): [n]i32=
   let col = recM(sob_dirs, i)
   in map (^) prev col
 
-fun recM(sob_dirs:  [][num_bits]i32, i: i32 ): []i32 =
+fun recM(sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
   let bit = index_of_least_significant_0 i
   in map (\row -> unsafe row[bit]) sob_dirs
 
 -- computes sobol numbers: n,..,n+chunk-1
-fun sobolChunk(dir_vs: [len][num_bits]i32, n: i32, chunk: i32): [chunk][]f32 =
+fun sobolChunk(dir_vs: [len][num_bits]i32, n: i32, chunk: i32): [chunk][len]f32 =
   let sob_fact= 1.0 / f32(1 << num_bits)
   let sob_beg = sobolIndI(dir_vs, n+1)
   let contrbs = map (\(k: i32): []i32  ->
