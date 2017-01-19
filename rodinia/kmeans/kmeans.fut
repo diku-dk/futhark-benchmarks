@@ -33,22 +33,25 @@ fun centroids_of(k: i32, points: [n][d]f32, membership: [n]i32): *[k][d]f32 =
      streamRedPer (\(acc: [k]i32) (x: [k]i32) ->
                      map (+) acc x)
                   (\(inp: [chunk]i32) ->
-                     loop (acc = (replicate k 0)) = for i < chunk do
-                       let c = inp[i]
-                       in unsafe let acc[c] = acc[c] + 1
-                                 in acc
-                     in acc)
+                     streamSeq (\(acc: *[k]i32) (inp': [chunk']i32) ->
+                                loop (acc) = for i < chunk' do
+                                  let c = inp'[i]
+                                  in unsafe let acc[c] = acc[c] + 1
+                                            in acc
+                                in acc)
+                              (replicate k 0) inp)
                   membership
   let cluster_sums =
     streamRedPer (\(acc: [k][d]f32) (elem: [k][d]f32) ->
                     map add_centroids acc elem)
-                 (\(inp: [chunk]([d]f32,i32)) ->
-                   loop (acc = (replicate k (replicate d 0.0f32))) = for i < chunk do
-                     let (point, c) = inp[i]
-                     in unsafe let acc[c] =
-                                 add_centroids acc[c] (map (/(f32(points_in_clusters[c]))) point)
-                               in acc
-                   in acc)
+                 (\ (inp: [chunk]([d]f32,i32)) ->
+                   streamSeq (\(acc: *[k][d]f32) (inp': [chunk']([d]f32,i32)) ->
+                     loop (acc) = for i < chunk' do
+                       let (point, c) = inp'[i]
+                       in unsafe let acc[c] =
+                                   add_centroids acc[c] (map (/(f32(points_in_clusters[c]))) point)
+                                 in acc
+                     in acc) (replicate k (replicate d 0f32)) inp)
                  (zip points membership)
   in cluster_sums
 
