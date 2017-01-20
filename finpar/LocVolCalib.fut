@@ -86,8 +86,8 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
   let mats = map  (\(i: i32): (f32,f32,f32,f32)  ->
                      if 0 < i
                      then (b[i], 0.0-a[i]*c[i-1], 1.0, 0.0)
-                     else (1.0,  0.0,             0.0, 1.0)
-                  ) (iota n)
+                     else (1.0,  0.0,             0.0, 1.0))
+                  (iota n)
   let scmt = scan (\(a:  (f32,f32,f32,f32))
                    (b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  ->
                      let (a0,a1,a2,a3) = a
@@ -96,13 +96,12 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
                      in ( (b0*a0 + b1*a2)*value,
                           (b0*a1 + b1*a3)*value,
                           (b2*a0 + b3*a2)*value,
-                          (b2*a1 + b3*a3)*value
-                        )
-                  ) (1.0,  0.0, 0.0, 1.0) mats
-  let b    = map  (\(tup: (f32,f32,f32,f32)): f32  ->
-                     let (t0,t1,t2,t3) = tup
-                     in (t0*b0 + t1) / (t2*b0 + t3)
-                  ) scmt
+                          (b2*a1 + b3*a3)*value))
+                  (1.0,  0.0, 0.0, 1.0) mats
+  let b    = map (\(tup: (f32,f32,f32,f32)): f32  ->
+                    let (t0,t1,t2,t3) = tup
+                    in (t0*b0 + t1) / (t2*b0 + t3))
+                 scmt
   ------------------------------------------------------
   -- Recurrence 2: y[i] = y[i] - (a[i]/b[i-1])*y[i-1] --
   --   solved by scan with linear func comp operator  --
@@ -111,38 +110,38 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
   let lfuns= map  (\(i: i32): (f32,f32)  ->
                      if 0 < i
                      then (y[i], 0.0-a[i]/b[i-1])
-                     else (0.0,  1.0            )
-                  ) (iota n)
+                     else (0.0,  1.0))
+                  (iota n)
   let cfuns= scan (\(a: (f32,f32)) (b: (f32,f32)): (f32,f32)  ->
                      let (a0,a1) = a
                      let (b0,b1) = b
-                     in ( b0 + b1*a0, a1*b1 )
-                  ) (0.0, 1.0) lfuns
-  let y    = map  (\(tup: (f32,f32)): f32  ->
-                     let (a,b) = tup
-                     in a + b*y0
-                  ) cfuns
+                     in ( b0 + b1*a0, a1*b1 ))
+                  (0.0, 1.0) lfuns
+  let y    = map (\(tup: (f32,f32)): f32  ->
+                    let (a,b) = tup
+                    in a + b*y0)
+                 cfuns
   ------------------------------------------------------
   -- Recurrence 3: backward recurrence solved via     --
   --             scan with linear func comp operator  --
   ------------------------------------------------------
   let yn   = y[n-1]/b[n-1]
-  let lfuns= map  (\(k: i32): (f32,f32)  ->
-                     let i = n-k-1
-                     in  if   0 < k
-                         then (y[i]/b[i], 0.0-c[i]/b[i])
-                         else (0.0,       1.0          )
-                  ) (iota n)
+  let lfuns= map (\(k: i32): (f32,f32)  ->
+                    let i = n-k-1
+                    in  if   0 < k
+                        then (y[i]/b[i], 0.0-c[i]/b[i])
+                        else (0.0,       1.0))
+                 (iota n)
   let cfuns= scan (\(a: (f32,f32)) (b: (f32,f32)): (f32,f32)  ->
                      let (a0,a1) = a
                      let (b0,b1) = b
-                     in (b0 + b1*a0, a1*b1)
-                  ) (0.0, 1.0) lfuns
-  let y    = map  (\(tup: (f32,f32)): f32  ->
-                     let (a,b) = tup
-                     in a + b*yn
-                  ) cfuns
-  let y    = map  (\(i: i32): f32  -> y[n-i-1]) (iota n)
+                     in (b0 + b1*a0, a1*b1))
+                  (0.0, 1.0) lfuns
+  let y    = map (\(tup: (f32,f32)): f32  ->
+                    let (a,b) = tup
+                    in a + b*yn)
+                 cfuns
+  let y    = map (\i -> y[n-i-1]) (iota n)
   in y
 
 ------------------------------------------/
@@ -154,10 +153,8 @@ fun explicitMethod(myD:  [m][3]f32,  myDD: [m][3]f32,
                    myMu: [n][m]f32, myVar: [n][m]f32,
                    result: [n][m]f32 ): *[n][m]f32 =
   -- 0 <= i < m AND 0 <= j < n
-  map (\(tup:  ([]f32,[]f32,[]f32) ): []f32  ->
-         let (mu_row, var_row, result_row) = tup in
-         map (\(tup: ([]f32, []f32, f32, f32, i32)): f32  ->
-                let ( dx, dxx, mu, var, j ) = tup
+  map (\mu_row var_row result_row: [m]f32  ->
+         map (\dx dxx mu var j: f32 ->
                 let c1 = if 0 < j
                          then ( mu*dx[0] + 0.5*var*dxx[0] ) * unsafe result_row[j-1]
                          else 0.0
@@ -165,10 +162,9 @@ fun explicitMethod(myD:  [m][3]f32,  myDD: [m][3]f32,
                          then ( mu*dx[2] + 0.5*var*dxx[2] ) * unsafe result_row[j+1]
                          else 0.0
                 let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * unsafe result_row[j  ]
-                in  c1 + c2 + c3
-             ) (zip myD myDD (mu_row) (var_row) (iota(m) )
-               )
-      ) (zip myMu myVar result)
+                in  c1 + c2 + c3)
+             myD myDD mu_row var_row (iota m))
+      myMu myVar result
 
 ------------------------------------------/
 -- myD,myDD     : [m][3]f32
@@ -180,17 +176,16 @@ fun implicitMethod(myD:  [][]f32,  myDD: [][]f32,
                    myMu: [][]f32, myVar: [][]f32,
                    u: *[][]f32,    dtInv: f32  ): *[][]f32 =
   map (\mu_row var_row (u_row: *[]f32): *[]f32  ->
-             let abc = map (\mu var d dd: (f32,f32,f32)  ->
-                                  ( 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
-                                  , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
-                                  , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])
-                                  )
-                               ) mu_row var_row myD myDD
-             let (a,b,c) = unzip(abc)
-             in if 1==0
-                then tridagSeq( a, b, c, u_row )
-                else tridagPar( a, b, c, u_row )
-          ) myMu myVar u
+         let abc = map (\mu var d dd: (f32,f32,f32) ->
+                        ( 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
+                        , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
+                        , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])))
+                       mu_row var_row myD myDD
+         let (a,b,c) = unzip(abc)
+         in if 1==0
+            then tridagSeq( a, b, c, u_row )
+            else tridagPar( a, b, c, u_row ))
+      myMu myVar u
 
 fun rollback
   (_myX: [numX]f32, _myY: [numY]f32, myTimeline: []f32, myResult: *[][]f32,
@@ -203,25 +198,23 @@ fun rollback
   -- explicitX
   let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult )
   let u = map (\u_row res_row: []f32  ->
-                     map (\u_el res_el  -> dtInv*res_el + 0.5*u_el)
-                             u_row res_row)
-                   u myResult
+                 map (\u_el res_el  -> dtInv*res_el + 0.5*u_el)
+                     u_row res_row)
+              u myResult
 
   -- explicitY
   let myResultTR = transpose(myResult)
   let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR )
-  let u = map (\us vs: *[]f32  ->
-                     copy(map (+) us vs))
-                     u (transpose v)
+  let u = map (\us vs: *[]f32 -> copy(map (+) us vs)) u (transpose v)
   -- implicitX
   let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv )
   -- implicitY
-  let y = map (\u_row v_row: []f32  ->
-                     map (\u_el v_el -> dtInv*u_el - 0.5*v_el) u_row v_row)
-                  (transpose u) v
+  let y = map (\u_row v_row: []f32 ->
+                 map (\u_el v_el -> dtInv*u_el - 0.5*v_el) u_row v_row)
+              (transpose u) v
 
   let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
-  in  transpose(myResultTR)
+  in  transpose myResultTR
 
 fun value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =
   let (myXindex, myYindex, myX, myY, myTimeline) =
@@ -243,6 +236,6 @@ fun value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: 
 
 fun main (outer_loop_count: i32, numX: i32, numY: i32, numT: i32,
           s0: f32, _strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): []f32 =
-  let strikes = map (\i  -> 0.001*f32 i) (iota outer_loop_count)
-  let res = map (\x  -> value(numX, numY, numT, s0, x, t, alpha, nu, beta)) strikes
+  let strikes = map (\i -> 0.001*f32 i) (iota outer_loop_count)
+  let res = map (\x -> value(numX, numY, numT, s0, x, t, alpha, nu, beta)) strikes
   in res
