@@ -9,9 +9,9 @@
 -- output @ data/trivial.out
 -- compiled input @ data/100.in
 -- output @ data/100.out
--- notravis input @ data/204800.in
+-- input @ data/204800.in
 -- output @ data/204800.out
--- notravis input @ data/kdd_cup.in
+-- input @ data/kdd_cup.in
 -- output @ data/kdd_cup.out
 
 fun euclid_dist_2 (pt1: [numdims]f32) (pt2: [numdims]f32): f32 =

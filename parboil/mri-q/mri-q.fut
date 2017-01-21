@@ -30,7 +30,7 @@
 -- ==
 -- compiled input @ data/small.in
 -- output @ data/small.out
--- notravis input @ data/large.in
+-- input @ data/large.in
 -- output @ data/large.out
 
 fun pi(): f32 = 3.1415926535897932384626433832795029f32

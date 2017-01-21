@@ -1,6 +1,6 @@
 -- Interest rate calibration
 -- ==
--- tags { notravis nobench no_opencl }
+-- tags { nobench no_opencl }
 -- compiled input @ InterestCalib-data/small.in
 -- output @ InterestCalib-data/small.out
 --

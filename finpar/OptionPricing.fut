@@ -3,10 +3,10 @@
 -- compiled input @ OptionPricing-data/small.in
 -- output @ OptionPricing-data/small.out
 --
--- notravis input @ OptionPricing-data/medium.in
+-- input @ OptionPricing-data/medium.in
 -- output @ OptionPricing-data/medium.out
 --
--- notravis input @ OptionPricing-data/large.in
+-- input @ OptionPricing-data/large.in
 -- output @ OptionPricing-data/large.out
 
 default(f32)

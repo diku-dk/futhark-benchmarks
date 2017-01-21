@@ -4,7 +4,7 @@
 -- ==
 -- nobench input @ crypt-data/small.in
 -- output @ crypt-data/small.out
--- notravis input @ crypt-data/medium.in
+-- input @ crypt-data/medium.in
 -- output @ crypt-data/medium.out
 
 fun mk16b(upper: u8, lower: u8): u16 =

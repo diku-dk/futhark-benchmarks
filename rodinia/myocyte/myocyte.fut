@@ -4,9 +4,9 @@
 --
 -- ==
 --
--- notravis input @ data/small.in
+-- input @ data/small.in
 -- output @ data/small.out
--- notravis input @ data/medium.in
+-- input @ data/medium.in
 
 ----------------------
 ----- Ecc MODULE -----

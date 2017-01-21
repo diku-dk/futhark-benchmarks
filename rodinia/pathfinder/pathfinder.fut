@@ -3,7 +3,7 @@
 --
 -- ==
 --
--- notravis input @ data/medium.in
+-- input @ data/medium.in
 -- output @ data/medium.out
 
 fun in_range   (x: i32, lb: i32, ub: i32): bool = (x >= lb) && (x <= ub)

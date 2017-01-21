@@ -6,10 +6,10 @@
 -- compiled input @ data/64.in
 -- output @ data/64.out
 --
--- notravis input @ data/512.in
+-- input @ data/512.in
 -- output @ data/512.out
 --
--- notravis input @ data/1024.in
+-- input @ data/1024.in
 -- output @ data/1024.out
 
 default(f32)
