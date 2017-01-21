@@ -4,7 +4,7 @@
 -- is not the case in `bfs_parallel_segmented`, where the sizes vary.
 -- ==
 --
--- tags { notravis }
+-- tags { }
 -- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
 -- input @ data/512nodes_high_edge_variance.in

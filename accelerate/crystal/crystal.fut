@@ -2,7 +2,7 @@
 --
 -- ==
 -- tags { futhark-c futhark-opencl }
--- notravis input {
+-- input {
 --   200
 --   30.0f32
 --   5
@@ -34,7 +34,7 @@
 --   0.5f32
 -- }
 --
--- notravis input {
+-- input {
 --   2000
 --   30.0f32
 --   50
@@ -42,7 +42,7 @@
 --   1.0f32
 -- }
 --
--- notravis input {
+-- input {
 --   4000
 --   30.0f32
 --   50

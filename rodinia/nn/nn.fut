@@ -3,7 +3,7 @@
 --
 -- ==
 --
--- notravis input @ data/medium.in
+-- input @ data/medium.in
 -- output @ data/medium.out
 
 fun infty(): f32 = 1.0f32 / 0.0f32

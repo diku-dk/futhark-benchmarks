@@ -1,6 +1,6 @@
 --
 -- ==
--- tags { notravis }
+-- tags { }
 
 include fluid
 

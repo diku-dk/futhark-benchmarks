@@ -3,10 +3,10 @@
 --
 -- ==
 --
--- notravis input @ data/fvcorr.domn.097K.toa
+-- input @ data/fvcorr.domn.097K.toa
 -- output @ data/fvcorr.domn.097K.out
 --
--- notravis input @ data/fvcorr.domn.193K.toa
+-- input @ data/fvcorr.domn.193K.toa
 -- output @ data/fvcorr.domn.193K.out
 
 default(f32)

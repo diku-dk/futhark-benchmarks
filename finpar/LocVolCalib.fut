@@ -3,10 +3,10 @@
 -- compiled input @ LocVolCalib-data/small.in
 -- output @ LocVolCalib-data/small.out
 --
--- notravis input @ LocVolCalib-data/medium.in
+-- input @ LocVolCalib-data/medium.in
 -- output @ LocVolCalib-data/medium.out
 --
--- notravis input @ LocVolCalib-data/large.in
+-- input @ LocVolCalib-data/large.in
 -- output @ LocVolCalib-data/large.out
 
 default(f32)

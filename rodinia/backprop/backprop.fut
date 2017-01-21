@@ -3,7 +3,7 @@
 -- ==
 -- compiled input @ data/small.in
 -- output @ data/small.out
--- notravis input @ data/medium.in
+-- input @ data/medium.in
 
 default(f32)
 
