@@ -1,5 +1,7 @@
 -- Buddhabrot fractal: https://en.wikipedia.org/wiki/Buddhabrot
 
+include futlib.numeric
+
 default(f32)
 
 fun dot(c: (f32,f32)): f32 =
@@ -60,7 +62,7 @@ fun max(x: i32) (y: i32): i32 =
   if x < y then y else x
 
 fun colourise(max_visits: i32) (visits: i32): i32 =
-  let c = 255-i32(log32(f32(visits)) / log32(f32(max_visits)) * 255.0)
+  let c = 255-i32(F32.log(f32(visits)) / F32.log(f32(max_visits)) * 255.0)
   in c << 16 | c << 8 | c
 
 fun visualise(n: i32, m: i32, view: (f32,f32,f32,f32),

@@ -50,6 +50,8 @@
 --   1.0f32
 -- }
 
+include futlib.numeric
+
 default (f32)
 
 fun pi(): f32 = 3.14159265358979323846264338327950288419716939937510
@@ -75,9 +77,9 @@ fun wrap(n: f32): f32 =
   in f32(odd_in_int) * (1.0 - n') + f32(even_in_int) * n'
 
 fun wave(th: f32, x: f32, y: f32): f32 =
-  let cth = cos32(th)
-  let sth = sin32(th)
-  in (cos32(cth * x + sth * y) + 1.0) / 2.0
+  let cth = F32.cos(th)
+  let sth = F32.sin(th)
+  in (F32.cos(cth * x + sth * y) + 1.0) / 2.0
 
 fun point(scale: f32, x: f32, y: f32): (f32, f32) =
   (x * scale, y * scale)

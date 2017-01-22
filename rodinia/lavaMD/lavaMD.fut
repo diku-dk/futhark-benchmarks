@@ -7,6 +7,8 @@
 -- input @ data/10_boxes.in
 -- output @ data/10_boxes.out
 
+include futlib.numeric
+
 default(f32)
 
 fun num_neighbors(): i32      = 27
@@ -68,7 +70,7 @@ fun main(alpha:  f32
                                       let ( (rbj_v,rbj_x,rbj_y,rbj_z), qbj ) = tup
                                       let r2   = rai_v + rbj_v - dot((rai_x,rai_y,rai_z), (rbj_x,rbj_y,rbj_z))
                                       let u2   = a2*r2
-                                      let vij  = exp32(-u2)
+                                      let vij  = F32.exp(-u2)
                                       let fs   = 2.0 * vij
                                       let d_x  = rai_x  - rbj_x
                                       let d_y  = rai_y  - rbj_y

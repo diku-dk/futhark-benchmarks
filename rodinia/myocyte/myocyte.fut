@@ -8,12 +8,14 @@
 -- output @ data/small.out
 -- input @ data/medium.in
 
+include futlib.numeric
+
 ----------------------
 ----- Ecc MODULE -----
 ----------------------
 
 fun pow(x: f32, y: f32): f32 = x ** y
-fun log10(x: f32): f32 = log32(x) / log32(10.0f32)
+fun log10(x: f32): f32 = F32.log(x) / F32.log(10.0f32)
 
 fun fmod(a: f32, b: f32): f32 = ( a - b * f32(i32(a / b)) )
 
@@ -171,12 +173,12 @@ fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   let mgi = 1.0f32
   
   -- Nernst Potentials
-  let ena_junc = (1.0f32/foRT)*log32(nao/initvalu_32)        in -- []mV
-  let ena_sl = (1.0f32/foRT)*log32(nao/initvalu_33)          in -- []mV
-  let ek = (1.0f32/foRT)*log32(ko/initvalu_35)               in -- []mV
-  let eca_junc = (1.0f32/foRT/2.0f32)*log32(cao/initvalu_36) in -- []mV
-  let eca_sl = (1.0f32/foRT/2.0f32)*log32(cao/initvalu_37)   in -- []mV
-  let ecl = (1.0f32/foRT)*log32(cli/clo)                     in -- []mV
+  let ena_junc = (1.0f32/foRT)*F32.log(nao/initvalu_32)        in -- []mV
+  let ena_sl = (1.0f32/foRT)*F32.log(nao/initvalu_33)          in -- []mV
+  let ek = (1.0f32/foRT)*F32.log(ko/initvalu_35)               in -- []mV
+  let eca_junc = (1.0f32/foRT/2.0f32)*F32.log(cao/initvalu_36) in -- []mV
+  let eca_sl = (1.0f32/foRT/2.0f32)*F32.log(cao/initvalu_37)   in -- []mV
+  let ecl = (1.0f32/foRT)*F32.log(cli/clo)                     in -- []mV
 
   -- Na transport parameters
   let gna =  16.0f32       in -- [mS/uF]
@@ -270,19 +272,19 @@ fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   let kon_csqn = 100.0f32 in -- [1/mM/ms]
 
   -- i_Na: Fast Na Current
-  let am = 0.32f32 * (initvalu_39 + 47.13f32) / (1.0f32 - exp32(-0.1f32*(initvalu_39+47.13f32)))
-  let bm = 0.08f32 * exp32(-initvalu_39/11.0f32)
+  let am = 0.32f32 * (initvalu_39 + 47.13f32) / (1.0f32 - F32.exp(-0.1f32*(initvalu_39+47.13f32)))
+  let bm = 0.08f32 * F32.exp(-initvalu_39/11.0f32)
   let ( ah, aj, bh, bj ) =  if (initvalu_39 >= -40.0f32)
                             then ( 0.0f32, 
                                    0.0f32,
-                                   1.0f32/(0.13f32*(1.0f32+exp32(-(initvalu_39+10.66f32)/11.1f32))),
-                                   0.3f32*exp32(-2.535e-7f32*initvalu_39)/(1.0f32+exp32(-0.1f32*(initvalu_39+32.0f32))) 
+                                   1.0f32/(0.13f32*(1.0f32+F32.exp(-(initvalu_39+10.66f32)/11.1f32))),
+                                   0.3f32*F32.exp(-2.535e-7f32*initvalu_39)/(1.0f32+F32.exp(-0.1f32*(initvalu_39+32.0f32))) 
                                  )
-                            else ( 0.135f32*exp32((80.0f32+initvalu_39)/(-6.8f32)),
-                                   ( -127140.0f32*exp32(0.2444f32*initvalu_39) - 3.474e-5f32*exp32(-0.04391f32*initvalu_39) ) *
-                                        (initvalu_39+37.78f32)/(1.0f32+exp32(0.311f32*(initvalu_39+79.23f32))),
-                                   3.56f32*exp32(0.079f32*initvalu_39)+3.1e5f32*exp32(0.35f32*initvalu_39),
-                                   0.1212f32 * exp32(-0.01052f32*initvalu_39) / (1.0f32 + exp32(-0.1378f32 * (initvalu_39+40.14f32)))
+                            else ( 0.135f32*F32.exp((80.0f32+initvalu_39)/(-6.8f32)),
+                                   ( -127140.0f32*F32.exp(0.2444f32*initvalu_39) - 3.474e-5f32*F32.exp(-0.04391f32*initvalu_39) ) *
+                                        (initvalu_39+37.78f32)/(1.0f32+F32.exp(0.311f32*(initvalu_39+79.23f32))),
+                                   3.56f32*F32.exp(0.079f32*initvalu_39)+3.1e5f32*F32.exp(0.35f32*initvalu_39),
+                                   0.1212f32 * F32.exp(-0.01052f32*initvalu_39) / (1.0f32 + F32.exp(-0.1378f32 * (initvalu_39+40.14f32)))
                                  )
 
   let finavalu[offset_1] = am*(1.0f32-initvalu_1) - bm*initvalu_1
@@ -298,67 +300,67 @@ fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   let i_nabk      = i_nabk_junc + i_nabk_sl
 
   -- i_nak: Na/K Pump Current
-  let sigma = (exp32(nao/67.3f32)-1.0f32)/7.0f32
-  let fnak = 1.0f32/(1.0f32+0.1245f32*exp32(-0.1f32*initvalu_39*foRT)+0.0365f32*sigma*exp32(-initvalu_39*foRT))
+  let sigma = (F32.exp(nao/67.3f32)-1.0f32)/7.0f32
+  let fnak = 1.0f32/(1.0f32+0.1245f32*F32.exp(-0.1f32*initvalu_39*foRT)+0.0365f32*sigma*F32.exp(-initvalu_39*foRT))
   let i_nak_junc = fjunc*iBarNaK*fnak*ko / (1.0f32+pow((kmNaip/initvalu_32),4.0f32)) /(ko+kmko)
   let i_nak_sl = fsl*iBarNaK*fnak*ko /(1.0f32+pow((kmNaip/initvalu_33),4.0f32)) /(ko+kmko)
   let i_nak = i_nak_junc + i_nak_sl 
 
   -- i_kr: Rapidly Activating K Current
-  let gkr = 0.03f32 * sqrt32(ko/5.4f32)
-  let xrss = 1.0f32 / (1.0f32 + exp32(-(initvalu_39+50.0f32)/7.5f32))
-  let tauxr = 1.0f32/(0.00138f32*(initvalu_39+7.0f32) / (1.0f32-exp32(-0.123f32*(initvalu_39+7.0f32))) +
-                6.1e-4f32*(initvalu_39+10.0f32)/(exp32(0.145f32*(initvalu_39+10.0f32))-1.0f32))
+  let gkr = 0.03f32 * F32.sqrt(ko/5.4f32)
+  let xrss = 1.0f32 / (1.0f32 + F32.exp(-(initvalu_39+50.0f32)/7.5f32))
+  let tauxr = 1.0f32/(0.00138f32*(initvalu_39+7.0f32) / (1.0f32-F32.exp(-0.123f32*(initvalu_39+7.0f32))) +
+                6.1e-4f32*(initvalu_39+10.0f32)/(F32.exp(0.145f32*(initvalu_39+10.0f32))-1.0f32))
   let finavalu[offset_12] = (xrss-initvalu_12)/tauxr
-  let rkr = 1.0f32 / (1.0f32 + exp32((initvalu_39+33.0f32)/22.4f32))
+  let rkr = 1.0f32 / (1.0f32 + F32.exp((initvalu_39+33.0f32)/22.4f32))
   let i_kr = gkr*initvalu_12*rkr*(initvalu_39-ek)
 
   -- i_ks: Slowly Activating K Current
   let pcaks_junc = -log10(initvalu_36)+3.0f32
   let pcaks_sl = -log10(initvalu_37)+3.0f32
-  let gks_junc = 0.07f32*(0.057f32 +0.19f32/(1.0f32+ exp32((-7.2f32+pcaks_junc)/0.6f32)))
-  let gks_sl = 0.07f32*(0.057f32 +0.19f32/(1.0f32+ exp32((-7.2f32+pcaks_sl)/0.6f32)))
-  let eks = (1.0f32/foRT)*log32((ko+pNaK*nao)/(initvalu_35+pNaK*initvalu_34))
-  let xsss = 1.0f32/(1.0f32+exp32(-(initvalu_39-1.5f32)/16.7f32))
-  let tauxs = 1.0f32/(7.19e-5f32*(initvalu_39+30.0f32)/(1.0f32-exp32(-0.148f32*(initvalu_39+30.0f32))) + 
-                1.31e-4f32*(initvalu_39+30.0f32)/(exp32(0.0687f32*(initvalu_39+30.0f32))-1.0f32))
+  let gks_junc = 0.07f32*(0.057f32 +0.19f32/(1.0f32+ F32.exp((-7.2f32+pcaks_junc)/0.6f32)))
+  let gks_sl = 0.07f32*(0.057f32 +0.19f32/(1.0f32+ F32.exp((-7.2f32+pcaks_sl)/0.6f32)))
+  let eks = (1.0f32/foRT)*F32.log((ko+pNaK*nao)/(initvalu_35+pNaK*initvalu_34))
+  let xsss = 1.0f32/(1.0f32+F32.exp(-(initvalu_39-1.5f32)/16.7f32))
+  let tauxs = 1.0f32/(7.19e-5f32*(initvalu_39+30.0f32)/(1.0f32-F32.exp(-0.148f32*(initvalu_39+30.0f32))) + 
+                1.31e-4f32*(initvalu_39+30.0f32)/(F32.exp(0.0687f32*(initvalu_39+30.0f32))-1.0f32))
   let finavalu[offset_13] = (xsss-initvalu_13) / tauxs
   let i_ks_junc = fjunc*gks_junc*pow(initvalu_12,2.0f32)*(initvalu_39-eks)
   let i_ks_sl = fsl*gks_sl*pow(initvalu_13,2.0f32)*(initvalu_39-eks)
   let i_ks = i_ks_junc+i_ks_sl
 
   -- i_kp: Plateau K current
-  let kp_kp = 1.0f32/(1.0f32+exp32(7.488f32-initvalu_39/5.98f32))
+  let kp_kp = 1.0f32/(1.0f32+F32.exp(7.488f32-initvalu_39/5.98f32))
   let i_kp_junc = fjunc*gkp*kp_kp*(initvalu_39-ek)
   let i_kp_sl = fsl*gkp*kp_kp*(initvalu_39-ek)
   let i_kp = i_kp_junc+i_kp_sl
 
   -- i_to: Transient Outward K Current (slow and fast components)
-  let xtoss = 1.0f32/(1.0f32+exp32(-(initvalu_39+3.0f32)/15.0f32))
-  let ytoss = 1.0f32/(1.0f32+exp32((initvalu_39+33.5f32)/10.0f32))
-  let rtoss = 1.0f32/(1.0f32+exp32((initvalu_39+33.5f32)/10.0f32))
-  let tauxtos = 9.0f32/(1.0f32+exp32((initvalu_39+3.0f32)/15.0f32))+0.5f32
-  let tauytos = 3.0e3f32/(1.0f32+exp32((initvalu_39+60.0f32)/10.0f32))+30.0f32
-  let taurtos = 2800.0f32/(1.0f32+exp32((initvalu_39+60.0f32)/10.0f32))+220.0f32
+  let xtoss = 1.0f32/(1.0f32+F32.exp(-(initvalu_39+3.0f32)/15.0f32))
+  let ytoss = 1.0f32/(1.0f32+F32.exp((initvalu_39+33.5f32)/10.0f32))
+  let rtoss = 1.0f32/(1.0f32+F32.exp((initvalu_39+33.5f32)/10.0f32))
+  let tauxtos = 9.0f32/(1.0f32+F32.exp((initvalu_39+3.0f32)/15.0f32))+0.5f32
+  let tauytos = 3.0e3f32/(1.0f32+F32.exp((initvalu_39+60.0f32)/10.0f32))+30.0f32
+  let taurtos = 2800.0f32/(1.0f32+F32.exp((initvalu_39+60.0f32)/10.0f32))+220.0f32
   let finavalu[offset_8] = (xtoss-initvalu_8)/tauxtos
   let finavalu[offset_9] = (ytoss-initvalu_9)/tauytos
   let finavalu[offset_40]= (rtoss-initvalu_40)/taurtos
   let i_tos = dToSlow*initvalu_8*(initvalu_9+0.5f32*initvalu_40)*(initvalu_39-ek) -- [uA/uF]
 
   -- 
-  let tauxtof = 3.5f32*exp32(-initvalu_39*initvalu_39/30.0f32/30.0f32)+1.5f32
-  let tauytof = 20.0f32/(1.0f32+exp32((initvalu_39+33.5f32)/10.0f32))+20.0f32
+  let tauxtof = 3.5f32*F32.exp(-initvalu_39*initvalu_39/30.0f32/30.0f32)+1.5f32
+  let tauytof = 20.0f32/(1.0f32+F32.exp((initvalu_39+33.5f32)/10.0f32))+20.0f32
   let finavalu[offset_10] = (xtoss-initvalu_10)/tauxtof
   let finavalu[offset_11] = (ytoss-initvalu_11)/tauytof
   let i_tof = gToFast*initvalu_10*initvalu_11*(initvalu_39-ek)
   let i_to = i_tos + i_tof 
 
   -- i_ki: Time-independent K Current
-  let aki = 1.02f32/(1.0f32+exp32(0.2385f32*(initvalu_39-ek-59.215f32)))
-  let bki =(0.49124f32*exp32(0.08032f32*(initvalu_39+5.476f32-ek)) + exp32(0.06175f32*(initvalu_39-ek-594.31f32))) /
-                (1.0f32 + exp32(-0.5143f32*(initvalu_39-ek+4.753f32)))
+  let aki = 1.02f32/(1.0f32+F32.exp(0.2385f32*(initvalu_39-ek-59.215f32)))
+  let bki =(0.49124f32*F32.exp(0.08032f32*(initvalu_39+5.476f32-ek)) + F32.exp(0.06175f32*(initvalu_39-ek-594.31f32))) /
+                (1.0f32 + F32.exp(-0.5143f32*(initvalu_39-ek+4.753f32)))
   let kiss = aki/(aki+bki)
-  let i_ki = 0.9f32*sqrt32(ko/5.4f32)*kiss*(initvalu_39-ek) 
+  let i_ki = 0.9f32*F32.sqrt(ko/5.4f32)*kiss*(initvalu_39-ek) 
 
   -- i_ClCa: Ca-activated Cl Current, i_Clbk: background Cl Current
   let i_ClCa_junc = fjunc*gClCa/(1.0f32+kdClCa/initvalu_36)*(initvalu_39-ecl)
@@ -367,26 +369,26 @@ fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   let i_Clbk = gClB*(initvalu_39-ecl) 
 
   -- i_Ca: L-type Calcium Current
-  let dss = 1.0f32/(1.0f32+exp32(-(initvalu_39+14.5f32)/6.0f32))
-  let taud = dss*(1.0f32-exp32(-(initvalu_39+14.5f32)/6.0f32))/(0.035f32*(initvalu_39+14.5f32))
-  let fss = 1.0f32/(1.0f32+exp32((initvalu_39+35.06f32)/3.6f32))+0.6f32/(1.0f32+exp32((50.0f32-initvalu_39)/20.0f32))
-  let tauf = 1.0f32/(0.0197f32*exp32(-pow(0.0337f32*(initvalu_39+14.5f32),2.0f32))+0.02f32)
+  let dss = 1.0f32/(1.0f32+F32.exp(-(initvalu_39+14.5f32)/6.0f32))
+  let taud = dss*(1.0f32-F32.exp(-(initvalu_39+14.5f32)/6.0f32))/(0.035f32*(initvalu_39+14.5f32))
+  let fss = 1.0f32/(1.0f32+F32.exp((initvalu_39+35.06f32)/3.6f32))+0.6f32/(1.0f32+F32.exp((50.0f32-initvalu_39)/20.0f32))
+  let tauf = 1.0f32/(0.0197f32*F32.exp(-pow(0.0337f32*(initvalu_39+14.5f32),2.0f32))+0.02f32)
   let finavalu[offset_4] = (dss-initvalu_4)/taud
   let finavalu[offset_5] = (fss-initvalu_5)/tauf
   let finavalu[offset_6] = 1.7f32*initvalu_36*(1.0f32-initvalu_6)-11.9e-3f32*initvalu_6 in -- fCa_junc  
   let finavalu[offset_7] = 1.7f32*initvalu_37*(1.0f32-initvalu_7)-11.9e-3f32*initvalu_7    -- fCa_sl
 
   -- 
-  let ibarca_j = pCa*4.0f32*(initvalu_39*frdy*foRT) * (0.341f32*initvalu_36*exp32(2.0f32*initvalu_39*foRT)-0.341f32*cao) /
-                    (exp32(2.0f32*initvalu_39*foRT)-1.0f32)
-  let ibarca_sl= pCa*4.0f32*(initvalu_39*frdy*foRT) * (0.341f32*initvalu_37*exp32(2.0f32*initvalu_39*foRT)-0.341f32*cao) /
-                    (exp32(2.0f32*initvalu_39*foRT)-1.0f32)
-  let ibark = pK*(initvalu_39*frdy*foRT)*(0.75f32*initvalu_35*exp32(initvalu_39*foRT)-0.75f32*ko) /
-                    (exp32(initvalu_39*foRT)-1.0f32)
-  let ibarna_j = pNa*(initvalu_39*frdy*foRT) *(0.75f32*initvalu_32*exp32(initvalu_39*foRT)-0.75f32*nao) /
-                    (exp32(initvalu_39*foRT)-1.0f32)
-  let ibarna_sl= pNa*(initvalu_39*frdy*foRT) *(0.75f32*initvalu_33*exp32(initvalu_39*foRT)-0.75f32*nao) /
-                    (exp32(initvalu_39*foRT)-1.0f32)
+  let ibarca_j = pCa*4.0f32*(initvalu_39*frdy*foRT) * (0.341f32*initvalu_36*F32.exp(2.0f32*initvalu_39*foRT)-0.341f32*cao) /
+                    (F32.exp(2.0f32*initvalu_39*foRT)-1.0f32)
+  let ibarca_sl= pCa*4.0f32*(initvalu_39*frdy*foRT) * (0.341f32*initvalu_37*F32.exp(2.0f32*initvalu_39*foRT)-0.341f32*cao) /
+                    (F32.exp(2.0f32*initvalu_39*foRT)-1.0f32)
+  let ibark = pK*(initvalu_39*frdy*foRT)*(0.75f32*initvalu_35*F32.exp(initvalu_39*foRT)-0.75f32*ko) /
+                    (F32.exp(initvalu_39*foRT)-1.0f32)
+  let ibarna_j = pNa*(initvalu_39*frdy*foRT) *(0.75f32*initvalu_32*F32.exp(initvalu_39*foRT)-0.75f32*nao) /
+                    (F32.exp(initvalu_39*foRT)-1.0f32)
+  let ibarna_sl= pNa*(initvalu_39*frdy*foRT) *(0.75f32*initvalu_33*F32.exp(initvalu_39*foRT)-0.75f32*nao) /
+                    (F32.exp(initvalu_39*foRT)-1.0f32)
   let i_Ca_junc = (fjunc_CaL*ibarca_j*initvalu_4*initvalu_5*(1.0f32-initvalu_6)*pow(q10CaL,qpow))*0.45f32
   let i_Ca_sl   = (fsl_CaL*ibarca_sl*initvalu_4*initvalu_5*(1.0f32-initvalu_7)*pow(q10CaL,qpow))*0.45f32
   let i_Ca = i_Ca_junc+i_Ca_sl
@@ -400,17 +402,17 @@ fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   -- i_ncx: Na/Ca Exchanger flux
   let ka_junc = 1.0f32/(1.0f32+pow((kdact/initvalu_36),3.0f32))
   let ka_sl = 1.0f32/(1.0f32+pow((kdact/initvalu_37),3.0f32))
-  let s1_junc = exp32(nu*initvalu_39*foRT)*pow(initvalu_32,3.0f32)*cao
-  let s1_sl = exp32(nu*initvalu_39*foRT)*pow(initvalu_33,3.0f32)*cao
-  let s2_junc = exp32((nu-1.0f32)*initvalu_39*foRT)*pow(nao,3.0f32)*initvalu_36
+  let s1_junc = F32.exp(nu*initvalu_39*foRT)*pow(initvalu_32,3.0f32)*cao
+  let s1_sl = F32.exp(nu*initvalu_39*foRT)*pow(initvalu_33,3.0f32)*cao
+  let s2_junc = F32.exp((nu-1.0f32)*initvalu_39*foRT)*pow(nao,3.0f32)*initvalu_36
   let s3_junc = (kmCai*pow(nao,3.0f32)*(1.0f32+pow((initvalu_32/kmNai),3.0f32))+pow(kmnao,3.0f32)*initvalu_36 +
                     pow(kmNai,3.0f32)*cao*(1.0f32+initvalu_36/kmCai)+kmcao*pow(initvalu_32,3.0f32)+pow(initvalu_32,3.0f32)*cao +
-                    pow(nao,3.0f32)*initvalu_36)*(1.0f32+ksat*exp32((nu-1.0f32)*initvalu_39*foRT))
-  let s2_sl = exp32((nu-1.0f32)*initvalu_39*foRT)*pow(nao,3.0f32)*initvalu_37
+                    pow(nao,3.0f32)*initvalu_36)*(1.0f32+ksat*F32.exp((nu-1.0f32)*initvalu_39*foRT))
+  let s2_sl = F32.exp((nu-1.0f32)*initvalu_39*foRT)*pow(nao,3.0f32)*initvalu_37
   let s3_sl = (kmCai*pow(nao,3.0f32)*(1.0f32+pow((initvalu_33/kmNai),3.0f32)) +
                 pow(kmnao,3.0f32)*initvalu_37+pow(kmNai,3.0f32)*cao*(1.0f32+initvalu_37/kmCai) +
                 kmcao*pow(initvalu_33,3.0f32)+pow(initvalu_33,3.0f32)*cao+pow(nao,3.0f32)*initvalu_37)*
-                (1.0f32+ksat*exp32((nu-1.0f32)*initvalu_39*foRT))
+                (1.0f32+ksat*F32.exp((nu-1.0f32)*initvalu_39*foRT))
   let i_ncx_junc = fjunc*ibarNCX*pow(q10NCX,qpow)*ka_junc*(s1_junc-s2_junc)/s3_junc
   let i_ncx_sl = fsl*ibarNCX*pow(q10NCX,qpow)*ka_sl*(s1_sl-s2_sl)/s3_sl
   let i_ncx = i_ncx_junc+i_ncx_sl
@@ -808,7 +810,7 @@ fun fin(initvalu:     [equs]f32, initvalu_offset_ecc: i32,
 --fun f32  nan() = inf()  / inf()
 --fun f32 mnan() = 0.0f32 - nan()
 
---fun bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != sqrt32(xp)
+--fun bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != F32.sqrt(xp)
 --fun bool isinf(f32 x) = ( x == inf() || x == minf() )
 
 fun master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f32 =
@@ -845,7 +847,7 @@ fun master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f
                        parameter, finavalu, jcaDyad, jcaSL, jcaCyt ) 
 
   in map (\(x: f32): f32  -> 
-            if ( isnan32(x) || isinf32(x) ) 
+            if ( F32.isnan(x) || F32.isinf(x) ) 
             then 0.0001f32
             else x 
          ) finavalu
