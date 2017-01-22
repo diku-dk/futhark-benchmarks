@@ -25,6 +25,8 @@
 -- compiled input @ data/lena512.in
 -- output @ data/lena512.out
 
+include futlib.numeric
+
 default (f32)
 
 fun min(x: i32, y: i32): i32 =
@@ -106,15 +108,15 @@ fun gradiantMagDir(low: f32, img: [h][w]f32): [h][w](f32,i32) =
               let dx = v2 + (2.0*v4) + v7 - v0 - (2.0*v3) - v5
               let dy = v0 + (2.0*v1) + v2 - v5 - (2.0*v6) - v7
 
-              let mag = sqrt32(dx * dx + dy * dy)
+              let mag = F32.sqrt(dx * dx + dy * dy)
 
-              let theta = atan2_32 dy dx
+              let theta = F32.atan2 dy dx
               let alpha = (theta - (pi()/8.0)) * (4.0/pi())
 
               -- Normalise the angle to between [0..8)
               let norm = alpha + if alpha <= 0.0 then 8.0 else 0.0
 
-              let dir = if abs(dx) <= low && abs(dy) <= low
+              let dir = if F32.abs(dx) <= low && F32.abs(dy) <= low
                         then 0
                         else min(64 * (1 + i32(norm) % 4), 255)
 

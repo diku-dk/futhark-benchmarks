@@ -6,6 +6,8 @@
 -- input @ data/medium.in
 -- output @ data/medium.out
 
+include futlib.numeric
+
 fun infty(): f32 = 1.0f32 / 0.0f32
 fun emptyRecord(): (i32, f32) = (0, 0.0f32)
 
@@ -17,7 +19,7 @@ fun main(resultsCount:    i32, lat: f32, lng: f32,
   let distances = 
       map (\(latlng: (f32,f32)): f32  ->
                 let (lat_i, lng_i) = latlng
-                in sqrt32( (lat-lat_i)*(lat-lat_i) + (lng-lng_i)*(lng-lng_i) )
+                in F32.sqrt( (lat-lat_i)*(lat-lat_i) + (lng-lng_i)*(lng-lng_i) )
          ) locations
 
   let (results_ind, results_dst) = unzip( copy(replicate resultsCount (emptyRecord()))  )

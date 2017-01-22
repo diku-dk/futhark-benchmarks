@@ -9,6 +9,8 @@
 -- input @ OptionPricing-data/large.in
 -- output @ OptionPricing-data/large.out
 
+include futlib.numeric
+
 default(f32)
 
 fun grayCode(x: i32): i32 = (x >> 1) ^ x
@@ -167,7 +169,7 @@ fun ugaussianEl(p: f32): f32 =
   then smallcase(dp)
   else let pp = if(dp < 0.0) then dp + 0.5
                 else 0.5 - dp
-       let r  = sqrt32( - log32(pp) )
+       let r  = F32.sqrt( - F32.log(pp) )
        let x = if(r <= 5.0) then intermediate(r)
                else tail(r)
        in if(dp < 0.0) then 0.0 - x else x
@@ -254,7 +256,7 @@ fun mkPrices(md_starts:    [num_und]f32,
              noises: [num_dates][num_und]f32)
             : [num_dates][num_und]f32 =
   let c_rows = map combineVs noises md_vols md_drifts
-  let e_rows = map (\x: [num_und]f32 -> map exp32 x) c_rows
+  let e_rows = map (\x: [num_und]f32 -> map F32.exp x) c_rows
   in  map (\(x: []f32): [num_und]f32  ->
              map (*) (md_starts) x)
           (scan (\x y -> map (*) x y)

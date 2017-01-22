@@ -9,6 +9,8 @@
 -- input @ data/fvcorr.domn.193K.toa
 -- output @ data/fvcorr.domn.193K.out
 
+include futlib.numeric
+
 default(f32)
 
 fun gamma(): f32 = 1.4
@@ -40,7 +42,7 @@ fun compute_pressure(density: f32, density_energy: f32, speed_sqd: f32): f32 =
     (gamma()-1.0) * (density_energy - 0.5*density*speed_sqd)
 
 fun compute_speed_of_sound(density: f32, pressure: f32): f32 =
-    sqrt32( gamma() * pressure / density )
+    F32.sqrt( gamma() * pressure / density )
 
 --
 fun initialize_variables(nelr: i32, ff_variable: [5]f32): [5][nelr]f32 = --[nvar]float ff_variable
@@ -88,7 +90,7 @@ fun compute_step_factor(variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = 
             let speed_sqd  = compute_speed_sqd(velocity)
             let pressure   = compute_pressure(density, density_energy, speed_sqd)
             let speed_of_sound = compute_speed_of_sound( density, pressure )
-            in ( 0.5 / (sqrt32(areas[i]) * (sqrt32(speed_sqd) + speed_of_sound) ) )
+            in ( 0.5 / (F32.sqrt(areas[i]) * (F32.sqrt(speed_sqd) + speed_of_sound) ) )
        ) (iota(nelr))
     
 --5 == nvar
@@ -121,7 +123,7 @@ fun compute_flux(elements_surrounding_elements:    [nnb][nel]i32
             let density_energy_i = variables[var_density_energy(), i]
             let velocity_i   = compute_velocity(density_i, momentum_i)
             let speed_sqd_i  = compute_speed_sqd(velocity_i)
-            let speed_i      = sqrt32(speed_sqd_i)
+            let speed_i      = F32.sqrt(speed_sqd_i)
             let pressure_i   = compute_pressure(density_i, density_energy_i, speed_sqd_i)
             let speed_of_sound_i = compute_speed_of_sound(density_i, pressure_i)
             let ( flux_contribution_i_momentum_x, flux_contribution_i_momentum_y, 
@@ -149,7 +151,7 @@ fun compute_flux(elements_surrounding_elements:    [nnb][nel]i32
                 let normal_x = normals[0, j, i]
                 let normal_y = normals[1, j, i]
                 let normal_z = normals[2, j, i]
-                let normal_len = sqrt32(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z)
+                let normal_len = F32.sqrt(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z)
                 in if (0 <= nb) -- a legitimate neighbor
                 then let density_nb    = unsafe variables[var_density(),    nb]
 		             let momentum_nb_x = unsafe variables[var_momentum()+0, nb]
@@ -176,7 +178,7 @@ fun compute_flux(elements_surrounding_elements:    [nnb][nel]i32
 
                      -- artificial viscosity
                      let factor = -normal_len*smoothing_coefficient*0.5*
-                                    ( speed_i + sqrt32(speed_sqd_nb) + speed_of_sound_i + speed_of_sound_nb )
+                                    ( speed_i + F32.sqrt(speed_sqd_nb) + speed_of_sound_i + speed_of_sound_nb )
                      let flux_i_density = flux_i_density + factor*(density_i-density_nb)
                      let flux_i_density_energy = flux_i_density_energy + factor*(density_energy_i-density_energy_nb)
                      let flux_i_momentum_x = flux_i_momentum_x + factor*(momentum_i_x-momentum_nb_x)
@@ -302,11 +304,11 @@ fun main(areas:   [nel]f32,
 
     let var_of_density = 1.4f32
     let ff_pressure = 1.0f32
-    let ff_speed_of_sound = sqrt32( gamma()*ff_pressure / var_of_density )
+    let ff_speed_of_sound = F32.sqrt( gamma()*ff_pressure / var_of_density )
     let ff_speed = ff_mach() * ff_speed_of_sound
     let ( ff_velocity_x, ff_velocity_y, ff_velocity_z ) = 
-            ( ff_speed * cos32(angle_of_attack) -- .x   ... cos(angle_of_attack()) = 1
-            , ff_speed * sin32(angle_of_attack) -- .y   ... sin(angle_of_attack()) = 0
+            ( ff_speed * F32.cos(angle_of_attack) -- .x   ... cos(angle_of_attack()) = 1
+            , ff_speed * F32.sin(angle_of_attack) -- .y   ... sin(angle_of_attack()) = 0
             , 0.0f32 ) in                       -- .z
     let ff_velocity = ( ff_velocity_x, ff_velocity_y, ff_velocity_z )
 

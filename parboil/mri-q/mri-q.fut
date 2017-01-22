@@ -33,6 +33,8 @@
 -- input @ data/large.in
 -- output @ data/large.out
 
+include futlib.numeric
+
 fun pi(): f32 = 3.1415926535897932384626433832795029f32
 fun pi2(): f32 = pi() * 2.0f32
 
@@ -49,9 +51,9 @@ fun main(kx: [numK]f32, ky: [numK]f32, kz: [numK]f32,
                                      ) kx ky kz)
                        ) x y z
   let qr = map (\(row: [numK]f32): f32  ->
-                 reduce (+) (0.0f32) (map (*) phiMag (map cos32 row))
+                 reduce (+) (0.0f32) (map (*) phiMag (map F32.cos row))
               ) expArgs
   let qi = map (\(row: [numK]f32): f32  ->
-                 reduce (+) (0.0f32) (map (*) phiMag (map sin32 row))
+                 reduce (+) (0.0f32) (map (*) phiMag (map F32.sin row))
               ) expArgs
   in (qr, qi)

@@ -9,14 +9,16 @@
 -- input @ LocVolCalib-data/large.in
 -- output @ LocVolCalib-data/large.out
 
+include futlib.numeric
+
 default(f32)
 
 fun initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: i32, numY: i32, numT: i32)
   : (i32, i32, [numX]f32, [numY]f32, [numT]f32) =
-  let logAlpha = log32 alpha
+  let logAlpha = F32.log alpha
   let myTimeline = map (\i: f32  -> t * f32 i / (f32 numT - 1.0)) (iota numT)
-  let (stdX, stdY) = (20.0 * alpha * s0 * sqrt32(t),
-                      10.0 * nu         * sqrt32(t))
+  let (stdX, stdY) = (20.0 * alpha * s0 * F32.sqrt(t),
+                      10.0 * nu         * F32.sqrt(t))
   let (dx, dy) = (stdX / f32 numX, stdY / f32 numY)
   let (myXindex, myYindex) = (i32(s0 / dx), numY / 2)
   let myX = map (\i: f32 -> f32(i) * dx - f32 myXindex * dx + s0) (iota numX)
@@ -57,7 +59,7 @@ fun updateParams(myX:  [numX]f32, myY: [numY]f32, myTimeline: []f32,
   let myMuX  = replicate numY (replicate numX 0.0)
   let myVarX = map (\yj  ->
                       map (\xi: f32  ->
-                             exp32(2.0*(beta*log32(xi) + yj - 0.5*nu*nu*myTimeline[g]))
+                             F32.exp(2.0*(beta*F32.log(xi) + yj - 0.5*nu*nu*myTimeline[g]))
                           ) myX
                    ) myY
   in  ( myMuX, myVarX, myMuY, myVarY )

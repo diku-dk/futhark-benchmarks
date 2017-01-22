@@ -8,6 +8,8 @@
 -- compiled input @ data/large.in
 -- output @ data/large.out
 
+include futlib.numeric
+
 type vec3 = (f64, f64, f64)
 
 fun pi(): f64 = 3.1415926535897932384626433832795029f64
@@ -25,7 +27,7 @@ fun iota32(num: i32): [num]f64 =
 fun sumBins(bins: [numBinss][numBins]i32): *[numBins]i32 =
     map (\(binIndex: []i32): i32  -> reduce (+) 0i32 binIndex) (transpose(bins))
 
-fun log10(num: f64): f64 = log64(num) / log64(10.0)
+fun log10(num: f64): f64 = F64.log(num) / F64.log(10.0)
 
 fun doCompute(data1: 
     [num1]vec3,
@@ -91,9 +93,9 @@ fun doComputeSelf(data:
 fun fixPoints(ra: f64, dec: f64): vec3 =
     let rarad = dec2rad(ra)
     let decrad = dec2rad(dec)
-    let cd = cos64(decrad)
+    let cd = F64.cos(decrad)
 
-    in (cos64(rarad)*cd, sin64(rarad)*cd, sin64(decrad))
+    in (F64.cos(rarad)*cd, F64.sin(rarad)*cd, F64.sin(decrad))
 
 fun main(datapointsx: 
     [numD]f64,
@@ -103,7 +105,7 @@ fun main(datapointsx:
 ): *[60]i32 =
     let numBins2 = numBins() + 2
     let binb = map (\(k: f64): f64  ->
-                        cos64((10.0 ** (log10(min_arcmin()) + k*1.0/bins_per_dec())) / 60.0 * dec2rad(1.0))) (
+                        F64.cos((10.0 ** (log10(min_arcmin()) + k*1.0/bins_per_dec())) / 60.0 * dec2rad(1.0))) (
                     iota32(numBins() + 1))
     let datapoints = map fixPoints (zip datapointsx datapointsy)
     let randompoints = map (\(x: [numR]f64, y: [numR]f64): [numR]vec3  ->

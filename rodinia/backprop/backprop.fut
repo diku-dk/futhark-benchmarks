@@ -5,13 +5,15 @@
 -- output @ data/small.out
 -- input @ data/medium.in
 
+include futlib.numeric
+
 default(f32)
 
 fun eta(): f32       = 0.3
 fun momentum(): f32  = 0.3
 fun init_zero(): bool = false
 
-fun squash(x: f32): f32 = 1.0 / (1.0 + exp32(-x))
+fun squash(x: f32): f32 = 1.0 / (1.0 + F32.exp(-x))
 fun fabs   (x: f32): f32 = if x < 0.0 then 0.0 - x else x
 
 -- Computational kernels

@@ -20,6 +20,8 @@
 -- compiled input @ data/image.in
 -- output @ data/image.out
 
+include futlib.numeric
+
 default(f32)
 
 fun indexN(_rows: i32, i: i32): i32 =
@@ -47,7 +49,7 @@ fun do_srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
   let image = map (\(row: []u8): [cols]f32  ->
                     map (\(pixel: u8): f32  ->
-                          exp32(f32(pixel)/255.0)) row) image
+                          F32.exp(f32(pixel)/255.0)) row) image
   loop (image) = for _i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
     let sum = reduce (+) (0.0) (reshape (ne) image)
@@ -103,7 +105,7 @@ fun do_srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
                           -- take logarithm of image (log compress).
                           -- This is where the original implementation
                           -- would round to i32.
-                           log32(pixel)*255.0) row) image
+                           F32.log(pixel)*255.0) row) image
   in image
 
 fun main(image: [rows][cols]u8): [rows][cols]f32 =
