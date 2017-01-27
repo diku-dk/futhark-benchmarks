@@ -10,6 +10,8 @@ import pygame
 import time
 import sys
 
+nb = nbody.nbody(interactive=True)
+
 pygame.init()
 pygame.display.set_caption('N-body')
 screen = pygame.display.set_mode()
@@ -23,7 +25,6 @@ y_rotation=0.0
 default_time_step = 1.0
 steps_per_call = 1
 
-nb = nbody.nbody()
 render_nbody = nb.render
 step_nbody = nb.main
 N = 5000
