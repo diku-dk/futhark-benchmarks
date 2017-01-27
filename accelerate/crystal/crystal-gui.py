@@ -12,7 +12,7 @@ scale=30.0
 degree=5
 size=(field_size,field_size)
 
-crystal_frame = crystal().render_frame
+crystal_frame = crystal(interactive=1).render_frame
 
 pygame.init()
 pygame.display.set_caption('Crystal')
