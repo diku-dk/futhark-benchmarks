@@ -13,7 +13,7 @@ size=(width,height)
 frame_every=1.0/30.0
 startpos=(-2.23,-1.15,0.83,1.15)
 
-futm = mandelbrot.mandelbrot()
+futm = mandelbrot.mandelbrot(interactive=True)
 
 def make_mandelbrot(minx, miny, maxx, maxy):
     return futm.main(width, height, limit, minx, miny, maxx, maxy).get()
