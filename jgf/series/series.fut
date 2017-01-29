@@ -13,7 +13,7 @@
 -- compiled input @ data/1000000.in
 -- output @ data/1000000.out
 
-include futlib.numeric
+import "futlib/numeric"
 
 fun thefunction(x: f64, omegan: f64, select: i32): f64 =
   if select == 0 then (x+1.0) ** x

@@ -8,7 +8,7 @@
 --   [0, 5, 3, -3, 1]
 -- }
 
-include bfs_lib
+import "bfs_lib"
 
 fun main(ns: [n]i32): []i32 =
   i32_excl_scan_from_incl_scan ns 0

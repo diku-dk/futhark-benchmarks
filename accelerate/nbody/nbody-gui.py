@@ -14,7 +14,7 @@ nb = nbody.nbody(interactive=True)
 
 pygame.init()
 pygame.display.set_caption('N-body')
-screen = pygame.display.set_mode()
+screen = pygame.display.set_mode((800,600))
 width = screen.get_width()
 height = screen.get_height()
 size = (width, height)

@@ -12,7 +12,7 @@
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
 
-include lib.bfs_lib
+import "lib/bfs_lib"
 
 
 fun main(nodes_start_index: [n]i32,

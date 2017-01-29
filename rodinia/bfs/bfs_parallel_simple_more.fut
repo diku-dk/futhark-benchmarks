@@ -17,6 +17,6 @@
 --
 -- compiled input @ data/higher_edge_variance_5K.in
 
-include bfs_parallel_simple
+import bfs_parallel_simple
 
 fun f(): i32 = 0 -- hack

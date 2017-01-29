@@ -1,6 +1,6 @@
 -- Buddhabrot fractal: https://en.wikipedia.org/wiki/Buddhabrot
 
-include futlib.numeric
+import "futlib/numeric"
 
 default(f32)
 

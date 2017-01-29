@@ -41,3 +41,4 @@ fun get_updating_indices_alt1(updating_graph_mask: [n]bool): (*[n]i32, i32) =
                       iota(n))
   let n_indices = reduce (+) 0 (zero_ones)
   in (updating_indices, n_indices)
+

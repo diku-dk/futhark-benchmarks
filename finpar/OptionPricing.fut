@@ -9,7 +9,7 @@
 -- input @ OptionPricing-data/large.in
 -- output @ OptionPricing-data/large.out
 
-include futlib.numeric
+import "futlib/numeric"
 
 default(f32)
 

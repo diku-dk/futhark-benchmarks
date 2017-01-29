@@ -3,7 +3,7 @@
 -- tags { futhark-opencl futhark-c }
 -- compiled input @ fluid-n_steps=1-n_solver_steps=40-grid_res=100.input
 
-include fluid
+import "fluid"
 
 fun main(u0: [g][g]f32,
        v0: [g][g]f32,

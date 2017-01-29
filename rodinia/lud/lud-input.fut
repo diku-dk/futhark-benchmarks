@@ -2,7 +2,7 @@
 --
 -- Algorithm from Rodinia.
 
-include futlib.numeric
+import "futlib/numeric"
 
 default(f32)
 
