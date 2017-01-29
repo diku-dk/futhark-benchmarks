@@ -11,9 +11,9 @@ fun main(n: i32): [n][n]f32 =
   let coe = map (\j ->
                    if j >= n
                    then let i = -n + j + 1
-                        in 10.0 * F32.exp(lambda*f32(i))
+                        in 10.0 * f32.exp(lambda*f32(i))
                    else let i = n - j - 1
-                        in 10.0 * F32.exp(lambda*f32(i)))
+                        in 10.0 * f32.exp(lambda*f32(i)))
                 (iota (n*2))
   in map (\i ->
             map (\j -> coe[n-1-i+j]) (iota n))

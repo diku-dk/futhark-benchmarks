@@ -17,8 +17,8 @@ import "futlib/numeric"
 
 fun thefunction(x: f64, omegan: f64, select: i32): f64 =
   if select == 0 then (x+1.0) ** x
-  else if select == 1 then (x+1.0)**x * F64.cos(omegan*x)
-  else (x+1.0)**x * F64.sin(omegan*x)
+  else if select == 1 then (x+1.0)**x * f64.cos(omegan*x)
+  else (x+1.0)**x * f64.sin(omegan*x)
 
 fun TrapezoidIntegrate(x0: f64, x1: f64, nsteps: i32, omegan: f64, select: i32): f64 =
   let x = x0
