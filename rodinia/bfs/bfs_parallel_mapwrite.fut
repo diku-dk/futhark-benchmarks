@@ -59,4 +59,5 @@ module BFS = BFSLIB({
     in (cost', graph_mask', inds_upd)
 })
 
-open BFS
+fun main(nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
+  BFS.common_main(nodes_start_index, nodes_n_edges, edges_dest)
