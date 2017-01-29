@@ -10,8 +10,8 @@
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
 
-include lib.bfs_main_typical
-include lib.bfs_lib
+import "lib/bfs_main_typical"
+import "lib/bfs_lib"
 
 
 fun max(a: i32) (b: i32): i32 =

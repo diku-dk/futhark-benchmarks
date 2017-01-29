@@ -20,7 +20,7 @@
 -- compiled input @ data/image.in
 -- output @ data/image.out
 
-include futlib.numeric
+import "futlib/numeric"
 
 default(f32)
 

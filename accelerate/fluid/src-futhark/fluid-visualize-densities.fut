@@ -2,7 +2,7 @@
 -- ==
 -- tags { }
 
-include fluid
+import "fluid"
 
 fun clamp(x: f32): i32 =
   if x < 0.0f32

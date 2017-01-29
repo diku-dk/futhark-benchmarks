@@ -11,7 +11,7 @@
 -- compiled input { 10f32 4000 4000 }
 -- compiled input { 10f32 8000 8000 }
 
-include futlib.numeric
+import "futlib/numeric"
 
 type v2 = (f32,f32)
 

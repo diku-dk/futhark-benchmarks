@@ -25,7 +25,7 @@
 -- compiled input @ data/lena512.in
 -- output @ data/lena512.out
 
-include futlib.numeric
+import "futlib/numeric"
 
 default (f32)
 

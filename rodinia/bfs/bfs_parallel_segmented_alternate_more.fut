@@ -21,6 +21,6 @@
 -- output @ data/graph1MW_6.out
 
 
-include bfs_parallel_segmented_alternate
+import bfs_parallel_segmented_alternate
 
 fun f(): i32 = 0 -- hack

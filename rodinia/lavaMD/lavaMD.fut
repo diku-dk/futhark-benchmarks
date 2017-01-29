@@ -7,7 +7,7 @@
 -- input @ data/10_boxes.in
 -- output @ data/10_boxes.out
 
-include futlib.numeric
+import "futlib/numeric"
 
 default(f32)
 

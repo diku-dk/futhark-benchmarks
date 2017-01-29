@@ -18,41 +18,50 @@
 -- ==
 -- tags { disable }
 
-include lib.bfs_lib
+import "lib/bfs_lib"
 
-fun main(nodes_start_index: [n]i32,
-                  nodes_n_edges: [n]i32,
-                  edges_dest: [e]i32): [n]i32 =
-  let graph_mask = replicate n false
-  let updating_graph_mask = replicate n false
-  let graph_visited = replicate n false
-  let source = 0
-  let graph_mask[source] = true
-  let graph_visited[source] = true
-  let cost = replicate n (-1)
-  let cost[source] = 0
-  loop ((cost, graph_mask, graph_visited, continue) =
-        (cost, graph_mask, graph_visited, true)) =
-    while continue do
-      let (cost', graph_mask', updating_indices) =
-        step(cost,
+module type STEP_FUN = {
+  val step: (*[]i32, []i32, []i32, []i32, []bool, *[]bool) ->
+            (*[]i32, *[]bool, *[]i32)
+}
+
+module BFSLIB(S: STEP_FUN) = {
+
+  entry main(nodes_start_index: [n]i32,
+           nodes_n_edges: [n]i32,
+           edges_dest: [e]i32): [n]i32 =
+    let graph_mask = replicate n false
+    let updating_graph_mask = replicate n false
+    let graph_visited = replicate n false
+    let source = 0
+    let graph_mask[source] = true
+    let graph_visited[source] = true
+    let cost = replicate n (-1)
+    let cost[source] = 0
+    loop ((cost, graph_mask, graph_visited, continue) =
+          (cost, graph_mask, graph_visited, true)) =
+      while continue do
+    let (cost', graph_mask', updating_indices) =
+      S.step(cost,
              nodes_start_index,
              nodes_n_edges,
              edges_dest,
              graph_visited,
              graph_mask)
-      
-      let n_indices = (shape updating_indices)[0]
 
-      let graph_mask'' =
-        write updating_indices (replicate n_indices true) graph_mask'
+    let n_indices = (shape updating_indices)[0]
 
-      let graph_visited' =
-        write updating_indices (replicate n_indices true) graph_visited
+    let graph_mask'' =
+      write updating_indices (replicate n_indices true) graph_mask'
 
-      let tmp_arr = map (\(ind: i32): i32  -> if ind == -1 then 0 else 1) (updating_indices)
-      let n_indices' = reduce (+) 0 (tmp_arr)
+    let graph_visited' =
+      write updating_indices (replicate n_indices true) graph_visited
 
-      let continue' = n_indices' > 0
-      in (cost', graph_mask'', graph_visited', continue')
-  in cost
+    let tmp_arr = map (\(ind: i32): i32  -> if ind == -1 then 0 else 1) (updating_indices)
+    let n_indices' = reduce (+) 0 (tmp_arr)
+
+    let continue' = n_indices' > 0
+    in (cost', graph_mask'', graph_visited', continue')
+    in cost
+
+}
