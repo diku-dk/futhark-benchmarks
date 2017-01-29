@@ -40,7 +40,7 @@ fun accel (epsilon: f32) ((pi, _, _ , _):body) ((pj, mj, _ , _): body)
           : velocity =
   let r = vec_subtract(pj, pi)
   let rsqr = dot(r, r) + epsilon * epsilon
-  let invr = 1.0f32 / F32.sqrt(rsqr)
+  let invr = 1.0f32 / f32.sqrt(rsqr)
   let invr3 = invr * invr * invr
   let s = mj * invr3
   in vec_mult_factor(s, r)
@@ -106,13 +106,13 @@ fun rotatePointsByMatrix (rotation: [3][3]f32)(ps: [n]position): [n]position =
 
 fun rotateXMatrix (angle: f32): [3][3]f32 =
   [[1f32,        0f32,         0f32],
-   [0f32, F32.cos angle, -F32.sin angle],
-   [0f32, F32.sin angle,  F32.cos angle]]
+   [0f32, f32.cos angle, -f32.sin angle],
+   [0f32, f32.sin angle,  f32.cos angle]]
 
 fun rotateYMatrix (angle: f32): [3][3]f32 =
-  [[F32.cos angle,  0f32, F32.sin angle],
+  [[f32.cos angle,  0f32, f32.sin angle],
    [0f32,           1f32, 0f32],
-   [-F32.sin angle, 0f32, F32.cos angle]]
+   [-f32.sin angle, 0f32, f32.cos angle]]
 
 fun rotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
   matmult (rotateXMatrix x_rotation) (rotateYMatrix y_rotation)

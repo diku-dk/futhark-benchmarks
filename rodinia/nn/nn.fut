@@ -19,7 +19,7 @@ fun main(resultsCount:    i32, lat: f32, lng: f32,
   let distances = 
       map (\(latlng: (f32,f32)): f32  ->
                 let (lat_i, lng_i) = latlng
-                in F32.sqrt( (lat-lat_i)*(lat-lat_i) + (lng-lng_i)*(lng-lng_i) )
+                in f32.sqrt( (lat-lat_i)*(lat-lat_i) + (lng-lng_i)*(lng-lng_i) )
          ) locations
 
   let (results_ind, results_dst) = unzip( copy(replicate resultsCount (emptyRecord()))  )

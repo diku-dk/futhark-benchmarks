@@ -22,7 +22,7 @@ fun v2Sub(x: v2, y: v2): v2 =
   (#0 x - #0 y, #1 x - #1 y)
 
 fun norm(x: v2): f32 =
-  F32.sqrt(#0 x**2f32 + #1 x**2f32)
+  f32.sqrt(#0 x**2f32 + #1 x**2f32)
 
 -- Fractional part of a number.
 fun fract(x: f32): f32 =
@@ -44,12 +44,12 @@ fun rand2(p: v2): v2 =
   let x = (127.1f32, 311.7f32)
   let y = (269.5f32, 183.3f32)
   let q = (dot(p,x), dot(p,y))
-  in (fract(F32.sin(#0 q) * 43758.5453f32),
-      fract(F32.sin(#1 q) * 43758.5453f32))
+  in (fract(f32.sin(#0 q) * 43758.5453f32),
+      fract(f32.sin(#1 q) * 43758.5453f32))
 
 fun rand1(p: v2): f32 =
   let z = (419.2f32, 371.9f32)
-  in fract(F32.sin(dot(p,z)) * 833458.57832f32)
+  in fract(f32.sin(dot(p,z)) * 833458.57832f32)
 
 fun voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
   let cell = (f32(i32(#0 xy)), f32(i32(#1 xy)))

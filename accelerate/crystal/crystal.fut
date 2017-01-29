@@ -77,9 +77,9 @@ fun wrap(n: f32): f32 =
   in f32(odd_in_int) * (1.0 - n') + f32(even_in_int) * n'
 
 fun wave(th: f32, x: f32, y: f32): f32 =
-  let cth = F32.cos(th)
-  let sth = F32.sin(th)
-  in (F32.cos(cth * x + sth * y) + 1.0) / 2.0
+  let cth = f32.cos(th)
+  let sth = f32.sin(th)
+  in (f32.cos(cth * x + sth * y) + 1.0) / 2.0
 
 fun point(scale: f32, x: f32, y: f32): (f32, f32) =
   (x * scale, y * scale)

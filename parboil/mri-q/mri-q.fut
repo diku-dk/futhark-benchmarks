@@ -51,9 +51,9 @@ fun main(kx: [numK]f32, ky: [numK]f32, kz: [numK]f32,
                                      ) kx ky kz)
                        ) x y z
   let qr = map (\(row: [numK]f32): f32  ->
-                 reduce (+) (0.0f32) (map (*) phiMag (map F32.cos row))
+                 reduce (+) (0.0f32) (map (*) phiMag (map f32.cos row))
               ) expArgs
   let qi = map (\(row: [numK]f32): f32  ->
-                 reduce (+) (0.0f32) (map (*) phiMag (map F32.sin row))
+                 reduce (+) (0.0f32) (map (*) phiMag (map f32.sin row))
               ) expArgs
   in (qr, qi)
