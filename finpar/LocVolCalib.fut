@@ -184,7 +184,7 @@ fun implicitMethod(myD:  [][]f32,  myDD: [][]f32,
                         , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])))
                        mu_row var_row myD myDD
          let (a,b,c) = unzip(abc)
-         in if 1==0
+         in if 1==1
             then tridagSeq( a, b, c, u_row )
             else tridagPar( a, b, c, u_row ))
       myMu myVar u
