@@ -14,8 +14,8 @@ import "lib/bfs_lib"
 
 
 fun main(nodes_start_index: [n]i32,
-                  nodes_n_edges: [n]i32,
-                  edges_dest: [e]i32): [n]i32 =
+         nodes_n_edges: [n]i32,
+         edges_dest: [e]i32): [n]i32 =
   let graph_mask = replicate n false
   let updating_graph_mask = replicate n false
   let graph_visited = replicate n false
@@ -27,36 +27,36 @@ fun main(nodes_start_index: [n]i32,
   loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
         (cost, updating_graph_mask, graph_mask, graph_visited, true)) =
     while continue do
-      let (cost', graph_mask', updating_graph_mask') =
-        step(cost,
-             nodes_start_index,
-             nodes_n_edges,
-             edges_dest,
-             graph_visited,
-             graph_mask,
-             updating_graph_mask)
-      let (updating_indices, n_indices) = get_updating_indices(updating_graph_mask')
+  let (cost', graph_mask', updating_graph_mask') =
+    step(cost,
+         nodes_start_index,
+         nodes_n_edges,
+         edges_dest,
+         graph_visited,
+         graph_mask,
+         updating_graph_mask)
+  let (updating_indices, n_indices) = get_updating_indices(updating_graph_mask')
 
-      let graph_mask'' =
-        write updating_indices (replicate n_indices true) graph_mask'
+  let graph_mask'' =
+    write updating_indices (replicate n_indices true) graph_mask'
 
-      let graph_visited' =
-        write updating_indices (replicate n_indices true) graph_visited
+  let graph_visited' =
+    write updating_indices (replicate n_indices true) graph_visited
 
-      let updating_graph_mask'' =
-        write updating_indices (replicate n_indices false) updating_graph_mask'
+  let updating_graph_mask'' =
+    write updating_indices (replicate n_indices false) updating_graph_mask'
 
-      let continue' = n_indices > 0
-      in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
+  let continue' = n_indices > 0
+  in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
   in cost
 
 fun step(cost: *[n]i32,
-       nodes_start_index: [n]i32,
-       nodes_n_edges: [n]i32,
-       edges_dest: [e]i32,
-       graph_visited: [n]bool,
-       graph_mask: *[n]bool,
-       updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
+         nodes_start_index: [n]i32,
+         nodes_n_edges: [n]i32,
+         edges_dest: [e]i32,
+         graph_visited: [n]bool,
+         graph_mask: *[n]bool,
+         updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let active_indices =
     filter (\i -> graph_mask[i]) (iota n)
   let n_indices = (shape active_indices)[0]
@@ -82,7 +82,7 @@ fun step(cost: *[n]i32,
 
   let node_ids = map (\(i: i32): i32  -> unsafe edges_dest[i]) is2
   let write_indices = map (\(id: i32): i32  ->
-                            if unsafe graph_visited[id] then -1 else id) (
+                           if unsafe graph_visited[id] then -1 else id) (
                           node_ids)
 
   let costs_new0 = replicate full_length 0
