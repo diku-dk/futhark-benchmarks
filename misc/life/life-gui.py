@@ -15,8 +15,8 @@ def get_ruleset(l, s):
             getattr(l, s + '_render'),
             getattr(l, s + '_uninit'))
 
-def next_ruleset(l, s):
-    ruleset = rulesets[(rulesets.index(s) + 1) % len(rulesets)]
+def next_ruleset(l, s, d):
+    ruleset = rulesets[(rulesets.index(s) + d) % len(rulesets)]
     return ruleset, get_ruleset(l, ruleset)
 
 parser = argparse.ArgumentParser(description='The Game of Life!')
@@ -53,6 +53,12 @@ def render():
     pygame.surfarray.blit_array(screen, frame.get())
     pygame.display.flip()
 
+def switch_rules(d):
+    global ruleset, life_state, life_init, life_steps, life_render, life_uninit
+    bools = life_uninit(life_state)
+    ruleset, (life_init, life_steps, life_render, life_uninit) = next_ruleset(life, ruleset, d)
+    life_state = life_init(bools)
+
 while True:
     life_state = life_steps(steps, life_state)
     render()
@@ -60,7 +66,7 @@ while True:
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                bools = life_uninit(life_state)
-                ruleset, (life_init, life_steps, life_render, life_uninit) = next_ruleset(life, ruleset)
-                life_state = life_init(bools)
+            if event.key == pygame.K_RIGHT:
+                switch_rules(1)
+            if event.key == pygame.K_LEFT:
+                switch_rules(-1)

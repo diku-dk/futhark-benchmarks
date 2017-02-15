@@ -7,4 +7,4 @@ OpenCL setup.
 
 Several rule sets are supported.  Some of them have distinct
 behaviour, while others are only different in how they are visualised.
-Press `Space` to cycle between them.
+Press the left and right arrow keys to move between them.
