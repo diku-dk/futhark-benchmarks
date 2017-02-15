@@ -7,5 +7,5 @@ life.py: $(shell echo *.fut)
 clean:
 	rm -f life.py *.pyc
 
-run: life.py quadlife.py quadlife_alt.py
+run: life.py
 	@python life-gui.py
