@@ -1,28 +1,32 @@
 #!/usr/bin/env python
 
 import life
-import quadlife
-import quadlife_alt
 import numpy
 import pygame
 import argparse
 import pyopencl as cl
 import sys
 
-rulesets = {
-    'life' : life.life,
-    'quadlife' : quadlife.quadlife,
-    'quadlife_alt' : quadlife_alt.quadlife_alt,
-}
+rulesets = [ 'conway', 'conway_fading', 'quad', 'quad2' ]
+
+def get_ruleset(l, s):
+    return (getattr(l, s + '_init'),
+            getattr(l, s + '_steps'),
+            getattr(l, s + '_render'),
+            getattr(l, s + '_uninit'))
+
+def next_ruleset(l, s):
+    ruleset = rulesets[(rulesets.index(s) + 1) % len(rulesets)]
+    return ruleset, get_ruleset(l, ruleset)
 
 parser = argparse.ArgumentParser(description='The Game of Life!')
-parser.add_argument('--variant', metavar='RULES', type=str, choices=rulesets.keys(), default='life',
+parser.add_argument('--variant', metavar='RULES', type=str, choices=rulesets, default='conway',
                     help='The variant of the game to run')
 parser.add_argument('--width', metavar='INT', type=int, default=800,
                     help='Width of the world')
 parser.add_argument('--height', metavar='INT', type=int, default=600,
                     help='Height of the world')
-parser.add_argument('--steps', metavar='INT', type=int, default=3,
+parser.add_argument('--steps', metavar='INT', type=int, default=1,
                     help='Number of simulation steps to perform per frame')
 
 args = parser.parse_args()
@@ -31,13 +35,18 @@ steps=args.steps
 size=(args.width,args.height)
 
 
-l = rulesets[args.variant]()
 screen = pygame.display.set_mode(size)
 initworld = numpy.random.choice([True, False], size=size)
-world, history = l.init(initworld)
+
+life = life.life()
+
+ruleset = args.variant
+life_init, life_steps, life_render, life_uninit = get_ruleset(life, ruleset)
+
+life_state = life_init(initworld)
 
 def render():
-    frame = l.render_frame(history)
+    frame = life_render(life_state)
     # We get back a PyOpenCL array.  It is mostly compatible with
     # Numpy, but Pygame really wants a proper Numpy array, so we use
     # the get() method to obtain that.
@@ -45,8 +54,13 @@ def render():
     pygame.display.flip()
 
 while True:
-    world, history = l.steps(world, history, steps)
+    life_state = life_steps(steps, life_state)
     render()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                bools = life_uninit(life_state)
+                ruleset, (life_init, life_steps, life_render, life_uninit) = next_ruleset(life, ruleset)
+                life_state = life_init(bools)
