@@ -36,7 +36,7 @@ fun step ((c,col,h): cell) (neighbours: i32) =
       if died then R.dying_colour c else col,
       if died then 0                else h + 1)
 
-fun init (b: bool) = (R.init b, argb.black, 0)
+fun init (b: bool) = (R.init b, argb.black, 10000)
 
 fun uninit ((c,_,_): cell) = R.uninit c
 
