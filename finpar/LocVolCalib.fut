@@ -3,10 +3,10 @@
 -- compiled input @ LocVolCalib-data/small.in
 -- output @ LocVolCalib-data/small.out
 --
--- input @ LocVolCalib-data/medium.in
+-- compiled input @ LocVolCalib-data/medium.in
 -- output @ LocVolCalib-data/medium.out
 --
--- input @ LocVolCalib-data/large.in
+-- compiled input @ LocVolCalib-data/large.in
 -- output @ LocVolCalib-data/large.out
 
 import "futlib/numeric"
@@ -64,7 +64,7 @@ fun updateParams(myX:  [numX]f32, myY: [numY]f32, myTimeline: []f32,
                    ) myY
   in  ( myMuX, myVarX, myMuY, myVarY )
 
-fun tridagSeq(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[]f32 =
+fun tridagSeq(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
   loop ((y, b)) =
     for 1 <= i < n do
       let beta = a[i] / b[i-1]
@@ -78,7 +78,7 @@ fun tridagSeq(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[]f32 =
         in  y
       in  y
 
-fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
+fun tridagPar(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
   unsafe
   ----------------------------------------------------
   -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --
@@ -151,9 +151,10 @@ fun tridagPar(a:  [n]f32, b: *[]f32, c: []f32, y: *[]f32 ): *[]f32 =
 -- myMu,myVar,result : [n][m]f32
 -- RETURN            : [n][m]f32
 ------------------------------------------/
-fun explicitMethod(myD:  [m][3]f32,  myDD: [m][3]f32,
-                   myMu: [n][m]f32, myVar: [n][m]f32,
-                   result: [n][m]f32 ): *[n][m]f32 =
+fun explicitMethod(myD:    [m][3]f32,  myDD: [m][3]f32,
+                   myMu:   [n][m]f32,  myVar: [n][m]f32,
+                   result: [n][m]f32)
+                  : *[n][m]f32 =
   -- 0 <= i < m AND 0 <= j < n
   map (\mu_row var_row result_row: [m]f32  ->
          map (\dx dxx mu var j: f32 ->
@@ -174,10 +175,11 @@ fun explicitMethod(myD:  [m][3]f32,  myDD: [m][3]f32,
 -- RETURN       : [n][m]f32
 ------------------------------------------/
 -- for implicitY: should be called with transpose(u) instead of u
-fun implicitMethod(myD:  [][]f32,  myDD: [][]f32,
-                   myMu: [][]f32, myVar: [][]f32,
-                   u: *[][]f32,    dtInv: f32  ): *[][]f32 =
-  map (\mu_row var_row (u_row: *[]f32): *[]f32  ->
+fun implicitMethod(myD:  [m][3]f32,  myDD:  [m][3]f32,
+                   myMu: [n][m]f32,  myVar: [n][m]f32,
+                   u:   *[n][m]f32,  dtInv: f32)
+                  : *[n][m]f32 =
+  map (\mu_row var_row (u_row: *[]f32): *[m]f32  ->
          let abc = map (\mu var d dd: (f32,f32,f32) ->
                         ( 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
                         , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
@@ -191,8 +193,8 @@ fun implicitMethod(myD:  [][]f32,  myDD: [][]f32,
 
 fun rollback
   (_myX: [numX]f32, _myY: [numY]f32, myTimeline: []f32, myResult: *[][]f32,
-   myMuX: [][]f32, myDx: [][]f32, myDxx: [][]f32, myVarX: [][]f32,
-   myMuY: [][]f32, myDy: [][]f32, myDyy: [][]f32, myVarY: [][]f32, g: i32)
+   myMuX: [][]f32, myDx: [numX][]f32, myDxx: [][]f32, myVarX: [][]f32,
+   myMuY: [][]f32, myDy: [numY][]f32, myDyy: [][]f32, myVarY: [][]f32, g: i32)
   : *[numY][numX]f32 =
 
   let dtInv = 1.0/(myTimeline[g+1]-myTimeline[g])
