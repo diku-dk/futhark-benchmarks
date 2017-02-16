@@ -209,7 +209,7 @@ fun rollback
   -- explicitY
   let myResultTR = transpose(myResult)
   let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR )
-  let u = map (\us vs: *[]f32 -> copy(map (+) us vs)) u (transpose v)
+  let u = map (\us vs: *[]f32 -> map (+) us vs) u (transpose v)
   -- implicitX
   let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv )
   -- implicitY
