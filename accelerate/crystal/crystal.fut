@@ -50,7 +50,7 @@
 --   1.0f32
 -- }
 
-import "futlib/numeric"
+import "futlib/math"
 
 default (f32)
 

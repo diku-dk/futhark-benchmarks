@@ -33,7 +33,7 @@
 -- input @ data/large.in
 -- output @ data/large.out
 
-import "futlib/numeric"
+import "futlib/math"
 
 fun pi(): f32 = 3.1415926535897932384626433832795029f32
 fun pi2(): f32 = pi() * 2.0f32

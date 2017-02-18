@@ -9,7 +9,7 @@
 -- compiled input @ LocVolCalib-data/large.in
 -- output @ LocVolCalib-data/large.out
 
-import "futlib/numeric"
+import "futlib/math"
 
 default(f32)
 

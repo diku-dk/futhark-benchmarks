@@ -20,7 +20,7 @@
 -- compiled input @ data/image.in
 -- output @ data/image.out
 
-import "futlib/numeric"
+import "futlib/math"
 
 default(f32)
 
