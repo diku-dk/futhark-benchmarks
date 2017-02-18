@@ -10,7 +10,7 @@
 -- compiled input @ InterestCalib-data/large.in
 -- output @ InterestCalib-data/large.out
 
-import "futlib/numeric"
+import "futlib/math"
 
 default(f32)
 
