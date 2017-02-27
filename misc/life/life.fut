@@ -32,6 +32,15 @@ entry quad_render (world: [n][m]quad.cell) =
 entry quad_uninit (world: [n][m]quad.cell) =
  quad.uninit world
 
+entry quad_fading_init (bs: [n][m]bool) =
+ quad_fading.init bs
+entry quad_fading_steps (k: i32) (world: [n][m]quad_fading.cell) =
+ loop (world) = for _i < k do quad_fading.step world in world
+entry quad_fading_render (world: [n][m]quad_fading.cell) =
+ quad_fading.render world
+entry quad_fading_uninit (world: [n][m]quad_fading.cell) =
+ quad_fading.uninit world
+
 entry quad2_init (bs: [n][m]bool) =
  quad2.init bs
 entry quad2_steps (k: i32) (world: [n][m]quad2.cell) =

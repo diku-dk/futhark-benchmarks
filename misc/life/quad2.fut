@@ -3,6 +3,7 @@
 -- This is a variant where only orthogonal neighbours are considered.
 
 import "genlife"
+import "fading"
 import "futlib/colour"
 
 module quad2_rules: vis_rules = {
