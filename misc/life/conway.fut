@@ -29,10 +29,4 @@ module conway_rules: vis_rules with cell = bool = {
 
 module conway = gen_life_vis conway_rules
 
-module conway_fading = fading_life conway_rules {
-  type cell = conway_rules.cell
-
-  val dying_speed = 0.1f32
-  fun dying_colour (_: cell) = argb.gray 0.6f32
-  fun dead (b: bool) = !b
-}
+module conway_fading = slow_fader conway_rules

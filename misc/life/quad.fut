@@ -1,6 +1,7 @@
 -- Torben Mogensen's four-state Game of Life.
 
 import "genlife"
+import "fading"
 import "futlib/colour"
 
 module quad_rules: vis_rules = {
@@ -20,7 +21,7 @@ module quad_rules: vis_rules = {
     in unsafe t[neighbours]
 
   fun init (b: bool) =
-    if b then 1i8 else 0i8
+    if b then 0i8 else 1i8
 
   fun uninit (c: cell) =
     c != 1i8
@@ -33,4 +34,5 @@ module quad_rules: vis_rules = {
     in unsafe colours[i32 c]
 }
 
-module quad = gen_life_vis(quad_rules)
+module quad = gen_life_vis quad_rules
+module quad_fading = slow_fader quad_rules
