@@ -5,10 +5,10 @@
 import "genlife"
 import "futlib/colour"
 
-module quad2_rules: rules_and_vis = {
+module quad2_rules: vis_rules = {
   type cell = i8
 
-  fun cell_value (c: cell) = i32 c
+  fun value (c: cell) = i32 c
 
   val weights = [[0,1,0],
                  [1,1,1],
