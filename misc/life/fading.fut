@@ -9,8 +9,8 @@ import "genlife"
 
 import "futlib/colour"
 
-module type rules_fading_vis = {
-  include rules_and_vis
+module type fading = {
+  type cell
 
   val dying_speed: f32
 
@@ -20,20 +20,24 @@ module type rules_fading_vis = {
   val dead: cell -> bool
 }
 
-module gen_life_fading_vis(R: rules_fading_vis): game_of_life_vis = {
-  open gen_life_vis({
+module fading_life =
+  \(R: vis_rules) ->
+  \(F: fading with cell = R.cell)
+  : vis_game_of_life ->
+
+  gen_life_vis {
 -- The cell, and the amount of time it has been dead.
 type cell = (R.cell, argb.colour, i32)
 
-fun cell_value ((c,_,_): cell) = R.cell_value c
+fun value ((c,_,_): cell) = R.value c
 
 val weights = R.weights
 
 fun step ((c,col,h): cell) (neighbours: i32) =
   let c' = R.step c neighbours
-  let died = ! (R.dead c) && R.dead c'
+  let died = ! (F.dead c) && F.dead c'
   in (c',
-      if died then R.dying_colour c else col,
+      if died then F.dying_colour c else col,
       if died then 0                else h + 1)
 
 fun init (b: bool) = (R.init b, argb.black, 10000)
@@ -42,8 +46,7 @@ fun uninit ((c,_,_): cell) = R.uninit c
 
 fun colour ((c,col,h): cell) =
   let normal = R.colour c in
-  if R.dead c
-  then argb.mix 1f32 col (f32 h * R.dying_speed) normal
+  if F.dead c
+  then argb.mix 1f32 col (f32 h * F.dying_speed) normal
   else normal
-  })
 }
