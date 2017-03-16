@@ -36,6 +36,12 @@ fun vec_mult_factor(factor: f32, (x, y, z): vec3): vec3 =
 fun dot((x1, y1, z1): vec3, (x2, y2, z2): vec3): f32 =
   x1 * x2 + y1 * y2 + z1 * z2
 
+fun matmult(x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
+  map (\(xr) ->
+        map (\(yc) -> reduce (+) 0f32 (map (*) xr yc))
+            (transpose(y)))
+      x
+
 fun accel (epsilon: f32) ((pi, _, _ , _):body) ((pj, mj, _ , _): body)
           : velocity =
   let r = vec_subtract(pj, pi)
@@ -126,14 +132,6 @@ entry inverseRotatePoint (x: f32, y: f32, z: f32, x_rotation: f32, y_rotation: f
 fun rotatePoints(ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
   rotatePointsByMatrix (rotationMatrix x_rotation y_rotation) ps
 
-entry render(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-             xps: [n]f32, yps: [n]f32, zps: [n]f32, ms: [n]f32,
-             x_rotation: f32, y_rotation: f32,
-             max_mass: f32): [w][h]i32 =
-  let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
-                       (rotatePoints (zip xps yps zps) x_rotation y_rotation) ms)
-  in reshape (w,h) (write is vs (replicate (w*h) 0))
-
 fun renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_mass: f32)
                ((x,y,_z):position) (m: f32): (i32, i32) =
   -- Draw nothing if the point is outside the viewport.
@@ -153,8 +151,10 @@ fun renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_
                  0xFF
     in (x''*h + y'', colour)
 
-fun matmult(x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
-  map (\(xr) ->
-        map (\(yc) -> reduce (+) 0f32 (map (*) xr yc))
-            (transpose(y)))
-      x
+entry render(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
+             xps: [n]f32, yps: [n]f32, zps: [n]f32, ms: [n]f32,
+             x_rotation: f32, y_rotation: f32,
+             max_mass: f32): [w][h]i32 =
+  let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
+                       (rotatePoints (zip xps yps zps) x_rotation y_rotation) ms)
+  in reshape (w,h) (write is vs (replicate (w*h) 0))

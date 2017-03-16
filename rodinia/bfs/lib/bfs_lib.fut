@@ -19,10 +19,6 @@ fun i32_plus_scan_segm(array: [k]i32, mask: [k]bool): [k]i32 =
                zip array mask))
   in arrayScanned
 
--- Get the updating indices.
-fun get_updating_indices(updating_graph_mask: []bool): (*[]i32, i32) =
-  get_updating_indices_alt0(updating_graph_mask)
-  
 -- Get the updating indices through a filter.
 fun get_updating_indices_alt0(updating_graph_mask: [n]bool): (*[]i32, i32) =
   let updating_indices = filter (\i -> updating_graph_mask[i]) (iota(n))
@@ -42,3 +38,6 @@ fun get_updating_indices_alt1(updating_graph_mask: [n]bool): (*[n]i32, i32) =
   let n_indices = reduce (+) 0 (zero_ones)
   in (updating_indices, n_indices)
 
+-- Get the updating indices.
+fun get_updating_indices(updating_graph_mask: []bool): (*[]i32, i32) =
+  get_updating_indices_alt0(updating_graph_mask)

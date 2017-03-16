@@ -50,11 +50,6 @@ fun mandelbrot(screenX: i32, screenY: i32, depth: i32, view: (f32,f32,f32,f32)):
             ) (iota(screenY))) (
         iota(screenX))
 
-fun main(screenX: i32, screenY: i32, depth: i32, xmin: f32, ymin: f32, xmax: f32, ymax: f32): [screenX][screenY]i32 =
-  let escapes = mandelbrot(screenX, screenY, depth, (xmin, ymin, xmax, ymax))
-  in map (\(row: []i32): [screenY]i32  ->
-            map (escapeToColour depth) row) escapes
-
 -- Returns RGB (no alpha channel).
 fun escapeToColour(depth: i32) (divergence: i32): i32 =
   if depth == divergence
@@ -64,3 +59,8 @@ fun escapeToColour(depth: i32) (divergence: i32): i32 =
     let g = 5 * divergence
     let b = 7 * divergence
     in (r<<16 | g<<8 | b)
+
+fun main(screenX: i32, screenY: i32, depth: i32, xmin: f32, ymin: f32, xmax: f32, ymax: f32): [screenX][screenY]i32 =
+  let escapes = mandelbrot(screenX, screenY, depth, (xmin, ymin, xmax, ymax))
+  in map (\(row: []i32): [screenY]i32  ->
+            map (escapeToColour depth) row) escapes

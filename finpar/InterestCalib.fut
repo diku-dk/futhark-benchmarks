@@ -15,16 +15,311 @@ import "futlib/math"
 default(f32)
 
 --------------------------------------------------/
---/ ENTRY POINT
+--/ Constants and Utility Functions
 --------------------------------------------------/
-fun main(pop:  i32, mcmc_conv: i32, l: i32
-        , swaptions: [][]f32,     ll: i32
-        , hermCoefs: []f32
-        , hermWeights: []f32,   lll: i32
-        , sobDirVct: []i32
-        ): (f32,f32,f32,f32,f32,f32,[][]f32) =
-  let hermData  = zip hermCoefs hermWeights in
-  interestCalibKernel(pop, mcmc_conv, swaptions, hermData, sobDirVct)
+fun eps0   (): f32 = 1.0e-3
+fun eps    (): f32 = 1.0e-5
+fun pi     (): f32 = 3.1415926535897932384626433832795
+
+fun is_cauchy_llhood  (): bool = true
+fun llhood_cauchy_offs(): f32 = 5.0
+fun llhood_normal_offs(): f32 = 1.0
+
+fun r       (): f32 = 0.03
+fun infinity(): f32 = 1.0e49
+fun epsilon (): f32 = eps()
+
+fun itMax   (): i32 = 10000
+
+
+fun min(a: f32, b: f32): f32 = if(a < b) then a else b
+fun max(a: f32, b: f32): f32 = if(a < b) then b else a
+
+fun minI(a: i32, b: i32): i32 = if(a < b) then a else b
+fun maxI(a: i32, b: i32): i32 = if(a < b) then b else a
+
+fun fabs(a: f32): f32 = if(a < 0.0) then -a else a
+
+fun equal(x1: f32, x2: f32): bool =
+    fabs(x1-x2) <= 1.0e-8
+
+------------------------------------------------------
+----   Date: Gregorian calendar
+------------------------------------------------------
+
+fun mod(x: i32, y: i32): i32 = x - (x/y)*y
+
+fun hours_in_dayI   (): i32 = 24
+fun minutes_in_dayI (): i32 = hours_in_dayI() * 60
+fun minutes_to_noonI(): i32 = (hours_in_dayI() / 2) * 60
+
+fun minutes_in_day  (): f32 = 24.0*60.0
+
+
+--                           year*month*day*hour*mins
+fun date_of_gregorian(date:  (i32,i32,i32,i32,i32)): i32 =
+    let (year, month, day, hour, mins) = date
+    let ym =
+        if(month == 1 || month == 2)
+        then    ( 1461 * ( year + 4800 - 1 ) ) / 4 +
+                  ( 367 * ( month + 10 ) ) / 12 -
+                  ( 3 * ( ( year + 4900 - 1 ) / 100 ) ) / 4
+        else    ( 1461 * ( year + 4800 ) ) / 4 +
+                  ( 367 * ( month - 2 ) ) / 12 -
+                  ( 3 * ( ( year + 4900 ) / 100 ) ) / 4
+    let tmp = ym + day - 32075 - 2444238
+
+            in tmp * minutes_in_dayI() + hour * 60 + mins
+
+
+fun gregorian_of_date (minutes_since_epoch:  i32 ): (i32,i32,i32,i32,i32) =
+    let jul = minutes_since_epoch / minutes_in_dayI()
+    let l = jul + 68569 + 2444238
+    let n = ( 4 * l ) / 146097
+    let l = l - ( 146097 * n + 3 ) / 4
+    let i = ( 4000 * ( l + 1 ) ) / 1461001
+    let l = l - ( 1461 * i ) / 4 + 31
+    let j = ( 80 * l ) / 2447
+    let d = l - ( 2447 * j ) / 80
+    let l = j / 11
+    let m = j + 2 - ( 12 * l )
+    let y = 100 * ( n - 49 ) + i + l
+
+    --let daytime = minutes_since_epoch mod minutes_in_day in
+    let daytime = mod( minutes_since_epoch, minutes_in_dayI() ) in
+
+    if ( daytime == minutes_to_noonI() )
+
+    --then [year = y; month = m; day = d; hour = 12; minute = 0]
+    then (y, m, d, 12, 0)
+
+    --else [year = y; month = m; day = d; hour = daytime / 60; minute = daytime mod 60]
+    else (y, m, d, daytime / 60, mod(daytime, 60) )
+
+
+fun check_date(year: i32, month: i32, day: i32): bool =
+    let tmp1 = ( 1 <= day && 1 <= month && month <= 12 && 1980 <= year && year <= 2299 )
+    let tmp2 = ( day <= 28 )
+
+    let tmp3 = if      ( month == 2 )
+               then let tmpmod = mod(year, 100) in
+                        ( day == 29 && mod(year, 4) == 0 && ( year == 2000 || (! (tmpmod == 0)) ) )
+               else if ( month == 4 || month == 6 || month == 9 || month == 11 )
+                    then ( day <= 30 )
+                    else ( day <= 31 )
+
+        in tmp1 && (tmp2 || tmp3)
+
+
+fun days_between(t1: f32, t2: f32): f32 =
+  (t1 - t2) / minutes_in_day()
+
+fun date_act_365(t1: f32, t2: f32): f32 = days_between(t1, t2) / 365.0
+
+fun leap(y: i32): bool = ( mod(y,4) == 0  && ( (!(mod(y,100)==0)) || (mod(y,400)==0) ) )
+
+fun end_of_month(year: i32, month: i32): i32 =
+    if      ( month == 2 && leap(year) )                           then 29
+    else if ( month == 2)                                          then 28
+    else if ( month == 4 || month == 6 || month == 9 || month == 11 ) then 30
+    else                                                               31
+
+
+fun add_months (date:  f32, rnbmonths: f32 ): f32 =
+    let nbmonths          = i32(rnbmonths)
+    let (y, m, d, h, min) = gregorian_of_date( i32(date) )
+    let m = m + nbmonths
+    let (y, m) = (y + (m-1) / 12, mod(m-1, 12) + 1)
+    let (y, m) = if (m <= 0) then (y - 1, m + 12) else (y, m)
+    let resmin = date_of_gregorian ( (y, m, minI( d, end_of_month(y, m) ), 12, 0) ) in
+
+            f32(resmin)
+
+
+fun add_years(date: f32, nbyears: f32): f32 =
+        add_months(date, nbyears * 12.0)
+
+
+--assert max_date==168307199, a.k.a. "2299-12-31T23:59:59"
+fun max_date (): f32 = 168307199.0
+
+--assert min_date==3600, a.k.a., "1980-01-01T12:00:00"
+fun min_date (): f32 = 3600.0
+
+-- Date.of_string("2012-01-01")
+fun today    (): f32 = f32( date_of_gregorian( (2012, 1, 1, 12, 0) ) )
+
+----------------------------------------------------------------
+----/ G2PP Module
+----------------------------------------------------------------
+
+fun zc(t: f32): f32 = f32.exp(-r() * date_act_365(t, today()))
+
+
+----------------------------------------------------------------
+----/ MATH MODULE
+----------------------------------------------------------------
+
+---------------------------------------------------------------------------
+-- polynomial expansion of the erf() function, with error<=1.5e-7
+--   formula 7.1.26 (page 300), Handbook of Mathematical Functions, Abramowitz and Stegun
+--   http:--people.math.sfu.ca/~cbm/aands/frameindex.htm
+
+fun erf(x: f32): f32 =
+    let p = 0.3275911
+    let (a1,a2,a3,a4,a5) =
+        (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429)
+    let t  = 1.0/(1.0+p*x)
+    let t2 = t  * t
+    let t3 = t  * t2
+    let t4 = t2 * t2
+    let t5 = t2 * t3        in
+         1.0 - (a1*t + a2*t2 + a3*t3 + a4*t4 + a5*t5) * f32.exp(-(x*x))
+
+---------------------------------------------------------------------------
+-- iteration_max = 10000 (hardcoded)
+
+fun erff_poly_only(x:  f32 ): f32 =
+    let p = 0.3275911
+    let (a1,a2,a3,a4,a5) =
+        (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429)
+
+    let t  = 1.0/(1.0+p*x)
+    let t2 = t  * t
+    let t3 = t  * t2
+    let t4 = t2 * t2
+    let t5 = t2 * t3       in
+    (a1*t + a2*t2 + a3*t3 + a4*t4 + a5*t5)
+
+---------------------------------------------------------------------------
+-- Cumulative Distribution Function for a standard normal distribution
+
+fun uGaussian_P(x: f32): f32 =
+    let u = x / f32.sqrt(2.0)
+    let e = if (u < 0.0) then -erf(-u)
+                         else  erf( u)
+    in 0.5 * (1.0 + e)
+
+fun uGaussian_P_withExpFactor(x:  f32, exp_factor: f32 ): f32 =
+    let u   = fabs( x / f32.sqrt(2.0) )
+    let e   = erff_poly_only(u)
+    let res = 0.5 * e * f32.exp(exp_factor-u*u) in
+    if ( 0.0 <= x )
+    then f32.exp(exp_factor) - res
+    else res
+
+------------------------------------------------------------------------
+-- if fid = 33 then: to_solve(f32 x) = (x+3.0)*(x-1.0)*(x-1.0)
+-- otherwise follows the f32 implementation
+------------------------------------------------------------------------
+
+fun to_solve(fid: i32, scalesbbi: [](f32,f32), yhat: f32): f32 =
+    if(fid == 33) then (yhat+3.0)*(yhat-1.0)*(yhat-1.0)
+    else
+        let tmps = map (\(scalesbbi:  (f32,f32) ): f32  ->
+                            let (scales, bbi) = scalesbbi in
+                                scales * f32.exp(-bbi*yhat)
+                        ) scalesbbi
+            in reduce (+) (0.0) tmps - 1.0
+
+--------------------------------------------------------/
+---- the function-parameter to rootFinding_Brent
+--------------------------------------------------------/
+
+
+fun rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f32, iter_max: i32): (f32,i32,f32) =
+    let tol      = if(tol     <= 0.0) then 1.0e-9 else tol
+    let iter_max = if(iter_max<= 0  ) then 10000  else iter_max
+    let (a,b)    = (lb,ub)
+
+    -- `to_solve' is curried so it will need extra arguments!!!
+    -- said fid refers to the version of `to_solve', e.g., testing or f32 implem.
+    -- Was previous (eval(a),eval(b)), now:
+    let (fa,fb)  = ( to_solve(fid, scalesbbi, a), to_solve(fid, scalesbbi, b) ) in
+
+    if(0.0 <= fa*fb)
+    then
+        if(0.0 <= a) then ( 0.0, 0,  infinity() )  -- root not bracketed above
+                     else ( 0.0, 0, -infinity() )  -- root not bracketed below
+    else
+    let (fa, fb, a, b) = if( fabs(fa) < fabs(fb) )
+                         then (fb, fa, b, a)
+                         else (fa, fb, a, b)
+    let (c,fc)    = (a, fa)
+    let mflag     = true
+    let it        = 0
+    let d         = 0.0     in
+
+    loop ((a,b,c,d,fa,fb,fc,mflag,it)) =
+        for i < iter_max do
+
+            if( fb==0.0 || fabs(b-a)<tol )
+            then (a,b,c,d,fa,fb,fc,mflag,it)
+            else
+
+                -- the rest of the code implements the else branch!
+
+                let s = if( fa==fc || fb == fc )
+                        then    b-fb*(b-a)/(fb-fa)
+
+                        else let s1 = (a*fb*fc)/( (fa-fb)*(fa-fc) )
+                             let s2 = (b*fa*fc)/( (fb-fa)*(fb-fc) )
+                             let s3 = (c*fa*fb)/( (fc-fa)*(fc-fb) ) in
+                                s1 + s2 + s3
+
+
+                let (mflag, s) = if ( ( !((3.0*a+b)/4.0 <= s && s  <= b)    ) ||
+                                      (     mflag && fabs(b-c)/2.0 <= fabs(s-b) ) ||
+                                      ( !mflag && fabs(c-d)/2.0    <= fabs(s-b) ) ||
+                                      (     mflag && fabs(b-c)     <= fabs(tol) ) ||
+                                      ( !mflag && fabs(c-d)        <= fabs(tol) )
+                                    )
+                                 then (true,  (a+b)/2.0)
+                                 else (false, s        )
+
+                -- Was previous `eval(s)', Now:
+                let fs = to_solve(fid, scalesbbi, s)
+
+                -- d is assigned for the first time here:
+                -- it's not used above because mflag is set
+                let d = c let (c,fc) = (b, fb)
+                let (a,b,fa,fb) = if( fa*fs < 0.0 )
+                                  then (a,s,fa,fs)
+                                  else (s,b,fs,fb)
+
+                let (a,b,fa,fb) = if( fabs(fa) < fabs(fb) )
+                                  then (b,a,fb,fa) -- swap args
+                                  else (a,b,fa,fb)
+
+                -- reporting non-convergence!
+                let dummy =
+                    if(i == iter_max-1)
+                    then -- # ERROR: Brent method not converged
+                         0
+                    else 0
+
+                in (a,b,c,d,fa,fb,fc,mflag,i)
+
+    -- Finally, the result of function rootFinding_Brent is:
+    in ( b, it, fb )
+
+--------------------------------------------------/
+--/ Sobol Random Number Generation
+--------------------------------------------------/
+
+
+fun sobolInd(dirVct:  [m]i32) (n: i32): f32 =
+    -- placed norm_fact here to check that hoisting does its job!
+    let norm_fact = 1.0 / ( f32(1 << m) + 1.0 )
+    let n_gray = (n >> 1) ^ n
+    let res = 0 in
+    loop (res) =
+      for i < m do
+        let t = 1 << i in
+        if (n_gray & t) == t
+        then res ^ dirVct[i]
+        else res
+    in  f32(res) * norm_fact
 
 ----------------------------------------------------
 --/ Prepares the output summary for each swaption
@@ -37,6 +332,415 @@ fun makeSummary(quote_prices: [](f32,f32)): [][]f32 =
          [10000.0*calib_price, 10000.0*black_price, 100.0*fabs(err_ratio)]
      ) (quote_prices
      )
+
+
+--------------------------------------------------/
+--/ Genome Implementation
+--------------------------------------------------/
+
+fun genomeBounds(): [](f32,f32,f32) =
+    [ (eps0(),     1.0-eps0(), 0.02)
+    , (eps0(),     1.0-eps0(), 0.02)
+    , (eps0()-1.0, 1.0-eps0(), 0.0 )
+    , (eps0(),     0.2,        0.01)
+    , (eps0(),     0.2,        0.04)
+    ]
+
+fun initGenome (rand_nums: []f32): []f32 =
+  map  (\(tup: (f32, (f32,f32,f32))): f32  ->
+                    let (r01, (g_min, g_max, g_ini)) = tup
+                    in  r01*(g_max - g_min) + g_min
+
+               ) (zip (rand_nums) (genomeBounds())
+               )
+
+fun selectMoveType(r01: f32): i32 =
+  if r01 <= 0.2   then 1 -- r01 in [0.0, 0.2] -> DIMS_ALL
+  else
+    if r01 <= 0.5 then 2 -- r01 in (0.2, 0.5] -> DIMS_ONE
+    else               3 -- r01 in (0.5, 1.0) -> DEMCMC
+--( MV_EL_TYPE(0.2,DIMS_ALL), MV_EL_TYPE(0.5,DIMS_ONE), MV_EL_TYPE(1.0,DEMCMC) );
+
+fun moves_unif_ampl_ratio(): f32 = 0.005
+
+fun mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32,f32)): (f32,f32) =
+  let (g_min, g_max, g_ini) = gmm
+  let amplitude     = fabs( (g_max - g_min) * ampl_ratio )
+  let semiamplitude = amplitude / 2.0
+
+  let tmp_min_max = min( g_max, gene + semiamplitude )
+  let tmp_max_min = max( g_min, gene - semiamplitude )
+  let forward_range = tmp_min_max - tmp_max_min
+
+  let tmp_min_max = min( g_max, prop + semiamplitude )
+  let tmp_max_min = max( g_min, prop - semiamplitude )
+  let backward_range = tmp_min_max - tmp_max_min
+
+  let bf_fact = if 0.0 < semiamplitude
+                then (backward_range / forward_range)
+                else 1.0
+  in (gene + amplitude * r01 - semiamplitude, bf_fact)
+
+fun constrainDim(gene:  f32, tup: (f32,f32,f32) ): f32 =
+  let (g_min, g_max, g_ini) = tup
+  in  max( g_min, min(g_max, gene) )
+
+fun perturbation(gamma1:  f32, ampl_rat : f32)
+                (gene: f32, gene_k: f32, gene_l: f32,   r01: f32, mm_diff: f32 ): f32 =
+  let amplitude     = fabs( mm_diff * ampl_rat )
+  let semiamplitude = amplitude / 2.0
+  let perturb       = ( amplitude * r01 - semiamplitude )
+  in  gene + perturb + gamma1 * ( gene_k - gene_l )
+
+fun mutate_dims_all(tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
+  let (sob_row, orig, muta) = tup
+  let gene_bds = genomeBounds()
+  let amplitude = moves_unif_ampl_ratio()
+  let gene_rats = map mutateHelper (
+                       zip (replicate n amplitude) (sob_row) orig muta (gene_bds) )
+  let (tmp_genome, fb_rats) = unzip(gene_rats)
+  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
+  let fb_rat    = reduce (*) (1.0) (fb_rats)
+  in  (copy(new_genome), fb_rat)
+
+fun mutate_dims_one(dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
+  let (sob_row, orig, muta) = tup
+  let gene_bds = genomeBounds()
+  let amplitudes= map (\(i: i32): f32  ->
+                          if i == dim_j then moves_unif_ampl_ratio() else 0.0
+                     ) (iota(n) )
+
+  let gene_rats = map mutateHelper (zip amplitudes (sob_row) orig muta (gene_bds) )
+  let (tmp_genome, fb_rats) = unzip(gene_rats)
+  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
+  let fb_rat    = reduce (*) (1.0) (fb_rats)
+  in  (copy(new_genome), fb_rat)
+
+
+fun mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f32 =
+  let gene_bds = genomeBounds()
+  let gamma_avg = 2.38 / f32.sqrt(2.0*5.0)
+  let ampl_ratio= 0.1 * moves_unif_ampl_ratio()
+  let gamma1    = gamma_avg - 0.5 + r01
+  let mm_diffs  = map (\(tup: (f32,f32,f32)): f32  ->
+                           let (g_min, g_max, uu) = tup
+                           in  g_max - g_min
+                     ) (gene_bds )
+
+  let tmp_genome = map (perturbation(gamma1,ampl_ratio))
+                   (zip (g_i) (g_k) (g_l) (sob_row) (mm_diffs))
+
+  in  copy( map constrainDim (zip (tmp_genome) (gene_bds) ) )
+
+
+fun b_fun(z: f32, tau: f32): f32 = (1.0-f32.exp(-z*tau))/z
+
+fun t_fun(sigma: f32, x: f32, tau: f32): f32 =
+    let expxtau  = f32.exp(-x*tau)
+    let exp2xtau = expxtau*expxtau in
+        sigma*sigma/(x*x)*(tau+2.0/x*expxtau-1.0/(2.0*x)*exp2xtau-3.0/(2.0*x))
+
+------------------------------------------------------------------/
+-- the first parameter `genome' is the five-genes genome used in
+--     the genetic algorithms that models the interest rate
+-- the second parameter is the time
+-- the result is V in Brigo and Mercurio's book page 148.
+--     \var(\int_t^T [x(u)+y(u)]du)
+------------------------------------------------------------------/
+fun bigv(genome: (f32,f32,f32,f32,f32), tau: f32): (f32,f32,f32) =
+    let (g_a, g_b, g_rho, g_nu, g_sigma) = genome
+
+    -- sanity check; this check should be hoisted higher up
+    let g_sigma = if(g_sigma == 0.0) then 1.0e-10 else g_sigma
+
+    let ba = b_fun(g_a,        tau)
+    let bb = b_fun(g_b,        tau)
+    let t1 = t_fun(g_sigma,g_a,tau)
+    let t2 = t_fun(g_nu,   g_b,tau)
+
+    let t3 = 2.0 * g_rho * g_nu * g_sigma / (g_a * g_b)*
+             ( tau - ba - bb + b_fun(g_a+g_b, tau) )
+
+        in (t1+t2+t3, ba, bb)
+
+------------------------------------------------------------------/
+-- the first parameter `genome' is the five-genes genome used in
+--     the genetic algorithms that models the interest rate
+-- the other parameter are times: today, maturity, and the
+--      lower and upper bound of the considered time interval
+--
+-- the result is: x drift term in tmat-forward measure
+------------------------------------------------------------------/
+
+fun bigmx(genome:  (f32,f32,f32,f32,f32),
+                today: f32, tmat: f32, s: f32, t: f32
+              ): f32 =
+    let (a, b, rho, nu, sigma) = genome
+
+    let ts    = date_act_365(t,    s)
+    let tmatt = date_act_365(tmat, t)
+
+    let tmat0 = date_act_365(tmat, today)
+    let tmats = date_act_365(tmat, s)
+    let t0    = date_act_365(t,    today)
+    let s0    = date_act_365(s,    today)
+
+    let tmp1  = (sigma*sigma)/(a*a)+(sigma*rho*nu)/(a*b)
+    let tmp2  = 1.0 - f32.exp(-a * ts)
+    let tmp3  = sigma * sigma / (2.0 * a * a)
+    let tmp4  = rho * sigma * nu / (b * (a + b))
+    let tmp5  = f32.exp(-a * tmatt) - f32.exp(-a * (tmats + ts))
+    let tmp6  = f32.exp(-b * tmatt) - f32.exp(-b*tmat0 - a*t0 + (a+b)*s0)
+
+        in tmp1 * tmp2 - ( tmp3 * tmp5 ) - ( tmp4 * tmp6 )
+
+
+------------------------------------------------------------------/
+-- the first parameter `genome' is the five-genes genome used in
+--     the genetic algorithms that models the interest rate
+-- the other parameter are times: today, maturity, and the
+--      lower and upper bound of the considered time interval
+--
+-- the result is: y drift term in tmat-forward measure
+------------------------------------------------------------------/
+
+fun bigmy(genome:  (f32,f32,f32,f32,f32),
+                today: f32, tmat: f32, s: f32, t: f32
+              ): f32 =
+    let (a, b, rho, nu, sigma) = genome
+
+    let ts    = date_act_365(t,    s)
+    let tmatt = date_act_365(tmat, t)
+    let tmat0 = date_act_365(tmat, today)
+    let tmats = date_act_365(tmat, s)
+    let t0    = date_act_365(t,    today)
+    let s0    = date_act_365(s,    today)
+
+    let tmp1  = nu*nu/(b*b)+sigma*rho*nu/(a*b)
+    let tmp2  = 1.0 - f32.exp(-b * ts)
+    let tmp3  = nu * nu / (2.0 * b * b)
+    let tmp4  = sigma * rho * nu / (a * (a + b))
+    let tmp5  = f32.exp(-b * tmatt) - f32.exp(-b * (tmats + ts))
+    let tmp6  = f32.exp(-a * tmatt) - f32.exp(-a*tmat0 - b*t0 + (a+b)*s0)
+
+        in tmp1 * tmp2 - ( tmp3 * tmp5 ) - ( tmp4 * tmp6 )
+
+--------------------------
+-- Root finder
+--------------------------
+fun exactYhat(n_schedi:  i32,
+                    scals: (f32,f32,f32,f32,f32,f32,f32,f32),
+                    babaicis: [](f32,f32,f32,f32),
+                    x: f32
+                  ): f32 =
+    -- ugaussian_Pinv(k)=1.0e-4
+    let k= -3.71901648545568
+
+
+    let uplos = map (\(babaici: (f32,f32,f32,f32)): (f32,f32)  ->
+                        let (bai,bbi,aici,log_aici) = babaici
+                        let baix                    = bai * x in
+                            (   aici * f32.exp( -baix ),
+                                (log_aici-baix) / bbi
+                            )
+                      ) babaicis
+    let (ups, los) = unzip(uplos)
+    let (up,  lo ) = reduce (\(x: (f32,f32)) (y: (f32,f32)): (f32,f32)  ->
+                               let (a1, b1) = x
+                               let (a2, b2) = y in
+                               (a1 + a2, max(b1, b2) )
+                           ) (0.0, -infinity()) uplos
+--    let up = reduce((+), 0.0, ups)           in
+--    let lo = reduce(max, -infinity(), los)    in
+
+    let (bai, bbi, aici, log_aici) = unzip(babaicis) in
+
+    if(n_schedi < 2) -- == 1
+    then lo
+    else
+         let log_s = f32.log(up)
+         let tmp   = log_s / bbi[n_schedi-1]
+         let up    = if( tmp<= 0.0 ) then tmp
+                     else
+                       let tmp = log_s/bbi[0] in
+                       if(0.0<= tmp) then tmp
+                       else -infinity()
+
+         let yl = lo - epsilon()
+         let yu = up + epsilon()
+
+         let (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy) = scals
+
+         -- y01 x = y0, y1 / phi(h_i(x, y0)) <= epsilon, 1 - phi(h_i(x, y1)) <= epsilon
+         let y0 = sigmay * (rhoxy*(x-mux)/sigmax+k*rhoxycs) - rhoxyc/b + muy
+         let y1 = sigmay * (rhoxy*(x-mux)/sigmax-k*rhoxycs) + muy             in
+
+         if      (y1 <= yl) then y1 + 1.0  -- yhat is greater than y1 -> 1 - phi(h_i(x, yhat)) < epsilon
+         else if (yu <= y0) then y0 - 1.0  -- yhat is lower than y0 -> phi(h_i(x, yhat)) < epsilon)
+         else
+              ---- `scales' is the same as `ups', however, if this branch
+              ---- is not oftenly taken, it might make sense to duplicate computation,
+              ---- since if the previous `ups' is in a map-reduce pattern!
+              --let scales  = map(  \f32 ( (f32,f32) baiaici) ->
+              --                      let (bai,aici) = baiaici in
+              --                      aici * exp( -bai * x )
+              --                    , zip(bai, aici)
+              --                 )        in
+              let scales  = ups
+              let root_lb = max(yl, y0)
+              let root_ub = min(yu, y1)
+              let (root, iteration, error) =
+                    rootFinding_Brent(1, zip scales bbi, root_lb, root_ub, 1.0e-4, 1000) in
+
+              if      ( error == -infinity() ) then y0 - 1.0
+              else if ( error ==  infinity() ) then y1 + 1.0
+              else                                  root
+
+--------------------------------------------------/
+--/ evaluating a genome on a swaption and getting
+--/ back the quote and the estimated price
+--------------------------------------------------/
+fun evalGenomeOnSwap (genomea: []f32,
+                      hermdata: [](f32,f32))
+                     (swaption: []f32): (f32,f32) =
+  let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4])
+  let swap_freq  = swaption[1]
+  let maturity   = add_years( today(), swaption[0] )
+  let n_schedi   = i32(12.0 * swaption[2] / swap_freq)
+
+  let tmat0      = date_act_365( maturity, today() )
+
+  ----------------------------------------
+  -- Quote (black) price computation
+  -- This computation does not depend on
+  --   the swaption and can be separated
+  --   and hoisted outside the swaption
+  --   and convergence loop ...
+  ----------------------------------------
+  let a12s = map  (\(i: i32): (f32,f32,f32)  ->
+                     let a1 = add_months( maturity, swap_freq*f32(i) )
+                     let a2 = add_months( a1, swap_freq ) in
+                     ( zc(a2) * date_act_365(a2, a1), a1, a2 )
+                 ) (iota(n_schedi) )
+  let (lvl, t0, tn) = reduce (\(tup1:  (f32,f32,f32))
+                                 (tup2: (f32,f32,f32) ): (f32,f32,f32)  ->
+                                let (lvl,t0,tn) = tup1
+                                let (a12,a1,a2) = tup2 in
+                                ( lvl + a12, min(t0,a1), max(tn,a2) )
+                            ) (0.0, max_date(), min_date()) a12s
+
+  let strike     = ( zc(t0) - zc(tn) ) / lvl
+  let d1         = 0.5 * swaption[3] * tmat0
+  let new_quote  = lvl * strike * ( uGaussian_P(d1) - uGaussian_P(-d1) )
+
+  -- starting new price compuation
+  let (v0_mat, dummy1, dummy2) = bigv( (a,b,rho,nu,sigma), tmat0 )
+  let mux = 0.0 - bigmx( (a,b,rho,nu,sigma), today(), maturity, today(), maturity )
+  let muy = 0.0 - bigmy( (a,b,rho,nu,sigma), today(), maturity, today(), maturity )
+  let zc_mat = zc(maturity)
+  let sqrt_bfun_a = f32.sqrt( b_fun(2.0*a, tmat0) )
+  let sqrt_bfun_b = f32.sqrt( b_fun(2.0*b, tmat0) )
+  let rhoxy  = rho * b_fun(a+b, tmat0) / (sqrt_bfun_a * sqrt_bfun_b)
+  let sigmax = sigma * sqrt_bfun_a
+  let sigmay = nu    * sqrt_bfun_b
+  --
+  let rhoxyc = 1.0 - rhoxy * rhoxy  -- used in reduction kernel
+  let rhoxycs= f32.sqrt( rhoxyc )       -- used in reduction kernel
+  let sigmay_rhoxycs = sigmay * rhoxycs
+  let t4     = (rhoxy * sigmay) / sigmax
+
+  -- computing n_schedi-size temporary arrays
+  let tmp_arrs =
+          map (\(i: i32): (f32,f32,f32,f32,f32,f32,f32)  ->
+                 let beg_date = add_months( maturity, swap_freq*f32(i) )
+                 let end_date = add_months( beg_date, swap_freq  )
+                 let res      = date_act_365( end_date, beg_date ) * strike
+                 let cii      = if i==(n_schedi-1) then 1.0 + res  else res
+
+                 let date_tod1= date_act_365(end_date, today())
+                 let (v0_end,dummy1,dummy2) = bigv( (a,b,rho,nu,sigma), date_tod1 )
+
+                 let date_tod2= date_act_365(end_date, maturity)
+                 let (vt_end, baii, bbii  ) = bigv( (a,b,rho,nu,sigma), date_tod2 )
+
+                 let expo_aici = 0.5 * (vt_end - v0_end + v0_mat)
+                 let fact_aici = cii * zc(end_date) / zc_mat      in
+
+                     ( baii
+                     , bbii
+                     , fact_aici * f32.exp( expo_aici )
+                     , f32.log( fact_aici ) + expo_aici
+                     , 0.0  - ( baii + bbii * t4 )
+                     , fact_aici
+                     , bbii * (mux * t4 - (muy - 0.5*rhoxyc*sigmay*sigmay*bbii) ) + expo_aici
+                     )
+             ) (iota(n_schedi) )
+  let (bas, bbs, aicis, log_aicis, scales, cs, t1_cs) = unzip(tmp_arrs)
+  let scals = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy)
+  let exact_arrs = zip bas bbs aicis (log_aicis )
+
+  -- exactYhat via Brent method
+  let eps = 0.5 * sigmax
+  let f   = exactYhat( n_schedi, scals, exact_arrs, mux       )
+  let g   = exactYhat( n_schedi, scals, exact_arrs, mux + eps )
+  let h   = exactYhat( n_schedi, scals, exact_arrs, mux - eps )
+
+  -- integration with Hermite polynomials
+  let herm_arrs   = zip bbs scales cs (t1_cs )
+  let df          = 0.5 * ( g - h ) / eps
+  let sqrt2sigmax = f32.sqrt(2.0) * sigmax
+  let t2          = rhoxy / (sigmax*rhoxycs)
+
+  let accums = map (\(herm_el: (f32,f32)): f32  ->
+                      let (x_quad, w_quad) = herm_el
+                      let x  = sqrt2sigmax * x_quad + mux
+                      let yhat_x = f + df*(x - mux)
+                      let h1 = ( (yhat_x - muy) / sigmay_rhoxycs ) - t2*( x - mux )
+                      let accum1s = map (\(tup: (f32,f32,f32,f32)): f32  ->
+                                           let (bbi, scalei, csi, t1_csi) = tup
+                                           let h2 = h1 + bbi * sigmay_rhoxycs
+                                           let expo_aici = t1_csi + scalei*x
+                                           let fact_aici = csi
+                                           let expo_part = uGaussian_P_withExpFactor( -h2, expo_aici )
+                                           in  fact_aici * expo_part
+                                       ) (zip bbs scales cs (t1_cs )
+                                       )
+                      let accum1 = reduce (+) (0.0) accum1s
+                      let tmp    = f32.sqrt(2.0) * x_quad
+                      let t1     = f32.exp( - 0.5 * tmp * tmp )     in
+                      w_quad * t1 * ( uGaussian_P(-h1) - accum1 )
+                  ) hermdata
+
+  let accum = reduce (+) (0.0) accums
+  let new_price = zc_mat * ( accum / f32.sqrt( pi() ) ) in
+  (new_quote, new_price)
+
+--------------------------------------------------------------/
+--/ Likelihood implementation
+--------------------------------------------------------------/
+
+fun normalPdf(z:  f32, mu: f32, sigma: f32 ): f32 =
+    let sigma  = fabs(sigma)
+    let res    = 1.0 / (sigma * f32.sqrt(2.0*pi()))
+    let ecf    = (z-mu) * (z-mu) / (2.0 * sigma * sigma) in
+    res * f32.exp( 0.0 - ecf )
+fun logLikeNormal(y_ref:  f32, y: f32): f32 =
+    let sigma = (y_ref / 50.0) * llhood_normal_offs()
+    let pdfs  = normalPdf( y, y_ref, sigma ) in
+    f32.log(pdfs + 1.0e-20)
+
+fun cauchyPdf(z:  f32, mu: f32, gamma: f32 ): f32 = -- mu=0.0, gamma=4.0
+    let x = (z-mu) / gamma in
+    1.0 / ( pi() * gamma * (1.0 + x*x) )
+fun logLikeCauchy(y_ref:  f32, y: f32 ): f32 =
+    let gamma = ( fabs(y_ref) / 50.0 ) * llhood_cauchy_offs() + 0.01
+    let pdfs  = cauchyPdf( y, y_ref, gamma ) in
+    f32.log(pdfs + 1.0e-20)
+
+fun logLikelihood(y_ref: f32, y: f32): f32 =
+  if   is_cauchy_llhood()
+  then logLikeCauchy(y_ref, y)
+  else logLikeNormal(y_ref, y)
 
 ----------------------------------------------------
 --/ COMPUTATIONAL KERNEL
@@ -163,454 +867,6 @@ fun interestCalibKernel(pop:  i32
       , makeSummary(winner_quote_prices)
       )
 
---------------------------------------------------/
---/ Constants and Utility Functions
---------------------------------------------------/
-fun eps0   (): f32 = 1.0e-3
-fun eps    (): f32 = 1.0e-5
-fun pi     (): f32 = 3.1415926535897932384626433832795
-
-fun is_cauchy_llhood  (): bool = true
-fun llhood_cauchy_offs(): f32 = 5.0
-fun llhood_normal_offs(): f32 = 1.0
-
-fun r       (): f32 = 0.03
-fun infinity(): f32 = 1.0e49
-fun epsilon (): f32 = eps()
-
-fun itMax   (): i32 = 10000
-
-
-fun min(a: f32, b: f32): f32 = if(a < b) then a else b
-fun max(a: f32, b: f32): f32 = if(a < b) then b else a
-
-fun minI(a: i32, b: i32): i32 = if(a < b) then a else b
-fun maxI(a: i32, b: i32): i32 = if(a < b) then b else a
-
-fun fabs(a: f32): f32 = if(a < 0.0) then -a else a
-
-fun equal(x1: f32, x2: f32): bool =
-    fabs(x1-x2) <= 1.0e-8
-
---------------------------------------------------/
---/ evaluating a genome on a swaption and getting
---/ back the quote and the estimated price
---------------------------------------------------/
-fun evalGenomeOnSwap (genomea: []f32,
-                      hermdata: [](f32,f32))
-                     (swaption: []f32): (f32,f32) =
-  let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4])
-  let swap_freq  = swaption[1]
-  let maturity   = add_years( today(), swaption[0] )
-  let n_schedi   = i32(12.0 * swaption[2] / swap_freq)
-
-  let tmat0      = date_act_365( maturity, today() )
-
-  ----------------------------------------
-  -- Quote (black) price computation
-  -- This computation does not depend on
-  --   the swaption and can be separated
-  --   and hoisted outside the swaption
-  --   and convergence loop ...
-  ----------------------------------------
-  let a12s = map  (\(i: i32): (f32,f32,f32)  ->
-                     let a1 = add_months( maturity, swap_freq*f32(i) )
-                     let a2 = add_months( a1, swap_freq ) in
-                     ( zc(a2) * date_act_365(a2, a1), a1, a2 )
-                 ) (iota(n_schedi) )
-  let (lvl, t0, tn) = reduce (\(tup1:  (f32,f32,f32))
-                                 (tup2: (f32,f32,f32) ): (f32,f32,f32)  ->
-                                let (lvl,t0,tn) = tup1
-                                let (a12,a1,a2) = tup2 in
-                                ( lvl + a12, min(t0,a1), max(tn,a2) )
-                            ) (0.0, max_date(), min_date()) a12s
-
-  let strike     = ( zc(t0) - zc(tn) ) / lvl
-  let d1         = 0.5 * swaption[3] * tmat0
-  let new_quote  = lvl * strike * ( uGaussian_P(d1) - uGaussian_P(-d1) )
-
-  -- starting new price compuation
-  let (v0_mat, dummy1, dummy2) = bigv( (a,b,rho,nu,sigma), tmat0 )
-  let mux = 0.0 - bigmx( (a,b,rho,nu,sigma), today(), maturity, today(), maturity )
-  let muy = 0.0 - bigmy( (a,b,rho,nu,sigma), today(), maturity, today(), maturity )
-  let zc_mat = zc(maturity)
-  let sqrt_bfun_a = f32.sqrt( b_fun(2.0*a, tmat0) )
-  let sqrt_bfun_b = f32.sqrt( b_fun(2.0*b, tmat0) )
-  let rhoxy  = rho * b_fun(a+b, tmat0) / (sqrt_bfun_a * sqrt_bfun_b)
-  let sigmax = sigma * sqrt_bfun_a
-  let sigmay = nu    * sqrt_bfun_b
-  --
-  let rhoxyc = 1.0 - rhoxy * rhoxy  -- used in reduction kernel
-  let rhoxycs= f32.sqrt( rhoxyc )       -- used in reduction kernel
-  let sigmay_rhoxycs = sigmay * rhoxycs
-  let t4     = (rhoxy * sigmay) / sigmax
-
-  -- computing n_schedi-size temporary arrays
-  let tmp_arrs =
-          map (\(i: i32): (f32,f32,f32,f32,f32,f32,f32)  ->
-                 let beg_date = add_months( maturity, swap_freq*f32(i) )
-                 let end_date = add_months( beg_date, swap_freq  )
-                 let res      = date_act_365( end_date, beg_date ) * strike
-                 let cii      = if i==(n_schedi-1) then 1.0 + res  else res
-
-                 let date_tod1= date_act_365(end_date, today())
-                 let (v0_end,dummy1,dummy2) = bigv( (a,b,rho,nu,sigma), date_tod1 )
-
-                 let date_tod2= date_act_365(end_date, maturity)
-                 let (vt_end, baii, bbii  ) = bigv( (a,b,rho,nu,sigma), date_tod2 )
-
-                 let expo_aici = 0.5 * (vt_end - v0_end + v0_mat)
-                 let fact_aici = cii * zc(end_date) / zc_mat      in
-
-                     ( baii
-                     , bbii
-                     , fact_aici * f32.exp( expo_aici )
-                     , f32.log( fact_aici ) + expo_aici
-                     , 0.0  - ( baii + bbii * t4 )
-                     , fact_aici
-                     , bbii * (mux * t4 - (muy - 0.5*rhoxyc*sigmay*sigmay*bbii) ) + expo_aici
-                     )
-             ) (iota(n_schedi) )
-  let (bas, bbs, aicis, log_aicis, scales, cs, t1_cs) = unzip(tmp_arrs)
-  let scals = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy)
-  let exact_arrs = zip bas bbs aicis (log_aicis )
-
-  -- exactYhat via Brent method
-  let eps = 0.5 * sigmax
-  let f   = exactYhat( n_schedi, scals, exact_arrs, mux       )
-  let g   = exactYhat( n_schedi, scals, exact_arrs, mux + eps )
-  let h   = exactYhat( n_schedi, scals, exact_arrs, mux - eps )
-
-  -- integration with Hermite polynomials
-  let herm_arrs   = zip bbs scales cs (t1_cs )
-  let df          = 0.5 * ( g - h ) / eps
-  let sqrt2sigmax = f32.sqrt(2.0) * sigmax
-  let t2          = rhoxy / (sigmax*rhoxycs)
-
-  let accums = map (\(herm_el: (f32,f32)): f32  ->
-                      let (x_quad, w_quad) = herm_el
-                      let x  = sqrt2sigmax * x_quad + mux
-                      let yhat_x = f + df*(x - mux)
-                      let h1 = ( (yhat_x - muy) / sigmay_rhoxycs ) - t2*( x - mux )
-                      let accum1s = map (\(tup: (f32,f32,f32,f32)): f32  ->
-                                           let (bbi, scalei, csi, t1_csi) = tup
-                                           let h2 = h1 + bbi * sigmay_rhoxycs
-                                           let expo_aici = t1_csi + scalei*x
-                                           let fact_aici = csi
-                                           let expo_part = uGaussian_P_withExpFactor( -h2, expo_aici )
-                                           in  fact_aici * expo_part
-                                       ) (zip bbs scales cs (t1_cs )
-                                       )
-                      let accum1 = reduce (+) (0.0) accum1s
-                      let tmp    = f32.sqrt(2.0) * x_quad
-                      let t1     = f32.exp( - 0.5 * tmp * tmp )     in
-                      w_quad * t1 * ( uGaussian_P(-h1) - accum1 )
-                  ) hermdata
-
-  let accum = reduce (+) (0.0) accums
-  let new_price = zc_mat * ( accum / f32.sqrt( pi() ) ) in
-  (new_quote, new_price)
-
-
---------------------------------------------------/
---/ Sobol Random Number Generation
---------------------------------------------------/
---fun []f32 getChunkSobNums(i32 sob_ini, i32 CHUNK, []i32 dirVct) =
---  let norm_fact = 1.0 / ( f32(1 << size(0,dirVct)) + 1.0 ) in
---  let sob_inds  = map(+sob_ini, iota(CHUNK))
---  in  map( sobolInd(dirVct,norm_fact), sob_inds )
-
-fun sobolInd(dirVct:  [m]i32) (n: i32): f32 =
-    -- placed norm_fact here to check that hoisting does its job!
-    let norm_fact = 1.0 / ( f32(1 << m) + 1.0 )
-    let n_gray = (n >> 1) ^ n
-    let res = 0 in
-    loop (res) =
-      for i < m do
-        let t = 1 << i in
-        if (n_gray & t) == t
-        then res ^ dirVct[i]
-        else res
-    in  f32(res) * norm_fact
-
---------------------------------------------------/
---/ Genome Implementation
---------------------------------------------------/
-fun genomeBounds(): [](f32,f32,f32) =
-    [ (eps0(),     1.0-eps0(), 0.02)
-    , (eps0(),     1.0-eps0(), 0.02)
-    , (eps0()-1.0, 1.0-eps0(), 0.0 )
-    , (eps0(),     0.2,        0.01)
-    , (eps0(),     0.2,        0.04)
-    ]
-
-fun initGenome (rand_nums: []f32): []f32 =
-  map  (\(tup: (f32, (f32,f32,f32))): f32  ->
-                    let (r01, (g_min, g_max, g_ini)) = tup
-                    in  r01*(g_max - g_min) + g_min
-
-               ) (zip (rand_nums) (genomeBounds())
-               )
-
-fun selectMoveType(r01: f32): i32 =
-  if r01 <= 0.2   then 1 -- r01 in [0.0, 0.2] -> DIMS_ALL
-  else
-    if r01 <= 0.5 then 2 -- r01 in (0.2, 0.5] -> DIMS_ONE
-    else               3 -- r01 in (0.5, 1.0) -> DEMCMC
---( MV_EL_TYPE(0.2,DIMS_ALL), MV_EL_TYPE(0.5,DIMS_ONE), MV_EL_TYPE(1.0,DEMCMC) );
-
-fun moves_unif_ampl_ratio(): f32 = 0.005
-
-fun mutate_dims_all(tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
-  let (sob_row, orig, muta) = tup
-  let gene_bds = genomeBounds()
-  let amplitude = moves_unif_ampl_ratio()
-  let gene_rats = map mutateHelper (
-                       zip (replicate n amplitude) (sob_row) orig muta (gene_bds) )
-  let (tmp_genome, fb_rats) = unzip(gene_rats)
-  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
-  let fb_rat    = reduce (*) (1.0) (fb_rats)
-  in  (copy(new_genome), fb_rat)
-
-fun mutate_dims_one(dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
-  let (sob_row, orig, muta) = tup
-  let gene_bds = genomeBounds()
-  let amplitudes= map (\(i: i32): f32  ->
-                          if i == dim_j then moves_unif_ampl_ratio() else 0.0
-                     ) (iota(n) )
-
-  let gene_rats = map mutateHelper (zip amplitudes (sob_row) orig muta (gene_bds) )
-  let (tmp_genome, fb_rats) = unzip(gene_rats)
-  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
-  let fb_rat    = reduce (*) (1.0) (fb_rats)
-  in  (copy(new_genome), fb_rat)
-
-
-fun mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f32 =
-  let gene_bds = genomeBounds()
-  let gamma_avg = 2.38 / f32.sqrt(2.0*5.0)
-  let ampl_ratio= 0.1 * moves_unif_ampl_ratio()
-  let gamma1    = gamma_avg - 0.5 + r01
-  let mm_diffs  = map (\(tup: (f32,f32,f32)): f32  ->
-                           let (g_min, g_max, uu) = tup
-                           in  g_max - g_min
-                     ) (gene_bds )
-
-  let tmp_genome = map (perturbation(gamma1,ampl_ratio))
-                   (zip (g_i) (g_k) (g_l) (sob_row) (mm_diffs))
-
-  in  copy( map constrainDim (zip (tmp_genome) (gene_bds) ) )
-
-
-fun perturbation(gamma1:  f32, ampl_rat : f32)
-                (gene: f32, gene_k: f32, gene_l: f32,   r01: f32, mm_diff: f32 ): f32 =
-  let amplitude     = fabs( mm_diff * ampl_rat )
-  let semiamplitude = amplitude / 2.0
-  let perturb       = ( amplitude * r01 - semiamplitude )
-  in  gene + perturb + gamma1 * ( gene_k - gene_l )
-
-fun mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32,f32)): (f32,f32) =
-  let (g_min, g_max, g_ini) = gmm
-  let amplitude     = fabs( (g_max - g_min) * ampl_ratio )
-  let semiamplitude = amplitude / 2.0
-
-  let tmp_min_max = min( g_max, gene + semiamplitude )
-  let tmp_max_min = max( g_min, gene - semiamplitude )
-  let forward_range = tmp_min_max - tmp_max_min
-
-  let tmp_min_max = min( g_max, prop + semiamplitude )
-  let tmp_max_min = max( g_min, prop - semiamplitude )
-  let backward_range = tmp_min_max - tmp_max_min
-
-  let bf_fact = if 0.0 < semiamplitude
-                then (backward_range / forward_range)
-                else 1.0
-  in (gene + amplitude * r01 - semiamplitude, bf_fact)
-
-
-fun constrainDim(gene:  f32, tup: (f32,f32,f32) ): f32 =
-  let (g_min, g_max, g_ini) = tup
-  in  max( g_min, min(g_max, gene) )
-
---------------------------------------------------------------/
---/ Likelihood implementation
---------------------------------------------------------------/
-fun logLikelihood(y_ref: f32, y: f32): f32 =
-  if   is_cauchy_llhood()
-  then logLikeCauchy(y_ref, y)
-  else logLikeNormal(y_ref, y)
-
-fun normalPdf(z:  f32, mu: f32, sigma: f32 ): f32 =
-    let sigma  = fabs(sigma)
-    let res    = 1.0 / (sigma * f32.sqrt(2.0*pi()))
-    let ecf    = (z-mu) * (z-mu) / (2.0 * sigma * sigma) in
-    res * f32.exp( 0.0 - ecf )
-fun logLikeNormal(y_ref:  f32, y: f32): f32 =
-    let sigma = (y_ref / 50.0) * llhood_normal_offs()
-    let pdfs  = normalPdf( y, y_ref, sigma ) in
-    f32.log(pdfs + 1.0e-20)
-
-fun cauchyPdf(z:  f32, mu: f32, gamma: f32 ): f32 = -- mu=0.0, gamma=4.0
-    let x = (z-mu) / gamma in
-    1.0 / ( pi() * gamma * (1.0 + x*x) )
-fun logLikeCauchy(y_ref:  f32, y: f32 ): f32 =
-    let gamma = ( fabs(y_ref) / 50.0 ) * llhood_cauchy_offs() + 0.01
-    let pdfs  = cauchyPdf( y, y_ref, gamma ) in
-    f32.log(pdfs + 1.0e-20)
-
-----------------------------------------------------------------
-----/ MATH MODULE
-----------------------------------------------------------------
-
----------------------------------------------------------------------------
--- Cumulative Distribution Function for a standard normal distribution
-
-fun uGaussian_P(x: f32): f32 =
-    let u = x / f32.sqrt(2.0)
-    let e = if (u < 0.0) then -erf(-u)
-                         else  erf( u)
-    in 0.5 * (1.0 + e)
-
-fun uGaussian_P_withExpFactor(x:  f32, exp_factor: f32 ): f32 =
-    let u   = fabs( x / f32.sqrt(2.0) )
-    let e   = erff_poly_only(u)
-    let res = 0.5 * e * f32.exp(exp_factor-u*u) in
-    if ( 0.0 <= x )
-    then f32.exp(exp_factor) - res
-    else res
-
----------------------------------------------------------------------------
--- polynomial expansion of the erf() function, with error<=1.5e-7
---   formula 7.1.26 (page 300), Handbook of Mathematical Functions, Abramowitz and Stegun
---   http:--people.math.sfu.ca/~cbm/aands/frameindex.htm
-
-fun erf(x: f32): f32 =
-    let p = 0.3275911
-    let (a1,a2,a3,a4,a5) =
-        (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429)
-    let t  = 1.0/(1.0+p*x)
-    let t2 = t  * t
-    let t3 = t  * t2
-    let t4 = t2 * t2
-    let t5 = t2 * t3        in
-         1.0 - (a1*t + a2*t2 + a3*t3 + a4*t4 + a5*t5) * f32.exp(-(x*x))
-
----------------------------------------------------------------------------
--- iteration_max = 10000 (hardcoded)
-
-fun erff_poly_only(x:  f32 ): f32 =
-    let p = 0.3275911
-    let (a1,a2,a3,a4,a5) =
-        (0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429)
-
-    let t  = 1.0/(1.0+p*x)
-    let t2 = t  * t
-    let t3 = t  * t2
-    let t4 = t2 * t2
-    let t5 = t2 * t3       in
-    (a1*t + a2*t2 + a3*t3 + a4*t4 + a5*t5)
-
-------------------------------------------------------------------------
--- if fid = 33 then: to_solve(f32 x) = (x+3.0)*(x-1.0)*(x-1.0)
--- otherwise follows the f32 implementation
-------------------------------------------------------------------------
-
-fun to_solve(fid: i32, scalesbbi: [](f32,f32), yhat: f32): f32 =
-    if(fid == 33) then (yhat+3.0)*(yhat-1.0)*(yhat-1.0)
-    else
-        let tmps = map (\(scalesbbi:  (f32,f32) ): f32  ->
-                            let (scales, bbi) = scalesbbi in
-                                scales * f32.exp(-bbi*yhat)
-                        ) scalesbbi
-            in reduce (+) (0.0) tmps - 1.0
-
---------------------------------------------------------/
----- the function-parameter to rootFinding_Brent
---------------------------------------------------------/
-
-
-fun rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f32, iter_max: i32): (f32,i32,f32) =
-    let tol      = if(tol     <= 0.0) then 1.0e-9 else tol
-    let iter_max = if(iter_max<= 0  ) then 10000  else iter_max
-    let (a,b)    = (lb,ub)
-
-    -- `to_solve' is curried so it will need extra arguments!!!
-    -- said fid refers to the version of `to_solve', e.g., testing or f32 implem.
-    -- Was previous (eval(a),eval(b)), now:
-    let (fa,fb)  = ( to_solve(fid, scalesbbi, a), to_solve(fid, scalesbbi, b) ) in
-
-    if(0.0 <= fa*fb)
-    then
-        if(0.0 <= a) then ( 0.0, 0,  infinity() )  -- root not bracketed above
-                     else ( 0.0, 0, -infinity() )  -- root not bracketed below
-    else
-    let (fa, fb, a, b) = if( fabs(fa) < fabs(fb) )
-                         then (fb, fa, b, a)
-                         else (fa, fb, a, b)
-    let (c,fc)    = (a, fa)
-    let mflag     = true
-    let it        = 0
-    let d         = 0.0     in
-
-    loop ((a,b,c,d,fa,fb,fc,mflag,it)) =
-        for i < iter_max do
-
-            if( fb==0.0 || fabs(b-a)<tol )
-            then (a,b,c,d,fa,fb,fc,mflag,it)
-            else
-
-                -- the rest of the code implements the else branch!
-
-                let s = if( fa==fc || fb == fc )
-                        then    b-fb*(b-a)/(fb-fa)
-
-                        else let s1 = (a*fb*fc)/( (fa-fb)*(fa-fc) )
-                             let s2 = (b*fa*fc)/( (fb-fa)*(fb-fc) )
-                             let s3 = (c*fa*fb)/( (fc-fa)*(fc-fb) ) in
-                                s1 + s2 + s3
-
-
-                let (mflag, s) = if ( ( !((3.0*a+b)/4.0 <= s && s  <= b)    ) ||
-                                      (     mflag && fabs(b-c)/2.0 <= fabs(s-b) ) ||
-                                      ( !mflag && fabs(c-d)/2.0    <= fabs(s-b) ) ||
-                                      (     mflag && fabs(b-c)     <= fabs(tol) ) ||
-                                      ( !mflag && fabs(c-d)        <= fabs(tol) )
-                                    )
-                                 then (true,  (a+b)/2.0)
-                                 else (false, s        )
-
-                -- Was previous `eval(s)', Now:
-                let fs = to_solve(fid, scalesbbi, s)
-
-                -- d is assigned for the first time here:
-                -- it's not used above because mflag is set
-                let d = c let (c,fc) = (b, fb)
-                let (a,b,fa,fb) = if( fa*fs < 0.0 )
-                                  then (a,s,fa,fs)
-                                  else (s,b,fs,fb)
-
-                let (a,b,fa,fb) = if( fabs(fa) < fabs(fb) )
-                                  then (b,a,fb,fa) -- swap args
-                                  else (a,b,fa,fb)
-
-                -- reporting non-convergence!
-                let dummy =
-                    if(i == iter_max-1)
-                    then -- # ERROR: Brent method not converged
-                         0
-                    else 0
-
-                in (a,b,c,d,fa,fb,fc,mflag,i)
-
-    -- Finally, the result of function rootFinding_Brent is:
-    in ( b, it, fb )
-
-
-----------------------------------------------------------------
-----/ G2PP Module
-----------------------------------------------------------------
-
-fun zc(t: f32): f32 = f32.exp(-r() * date_act_365(t, today()))
 
 ------------------------------------------/
 ---- the first param `swaption' is a triple of f32s,
@@ -646,100 +902,6 @@ fun extended_swaption_of_swaption(swaption: (f32,f32,f32)): (f32,[](f32,f32),(f3
     let strike     = (zc(t0) - zc(tn)) / lvl
 
     in (maturity, swap_sched, (strike,lvl))
-
-
-fun b_fun(z: f32, tau: f32): f32 = (1.0-f32.exp(-z*tau))/z
-
-fun t_fun(sigma: f32, x: f32, tau: f32): f32 =
-    let expxtau  = f32.exp(-x*tau)
-    let exp2xtau = expxtau*expxtau in
-        sigma*sigma/(x*x)*(tau+2.0/x*expxtau-1.0/(2.0*x)*exp2xtau-3.0/(2.0*x))
-
-
-------------------------------------------------------------------/
--- the first parameter `genome' is the five-genes genome used in
---     the genetic algorithms that models the interest rate
--- the second parameter is the time
--- the result is V in Brigo and Mercurio's book page 148.
---     \var(\int_t^T [x(u)+y(u)]du)
-------------------------------------------------------------------/
-fun bigv(genome: (f32,f32,f32,f32,f32), tau: f32): (f32,f32,f32) =
-    let (g_a, g_b, g_rho, g_nu, g_sigma) = genome
-
-    -- sanity check; this check should be hoisted higher up
-    let g_sigma = if(g_sigma == 0.0) then 1.0e-10 else g_sigma
-
-    let ba = b_fun(g_a,        tau)
-    let bb = b_fun(g_b,        tau)
-    let t1 = t_fun(g_sigma,g_a,tau)
-    let t2 = t_fun(g_nu,   g_b,tau)
-
-    let t3 = 2.0 * g_rho * g_nu * g_sigma / (g_a * g_b)*
-             ( tau - ba - bb + b_fun(g_a+g_b, tau) )
-
-        in (t1+t2+t3, ba, bb)
-
-------------------------------------------------------------------/
--- the first parameter `genome' is the five-genes genome used in
---     the genetic algorithms that models the interest rate
--- the other parameter are times: today, maturity, and the
---      lower and upper bound of the considered time interval
---
--- the result is: x drift term in tmat-forward measure
-------------------------------------------------------------------/
-
-fun bigmx(genome:  (f32,f32,f32,f32,f32),
-                today: f32, tmat: f32, s: f32, t: f32
-              ): f32 =
-    let (a, b, rho, nu, sigma) = genome
-
-    let ts    = date_act_365(t,    s)
-    let tmatt = date_act_365(tmat, t)
-
-    let tmat0 = date_act_365(tmat, today)
-    let tmats = date_act_365(tmat, s)
-    let t0    = date_act_365(t,    today)
-    let s0    = date_act_365(s,    today)
-
-    let tmp1  = (sigma*sigma)/(a*a)+(sigma*rho*nu)/(a*b)
-    let tmp2  = 1.0 - f32.exp(-a * ts)
-    let tmp3  = sigma * sigma / (2.0 * a * a)
-    let tmp4  = rho * sigma * nu / (b * (a + b))
-    let tmp5  = f32.exp(-a * tmatt) - f32.exp(-a * (tmats + ts))
-    let tmp6  = f32.exp(-b * tmatt) - f32.exp(-b*tmat0 - a*t0 + (a+b)*s0)
-
-        in tmp1 * tmp2 - ( tmp3 * tmp5 ) - ( tmp4 * tmp6 )
-
-
-------------------------------------------------------------------/
--- the first parameter `genome' is the five-genes genome used in
---     the genetic algorithms that models the interest rate
--- the other parameter are times: today, maturity, and the
---      lower and upper bound of the considered time interval
---
--- the result is: y drift term in tmat-forward measure
-------------------------------------------------------------------/
-
-fun bigmy(genome:  (f32,f32,f32,f32,f32),
-                today: f32, tmat: f32, s: f32, t: f32
-              ): f32 =
-    let (a, b, rho, nu, sigma) = genome
-
-    let ts    = date_act_365(t,    s)
-    let tmatt = date_act_365(tmat, t)
-    let tmat0 = date_act_365(tmat, today)
-    let tmats = date_act_365(tmat, s)
-    let t0    = date_act_365(t,    today)
-    let s0    = date_act_365(s,    today)
-
-    let tmp1  = nu*nu/(b*b)+sigma*rho*nu/(a*b)
-    let tmp2  = 1.0 - f32.exp(-b * ts)
-    let tmp3  = nu * nu / (2.0 * b * b)
-    let tmp4  = sigma * rho * nu / (a * (a + b))
-    let tmp5  = f32.exp(-b * tmatt) - f32.exp(-b * (tmats + ts))
-    let tmp6  = f32.exp(-a * tmatt) - f32.exp(-a*tmat0 - b*t0 + (a+b)*s0)
-
-        in tmp1 * tmp2 - ( tmp3 * tmp5 ) - ( tmp4 * tmp6 )
 
 ------------------------------------------------------------------/
 -- the first  parameter `today' is today (and very different from tomorrow)
@@ -888,179 +1050,14 @@ fun pricer_of_swaption(today:  f32,
             zc_mat * ( sum / f32.sqrt( pi() ) )
 
 
---------------------------
--- Root finder
---------------------------
-fun exactYhat(n_schedi:  i32,
-                    scals: (f32,f32,f32,f32,f32,f32,f32,f32),
-                    babaicis: [](f32,f32,f32,f32),
-                    x: f32
-                  ): f32 =
-    -- ugaussian_Pinv(k)=1.0e-4
-    let k= -3.71901648545568
-
-
-    let uplos = map (\(babaici: (f32,f32,f32,f32)): (f32,f32)  ->
-                        let (bai,bbi,aici,log_aici) = babaici
-                        let baix                    = bai * x in
-                            (   aici * f32.exp( -baix ),
-                                (log_aici-baix) / bbi
-                            )
-                      ) babaicis
-    let (ups, los) = unzip(uplos)
-    let (up,  lo ) = reduce (\(x: (f32,f32)) (y: (f32,f32)): (f32,f32)  ->
-                               let (a1, b1) = x
-                               let (a2, b2) = y in
-                               (a1 + a2, max(b1, b2) )
-                           ) (0.0, -infinity()) uplos
---    let up = reduce((+), 0.0, ups)           in
---    let lo = reduce(max, -infinity(), los)    in
-
-    let (bai, bbi, aici, log_aici) = unzip(babaicis) in
-
-    if(n_schedi < 2) -- == 1
-    then lo
-    else
-         let log_s = f32.log(up)
-         let tmp   = log_s / bbi[n_schedi-1]
-         let up    = if( tmp<= 0.0 ) then tmp
-                     else
-                       let tmp = log_s/bbi[0] in
-                       if(0.0<= tmp) then tmp
-                       else -infinity()
-
-         let yl = lo - epsilon()
-         let yu = up + epsilon()
-
-         let (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy) = scals
-
-         -- y01 x = y0, y1 / phi(h_i(x, y0)) <= epsilon, 1 - phi(h_i(x, y1)) <= epsilon
-         let y0 = sigmay * (rhoxy*(x-mux)/sigmax+k*rhoxycs) - rhoxyc/b + muy
-         let y1 = sigmay * (rhoxy*(x-mux)/sigmax-k*rhoxycs) + muy             in
-
-         if      (y1 <= yl) then y1 + 1.0  -- yhat is greater than y1 -> 1 - phi(h_i(x, yhat)) < epsilon
-         else if (yu <= y0) then y0 - 1.0  -- yhat is lower than y0 -> phi(h_i(x, yhat)) < epsilon)
-         else
-              ---- `scales' is the same as `ups', however, if this branch
-              ---- is not oftenly taken, it might make sense to duplicate computation,
-              ---- since if the previous `ups' is in a map-reduce pattern!
-              --let scales  = map(  \f32 ( (f32,f32) baiaici) ->
-              --                      let (bai,aici) = baiaici in
-              --                      aici * exp( -bai * x )
-              --                    , zip(bai, aici)
-              --                 )        in
-              let scales  = ups
-              let root_lb = max(yl, y0)
-              let root_ub = min(yu, y1)
-              let (root, iteration, error) =
-                    rootFinding_Brent(1, zip scales bbi, root_lb, root_ub, 1.0e-4, 1000) in
-
-              if      ( error == -infinity() ) then y0 - 1.0
-              else if ( error ==  infinity() ) then y1 + 1.0
-              else                                  root
-
-------------------------------------------------------
-----   Date: Gregorian calendar
-------------------------------------------------------
-
-fun mod(x: i32, y: i32): i32 = x - (x/y)*y
-
-fun hours_in_dayI   (): i32 = 24
-fun minutes_in_dayI (): i32 = hours_in_dayI() * 60
-fun minutes_to_noonI(): i32 = (hours_in_dayI() / 2) * 60
-
-fun minutes_in_day  (): f32 = 24.0*60.0
-
-
---                           year*month*day*hour*mins
-fun date_of_gregorian(date:  (i32,i32,i32,i32,i32)): i32 =
-    let (year, month, day, hour, mins) = date
-    let ym =
-        if(month == 1 || month == 2)
-        then    ( 1461 * ( year + 4800 - 1 ) ) / 4 +
-                  ( 367 * ( month + 10 ) ) / 12 -
-                  ( 3 * ( ( year + 4900 - 1 ) / 100 ) ) / 4
-        else    ( 1461 * ( year + 4800 ) ) / 4 +
-                  ( 367 * ( month - 2 ) ) / 12 -
-                  ( 3 * ( ( year + 4900 ) / 100 ) ) / 4
-    let tmp = ym + day - 32075 - 2444238
-
-            in tmp * minutes_in_dayI() + hour * 60 + mins
-
-
-fun gregorian_of_date (minutes_since_epoch:  i32 ): (i32,i32,i32,i32,i32) =
-    let jul = minutes_since_epoch / minutes_in_dayI()
-    let l = jul + 68569 + 2444238
-    let n = ( 4 * l ) / 146097
-    let l = l - ( 146097 * n + 3 ) / 4
-    let i = ( 4000 * ( l + 1 ) ) / 1461001
-    let l = l - ( 1461 * i ) / 4 + 31
-    let j = ( 80 * l ) / 2447
-    let d = l - ( 2447 * j ) / 80
-    let l = j / 11
-    let m = j + 2 - ( 12 * l )
-    let y = 100 * ( n - 49 ) + i + l
-
-    --let daytime = minutes_since_epoch mod minutes_in_day in
-    let daytime = mod( minutes_since_epoch, minutes_in_dayI() ) in
-
-    if ( daytime == minutes_to_noonI() )
-
-    --then [year = y; month = m; day = d; hour = 12; minute = 0]
-    then (y, m, d, 12, 0)
-
-    --else [year = y; month = m; day = d; hour = daytime / 60; minute = daytime mod 60]
-    else (y, m, d, daytime / 60, mod(daytime, 60) )
-
-
-fun check_date(year: i32, month: i32, day: i32): bool =
-    let tmp1 = ( 1 <= day && 1 <= month && month <= 12 && 1980 <= year && year <= 2299 )
-    let tmp2 = ( day <= 28 )
-
-    let tmp3 = if      ( month == 2 )
-               then let tmpmod = mod(year, 100) in
-                        ( day == 29 && mod(year, 4) == 0 && ( year == 2000 || (! (tmpmod == 0)) ) )
-               else if ( month == 4 || month == 6 || month == 9 || month == 11 )
-                    then ( day <= 30 )
-                    else ( day <= 31 )
-
-        in tmp1 && (tmp2 || tmp3)
-
-
-fun days_between(t1: f32, t2: f32): f32 =
-  (t1 - t2) / minutes_in_day()
-
-fun date_act_365(t1: f32, t2: f32): f32 = days_between(t1, t2) / 365.0
-
-fun leap(y: i32): bool = ( mod(y,4) == 0  && ( (!(mod(y,100)==0)) || (mod(y,400)==0) ) )
-
-fun end_of_month(year: i32, month: i32): i32 =
-    if      ( month == 2 && leap(year) )                           then 29
-    else if ( month == 2)                                          then 28
-    else if ( month == 4 || month == 6 || month == 9 || month == 11 ) then 30
-    else                                                               31
-
-
-fun add_months (date:  f32, rnbmonths: f32 ): f32 =
-    let nbmonths          = i32(rnbmonths)
-    let (y, m, d, h, min) = gregorian_of_date( i32(date) )
-    let m = m + nbmonths
-    let (y, m) = (y + (m-1) / 12, mod(m-1, 12) + 1)
-    let (y, m) = if (m <= 0) then (y - 1, m + 12) else (y, m)
-    let resmin = date_of_gregorian ( (y, m, minI( d, end_of_month(y, m) ), 12, 0) ) in
-
-            f32(resmin)
-
-
-fun add_years(date: f32, nbyears: f32): f32 =
-        add_months(date, nbyears * 12.0)
-
-
---assert max_date==168307199, a.k.a. "2299-12-31T23:59:59"
-fun max_date (): f32 = 168307199.0
-
---assert min_date==3600, a.k.a., "1980-01-01T12:00:00"
-fun min_date (): f32 = 3600.0
-
--- Date.of_string("2012-01-01")
-fun today    (): f32 = f32( date_of_gregorian( (2012, 1, 1, 12, 0) ) )
+--------------------------------------------------/
+--/ ENTRY POINT
+--------------------------------------------------/
+fun main(pop:  i32, mcmc_conv: i32, l: i32
+        , swaptions: [][]f32,     ll: i32
+        , hermCoefs: []f32
+        , hermWeights: []f32,   lll: i32
+        , sobDirVct: []i32
+        ): (f32,f32,f32,f32,f32,f32,[][]f32) =
+  let hermData  = zip hermCoefs hermWeights in
+  interestCalibKernel(pop, mcmc_conv, swaptions, hermData, sobDirVct)

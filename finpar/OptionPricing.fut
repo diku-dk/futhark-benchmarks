@@ -53,6 +53,10 @@ fun sobolRecI(sob_dir_vs: [][num_bits]i32, prev: [n]i32, x: i32): [n]i32 =
   let bit = index_of_least_significant_0 x
   in map (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
 
+fun recM(sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
+  let bit = index_of_least_significant_0 i
+  in map (\row -> unsafe row[bit]) sob_dirs
+
 fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
   -- the if inside may be particularly ugly for
   -- flattening since it introduces control flow!
@@ -66,10 +70,6 @@ fun sobolRecMap(sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i32) ):
 fun sobolReci2(sob_dirs: [][]i32, prev: [n]i32, i: i32): [n]i32=
   let col = recM(sob_dirs, i)
   in map (^) prev col
-
-fun recM(sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
-  let bit = index_of_least_significant_0 i
-  in map (\row -> unsafe row[bit]) sob_dirs
 
 -- computes sobol numbers: n,..,n+chunk-1
 fun sobolChunk(dir_vs: [len][num_bits]i32, n: i32, chunk: i32): [chunk][len]f32 =
@@ -274,11 +274,15 @@ fun blackScholes(bb_arr: [num_dates][num_und]f32)
 ----------------------------------------
 -- PAYOFF FUNCTIONS
 ----------------------------------------
-fun genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]f32): f32 =
-  if      contract == 1 then unsafe payoff1(md_disct, md_detval, xss)
-  else if contract == 2 then unsafe payoff2(md_disct, xss)
-  else if contract == 3 then unsafe payoff3(md_disct, xss)
-  else 0.0
+
+fun fminPayoff(xs: []f32): f32 =
+  --    MIN( map(/, xss, {3758.05, 11840.0, 1200.0}) )
+  let (a,b,c) = ( xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0)
+  in if a < b
+     then if a < c then a else c
+     else if b < c then b else c
+
+fun trajInner(amount: f32, ind: i32, disc: []f32): f32 = amount * unsafe disc[ind]
 
 fun payoff1(md_disct: []f32, md_detval: []f32, xss: [1][1]f32): f32 =
   let detval = unsafe md_detval[0]
@@ -316,14 +320,12 @@ fun payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
   let price2 = trajInner(amount, 1, md_disct)
   in price1 + price2
 
-fun fminPayoff(xs: []f32): f32 =
-  --    MIN( map(/, xss, {3758.05, 11840.0, 1200.0}) )
-  let (a,b,c) = ( xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0)
-  in if a < b
-     then if a < c then a else c
-     else if b < c then b else c
 
-fun trajInner(amount: f32, ind: i32, disc: []f32): f32 = amount * unsafe disc[ind]
+fun genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]f32): f32 =
+  if      contract == 1 then unsafe payoff1(md_disct, md_detval, xss)
+  else if contract == 2 then unsafe payoff2(md_disct, xss)
+  else if contract == 3 then unsafe payoff3(md_disct, xss)
+  else 0.0
 
 -- Entry point
 fun main(contract_number: i32,
