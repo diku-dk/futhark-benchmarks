@@ -51,6 +51,15 @@ fun rand1(p: v2): f32 =
   let z = (419.2f32, 371.9f32)
   in fract(f32.sin(dot(p,z)) * 833458.57832f32)
 
+fun sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: i32, j: i32): v2 =
+  let samplePos = (f32(i), f32(j))
+  let centre = (let u = rand2(v2Add(cell, samplePos))
+                in (#1 u * irregular, #2 u * irregular))
+  let centreDist = norm(v2Add(v2Sub(samplePos, cellOffset), centre))
+  let det = (1f32 - smoothstep(0f32, 1.414f32, centreDist)) ** sharpness
+  let colour = rand1(v2Add(cell, samplePos))
+  in (colour * det, det)
+
 fun voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
   let cell = (f32(i32(#1 xy)), f32(i32(#2 xy)))
   let cellOffset = (fract(#1 xy), fract(#2 xy))
@@ -61,17 +70,13 @@ fun voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
      in samples)
   in #1 samples / #2 samples
 
-fun sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: i32, j: i32): v2 =
-  let samplePos = (f32(i), f32(j))
-  let centre = (let u = rand2(v2Add(cell, samplePos))
-                in (#1 u * irregular, #2 u * irregular))
-  let centreDist = norm(v2Add(v2Sub(samplePos, cellOffset), centre))
-  let det = (1f32 - smoothstep(0f32, 1.414f32, centreDist)) ** sharpness
-  let colour = rand1(v2Add(cell, samplePos))
-  in (colour * det, det)
-
 fun mod'(n: f32, d: f32): f32 =
   n - f32(i32(n/d)) * d
+
+fun rgb(r: f32, g: f32, b: f32): i32 =
+  (i32(r*255f32)&0xFF) << 16 |
+  (i32(g*255f32)&0xFF) << 8 |
+  (i32(b*255f32)&0xFF)
 
 fun tunnel(time: f32) (x: i32) (y: i32): i32 =
   let pt2 = (1.2f32 * f32(x), 1.2f32 * f32(y))
@@ -82,11 +87,6 @@ fun tunnel(time: f32) (x: i32) (y: i32): i32 =
   let c2 = (let x = voronoise((5f32*#1 pt3, 5f32*#2 pt3), 1f32, 1f32) + 0.240f32*rInv
             in (#1 c1 * x, #2 c1 * x, #3 c1 * x))
   in rgb(#1 c2, #2 c2, #3 c2)
-
-fun rgb(r: f32, g: f32, b: f32): i32 =
-  (i32(r*255f32)&0xFF) << 16 |
-  (i32(g*255f32)&0xFF) << 8 |
-  (i32(b*255f32)&0xFF)
 
 fun main(time: f32, w: i32, h: i32): [w][h]i32 =
   map (\(x: i32): [h]i32  ->
