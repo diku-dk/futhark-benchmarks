@@ -11,6 +11,7 @@
 -- output @ InterestCalib-data/large.out
 
 import "futlib/math"
+import "futlib/date"
 
 default(f32)
 
@@ -43,117 +44,22 @@ fun fabs(a: f32): f32 = if(a < 0.0) then -a else a
 fun equal(x1: f32, x2: f32): bool =
     fabs(x1-x2) <= 1.0e-8
 
-------------------------------------------------------
-----   Date: Gregorian calendar
-------------------------------------------------------
+fun date_act_365(t1: date, t2: date): f32 = f32 (diff_dates t2 t1)
 
-fun mod(x: i32, y: i32): i32 = x - (x/y)*y
+fun add_years(date: date, nbyears: f32): date =
+  add_months date (i32 (nbyears * 12.0))
 
-fun hours_in_dayI   (): i32 = 24
-fun minutes_in_dayI (): i32 = hours_in_dayI() * 60
-fun minutes_to_noonI(): i32 = (hours_in_dayI() / 2) * 60
+val max_date = date_of_triple (2229, 12, 31)
 
-fun minutes_in_day  (): f32 = 24.0*60.0
+val min_date = date_of_triple (1980, 1, 1)
 
-
---                           year*month*day*hour*mins
-fun date_of_gregorian(date:  (i32,i32,i32,i32,i32)): i32 =
-    let (year, month, day, hour, mins) = date
-    let ym =
-        if(month == 1 || month == 2)
-        then    ( 1461 * ( year + 4800 - 1 ) ) / 4 +
-                  ( 367 * ( month + 10 ) ) / 12 -
-                  ( 3 * ( ( year + 4900 - 1 ) / 100 ) ) / 4
-        else    ( 1461 * ( year + 4800 ) ) / 4 +
-                  ( 367 * ( month - 2 ) ) / 12 -
-                  ( 3 * ( ( year + 4900 ) / 100 ) ) / 4
-    let tmp = ym + day - 32075 - 2444238
-
-            in tmp * minutes_in_dayI() + hour * 60 + mins
-
-
-fun gregorian_of_date (minutes_since_epoch:  i32 ): (i32,i32,i32,i32,i32) =
-    let jul = minutes_since_epoch / minutes_in_dayI()
-    let l = jul + 68569 + 2444238
-    let n = ( 4 * l ) / 146097
-    let l = l - ( 146097 * n + 3 ) / 4
-    let i = ( 4000 * ( l + 1 ) ) / 1461001
-    let l = l - ( 1461 * i ) / 4 + 31
-    let j = ( 80 * l ) / 2447
-    let d = l - ( 2447 * j ) / 80
-    let l = j / 11
-    let m = j + 2 - ( 12 * l )
-    let y = 100 * ( n - 49 ) + i + l
-
-    --let daytime = minutes_since_epoch mod minutes_in_day in
-    let daytime = mod( minutes_since_epoch, minutes_in_dayI() ) in
-
-    if ( daytime == minutes_to_noonI() )
-
-    --then [year = y; month = m; day = d; hour = 12; minute = 0]
-    then (y, m, d, 12, 0)
-
-    --else [year = y; month = m; day = d; hour = daytime / 60; minute = daytime mod 60]
-    else (y, m, d, daytime / 60, mod(daytime, 60) )
-
-
-fun check_date(year: i32, month: i32, day: i32): bool =
-    let tmp1 = ( 1 <= day && 1 <= month && month <= 12 && 1980 <= year && year <= 2299 )
-    let tmp2 = ( day <= 28 )
-
-    let tmp3 = if      ( month == 2 )
-               then let tmpmod = mod(year, 100) in
-                        ( day == 29 && mod(year, 4) == 0 && ( year == 2000 || (! (tmpmod == 0)) ) )
-               else if ( month == 4 || month == 6 || month == 9 || month == 11 )
-                    then ( day <= 30 )
-                    else ( day <= 31 )
-
-        in tmp1 && (tmp2 || tmp3)
-
-
-fun days_between(t1: f32, t2: f32): f32 =
-  (t1 - t2) / minutes_in_day()
-
-fun date_act_365(t1: f32, t2: f32): f32 = days_between(t1, t2) / 365.0
-
-fun leap(y: i32): bool = ( mod(y,4) == 0  && ( (!(mod(y,100)==0)) || (mod(y,400)==0) ) )
-
-fun end_of_month(year: i32, month: i32): i32 =
-    if      ( month == 2 && leap(year) )                           then 29
-    else if ( month == 2)                                          then 28
-    else if ( month == 4 || month == 6 || month == 9 || month == 11 ) then 30
-    else                                                               31
-
-
-fun add_months (date:  f32, rnbmonths: f32 ): f32 =
-    let nbmonths          = i32(rnbmonths)
-    let (y, m, d, h, min) = gregorian_of_date( i32(date) )
-    let m = m + nbmonths
-    let (y, m) = (y + (m-1) / 12, mod(m-1, 12) + 1)
-    let (y, m) = if (m <= 0) then (y - 1, m + 12) else (y, m)
-    let resmin = date_of_gregorian ( (y, m, minI( d, end_of_month(y, m) ), 12, 0) ) in
-
-            f32(resmin)
-
-
-fun add_years(date: f32, nbyears: f32): f32 =
-        add_months(date, nbyears * 12.0)
-
-
---assert max_date==168307199, a.k.a. "2299-12-31T23:59:59"
-fun max_date (): f32 = 168307199.0
-
---assert min_date==3600, a.k.a., "1980-01-01T12:00:00"
-fun min_date (): f32 = 3600.0
-
--- Date.of_string("2012-01-01")
-fun today    (): f32 = f32( date_of_gregorian( (2012, 1, 1, 12, 0) ) )
+val today = date_of_triple (2012, 1, 1)
 
 ----------------------------------------------------------------
 ----/ G2PP Module
 ----------------------------------------------------------------
 
-fun zc(t: f32): f32 = f32.exp(-r() * date_act_365(t, today()))
+fun zc(t: date): f32 = f32.exp(-r() * date_act_365(t, today))
 
 
 ----------------------------------------------------------------
@@ -473,8 +379,8 @@ fun bigv(genome: (f32,f32,f32,f32,f32), tau: f32): (f32,f32,f32) =
 ------------------------------------------------------------------/
 
 fun bigmx(genome:  (f32,f32,f32,f32,f32),
-                today: f32, tmat: f32, s: f32, t: f32
-              ): f32 =
+          today: date, tmat: date, s: date, t: date
+         ): f32 =
     let (a, b, rho, nu, sigma) = genome
 
     let ts    = date_act_365(t,    s)
@@ -505,8 +411,8 @@ fun bigmx(genome:  (f32,f32,f32,f32,f32),
 ------------------------------------------------------------------/
 
 fun bigmy(genome:  (f32,f32,f32,f32,f32),
-                today: f32, tmat: f32, s: f32, t: f32
-              ): f32 =
+          today: date, tmat: date, s: date, t: date
+         ): f32 =
     let (a, b, rho, nu, sigma) = genome
 
     let ts    = date_act_365(t,    s)
@@ -605,10 +511,10 @@ fun evalGenomeOnSwap (genomea: []f32,
                      (swaption: []f32): (f32,f32) =
   let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4])
   let swap_freq  = swaption[1]
-  let maturity   = add_years( today(), swaption[0] )
+  let maturity   = add_years( today, swaption[0] )
   let n_schedi   = i32(12.0 * swaption[2] / swap_freq)
 
-  let tmat0      = date_act_365( maturity, today() )
+  let tmat0      = date_act_365( maturity, today )
 
   ----------------------------------------
   -- Quote (black) price computation
@@ -617,17 +523,15 @@ fun evalGenomeOnSwap (genomea: []f32,
   --   and hoisted outside the swaption
   --   and convergence loop ...
   ----------------------------------------
-  let a12s = map  (\(i: i32): (f32,f32,f32)  ->
-                     let a1 = add_months( maturity, swap_freq*f32(i) )
-                     let a2 = add_months( a1, swap_freq ) in
+  let a12s = map  (\(i: i32): (f32,date,date) ->
+                     let a1 = add_months maturity (i32(swap_freq*f32(i)))
+                     let a2 = add_months a1 (i32 swap_freq) in
                      ( zc(a2) * date_act_365(a2, a1), a1, a2 )
                  ) (iota(n_schedi) )
-  let (lvl, t0, tn) = reduce (\(tup1:  (f32,f32,f32))
-                                 (tup2: (f32,f32,f32) ): (f32,f32,f32)  ->
-                                let (lvl,t0,tn) = tup1
-                                let (a12,a1,a2) = tup2 in
-                                ( lvl + a12, min(t0,a1), max(tn,a2) )
-                            ) (0.0, max_date(), min_date()) a12s
+  let (lvl, t0, tn) = reduce (\((lvl,t0,tn): (f32,date,date))
+                               ((a12,a1,a2): (f32,date,date)): (f32,date,date) ->
+                              ( lvl + a12, earliest t0 a1, latest tn a2)
+                             ) (0.0, max_date, min_date) a12s
 
   let strike     = ( zc(t0) - zc(tn) ) / lvl
   let d1         = 0.5 * swaption[3] * tmat0
@@ -635,8 +539,8 @@ fun evalGenomeOnSwap (genomea: []f32,
 
   -- starting new price compuation
   let (v0_mat, dummy1, dummy2) = bigv( (a,b,rho,nu,sigma), tmat0 )
-  let mux = 0.0 - bigmx( (a,b,rho,nu,sigma), today(), maturity, today(), maturity )
-  let muy = 0.0 - bigmy( (a,b,rho,nu,sigma), today(), maturity, today(), maturity )
+  let mux = 0.0 - bigmx( (a,b,rho,nu,sigma), today, maturity, today, maturity )
+  let muy = 0.0 - bigmy( (a,b,rho,nu,sigma), today, maturity, today, maturity )
   let zc_mat = zc(maturity)
   let sqrt_bfun_a = f32.sqrt( b_fun(2.0*a, tmat0) )
   let sqrt_bfun_b = f32.sqrt( b_fun(2.0*b, tmat0) )
@@ -652,12 +556,12 @@ fun evalGenomeOnSwap (genomea: []f32,
   -- computing n_schedi-size temporary arrays
   let tmp_arrs =
           map (\(i: i32): (f32,f32,f32,f32,f32,f32,f32)  ->
-                 let beg_date = add_months( maturity, swap_freq*f32(i) )
-                 let end_date = add_months( beg_date, swap_freq  )
+                 let beg_date = add_months maturity (i32 (swap_freq*f32(i) ))
+                 let end_date = add_months beg_date (i32 swap_freq)
                  let res      = date_act_365( end_date, beg_date ) * strike
                  let cii      = if i==(n_schedi-1) then 1.0 + res  else res
 
-                 let date_tod1= date_act_365(end_date, today())
+                 let date_tod1= date_act_365(end_date, today)
                  let (v0_end,dummy1,dummy2) = bigv( (a,b,rho,nu,sigma), date_tod1 )
 
                  let date_tod2= date_act_365(end_date, maturity)
@@ -879,23 +783,21 @@ fun interestCalibKernel(pop:  i32
 ------------------------------------------/
 -- Quote (block) price computation
 ------------------------------------------/
-fun extended_swaption_of_swaption(swaption: (f32,f32,f32)): (f32,[](f32,f32),(f32,f32))  =  -- swaption = (sw_mat, freq, sw_ty)
+fun extended_swaption_of_swaption(swaption: (f32,f32,f32)): (date,[](date,date),(f32,f32))  =  -- swaption = (sw_mat, freq, sw_ty)
     let (sw_mat, freq, sw_ty) = swaption
-    let maturity   = add_years( today(), sw_mat )
+    let maturity   = add_years( today, sw_mat )
     let nschedule  = i32(12.0 * sw_ty / freq)
 
-    let a12s = map  (\(i: i32): (f32,f32,f32)  ->
-                     let a1 = add_months( maturity, freq*f32(i) )
-                     let a2 = add_months( a1, freq ) in
-                     ( zc(a2) * date_act_365(a2, a1), a1, a2 )
+    let a12s = map  (\(i: i32): (f32,date,date)  ->
+                     let a1 = add_months maturity (i32 (freq*f32 i))
+                     let a2 = add_months a1 (i32 freq)
+                     in ( zc(a2) * date_act_365(a2, a1), a1, a2 )
                  ) (iota(nschedule) )
 
-    let (lvl, t0, tn) = reduce (\(tup1:  (f32,f32,f32))
-                                   (tup2: (f32,f32,f32)): (f32,f32,f32)  ->
-                                let (lvl,t0,tn) = tup1
-                                let (a12,a1,a2) = tup2 in
-                                ( lvl + a12, min(t0,a1), max(tn,a2) )
-                            ) (0.0, max_date(), min_date()) a12s
+    let (lvl, t0, tn) = reduce (\((lvl,t0,tn):  (f32,date,date))
+                                 ((a12,a1,a2): (f32,date,date)): (f32,date,date)  ->
+                                ( lvl + a12, earliest t0 a1, latest tn a2 )
+                            ) (0.0, max_date, min_date) a12s
 
     let (lvls, a1s, a2s) = unzip( a12s )
     let swap_sched       = zip   a1s a2s
@@ -911,7 +813,7 @@ fun extended_swaption_of_swaption(swaption: (f32,f32,f32)): (f32,[](f32,f32),(f3
 -- the result is: the swaption's price
 ------------------------------------------------------------------/
 
-fun black_price(today: f32, swaption: (f32,f32,f32), vol: f32 ): f32 =
+fun black_price(today: date, swaption: (f32,f32,f32), vol: f32 ): f32 =
     let (maturity, swap_sched, (strike,lvl)) =
                         extended_swaption_of_swaption( swaption )
 
@@ -937,7 +839,7 @@ fun black_price(today: f32, swaption: (f32,f32,f32), vol: f32 ): f32 =
 --   return res,ba,bb
 --------------
 
-fun pricer_of_swaption(today:  f32,
+fun pricer_of_swaption(today:  date,
                        swaption: (f32,f32,f32),
                        genome: (f32,f32,f32,f32,f32),
                        x_quads: []f32,
@@ -956,7 +858,7 @@ fun pricer_of_swaption(today:  f32,
                     ) (iota(n_schedi)
                 )
 --
-    let tmat0    = date_act_365( maturity, today )
+    let tmat0    = date_act_365 (maturity, today)
     let (v0_mat, dummyA, dummyB) = bigv( genome, tmat0)
     let zc_mat   = zc(maturity)
 --
@@ -978,9 +880,7 @@ fun pricer_of_swaption(today:  f32,
     let (scheduleix, scheduleiy) = unzip(schedulei)
 --
     let (bai, bbi, aici, log_aici, t1_cst, scale) = unzip (
-            map (\(dc: (f32,f32)): (f32,f32,f32,f32,f32,f32)  ->
-                    let (end_date, ci) = dc
-
+            map (\((end_date, ci): (date,f32)): (f32,f32,f32,f32,f32,f32)  ->
                   -- Begin Brigo and Mercurio: defined top p. 148
                     let (v0_end, dummyA, dummyB) =
                             bigv( genome, date_act_365(end_date, today   ) )
