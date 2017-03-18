@@ -18,31 +18,17 @@ default(f32)
 --------------------------------------------------/
 --/ Constants and Utility Functions
 --------------------------------------------------/
-fun eps0   (): f32 = 1.0e-3
-fun eps    (): f32 = 1.0e-5
-fun pi     (): f32 = 3.1415926535897932384626433832795
+val eps0: f32 = 1.0e-3
+val eps: f32 = 1.0e-5
 
-fun is_cauchy_llhood  (): bool = true
-fun llhood_cauchy_offs(): f32 = 5.0
-fun llhood_normal_offs(): f32 = 1.0
+val is_cauchy_llhood: bool = true
+val llhood_cauchy_offs: f32 = 5.0
+val llhood_normal_offs: f32 = 1.0
 
-fun r       (): f32 = 0.03
-fun infinity(): f32 = 1.0e49
-fun epsilon (): f32 = eps()
-
-fun itMax   (): i32 = 10000
-
-
-fun min(a: f32, b: f32): f32 = if(a < b) then a else b
-fun max(a: f32, b: f32): f32 = if(a < b) then b else a
-
-fun minI(a: i32, b: i32): i32 = if(a < b) then a else b
-fun maxI(a: i32, b: i32): i32 = if(a < b) then b else a
-
-fun fabs(a: f32): f32 = if(a < 0.0) then -a else a
+val r: f32 = 0.03
 
 fun equal(x1: f32, x2: f32): bool =
-    fabs(x1-x2) <= 1.0e-8
+    f32.abs(x1-x2) <= 1.0e-8
 
 fun date_act_365(t1: date, t2: date): f32 = f32 (diff_dates t2 t1)
 
@@ -59,7 +45,7 @@ val today = date_of_triple (2012, 1, 1)
 ----/ G2PP Module
 ----------------------------------------------------------------
 
-fun zc(t: date): f32 = f32.exp(-r() * date_act_365(t, today))
+fun zc(t: date): f32 = f32.exp(-r * date_act_365(t, today))
 
 
 ----------------------------------------------------------------
@@ -107,7 +93,7 @@ fun uGaussian_P(x: f32): f32 =
     in 0.5 * (1.0 + e)
 
 fun uGaussian_P_withExpFactor(x:  f32, exp_factor: f32 ): f32 =
-    let u   = fabs( x / f32.sqrt(2.0) )
+    let u   = f32.abs( x / f32.sqrt(2.0) )
     let e   = erff_poly_only(u)
     let res = 0.5 * e * f32.exp(exp_factor-u*u) in
     if ( 0.0 <= x )
@@ -145,10 +131,10 @@ fun rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
 
     if(0.0 <= fa*fb)
     then
-        if(0.0 <= a) then ( 0.0, 0,  infinity() )  -- root not bracketed above
-                     else ( 0.0, 0, -infinity() )  -- root not bracketed below
+        if(0.0 <= a) then ( 0.0, 0,  f32.inf )  -- root not bracketed above
+                     else ( 0.0, 0, -f32.inf )  -- root not bracketed below
     else
-    let (fa, fb, a, b) = if( fabs(fa) < fabs(fb) )
+    let (fa, fb, a, b) = if( f32.abs(fa) < f32.abs(fb) )
                          then (fb, fa, b, a)
                          else (fa, fb, a, b)
     let (c,fc)    = (a, fa)
@@ -159,7 +145,7 @@ fun rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
     loop ((a,b,c,d,fa,fb,fc,mflag,it)) =
         for i < iter_max do
 
-            if( fb==0.0 || fabs(b-a)<tol )
+            if( fb==0.0 || f32.abs(b-a)<tol )
             then (a,b,c,d,fa,fb,fc,mflag,it)
             else
 
@@ -175,10 +161,10 @@ fun rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
 
 
                 let (mflag, s) = if ( ( !((3.0*a+b)/4.0 <= s && s  <= b)    ) ||
-                                      (     mflag && fabs(b-c)/2.0 <= fabs(s-b) ) ||
-                                      ( !mflag && fabs(c-d)/2.0    <= fabs(s-b) ) ||
-                                      (     mflag && fabs(b-c)     <= fabs(tol) ) ||
-                                      ( !mflag && fabs(c-d)        <= fabs(tol) )
+                                      (     mflag && f32.abs(b-c)/2.0 <= f32.abs(s-b) ) ||
+                                      ( !mflag && f32.abs(c-d)/2.0    <= f32.abs(s-b) ) ||
+                                      (     mflag && f32.abs(b-c)     <= f32.abs(tol) ) ||
+                                      ( !mflag && f32.abs(c-d)        <= f32.abs(tol) )
                                     )
                                  then (true,  (a+b)/2.0)
                                  else (false, s        )
@@ -193,7 +179,7 @@ fun rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
                                   then (a,s,fa,fs)
                                   else (s,b,fs,fb)
 
-                let (a,b,fa,fb) = if( fabs(fa) < fabs(fb) )
+                let (a,b,fa,fb) = if( f32.abs(fa) < f32.abs(fb) )
                                   then (b,a,fb,fa) -- swap args
                                   else (a,b,fa,fb)
 
@@ -235,7 +221,7 @@ fun makeSummary(quote_prices: [](f32,f32)): [][]f32 =
   map (\(qp: (f32,f32)): []f32  ->
          let (black_price, calib_price) = qp
          let err_ratio =  (calib_price - black_price) / black_price in
-         [10000.0*calib_price, 10000.0*black_price, 100.0*fabs(err_ratio)]
+         [10000.0*calib_price, 10000.0*black_price, 100.0*f32.abs(err_ratio)]
      ) (quote_prices
      )
 
@@ -245,11 +231,11 @@ fun makeSummary(quote_prices: [](f32,f32)): [][]f32 =
 --------------------------------------------------/
 
 fun genomeBounds(): [](f32,f32,f32) =
-    [ (eps0(),     1.0-eps0(), 0.02)
-    , (eps0(),     1.0-eps0(), 0.02)
-    , (eps0()-1.0, 1.0-eps0(), 0.0 )
-    , (eps0(),     0.2,        0.01)
-    , (eps0(),     0.2,        0.04)
+    [ (eps0,     1.0-eps0, 0.02)
+    , (eps0,     1.0-eps0, 0.02)
+    , (eps0-1.0, 1.0-eps0, 0.0 )
+    , (eps0,     0.2,        0.01)
+    , (eps0,     0.2,        0.04)
     ]
 
 fun initGenome (rand_nums: []f32): []f32 =
@@ -271,15 +257,15 @@ fun moves_unif_ampl_ratio(): f32 = 0.005
 
 fun mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32,f32)): (f32,f32) =
   let (g_min, g_max, g_ini) = gmm
-  let amplitude     = fabs( (g_max - g_min) * ampl_ratio )
+  let amplitude     = f32.abs( (g_max - g_min) * ampl_ratio )
   let semiamplitude = amplitude / 2.0
 
-  let tmp_min_max = min( g_max, gene + semiamplitude )
-  let tmp_max_min = max( g_min, gene - semiamplitude )
+  let tmp_min_max = f32.min g_max (gene + semiamplitude)
+  let tmp_max_min = f32.max g_min (gene - semiamplitude)
   let forward_range = tmp_min_max - tmp_max_min
 
-  let tmp_min_max = min( g_max, prop + semiamplitude )
-  let tmp_max_min = max( g_min, prop - semiamplitude )
+  let tmp_min_max = f32.min g_max (prop + semiamplitude)
+  let tmp_max_min = f32.max g_min (prop - semiamplitude)
   let backward_range = tmp_min_max - tmp_max_min
 
   let bf_fact = if 0.0 < semiamplitude
@@ -289,11 +275,11 @@ fun mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32
 
 fun constrainDim(gene:  f32, tup: (f32,f32,f32) ): f32 =
   let (g_min, g_max, g_ini) = tup
-  in  max( g_min, min(g_max, gene) )
+  in  f32.max g_min (f32.min g_max gene)
 
 fun perturbation(gamma1:  f32, ampl_rat : f32)
                 (gene: f32, gene_k: f32, gene_l: f32,   r01: f32, mm_diff: f32 ): f32 =
-  let amplitude     = fabs( mm_diff * ampl_rat )
+  let amplitude     = f32.abs( mm_diff * ampl_rat )
   let semiamplitude = amplitude / 2.0
   let perturb       = ( amplitude * r01 - semiamplitude )
   in  gene + perturb + gamma1 * ( gene_k - gene_l )
@@ -454,8 +440,8 @@ fun exactYhat(n_schedi:  i32,
     let (up,  lo ) = reduce (\(x: (f32,f32)) (y: (f32,f32)): (f32,f32)  ->
                                let (a1, b1) = x
                                let (a2, b2) = y in
-                               (a1 + a2, max(b1, b2) )
-                           ) (0.0, -infinity()) uplos
+                               (a1 + a2, f32.max b1 b2 )
+                           ) (0.0, -f32.inf) uplos
 --    let up = reduce((+), 0.0, ups)           in
 --    let lo = reduce(max, -infinity(), los)    in
 
@@ -470,10 +456,10 @@ fun exactYhat(n_schedi:  i32,
                      else
                        let tmp = log_s/bbi[0] in
                        if(0.0<= tmp) then tmp
-                       else -infinity()
+                       else -f32.inf
 
-         let yl = lo - epsilon()
-         let yu = up + epsilon()
+         let yl = lo - eps
+         let yu = up + eps
 
          let (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy) = scals
 
@@ -493,13 +479,13 @@ fun exactYhat(n_schedi:  i32,
               --                    , zip(bai, aici)
               --                 )        in
               let scales  = ups
-              let root_lb = max(yl, y0)
-              let root_ub = min(yu, y1)
+              let root_lb = f32.max yl y0
+              let root_ub = f32.min yu y1
               let (root, iteration, error) =
                     rootFinding_Brent(1, zip scales bbi, root_lb, root_ub, 1.0e-4, 1000) in
 
-              if      ( error == -infinity() ) then y0 - 1.0
-              else if ( error ==  infinity() ) then y1 + 1.0
+              if      ( error == -f32.inf ) then y0 - 1.0
+              else if ( error ==  f32.inf ) then y1 + 1.0
               else                                  root
 
 --------------------------------------------------/
@@ -616,7 +602,7 @@ fun evalGenomeOnSwap (genomea: []f32,
                   ) hermdata
 
   let accum = reduce (+) (0.0) accums
-  let new_price = zc_mat * ( accum / f32.sqrt( pi() ) ) in
+  let new_price = zc_mat * ( accum / f32.sqrt( f32.pi ) ) in
   (new_quote, new_price)
 
 --------------------------------------------------------------/
@@ -624,25 +610,25 @@ fun evalGenomeOnSwap (genomea: []f32,
 --------------------------------------------------------------/
 
 fun normalPdf(z:  f32, mu: f32, sigma: f32 ): f32 =
-    let sigma  = fabs(sigma)
-    let res    = 1.0 / (sigma * f32.sqrt(2.0*pi()))
+    let sigma  = f32.abs(sigma)
+    let res    = 1.0 / (sigma * f32.sqrt(2.0*f32.pi))
     let ecf    = (z-mu) * (z-mu) / (2.0 * sigma * sigma) in
     res * f32.exp( 0.0 - ecf )
 fun logLikeNormal(y_ref:  f32, y: f32): f32 =
-    let sigma = (y_ref / 50.0) * llhood_normal_offs()
+    let sigma = (y_ref / 50.0) * llhood_normal_offs
     let pdfs  = normalPdf( y, y_ref, sigma ) in
     f32.log(pdfs + 1.0e-20)
 
 fun cauchyPdf(z:  f32, mu: f32, gamma: f32 ): f32 = -- mu=0.0, gamma=4.0
     let x = (z-mu) / gamma in
-    1.0 / ( pi() * gamma * (1.0 + x*x) )
+    1.0 / ( f32.pi * gamma * (1.0 + x*x) )
 fun logLikeCauchy(y_ref:  f32, y: f32 ): f32 =
-    let gamma = ( fabs(y_ref) / 50.0 ) * llhood_cauchy_offs() + 0.01
+    let gamma = ( f32.abs(y_ref) / 50.0 ) * llhood_cauchy_offs + 0.01
     let pdfs  = cauchyPdf( y, y_ref, gamma ) in
     f32.log(pdfs + 1.0e-20)
 
 fun logLikelihood(y_ref: f32, y: f32): f32 =
-  if   is_cauchy_llhood()
+  if   is_cauchy_llhood
   then logLikeCauchy(y_ref, y)
   else logLikeNormal(y_ref, y)
 
@@ -741,7 +727,7 @@ fun interestCalibKernel(pop:  i32
       let res_gene_liks =
           map (\(tup: ([]f32,f32,[]f32,f32,f32,i32)): (*[]f32,f32)  ->
                  let (gene, logLik, new_gene, new_logLik, fb_rat, i) = tup
-                 let acceptance = min( 1.0, f32.exp(new_logLik - logLik)*fb_rat )
+                 let acceptance = f32.min 1.0 (f32.exp(new_logLik - logLik)*fb_rat)
                  let rand01     = sobolInd sobDirVct (sob_offs+i)
                  let (res_gene, res_logLik) =
                        if ( rand01 < acceptance )
@@ -760,7 +746,7 @@ fun interestCalibKernel(pop:  i32
       reduce (\(t1: (i32,f32)) (t2: (i32,f32)): (i32,f32)  ->
                 let (i1, v1) = t1 let (i2, v2) = t2 in
                 if (v1 < v2) then (i2, v2) else (i1, v1)
-            ) (0, -infinity()) (zip (iota(pop)) logLiks
+            ) (0, -f32.inf) (zip (iota(pop)) logLiks
             )
 
   let winner = genomes[winner_ind]
@@ -947,7 +933,7 @@ fun pricer_of_swaption(today:  date,
                   ) (zip (x_quads) (w_quads)
                   )
     let sum = reduce (+) (0.0) tmps      in
-            zc_mat * ( sum / f32.sqrt( pi() ) )
+            zc_mat * ( sum / f32.sqrt( f32.pi ) )
 
 
 --------------------------------------------------/
