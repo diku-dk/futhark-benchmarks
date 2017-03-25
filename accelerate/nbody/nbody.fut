@@ -53,7 +53,7 @@ fun accel (epsilon: f32) ((pi, _, _ , _):body) ((pj, mj, _ , _): body)
 
 fun move(epsilon: f32, bodies: []body) (this_body: body): position =
   let accels = map (accel epsilon this_body) bodies
-  in reduceComm vec_add (0f32, 0f32, 0f32) accels
+  in reduce_comm vec_add (0f32, 0f32, 0f32) accels
 
 fun calc_accels(epsilon: f32, bodies: []body): []acceleration =
   map (move(epsilon, bodies)) bodies

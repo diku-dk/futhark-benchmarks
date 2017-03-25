@@ -13,7 +13,7 @@ fun closest_point(p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
   in if d1 < d2 then p1 else p2
 
 fun find_nearest_point(pts: [k](f32,f32)) (pt: (f32,f32)): i32 =
-  let (i, _) = reduceComm closest_point (0, euclid_dist_2 pt pts[0]) (
+  let (i, _) = reduce_comm closest_point (0, euclid_dist_2 pt pts[0]) (
                           zip (iota(k)) (
                               map (euclid_dist_2(pt)) pts))
   in i
@@ -36,7 +36,7 @@ fun centroids_of(k: i32, points: [n](f32,f32), membership: [n]i32): *[k](f32,f32
                           cluster_counts)
   let cluster_centres = map (\(count: i32) (my_points: [n](f32,f32)): (f32,f32)  ->
                                   let (x,y) =
-                                    reduceComm add_centroids (0f32, 0f32) my_points
+                                    reduce_comm add_centroids (0f32, 0f32) my_points
                                   in (x / f32(count), y / f32(count)))
                                   cluster_sizes cluster_points
   in cluster_centres
