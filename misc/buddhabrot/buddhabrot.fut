@@ -75,7 +75,7 @@ fun visualise(n: i32, m: i32, view: (f32,f32,f32,f32),
   let escapes' = reshape (xprec*yprec) escapes
   let visits_per_pixel =
     reshape (n*m)
-            (streamRedPer (\(ass: [n][m]i32) (bss: [n][m]i32): [n][m]i32  ->
+            (stream_red_per (\(ass: [n][m]i32) (bss: [n][m]i32): [n][m]i32  ->
                            map (\(as: [m]i32) (bs: [m]i32): [m]i32  ->
                                      map (+) as bs) ass bss) (
                          \(inp: [chunk]([depth](f32,f32),bool)): [n][m]i32  ->

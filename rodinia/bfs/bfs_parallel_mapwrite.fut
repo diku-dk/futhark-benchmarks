@@ -27,7 +27,7 @@ module BFS = BFSLIB({
     -- We calculate the maximum number of edges for a node.  This is necessary,
     -- since the number of edges are irregular, and since we want to construct a
     -- nested array.
-    let e_max = reduceComm max 0 (nodes_n_edges)
+    let e_max = reduce_comm max 0 (nodes_n_edges)
 
     let (inds_mask, ind_vals_upd0) =
       unzip(map (\(tid: i32): (i32, [e_max](i32,i32))  ->
