@@ -18,14 +18,14 @@ default(f32)
 --------------------------------------------------/
 --/ Constants and Utility Functions
 --------------------------------------------------/
-val eps0: f32 = 1.0e-3
-val eps: f32 = 1.0e-5
+let eps0: f32 = 1.0e-3
+let eps: f32 = 1.0e-5
 
-val is_cauchy_llhood: bool = true
-val llhood_cauchy_offs: f32 = 5.0
-val llhood_normal_offs: f32 = 1.0
+let is_cauchy_llhood: bool = true
+let llhood_cauchy_offs: f32 = 5.0
+let llhood_normal_offs: f32 = 1.0
 
-val r: f32 = 0.03
+let r: f32 = 0.03
 
 fun equal(x1: f32, x2: f32): bool =
     f32.abs(x1-x2) <= 1.0e-8
@@ -35,11 +35,11 @@ fun date_act_365(t1: date, t2: date): f32 = f32 (diff_dates t2 t1)
 fun add_years(date: date, nbyears: f32): date =
   add_months date (i32 (nbyears * 12.0))
 
-val max_date = date_of_triple (2229, 12, 31)
+let max_date = date_of_triple (2229, 12, 31)
 
-val min_date = date_of_triple (1980, 1, 1)
+let min_date = date_of_triple (1980, 1, 1)
 
-val today = date_of_triple (2012, 1, 1)
+let today = date_of_triple (2012, 1, 1)
 
 ----------------------------------------------------------------
 ----/ G2PP Module
