@@ -10,7 +10,7 @@ module conway_rules: vis_rules with cell = bool = {
 
   fun value (b: cell) = if b then 1 else 0
 
-  val weights = [[1,1,1],
+  let weights = [[1,1,1],
                  [1,0,1],
                  [1,1,1]]
 

@@ -24,7 +24,7 @@ type cell = (R.cell, argb.colour, i32)
 
 fun value ((c,_,_): cell) = R.value c
 
-val weights = R.weights
+let weights = R.weights
 
 fun init (b: bool) = (R.init b, argb.black, 10000)
 
@@ -47,5 +47,5 @@ fun colour ((c,col,h): cell) =
 }
 
 module slow_fader: (vis_rules -> vis_game_of_life) = fading_life {
-  val dying_speed = 0.1f32
+  let dying_speed = 0.1f32
 }

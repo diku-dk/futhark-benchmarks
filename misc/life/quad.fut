@@ -9,7 +9,7 @@ module quad_rules: vis_rules = {
 
   fun value (c: cell) = i32 c
 
-  val weights = [[1,1,1],
+  let weights = [[1,1,1],
                  [1,1,1],
                  [1,1,1]]
 

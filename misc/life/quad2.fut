@@ -11,7 +11,7 @@ module quad2_rules: vis_rules = {
 
   fun value (c: cell) = i32 c
 
-  val weights = [[0,1,0],
+  let weights = [[0,1,0],
                  [1,1,1],
                  [0,1,0]]
 
