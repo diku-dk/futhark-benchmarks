@@ -29,12 +29,12 @@ import "futlib/math"
 
 default (f32)
 
-fun min(x: i32, y: i32): i32 =
+let min(x: i32, y: i32): i32 =
   if x < y then x else y
 
-fun pi(): f32 = 3.14159265359
+let pi(): f32 = 3.14159265359
 
-fun luminanceOfRGBA32(p: i32): f32 =
+let luminanceOfRGBA32(p: i32): f32 =
   let r = i8(p >> 24)
   let g = i8(p >> 16)
   let b = i8(p >> 8)
@@ -43,26 +43,26 @@ fun luminanceOfRGBA32(p: i32): f32 =
   let b' = 0.11 * f32(b)
   in (r' + g' + b') / 255.0
 
-fun clamp(lower: i32, x: i32, upper: i32): i32 =
+let clamp(lower: i32, x: i32, upper: i32): i32 =
   if x < lower then lower
   else if x > upper then upper
   else x
 
-fun orientUndef(): i32 = 0
-fun orientPosD(): i32 = 64
-fun orientVert(): i32 = 128
-fun orientNegD(): i32 = 192
-fun orientHoriz(): i32 = 255
+let orientUndef(): i32 = 0
+let orientPosD(): i32 = 64
+let orientVert(): i32 = 128
+let orientNegD(): i32 = 192
+let orientHoriz(): i32 = 255
 
-fun edgeNone(): f32 = 0.0
-fun edgeWeak(): f32 = 0.5
-fun edgeStrong(): f32 = 1.0
+let edgeNone(): f32 = 0.0
+let edgeWeak(): f32 = 0.5
+let edgeStrong(): f32 = 1.0
 
-fun toGreyscale(img: [h][w]i32): [h][w]f32 =
+let toGreyscale(img: [h][w]i32): [h][w]f32 =
   map (\(row: [w]i32): [w]f32  ->
         map (255.0*) (map luminanceOfRGBA32 row)) img
 
-fun gaussianX(img: [h][w]f32): [h][w]f32 =
+let gaussianX(img: [h][w]f32): [h][w]f32 =
   unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
@@ -75,7 +75,7 @@ fun gaussianX(img: [h][w]f32): [h][w]f32 =
             iota(w))) (
       iota(h))
 
-fun gaussianY(img: [h][w]f32): [h][w]f32 =
+let gaussianY(img: [h][w]f32): [h][w]f32 =
   unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
@@ -89,7 +89,7 @@ fun gaussianY(img: [h][w]f32): [h][w]f32 =
             iota(w))) (
       iota(h))
 
-fun gradiantMagDir(low: f32, img: [h][w]f32): [h][w](f32,i32) =
+let gradiantMagDir(low: f32, img: [h][w]f32): [h][w](f32,i32) =
   unsafe
   map (\(x: i32): [w](f32,i32)  ->
         map (\(y: i32): (f32,i32)  ->
@@ -124,7 +124,7 @@ fun gradiantMagDir(low: f32, img: [h][w]f32): [h][w](f32,i32) =
             iota(w))) (
       iota(h))
 
-fun nonMaximumSuppression(low: f32, high: f32, magdir: [h][w](f32,i32)): [h][w]f32 =
+let nonMaximumSuppression(low: f32, high: f32, magdir: [h][w](f32,i32)): [h][w]f32 =
   unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
@@ -144,7 +144,7 @@ fun nonMaximumSuppression(low: f32, high: f32, magdir: [h][w](f32,i32)): [h][w]f
          iota(w))) (
       iota(h))
 
-fun selectStrong(img: [h][w]f32): []i32 =
+let selectStrong(img: [h][w]f32): []i32 =
   let strong = map (\(x: f32): i32  ->
                      if x == edgeStrong() then 1 else 0) (
                    reshape (w*h) img)
@@ -162,7 +162,7 @@ fun selectStrong(img: [h][w]f32): []i32 =
               iota(w*h-1)))
   in write indices' values zeros
 
-fun main(low: f32, high: f32, img: [h][w]i32): []i32 =
+let main(low: f32, high: f32, img: [h][w]i32): []i32 =
   selectStrong
   (nonMaximumSuppression
    (low, high, gradiantMagDir

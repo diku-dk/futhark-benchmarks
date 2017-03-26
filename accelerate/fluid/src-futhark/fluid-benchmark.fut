@@ -5,7 +5,7 @@
 
 import "fluid"
 
-fun main(u0: [g][g]f32,
+let main(u0: [g][g]f32,
        v0: [g][g]f32,
        d0: [g][g]f32,
        n_steps: i32,

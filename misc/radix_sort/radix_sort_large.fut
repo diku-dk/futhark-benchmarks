@@ -8,4 +8,4 @@
 
 import "radix_sort"
 
-fun f(): i32 = 0 -- hack
+let f(): i32 = 0 -- hack

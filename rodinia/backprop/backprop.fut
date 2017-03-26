@@ -9,16 +9,16 @@ import "futlib/math"
 
 default(f32)
 
-fun eta(): f32       = 0.3
-fun momentum(): f32  = 0.3
-fun init_zero(): bool = false
+let eta(): f32       = 0.3
+let momentum(): f32  = 0.3
+let init_zero(): bool = false
 
-fun squash(x: f32): f32 = 1.0 / (1.0 + f32.exp(-x))
-fun fabs   (x: f32): f32 = if x < 0.0 then 0.0 - x else x
+let squash(x: f32): f32 = 1.0 / (1.0 + f32.exp(-x))
+let fabs   (x: f32): f32 = if x < 0.0 then 0.0 - x else x
 
 -- Computational kernels
 
-fun bpnn_output_error(target: [n]f32, output: [n]f32): (f32, [n]f32) =
+let bpnn_output_error(target: [n]f32, output: [n]f32): (f32, [n]f32) =
     let (errs, delta) = unzip (
         map ( \(t: f32, o: f32): (f32,f32)  ->
                 let d = o * (1.0 - o) * (t - o)
@@ -28,7 +28,7 @@ fun bpnn_output_error(target: [n]f32, output: [n]f32): (f32, [n]f32) =
     in  ( err, delta )
 
 
-fun bpnn_hidden_error(delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32, [nh]f32) =
+let bpnn_hidden_error(delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32, [nh]f32) =
     let (errs, delta_h) = unzip (
         map ( \(hidden_el: f32, who_row: []f32): (f32,f32)  ->
                 let prods  = map (*) delta_o who_row
@@ -39,7 +39,7 @@ fun bpnn_hidden_error(delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32
     let err = reduce (+) 0.0 errs
     in  ( err, delta_h )
 
-fun bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
+let bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
   let lyext = map( \(k: i32): f32  ->
                         if k < 1 then 1.0 else unsafe ly[k-1])
                  (iota nly)
@@ -51,7 +51,7 @@ fun bpnn_adjust_weights(delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32,
             (zip w oldw lyext))
 
 
-fun bpnn_layerforward_GOOD(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
+let bpnn_layerforward_GOOD(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
   let res_tmp   = map ( \(conn_tr_row: [n1]f32): f32  ->
                             let prods = map (*) conn_tr_row l1
@@ -61,7 +61,7 @@ fun bpnn_layerforward_GOOD(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32)
   (zip (res_tmp) (conn_fstrow))
 
 
-fun bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
+let bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
   let res_map   = map ( \(conn_tr_row: [n1]f32): [n1]f32  ->
                         map (*) conn_tr_row l1)
@@ -82,7 +82,7 @@ fun bpnn_layerforward(l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2
 
 --------------------------------------------------------/
 
-fun bpnn_train_kernel( input_units:  [n_in]f32
+let bpnn_train_kernel( input_units:  [n_in]f32
                      , target: [n_out]f32
                      , input_weights: [n_inp1][n_hid]f32
                      , hidden_weights: [n_hidp1][n_out]f32
@@ -111,7 +111,7 @@ fun bpnn_train_kernel( input_units:  [n_in]f32
 
 ----------------------------------------------------/
 
-fun sobolIndR(dirVct: [num_bits]i32) (n: i32): f32 =
+let sobolIndR(dirVct: [num_bits]i32) (n: i32): f32 =
     -- placed norm_fact here to check that hoisting does its job!
     let norm_fact = 1.0 / ( f32(1 << num_bits) + 1.0 )
     let n_gray = (n >> 1) ^ n
@@ -124,7 +124,7 @@ fun sobolIndR(dirVct: [num_bits]i32) (n: i32): f32 =
            else res
     in f32(res) * norm_fact
 
-fun bpnn_randomize_weights(m: i32, n: i32, offset: i32, dirVct: []i32): ([m][n]f32,[m]f32) =
+let bpnn_randomize_weights(m: i32, n: i32, offset: i32, dirVct: []i32): ([m][n]f32,[m]f32) =
     --let linw = map(sobolIndR(dirVct), map(+offset, iota(m*n)))
     --in  reshape((m,n), linw)
     -- OR with better structure:
@@ -142,19 +142,19 @@ fun bpnn_randomize_weights(m: i32, n: i32, offset: i32, dirVct: []i32): ([m][n]f
                 (iota m)
     in (mat, vct)
 
-fun bpnn_randomize_row(m: i32, offset: i32, dirVct: []i32): [m]f32 =
+let bpnn_randomize_row(m: i32, offset: i32, dirVct: []i32): [m]f32 =
     map (sobolIndR(dirVct)) (map (+offset) (iota m))
 
-fun bpnn_constant_row(m: i32, value: f32): [m]f32 =
+let bpnn_constant_row(m: i32, value: f32): [m]f32 =
     replicate m value
 
-fun bpnn_zero_weights(m: i32, n: i32): [m][n]f32 =
+let bpnn_zero_weights(m: i32, n: i32): [m][n]f32 =
     map (\(i: i32): [n]f32  -> replicate n 0.0)
         (iota m)
 
 ----------------------------------------------------/
 
-fun bpnn_create(n_in: i32, n_inp1: i32, n_hid: i32, n_hidp1: i32, n_out: i32, offset: i32, dirVct: []i32): ( [n_in]f32
+let bpnn_create(n_in: i32, n_inp1: i32, n_hid: i32, n_hidp1: i32, n_out: i32, offset: i32, dirVct: []i32): ( [n_in]f32
     , [n_out]f32
     ,([n_inp1][n_hid]f32, [n_inp1]f32)
     ,([n_hidp1][n_out]f32, [n_hidp1]f32)
@@ -190,7 +190,7 @@ fun bpnn_create(n_in: i32, n_inp1: i32, n_hid: i32, n_hidp1: i32, n_out: i32, of
        (hidden_weights, hidden_weights_fstcol),
        input_prev_weights, hidden_prev_weights)
 
-fun consColumn(mat: [m][n]f32, col: [m]f32): [m][]f32 =
+let consColumn(mat: [m][n]f32, col: [m]f32): [m][]f32 =
     let np1 = n+1
     in map ( \(matrow: []f32, colelm: f32): []f32  ->
                map ( \(k: i32): f32  ->
@@ -198,7 +198,7 @@ fun consColumn(mat: [m][n]f32, col: [m]f32): [m][]f32 =
              (iota(n+1)))
              (zip mat col)
 
-fun main(n_in: i32, dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
+let main(n_in: i32, dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
     let (n_inp1, n_hid, n_hidp1, n_out) = (n_in+1, 16, 16+1, 1)
     let (   input_units, target,
            ( input_weights,  input_weights_fstcol),

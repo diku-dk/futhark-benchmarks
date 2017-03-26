@@ -8,10 +8,10 @@
 
 import "futlib/math"
 
-fun infty(): f32 = 1.0f32 / 0.0f32
-fun emptyRecord(): (i32, f32) = (0, 0.0f32)
+let infty(): f32 = 1.0f32 / 0.0f32
+let emptyRecord(): (i32, f32) = (0, 0.0f32)
 
-fun main(resultsCount:    i32, lat: f32, lng: f32, 
+let main(resultsCount:    i32, lat: f32, lng: f32, 
         locations_lat: [numRecords]f32, 
         locations_lng: [numRecords]f32    ): ([resultsCount]i32, [resultsCount]f32) =
   let locations    = zip (locations_lat) (locations_lng)

@@ -4,14 +4,14 @@
 
 import "fluid"
 
-fun clamp(x: f32): i8 =
+let clamp(x: f32): i8 =
   if x < 0.0f32
   then 0i8
   else if x > 255.0f32
   then 255i8
   else i8(x)
 
-fun draw_densities(ds: [g][g]f32,
+let draw_densities(ds: [g][g]f32,
                  g_minus_two: i32): [g_minus_two][g_minus_two][3]i8 =
   let ks = map (\(k: i32): i32  -> k + 1) (iota(g_minus_two))
   in map (\(i: i32): [g_minus_two][3]i8  ->
@@ -19,7 +19,7 @@ fun draw_densities(ds: [g][g]f32,
                    let value = clamp(255.0f32 * unsafe ds[i, j])
                    in [value, value, value]) ks) ks
 
-fun draw_one_frame(u0: [g][g]f32,
+let draw_one_frame(u0: [g][g]f32,
                  v0: [g][g]f32,
                  d0: [g][g]f32,
                  n_solver_steps: i32,
@@ -34,7 +34,7 @@ fun draw_one_frame(u0: [g][g]f32,
                        time_step, diffusion_rate, viscosity)
   in (draw_densities(d1, g_minus_two), u1, v1, d1)
 
-fun main(u0: [g][g]f32,
+let main(u0: [g][g]f32,
        v0: [g][g]f32,
        d0: [g][g]f32,
        n_solver_steps: i32,

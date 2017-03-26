@@ -29,7 +29,7 @@ module type game_of_life = {
 module gen_life(R: rules): game_of_life with cell = R.cell = {
   type cell = R.cell
 
-  fun sum_of_neighbours (nw: cell) (n: cell) (ne: cell)
+  let sum_of_neighbours (nw: cell) (n: cell) (ne: cell)
                         (w:  cell) (c: cell) (e:  cell)
                         (sw: cell) (s: cell) (se: cell): i32 =
     (R.value nw * R.weights[0,0] +
@@ -44,7 +44,7 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
      R.value s  * R.weights[2,1] +
      R.value se * R.weights[2,2])
 
-  fun all_neighbour_sums(world: [n][m]cell): [n][m]i32 =
+  let all_neighbour_sums(world: [n][m]cell): [n][m]i32 =
     let ns  = rotate   (-1) world
     let ss  = rotate     1  world
     let ws  = rotate@1 (-1) world
@@ -58,7 +58,7 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
             nws_r ns_r nes_r ws_r world_r es_r sws_r ss_r ses_r)
            nws ns nes ws world es sws ss ses
 
-  fun step(world: [n][m]cell): [n][m]cell =
+  let step(world: [n][m]cell): [n][m]cell =
     let all_sums = all_neighbour_sums world
     in map (\world_r all_sums_r -> map R.step world_r all_sums_r) world all_sums
 }
@@ -92,12 +92,12 @@ module type vis_game_of_life = {
 module gen_life_vis(R: vis_rules): vis_game_of_life with cell = R.cell = {
   open (gen_life R)
 
-  fun init(world: [n][m]bool): [n][m]cell =
+  let init(world: [n][m]bool): [n][m]cell =
     map (\row -> map R.init row) world
 
-  fun uninit(world: [n][m]cell): [n][m]bool =
+  let uninit(world: [n][m]cell): [n][m]bool =
     map (\row -> map R.uninit row) world
 
-  fun render(world: [n][m]cell): [n][m]i32 =
+  let render(world: [n][m]cell): [n][m]i32 =
     map (\ages -> map R.colour ages) world
 }

@@ -13,43 +13,43 @@ import "futlib/math"
 
 default(f32)
 
-fun gamma(): f32 = 1.4
-fun iterations(): i32 = 2000
+let gamma(): f32 = 1.4
+let iterations(): i32 = 2000
 
 --#define NDIM 3
 --#define NNB 4
 
-fun rk(): i32 = 3	-- 3rd order rk
-fun ff_mach(): f32 = 1.2
-fun deg_angle_of_attack(): f32 = 0.0
+let rk(): i32 = 3	-- 3rd order rk
+let ff_mach(): f32 = 1.2
+let deg_angle_of_attack(): f32 = 0.0
 
 -- not options
-fun var_density(): i32 = 0
-fun var_momentum(): i32= 1
-fun var_density_energy(): i32 = var_momentum() + 3 --var_momentum+NDIM
-fun nvar(): i32 = var_density_energy() + 1
+let var_density(): i32 = 0
+let var_momentum(): i32= 1
+let var_density_energy(): i32 = var_momentum() + 3 --var_momentum+NDIM
+let nvar(): i32 = var_density_energy() + 1
 
 -- short functions
-fun compute_velocity(density: f32, momentum: (f32,f32,f32)): (f32,f32,f32) =
+let compute_velocity(density: f32, momentum: (f32,f32,f32)): (f32,f32,f32) =
     let (momentum_x, momentum_y, momentum_z) = momentum
     in  (momentum_x / density, momentum_y / density, momentum_z / density)
 
-fun compute_speed_sqd(velocity: (f32,f32,f32)): f32 = 
+let compute_speed_sqd(velocity: (f32,f32,f32)): f32 = 
     let (velocity_x, velocity_y, velocity_z) = velocity
     in velocity_x*velocity_x + velocity_y*velocity_y + velocity_z*velocity_z
 
-fun compute_pressure(density: f32, density_energy: f32, speed_sqd: f32): f32 = 
+let compute_pressure(density: f32, density_energy: f32, speed_sqd: f32): f32 = 
     (gamma()-1.0) * (density_energy - 0.5*density*speed_sqd)
 
-fun compute_speed_of_sound(density: f32, pressure: f32): f32 =
+let compute_speed_of_sound(density: f32, pressure: f32): f32 =
     f32.sqrt( gamma() * pressure / density )
 
 --
-fun initialize_variables(nelr: i32, ff_variable: [5]f32): [5][nelr]f32 = --[nvar]float ff_variable
+let initialize_variables(nelr: i32, ff_variable: [5]f32): [5][nelr]f32 = --[nvar]float ff_variable
     map (\(x: f32): [nelr]f32  -> replicate nelr x) (ff_variable)
 
 -- 
-fun compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_energy: f32, 
+let compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_energy: f32, 
                            pressure: f32, velocity: (f32,f32,f32) ): ((f32,f32,f32),(f32,f32,f32),(f32,f32,f32),(f32,f32,f32)) =
     let (momentum_x, momentum_y, momentum_z) = momentum
     let (velocity_x, velocity_y, velocity_z) = velocity
@@ -78,7 +78,7 @@ fun compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_e
        )
 
 --
-fun compute_step_factor(variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = -- 5 == nvar
+let compute_step_factor(variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = -- 5 == nvar
     map (\(i: i32): f32  ->
             let density    = variables[var_density(),    i]
             let momentum_x = variables[var_momentum()+0, i]
@@ -94,7 +94,7 @@ fun compute_step_factor(variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = 
        ) (iota(nelr))
     
 --5 == nvar
-fun compute_flux(elements_surrounding_elements:    [nnb][nel]i32
+let compute_flux(elements_surrounding_elements:    [nnb][nel]i32
                 ,   normals: [ndim][nnb][nel]f32
                 ,   variables: [5][nel]f32   
                 ,   ff_variable: [5]f32
@@ -276,7 +276,7 @@ fun compute_flux(elements_surrounding_elements:    [nnb][nel]i32
     )
 
 --
-fun time_step(j:  i32, 
+let time_step(j:  i32, 
                               old_variables: [5][nel]f32, 
                               step_factors: [nel]f32, 
                               fluxes: [5][nel]f32  ): [5][nel]f32 =
@@ -295,7 +295,7 @@ fun time_step(j:  i32,
 --------------------------
 ---- MAIN ENTRY POINT ----
 --------------------------
-fun main(areas:   [nel]f32, 
+let main(areas:   [nel]f32, 
       elements_surrounding_elements: [4][nel]i32, 
      normals: [3][4][nel]f32 ): [5][nel]f32 =
     let ndim = 3

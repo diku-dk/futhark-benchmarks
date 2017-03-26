@@ -26,7 +26,7 @@
 -- g : data term gradient array, size (m,n,p,q).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun add_descent_div3v(v:  [m][n][p][q]f32
+let add_descent_div3v(v:  [m][n][p][q]f32
                  , xi: [m][n][p][q](f32,f32,f32)
                  , g: [m][n][p][q]f32
                  , tp: f32 ): [m][n][p][q]f32 =
@@ -190,14 +190,14 @@ fun add_descent_div3v(v:  [m][n][p][q]f32
 -----------------------------------------------------
 -----------------------------------------------------
 
-fun main1(v:  [m][n][p][q]f32
+let main1(v:  [m][n][p][q]f32
                  , xi: [m][n][p][q](f32,f32,f32)
                  , g: [m][n][p][q]f32
                  , tp: f32 ): [m][n][p][q]f32 =
 
     add_descent_div3v(v, xi, g, tp)
 
-fun main(m: i32, n: i32, p: i32, q: i32, loop_count: i32): [m][n][p][q]f32 = 
+let main(m: i32, n: i32, p: i32, q: i32, loop_count: i32): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q)
     let v  = reshape (m,n,p,q) (map f32 (iota(mnpq)))
     let g  = reshape (m,n,p,q) (map f32 (iota(mnpq)))

@@ -14,14 +14,14 @@ import "futlib/math"
 ----- Ecc MODULE -----
 ----------------------
 
-fun pow(x: f32, y: f32): f32 = x ** y
-fun log10(x: f32): f32 = f32.log(x) / f32.log(10.0f32)
+let pow(x: f32, y: f32): f32 = x ** y
+let log10(x: f32): f32 = f32.log(x) / f32.log(10.0f32)
 
-fun fmod(a: f32, b: f32): f32 = ( a - b * f32(i32(a / b)) )
+let fmod(a: f32, b: f32): f32 = ( a - b * f32(i32(a / b)) )
 
-fun fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
+let fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
-fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
+let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
                     parameter: [pars]f32, parameter_offset: i32, finavalu: *[equs]f32 ): *[equs]f32 =
   unsafe 
   -- variable references
@@ -531,7 +531,7 @@ fun ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
 ----- Cam MODULE -----
 ----------------------
 
-fun cam(timeinst:  f32, initvalu: [equs]f32, 
+let cam(timeinst:  f32, initvalu: [equs]f32, 
                             initvalu_offset: i32,
                             parameter: [pars]f32, parameter_offset: i32, 
                             finavalu: *[equs]f32, ca: f32 ): (f32, *[equs]f32) =
@@ -731,7 +731,7 @@ fun cam(timeinst:  f32, initvalu: [equs]f32,
 ----- Fin MODULE -----
 ----------------------
 
-fun fin(initvalu:     [equs]f32, initvalu_offset_ecc: i32,
+let fin(initvalu:     [equs]f32, initvalu_offset_ecc: i32,
                         initvalu_offset_Dyad: i32, initvalu_offset_SL: i32,
                         initvalu_offset_Cyt: i32, parameter: [pars]f32,
                         finavalu: *[equs]f32, jcaDyad: f32, jcaSL: f32, jcaCyt: f32 ): *[equs]f32 =
@@ -805,15 +805,15 @@ fun fin(initvalu:     [equs]f32, initvalu_offset_ecc: i32,
 ----- Master MODULE -----
 -------------------------
 
---fun f32  inf() = 1.0f32 / 0.0f32
---fun f32 minf() = 0.0f32 - inf()
---fun f32  nan() = inf()  / inf()
---fun f32 mnan() = 0.0f32 - nan()
+--let f32  inf() = 1.0f32 / 0.0f32
+--let f32 minf() = 0.0f32 - inf()
+--let f32  nan() = inf()  / inf()
+--let f32 mnan() = 0.0f32 - nan()
 
---fun bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != f32.sqrt(xp)
---fun bool isinf(f32 x) = ( x == inf() || x == minf() )
+--let bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != f32.sqrt(xp)
+--let bool isinf(f32 x) = ( x == inf() || x == minf() )
 
-fun master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f32 =
+let master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f32 =
   let finavalu = replicate equs 0.0f32
   -- ecc function
   let initvalu_offset_ecc  = 0
@@ -857,7 +857,7 @@ fun master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f
 ----- embedded_fehlberg_7_8 MODULE -----
 ----------------------------------------
 
-fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
+let embedded_fehlberg_7_8(timeinst:   f32, h: f32,
                         initvalu: [equs]f32,
                         parameter: [pars]f32 ): (*[equs]f32, *[equs]f32) =
   let c_1_11 = 41.0f32 / 840.0f32
@@ -1058,14 +1058,14 @@ fun embedded_fehlberg_7_8(timeinst:   f32, h: f32,
 ----- SOLVER MODULE -----
 -------------------------
 
-fun min_scale_factor(): f32 = 0.125f32
-fun max_scale_factor(): f32 = 4.0f32
-fun attempts(): i32         = 12
+let min_scale_factor(): f32 = 0.125f32
+let max_scale_factor(): f32 = 4.0f32
+let attempts(): i32         = 12
 
-fun max(x: f32) (y: f32): f32 = if ( x < y ) then y else x
-fun min(x: f32) (y: f32): f32 = if ( x < y ) then x else y
+let max(x: f32) (y: f32): f32 = if ( x < y ) then y else x
+let min(x: f32) (y: f32): f32 = if ( x < y ) then x else y
 
-fun solver(xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
+let solver(xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
   let err_exponent  = 1.0f32 / 7.0f32
   let last_interval = 0.0f32
   let h_init = 1.0f32
@@ -1154,10 +1154,10 @@ fun solver(xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
 ----- MAiN MODULE -----
 -----------------------
 
-fun equations (): i32 = 91
-fun parameters(): i32 = 16
+let equations (): i32 = 91
+let parameters(): i32 = 16
 
-fun main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [16]f32): (bool, [workload][91]f32) =
+let main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [16]f32): (bool, [workload][91]f32) =
   let (oks, y_res) = unzip (
     map  (\(i: i32): (bool,[91]f32)  ->
             let add_fact = f32(i % repeat)*eps
@@ -1169,15 +1169,15 @@ fun main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [
 
 
 
-fun main_EMBEDDED(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): ([91]f32, [91]f32) =
+let main_EMBEDDED(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): ([91]f32, [91]f32) =
     embedded_fehlberg_7_8( 0.0f32, 1.0f32, y[0], params[0])
 
-fun main_ECC_CAM(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): (f32, [91]f32) =
+let main_ECC_CAM(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): (f32, [91]f32) =
     let finavalu = replicate 91 0.0f32
     let finavalu = ecc( 0.0f32, y[0], 0, params[0], 0, finavalu )
     let (res_val, finavalu) = cam(  0.0f32, y[0], 46, params[0],  
                                     1, finavalu, y[0, 35]*1e3f32 )
     in (res_val, finavalu)
 
-fun main_MASTER(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): [91]f32 =
+let main_MASTER(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): [91]f32 =
     master( 0.0f32, y[0], params[0] ) 

@@ -14,7 +14,7 @@
 -- compiled input @ data/large.in
 -- output @ data/large.out
 
-fun next (c0: f32) (c1: f32) (A0: [nx][ny][nz]f32) (i: i32) (j: i32) (k: i32): f32 =
+let next (c0: f32) (c1: f32) (A0: [nx][ny][nz]f32) (i: i32) (j: i32) (k: i32): f32 =
   -- We map the edge to itself.
   if i == 0 || i == nx-1 || j == 0 || j == ny-1 || k == 0 || k == nz-1
   then A0[i,j,k]
@@ -24,7 +24,7 @@ fun next (c0: f32) (c1: f32) (A0: [nx][ny][nz]f32) (i: i32) (j: i32) (k: i32): f
               + A0[i,j,k] * c0
 
 
-fun main (iterations: i32) (nx: i32) (A0_slice: [ny][nz]f32): [ny][nz]f32 =
+let main (iterations: i32) (nx: i32) (A0_slice: [ny][nz]f32): [ny][nz]f32 =
   -- c0 and c1 are also hardcoded in Rodinia.
   let c0 = 1.0f32/6.0f32
   let c1=1.0f32/6.0f32/6.0f32

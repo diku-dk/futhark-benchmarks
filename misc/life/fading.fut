@@ -22,24 +22,24 @@ module fading_life =
 -- The cell, and the amount of time it has been dead.
 type cell = (R.cell, argb.colour, i32)
 
-fun value ((c,_,_): cell) = R.value c
+let value ((c,_,_): cell) = R.value c
 
 let weights = R.weights
 
-fun init (b: bool) = (R.init b, argb.black, 10000)
+let init (b: bool) = (R.init b, argb.black, 10000)
 
-fun uninit ((c,_,_): cell) = R.uninit c
+let uninit ((c,_,_): cell) = R.uninit c
 
-fun dead (c: R.cell): bool = R.uninit c == false
+let dead (c: R.cell): bool = R.uninit c == false
 
-fun step ((c,col,h): cell) (neighbours: i32) =
+let step ((c,col,h): cell) (neighbours: i32) =
   let c' = R.step c neighbours
   let died = ! (dead c) && dead c'
   in (c',
       if died then R.colour c else col,
       if died then 0          else h + 1)
 
-fun colour ((c,col,h): cell) =
+let colour ((c,col,h): cell) =
   let normal = R.colour c in
   if dead c
   then argb.mix 1f32 col (f32 h * F.dying_speed) normal

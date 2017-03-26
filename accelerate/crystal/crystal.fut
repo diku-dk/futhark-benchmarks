@@ -54,46 +54,46 @@ import "futlib/math"
 
 default (f32)
 
-fun pi(): f32 = 3.14159265358979323846264338327950288419716939937510
+let pi(): f32 = 3.14159265358979323846264338327950288419716939937510
 
-fun odd(n: i32): bool = (n & 1) == 1
+let odd(n: i32): bool = (n & 1) == 1
 
-fun point(scale: f32, x: f32, y: f32): (f32, f32) =
+let point(scale: f32, x: f32, y: f32): (f32, f32) =
   (x * scale, y * scale)
 
-fun rampColour(v: f32): (f32, f32, f32) =
+let rampColour(v: f32): (f32, f32, f32) =
   (1.0, 0.4 + (v * 0.6), v) -- rgb
 
-fun intPixel(t: f32): u8 =
+let intPixel(t: f32): u8 =
   u8(255.0 * t)
 
-fun intColour((r,g,b): (f32, f32, f32)): u32 =
+let intColour((r,g,b): (f32, f32, f32)): u32 =
   u32(intPixel(r)) << 16u32 | u32(intPixel(g)) << 8u32 | u32(intPixel(b))
 
-fun wrap(n: f32): f32 =
+let wrap(n: f32): f32 =
   let n' = n - f32(i32(n))
   let odd_in_int = i32(n) & 1
   let even_in_int = 1 - odd_in_int
   in f32(odd_in_int) * (1.0 - n') + f32(even_in_int) * n'
 
-fun wave(th: f32, x: f32, y: f32): f32 =
+let wave(th: f32, x: f32, y: f32): f32 =
   let cth = f32.cos(th)
   let sth = f32.sin(th)
   in (f32.cos(cth * x + sth * y) + 1.0) / 2.0
 
-fun waver(th: f32, x: f32, y: f32, n: i32): f32 =
+let waver(th: f32, x: f32, y: f32, n: i32): f32 =
   reduce (+) (0.0) (map (\i  -> wave(f32(i) * th, x, y)) (iota n))
 
-fun waves(degree: i32, phi: f32, x: f32, y: f32): f32 =
+let waves(degree: i32, phi: f32, x: f32, y: f32): f32 =
   let th = pi() / phi
   in wrap(waver(th, x, y, degree))
 
-fun quasicrystal(scale: f32, degree: i32, time: f32, x: f32, y: f32): u32 =
+let quasicrystal(scale: f32, degree: i32, time: f32, x: f32, y: f32): u32 =
   let phi = 1.0 + (time ** 1.5) * 0.005
   let (x', y') = point(scale, x, y)
   in intColour(rampColour(waves(degree, phi, x', y')))
 
-fun normalize_index(i: i32, field_size: i32): f32 =
+let normalize_index(i: i32, field_size: i32): f32 =
   f32(i) / f32(field_size)
 
 entry render_frame(field_size: i32, scale: f32, degree: i32, time: f32)
@@ -107,7 +107,7 @@ entry render_frame(field_size: i32, scale: f32, degree: i32, time: f32)
                 ks)
          ks
 
-fun main(field_size: i32, scale: f32, degree: i32,
+let main(field_size: i32, scale: f32, degree: i32,
          n_steps: i32, time_delta: f32): [n_steps][field_size][field_size]u32 =
   map (\step_i: [field_size][field_size]u32  ->
          let time = f32(step_i) * time_delta

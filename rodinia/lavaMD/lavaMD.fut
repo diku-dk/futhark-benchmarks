@@ -11,10 +11,10 @@ import "futlib/math"
 
 default(f32)
 
-fun num_neighbors(): i32      = 27
-fun number_par_per_box(): i32 = 100 
+let num_neighbors(): i32      = 27
+let number_par_per_box(): i32 = 100 
 
-fun dot(a: (f32,f32,f32), b: (f32,f32,f32)): f32 =
+let dot(a: (f32,f32,f32), b: (f32,f32,f32)): f32 =
   let (ax,ay,az) = a
   let (bx,by,bz) = b
   in ax*bx + ay*by + az*bz
@@ -22,7 +22,7 @@ fun dot(a: (f32,f32,f32), b: (f32,f32,f32)): f32 =
 -----------------------------------------
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
-fun main(alpha:  f32
+let main(alpha:  f32
             , box_coefs_0: [number_boxes]i32
             , box_coefs_1: [number_boxes]i32
             , box_coefs_2: [number_boxes]i32

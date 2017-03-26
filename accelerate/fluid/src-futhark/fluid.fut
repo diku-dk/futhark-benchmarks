@@ -41,14 +41,14 @@
 -- General helper functions.
 ------------------------------------------------------------
 
-fun inside(i: i32, j: i32, g: i32): bool =
+let inside(i: i32, j: i32, g: i32): bool =
   i >= 1 && i <= g - 2
   && j >= 1 && j <= g - 2
 
-fun in_outside_corner(i: i32, j: i32, g: i32): bool =
+let in_outside_corner(i: i32, j: i32, g: i32): bool =
   (i == 0 || i == g - 1) && (j == 0 || j == g - 1)
 
-fun corner_index_neighbors(i: i32, j: i32, g: i32): (i32, i32, i32, i32) =
+let corner_index_neighbors(i: i32, j: i32, g: i32): (i32, i32, i32, i32) =
   if i == 0 && j == 0
   then (1, 0, 0, 1)
   else if i == 0 && j == g - 1
@@ -57,7 +57,7 @@ fun corner_index_neighbors(i: i32, j: i32, g: i32): (i32, i32, i32, i32) =
   then (g - 2, 0, g - 1, 1)
   else (g - 2, g - 1, g - 1, g - 2) -- if i == g - 1 && j == g - 1
 
-fun outermost_inner_index(i: i32, j: i32, g: i32, b: i32): (i32, i32, f32) =
+let outermost_inner_index(i: i32, j: i32, g: i32, b: i32): (i32, i32, f32) =
   if i == 0
   then (1, j, if b == 1 then -1.0f32 else 1.0f32)
   else if i == g - 1
@@ -73,7 +73,7 @@ fun outermost_inner_index(i: i32, j: i32, g: i32, b: i32): (i32, i32, f32) =
 -- lin_solve.
 ------------------------------------------------------------
 
-fun lin_solve_inner(i: i32,
+let lin_solve_inner(i: i32,
                     j: i32,
                     s0: [g][g]f32,
                     s1: [g][g]f32,
@@ -86,7 +86,7 @@ fun lin_solve_inner(i: i32,
             + s1[i, (j - 1)]
             + s1[i, (j + 1)])) / c)
 
-fun lin_solve_outer_base(i: i32,
+let lin_solve_outer_base(i: i32,
                          j: i32,
                          s0: [g][g]f32,
                          s1: [g][g]f32,
@@ -96,7 +96,7 @@ fun lin_solve_outer_base(i: i32,
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * lin_solve_inner(i1, j1, s0, s1, a, c)
 
-fun lin_solve_outer(i: i32,
+let lin_solve_outer(i: i32,
                     j: i32,
                     s0: [g][g]f32,
                     s1: [g][g]f32,
@@ -109,7 +109,7 @@ fun lin_solve_outer(i: i32,
                     + lin_solve_outer_base(i2, j2, s0, s1, a, c, b))
   else lin_solve_outer_base(i, j, s0, s1, a, c, b)
 
-fun lin_solve(n_solver_steps: i32,
+let lin_solve(n_solver_steps: i32,
               s0: [g][g]f32,
               b: i32,
               a: f32,
@@ -130,7 +130,7 @@ fun lin_solve(n_solver_steps: i32,
 -- diffuse.
 ------------------------------------------------------------
 
-fun diffuse(s: [g][g]f32,
+let diffuse(s: [g][g]f32,
             b: i32,
             n_solver_steps: i32,
             diffusion_rate_or_viscosity: f32,
@@ -144,7 +144,7 @@ fun diffuse(s: [g][g]f32,
 -- advect.
 ------------------------------------------------------------
 
-fun advect_inner(i: i32,
+let advect_inner(i: i32,
                  j: i32,
                  s: [g][g]f32,
                  u: [g][g]f32,
@@ -171,7 +171,7 @@ fun advect_inner(i: i32,
   in unsafe (s0 * (t0 * s[i0, j0] + t1 * s[i0, j1])
              + s1 * (t0 * s[i1, j0] + t1 * s[i1, j1]))
 
-fun advect_outer_base(i: i32,
+let advect_outer_base(i: i32,
                       j: i32,
                       s: [g][g]f32,
                       u: [g][g]f32,
@@ -181,7 +181,7 @@ fun advect_outer_base(i: i32,
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * advect_inner(i1, j1, s, u, v, time_step0)
 
-fun advect_outer(i: i32,
+let advect_outer(i: i32,
                  j: i32,
                  s: [g][g]f32,
                  u: [g][g]f32,
@@ -194,7 +194,7 @@ fun advect_outer(i: i32,
                     + advect_outer_base(i2, j2, s, u, v, time_step0, b))
   else advect_outer_base(i, j, s, u, v, time_step0, b)
 
-fun advect(s0: [g][g]f32,
+let advect(s0: [g][g]f32,
            u: [g][g]f32,
            v: [g][g]f32,
            b: i32,
@@ -215,7 +215,7 @@ fun advect(s0: [g][g]f32,
 ------------------------------------------------------------
 
 
-fun project_top_inner(i: i32,
+let project_top_inner(i: i32,
                       j: i32,
                       u0: [g][g]f32,
                       v0: [g][g]f32): f32 =
@@ -224,14 +224,14 @@ fun project_top_inner(i: i32,
                      + v0[i, j + 1]
                      - v0[i, j - 1]) / f32(g))
 
-fun project_top_outer_base(i: i32,
+let project_top_outer_base(i: i32,
                            j: i32,
                            u0: [g][g]f32,
                            v0: [g][g]f32): f32 =
   let (i1, j1, _f) = outermost_inner_index(i, j, g, 0)
   in project_top_inner(i1, j1, u0, v0)
 
-fun project_top_outer(i: i32,
+let project_top_outer(i: i32,
                       j: i32,
                       u0: [g][g]f32,
                       v0: [g][g]f32): f32 =
@@ -241,7 +241,7 @@ fun project_top_outer(i: i32,
                     + project_top_outer_base(i2, j2, u0, v0))
   else project_top_outer_base(i, j, u0, v0)
 
-fun project_top(u0: [g][g]f32,
+let project_top(u0: [g][g]f32,
                 v0: [g][g]f32): [g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g in
   reshape (g, g)
@@ -254,7 +254,7 @@ fun project_top(u0: [g][g]f32,
        ) (iota(g * g)))
 
 
-fun project_bottom_inner(i: i32,
+let project_bottom_inner(i: i32,
                          j: i32,
                          p0: [g][g]f32,
                          s0: [g][g]f32,
@@ -265,7 +265,7 @@ fun project_bottom_inner(i: i32,
   unsafe (s0[i, j] - 0.5f32 * f32(g - 2)
           * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
 
-fun project_bottom_outer_base(i: i32,
+let project_bottom_outer_base(i: i32,
                               j: i32,
                               p0: [g][g]f32,
                               s0: [g][g]f32,
@@ -277,7 +277,7 @@ fun project_bottom_outer_base(i: i32,
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
   in f * project_bottom_inner(i1, j1, p0, s0, i0d, j0d, i1d, j1d)
 
-fun project_bottom_outer(i: i32,
+let project_bottom_outer(i: i32,
                          j: i32,
                          p0: [g][g]f32,
                          s0: [g][g]f32,
@@ -292,7 +292,7 @@ fun project_bottom_outer(i: i32,
                     + project_bottom_outer_base(i2, j2, p0, s0, i0d, j0d, i1d, j1d, b))
   else project_bottom_outer_base(i, j, p0, s0, i0d, j0d, i1d, j1d, b)
 
-fun project_bottom(p0: [g][g]f32,
+let project_bottom(p0: [g][g]f32,
                    s0: [g][g]f32,
                    b: i32,
                    i0d: i32,
@@ -310,7 +310,7 @@ fun project_bottom(p0: [g][g]f32,
                                        i0d/one, j0d/one, i1d/one, j1d/one, b/one)
        ) (iota(g * g)))
 
-fun project(n_solver_steps: i32,
+let project(n_solver_steps: i32,
             u0: [g][g]f32,
             v0: [g][g]f32): (*[g][g]f32, *[g][g]f32) =
   let div0 = project_top(u0, v0)
@@ -323,7 +323,7 @@ fun project(n_solver_steps: i32,
 -- Step functions.
 ------------------------------------------------------------
 
-fun dens_step(d0: [g][g]f32,
+let dens_step(d0: [g][g]f32,
               u0: [g][g]f32,
               v0: [g][g]f32,
               n_solver_steps: i32,
@@ -333,7 +333,7 @@ fun dens_step(d0: [g][g]f32,
   let d2 = advect(d1, u0, v0, 0, time_step)
   in d2
 
-fun vel_step(u0: [g][g]f32,
+let vel_step(u0: [g][g]f32,
              v0: [g][g]f32,
              n_solver_steps: i32,
              viscosity: f32,
@@ -347,7 +347,7 @@ fun vel_step(u0: [g][g]f32,
   let (u4, v4) = project(n_solver_steps, u3, v3)
   in (u4, v4)
 
-fun step(u0: [g][g]f32,
+let step(u0: [g][g]f32,
          v0: [g][g]f32,
          d0: [g][g]f32,
          n_solver_steps: i32,
@@ -367,7 +367,7 @@ fun step(u0: [g][g]f32,
 -- Wrapper functions.
 ------------------------------------------------------------
 
-fun get_end_frame(u0: [g][g]f32,
+let get_end_frame(u0: [g][g]f32,
                   v0: [g][g]f32,
                   d0: [g][g]f32,
                   n_steps: i32,
@@ -382,7 +382,7 @@ fun get_end_frame(u0: [g][g]f32,
          diffusion_rate, viscosity)
   in (u0, v0, d0)
 
-fun get_all_frames(u0: [g][g]f32,
+let get_all_frames(u0: [g][g]f32,
                    v0: [g][g]f32,
                    d0: [g][g]f32,
                    n_steps: i32,
