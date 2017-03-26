@@ -14,10 +14,10 @@ import "lib/bfs_main_typical"
 
 module BFS = BFSLIB({
 
-  fun max(a: i32) (b: i32): i32 =
+  let max(a: i32) (b: i32): i32 =
     if a > b then a else b
 
-  fun step(cost: *[n]i32,
+  let step(cost: *[n]i32,
            nodes_start_index: [n]i32,
            nodes_n_edges: [n]i32,
            edges_dest: [e]i32,
@@ -59,5 +59,5 @@ module BFS = BFSLIB({
     in (cost', graph_mask', inds_upd)
 })
 
-fun main(nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
+let main(nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
   BFS.common_main(nodes_start_index, nodes_n_edges, edges_dest)

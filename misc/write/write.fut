@@ -14,7 +14,7 @@
 -- input @ indices_shuffled_1000000.in
 -- output @ indices_shuffled_1000000.out
 
-fun main(indices: [k]i32,
+let main(indices: [k]i32,
          values: [k]i32,
          array: *[n]i32): [n]i32 =
   write indices values array

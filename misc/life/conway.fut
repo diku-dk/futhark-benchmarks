@@ -8,21 +8,21 @@ import "futlib/colour"
 module conway_rules: vis_rules with cell = bool = {
   type cell = bool
 
-  fun value (b: cell) = if b then 1 else 0
+  let value (b: cell) = if b then 1 else 0
 
   let weights = [[1,1,1],
                  [1,0,1],
                  [1,1,1]]
 
-  fun step (alive: cell) (neighbours: i32) =
+  let step (alive: cell) (neighbours: i32) =
     neighbours >= 2 &&
     (neighbours == 3 || (alive && neighbours < 4))
 
-  fun init (b: bool) = b
+  let init (b: bool) = b
 
-  fun uninit (c: cell) = c
+  let uninit (c: cell) = c
 
-  fun colour (b: cell) = if b
+  let colour (b: cell) = if b
                          then argb.black
                          else argb.white
 }

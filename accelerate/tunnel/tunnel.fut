@@ -15,43 +15,43 @@ import "futlib/math"
 
 type v2 = (f32,f32)
 
-fun v2Add(x: v2, y: v2): v2 =
+let v2Add(x: v2, y: v2): v2 =
   (#1 x + #1 y, #2 x + #2 y)
 
-fun v2Sub(x: v2, y: v2): v2 =
+let v2Sub(x: v2, y: v2): v2 =
   (#1 x - #1 y, #2 x - #2 y)
 
-fun norm(x: v2): f32 =
+let norm(x: v2): f32 =
   f32.sqrt(#1 x**2f32 + #2 x**2f32)
 
 -- Fractional part of a number.
-fun fract(x: f32): f32 =
+let fract(x: f32): f32 =
   x - f32(i32(x))
 
-fun clamp(lower: f32, x: f32, upper: f32): f32 =
+let clamp(lower: f32, x: f32, upper: f32): f32 =
   if x < lower then lower
   else if x > upper then upper
   else x
 
-fun smoothstep(edge0: f32, edge1: f32, x: f32): f32 =
+let smoothstep(edge0: f32, edge1: f32, x: f32): f32 =
   let t = clamp(0f32, ((x-edge0) / (edge1-edge0)), 1.0f32)
   in t*t*(3f32 - 2f32*t)
 
-fun dot(p0: v2, p1: v2): f32 =
+let dot(p0: v2, p1: v2): f32 =
   #1 p0 * #1 p1 + #2 p0 * #2 p1
 
-fun rand2(p: v2): v2 =
+let rand2(p: v2): v2 =
   let x = (127.1f32, 311.7f32)
   let y = (269.5f32, 183.3f32)
   let q = (dot(p,x), dot(p,y))
   in (fract(f32.sin(#1 q) * 43758.5453f32),
       fract(f32.sin(#2 q) * 43758.5453f32))
 
-fun rand1(p: v2): f32 =
+let rand1(p: v2): f32 =
   let z = (419.2f32, 371.9f32)
   in fract(f32.sin(dot(p,z)) * 833458.57832f32)
 
-fun sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: i32, j: i32): v2 =
+let sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: i32, j: i32): v2 =
   let samplePos = (f32(i), f32(j))
   let centre = (let u = rand2(v2Add(cell, samplePos))
                 in (#1 u * irregular, #2 u * irregular))
@@ -60,7 +60,7 @@ fun sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: i32, j: 
   let colour = rand1(v2Add(cell, samplePos))
   in (colour * det, det)
 
-fun voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
+let voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
   let cell = (f32(i32(#1 xy)), f32(i32(#2 xy)))
   let cellOffset = (fract(#1 xy), fract(#2 xy))
   let sharpness = 1f32 + 63f32 * ((1f32-smoothness) ** 4f32)
@@ -70,15 +70,15 @@ fun voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
      in samples)
   in #1 samples / #2 samples
 
-fun mod'(n: f32, d: f32): f32 =
+let mod'(n: f32, d: f32): f32 =
   n - f32(i32(n/d)) * d
 
-fun rgb(r: f32, g: f32, b: f32): i32 =
+let rgb(r: f32, g: f32, b: f32): i32 =
   (i32(r*255f32)&0xFF) << 16 |
   (i32(g*255f32)&0xFF) << 8 |
   (i32(b*255f32)&0xFF)
 
-fun tunnel(time: f32) (x: i32) (y: i32): i32 =
+let tunnel(time: f32) (x: i32) (y: i32): i32 =
   let pt2 = (1.2f32 * f32(x), 1.2f32 * f32(y))
   let rInv = 1.0f32 / norm(pt2)
   let pt3 = v2Sub((#1 pt2 * rInv, #2 pt2 * rInv),
@@ -88,7 +88,7 @@ fun tunnel(time: f32) (x: i32) (y: i32): i32 =
             in (#1 c1 * x, #2 c1 * x, #3 c1 * x))
   in rgb(#1 c2, #2 c2, #3 c2)
 
-fun main(time: f32, w: i32, h: i32): [w][h]i32 =
+let main(time: f32, w: i32, h: i32): [w][h]i32 =
   map (\(x: i32): [h]i32  ->
         map (tunnel time x) (map (-(h/2)) (iota(h)))) (
       map (-(w/2)) (iota(w)))

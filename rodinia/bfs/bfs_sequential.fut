@@ -10,7 +10,7 @@
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
 
-fun node_work(tid: i32,
+let node_work(tid: i32,
             cost: *[n]i32,
             nodes_start_index: [n]i32,
             nodes_n_edges: [n]i32,
@@ -34,7 +34,7 @@ fun node_work(tid: i32,
            (cost, updating_graph_mask)
     in (cost, graph_mask, updating_graph_mask)
 
-fun step(cost: *[n]i32,
+let step(cost: *[n]i32,
        nodes_start_index: [n]i32,
        nodes_n_edges: [n]i32,
        edges_dest: [e]i32,
@@ -55,7 +55,7 @@ fun step(cost: *[n]i32,
 
   in (cost, graph_mask, updating_graph_mask)
 
-fun main(nodes_start_index: [n]i32,
+let main(nodes_start_index: [n]i32,
                   nodes_n_edges: [n]i32,
                   edges_dest: [e]i32): [n]i32 =
   let graph_mask = replicate n false

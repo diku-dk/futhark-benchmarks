@@ -6,7 +6,7 @@ import "futlib/math"
 
 default(f32)
 
-fun main(n: i32): [n][n]f32 =
+let main(n: i32): [n][n]f32 =
   let lambda = -0.001
   let coe = map (\j ->
                    if j >= n

@@ -24,25 +24,25 @@ type acceleration = vec3
 type velocity = vec3
 type body = (position, mass, velocity, acceleration)
 
-fun vec_add((x1, y1, z1): vec3) ((x2, y2, z2): vec3): vec3 =
+let vec_add((x1, y1, z1): vec3) ((x2, y2, z2): vec3): vec3 =
   (x1 + x2, y1 + y2, z1 + z2)
 
-fun vec_subtract((x1, y1, z1): vec3, (x2, y2, z2): vec3): vec3 =
+let vec_subtract((x1, y1, z1): vec3, (x2, y2, z2): vec3): vec3 =
   (x1 - x2, y1 - y2, z1 - z2)
 
-fun vec_mult_factor(factor: f32, (x, y, z): vec3): vec3 =
+let vec_mult_factor(factor: f32, (x, y, z): vec3): vec3 =
   (x * factor, y * factor, z * factor)
 
-fun dot((x1, y1, z1): vec3, (x2, y2, z2): vec3): f32 =
+let dot((x1, y1, z1): vec3, (x2, y2, z2): vec3): f32 =
   x1 * x2 + y1 * y2 + z1 * z2
 
-fun matmult(x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
+let matmult(x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
   map (\(xr) ->
         map (\(yc) -> reduce (+) 0f32 (map (*) xr yc))
             (transpose(y)))
       x
 
-fun accel (epsilon: f32) ((pi, _, _ , _):body) ((pj, mj, _ , _): body)
+let accel (epsilon: f32) ((pi, _, _ , _):body) ((pj, mj, _ , _): body)
           : velocity =
   let r = vec_subtract(pj, pi)
   let rsqr = dot(r, r) + epsilon * epsilon
@@ -51,40 +51,40 @@ fun accel (epsilon: f32) ((pi, _, _ , _):body) ((pj, mj, _ , _): body)
   let s = mj * invr3
   in vec_mult_factor(s, r)
 
-fun move(epsilon: f32, bodies: []body) (this_body: body): position =
+let move(epsilon: f32, bodies: []body) (this_body: body): position =
   let accels = map (accel epsilon this_body) bodies
   in reduce_comm vec_add (0f32, 0f32, 0f32) accels
 
-fun calc_accels(epsilon: f32, bodies: []body): []acceleration =
+let calc_accels(epsilon: f32, bodies: []body): []acceleration =
   map (move(epsilon, bodies)) bodies
 
-fun advance_body(time_step: f32) ((pos, mass, vel, _):body) (acc:acceleration): body =
+let advance_body(time_step: f32) ((pos, mass, vel, _):body) (acc:acceleration): body =
   let acc' = vec_mult_factor(mass, acc)
   let pos' = vec_add pos(vec_mult_factor(time_step, vel))
   let vel' = vec_add vel(vec_mult_factor(time_step, acc'))
   in (pos', mass, vel', acc')
 
-fun advance_bodies(epsilon: f32, time_step: f32, bodies: [n]body): [n]body =
+let advance_bodies(epsilon: f32, time_step: f32, bodies: [n]body): [n]body =
   let accels = calc_accels(epsilon, bodies)
   in map (advance_body time_step) bodies accels
 
-fun advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
+let advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
                          bodies: [n]body): [n]body =
   loop (bodies) = for _i < n_steps do
     advance_bodies(epsilon, time_step, bodies)
   in bodies
 
-fun wrap_body (posx: f32, posy: f32, posz: f32,
+let wrap_body (posx: f32, posy: f32, posz: f32,
                mass: f32,
                velx: f32, vely: f32, velz: f32,
                accx: f32, accy: f32, accz: f32): body =
   ((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz))
 
-fun unwrap_body(((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz)): body)
+let unwrap_body(((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz)): body)
   : (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) =
   (posx, posy, posz, mass, velx, vely, velz, accx, accy, accz)
 
-fun main(n_steps: i32,
+let main(n_steps: i32,
          epsilon: f32,
          time_step: f32,
          xps: [n]f32,
@@ -102,37 +102,37 @@ fun main(n_steps: i32,
   let bodies'' = map unwrap_body (bodies')
   in unzip(bodies'')
 
-fun rotatePointByMatrix (rotation: [3][3]f32) ((x,y,z): position): position =
+let rotatePointByMatrix (rotation: [3][3]f32) ((x,y,z): position): position =
   (x*rotation[0,0] + y*rotation[1,0] + z*rotation[2,0],
    x*rotation[0,1] + y*rotation[1,1] + z*rotation[2,1],
    x*rotation[0,2] + y*rotation[1,2] + z*rotation[2,2])
 
-fun rotatePointsByMatrix (rotation: [3][3]f32)(ps: [n]position): [n]position =
+let rotatePointsByMatrix (rotation: [3][3]f32)(ps: [n]position): [n]position =
   map (rotatePointByMatrix rotation) ps
 
-fun rotateXMatrix (angle: f32): [3][3]f32 =
+let rotateXMatrix (angle: f32): [3][3]f32 =
   [[1f32,        0f32,         0f32],
    [0f32, f32.cos angle, -f32.sin angle],
    [0f32, f32.sin angle,  f32.cos angle]]
 
-fun rotateYMatrix (angle: f32): [3][3]f32 =
+let rotateYMatrix (angle: f32): [3][3]f32 =
   [[f32.cos angle,  0f32, f32.sin angle],
    [0f32,           1f32, 0f32],
    [-f32.sin angle, 0f32, f32.cos angle]]
 
-fun rotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
+let rotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
   matmult (rotateXMatrix x_rotation) (rotateYMatrix y_rotation)
 
-fun inverseRotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
+let inverseRotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
   matmult (rotateYMatrix y_rotation) (rotateXMatrix x_rotation)
 
 entry inverseRotatePoint (x: f32, y: f32, z: f32, x_rotation: f32, y_rotation: f32): position =
   rotatePointByMatrix (inverseRotationMatrix x_rotation y_rotation) (x,y,z)
 
-fun rotatePoints(ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
+let rotatePoints(ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
   rotatePointsByMatrix (rotationMatrix x_rotation y_rotation) ps
 
-fun renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_mass: f32)
+let renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_mass: f32)
                ((x,y,_z):position) (m: f32): (i32, i32) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
