@@ -4,7 +4,7 @@ import "genlife"
 import "fading"
 import "futlib/colour"
 
-module quad_rules: vis_rules = {
+module quad_rules: rules_and_visuals = {
   type cell = i8
 
   let value (c: cell) = i32 c
@@ -34,5 +34,5 @@ module quad_rules: vis_rules = {
     in unsafe colours[i32 c]
 }
 
-module quad = gen_life_vis quad_rules
-module quad_fading = slow_fader quad_rules
+module quad = gen_life_vis quad_rules quad_rules
+module quad_fading = slow_fader quad_rules quad_rules

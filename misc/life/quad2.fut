@@ -6,7 +6,7 @@ import "genlife"
 import "fading"
 import "futlib/colour"
 
-module quad2_rules: vis_rules = {
+module quad2_rules: rules_and_visuals = {
   type cell = i8
 
   let value (c: cell) = i32 c
@@ -36,4 +36,4 @@ module quad2_rules: vis_rules = {
     in unsafe colours[i32 c]
 }
 
-module quad2 = gen_life_vis(quad2_rules)
+module quad2 = gen_life_vis quad2_rules quad2_rules
