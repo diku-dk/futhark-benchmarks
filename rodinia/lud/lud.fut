@@ -22,7 +22,7 @@
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 
-fun lud_diagonal0(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal0(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let a_rows = copy(a) in
     loop( (a_rows,a_cols) ) = for i < b do
@@ -51,7 +51,7 @@ fun lud_diagonal0(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose(a_cols)) (iota(b) )
 
-fun lud_diagonal1(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal1(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let b2 = 2*b in
     let a_rc = map (\ (i: i32): [b2]f32  ->
@@ -95,7 +95,7 @@ fun lud_diagonal1(a: [b][b]f32): *[b][b]f32 =  -- CORRECT
               ) (a_rows) (transpose a_cols) (iota b)
 
 
-fun lud_diagonal2(ain: [b][b]f32, m: i32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal2(ain: [b][b]f32, m: i32): *[b][b]f32 =  -- CORRECT
     let one = (m*m+2*m+1)/(m+1) - m in
     let ains= copy(replicate one ain) in
     let ress= map (\ (a: *[b][b]f32, q: i32): *[b][b]f32  -> unsafe
@@ -118,7 +118,7 @@ fun lud_diagonal2(ain: [b][b]f32, m: i32): *[b][b]f32 =  -- CORRECT
     in reshape (b,b) ress
 
 
-fun lud_diagonal(a: [b][b]f32, step: i32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal(a: [b][b]f32, step: i32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let b2 = 2*b in
     let a_rc = map (\ (i: i32): [b2]f32  ->
@@ -165,9 +165,9 @@ fun lud_diagonal(a: [b][b]f32, step: i32): *[b][b]f32 =  -- CORRECT
 ----          row = a1s[jj] is in shared memory!
 --------------------------------------------
 --------------------------------------------
-fun lud_perimeter_upper0(step: i32, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 = copy(a0s)
+let lud_perimeter_upper0(step: i32, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 = copy(a0s)
 
-fun lud_perimeter_upper(step: i32, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 =
+let lud_perimeter_upper(step: i32, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 =
     let a1s = map (\ (x: [b][b]f32): [b][b]f32  -> transpose(x)) a0s in
     let a2s =
         map  (\ (a1: [b][b]f32, jj: i32): *[b][b]f32  ->
@@ -183,7 +183,7 @@ fun lud_perimeter_upper(step: i32, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][
             ) (zip a1s (iota(m)) )
     in map (\ (x: [b][b]f32): [b][b]f32  -> transpose(x)) a2s
 
-fun lud_perimeter_upper2(step: i32, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 =
+let lud_perimeter_upper2(step: i32, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 =
     let a2s =
         map  (\ (blk: [b][b]f32, jj: i32): *[b][b]f32  ->
         map  (\ (j: i32): *[b]f32  ->   -- Upper
@@ -209,10 +209,10 @@ fun lud_perimeter_upper2(step: i32, diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b]
 ----          row = mat[i,step] is in shared memory!
 --------------------------------------------
 --------------------------------------------
-fun lud_perimeter_lower0(step: i32, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 = copy(mat[0])
+let lud_perimeter_lower0(step: i32, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 = copy(mat[0])
 
 
-fun lud_perimeter_lower1(step: i32, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 =
+let lud_perimeter_lower1(step: i32, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 =
   let slice = mat[0:m,0] in
   map  (\ (blk: [b][b]f32, ii: i32): *[b][b]f32  ->
         map  (\ (row0: [b]f32): *[b]f32  ->   -- Lower
@@ -226,7 +226,7 @@ fun lud_perimeter_lower1(step: i32, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m]
             ) blk
       ) (zip slice (iota(m)) )
 
-fun lud_perimeter_lower(step: i32, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 =
+let lud_perimeter_lower(step: i32, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 =
   let slice = mat[0:m,0] in
 --  let slice0 = map (\f32 (i32 ind) ->
 --                        let ii = ind / (b*b) in
@@ -260,7 +260,7 @@ fun lud_perimeter_lower(step: i32, diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][
 --------------------------------------------
 --------------------------------------------
 
-fun lud_internal0(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
+let lud_internal0(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
   let m = mp1 - 1 in
   map (\ (ii: i32): [m][b][b]f32  ->
         map (\ (jj: i32): [b][b]f32  ->
@@ -278,7 +278,7 @@ fun lud_internal0(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat
      ) (iota(m) )
 
 
-fun lud_internal1(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
+let lud_internal1(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
   let m = mp1 - 1 in
   let top_slice = top_per[1:mp1] in
   let lft_slice = lft_per[1:mp1] in
@@ -296,7 +296,7 @@ fun lud_internal1(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat
            ) (zip (mat_arr) (top_slice) (iota(m)) )
      ) (zip (mat_slice) (lft_slice) (iota(m)) )
 
-fun lud_internal2(d:  i32, top_per0t: [mp1][b][b]f32, lft_per0: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
+let lud_internal2(d:  i32, top_per0t: [mp1][b][b]f32, lft_per0: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
   let m = mp1 - 1 in
   let (tmp,top_per0) = split (1) top_per0t in
   let top_per = rearrange (0,2,1) top_per0
@@ -315,7 +315,7 @@ fun lud_internal2(d:  i32, top_per0t: [mp1][b][b]f32, lft_per0: [mp1][b][b]f32, 
      ) (zip (lft_per) (iota(m)) )
 
 
-fun lud_internal(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
+let lud_internal(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
   let m = mp1 - 1 in
   let top_slice0= top_per[1:mp1] in
   let top_slice = rearrange (0,2,1) top_slice0 in
@@ -337,7 +337,7 @@ fun lud_internal(d:  i32, top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat:
 --------------------------------------------
 ---- Main Driver:
 --------------------------------------------
-fun main(mat: [n][n]f32): [n][n]f32 =
+let main(mat: [n][n]f32): [n][n]f32 =
     let b = 16 in -- 16 in
     let num_blocks = n / b in
     -------------------------------------------------

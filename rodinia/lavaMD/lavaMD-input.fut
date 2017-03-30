@@ -1,17 +1,17 @@
 default(f32)
 
-fun num_neighbors(): i32      = 27
-fun number_par_per_box(): i32 = 100
+let num_neighbors(): i32      = 27
+let number_par_per_box(): i32 = 100
 
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
-fun sobolDirVcts(): [30]i32 = 
+let sobolDirVcts(): [30]i32 = 
   [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
     524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
     512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
 
-fun sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
+let sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
   let n_gray = (n >> 1) ^ n
   let res = 0
   loop (res) =
@@ -24,7 +24,7 @@ fun sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
 
 -----------------------
 -----------------------
-fun main(boxes1d: i32): (f32,
+let main(boxes1d: i32): (f32,
                          []i32,
                          []i32,
                          []i32,

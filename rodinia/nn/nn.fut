@@ -8,10 +8,10 @@
 
 import "futlib/math"
 
-fun infty(): f32 = 1.0f32 / 0.0f32
-fun emptyRecord(): (i32, f32) = (0, 0.0f32)
+let infty(): f32 = 1.0f32 / 0.0f32
+let emptyRecord(): (i32, f32) = (0, 0.0f32)
 
-fun main(resultsCount:    i32, lat: f32, lng: f32, 
+let main(resultsCount:    i32, lat: f32, lng: f32, 
         locations_lat: [numRecords]f32, 
         locations_lng: [numRecords]f32    ): ([resultsCount]i32, [resultsCount]f32) =
   let locations    = zip (locations_lat) (locations_lng)
@@ -26,7 +26,7 @@ fun main(resultsCount:    i32, lat: f32, lng: f32,
   loop ((results_ind, results_dst, distances)) = 
     for i < resultsCount do
         let (minDist, minLoc) = 
-            reduceComm (\(di1: (f32,i32)) (di2: (f32,i32)): (f32, i32)  ->
+            reduce_comm (\(di1: (f32,i32)) (di2: (f32,i32)): (f32, i32)  ->
                             let( (d1, i1), (d2,i2) ) = ( di1, di2 )
                             in if(d1 < d2) then (d1, i1) 
                                else if (d2 < d1) then (d2, i2)

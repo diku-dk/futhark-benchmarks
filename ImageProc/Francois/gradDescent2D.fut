@@ -23,7 +23,7 @@
 -- g : data term gradient array, size (m,n).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun add_descent_div2s(v:  [m][n]f32
+let add_descent_div2s(v:  [m][n]f32
                  , xi: [m][n](f32,f32)
                  , g: [m][n]f32
                  , tp: f32 ): [m][n]f32 =
@@ -101,7 +101,7 @@ fun add_descent_div2s(v:  [m][n]f32
 -- g : data term gradient array, size (m,n,k).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-fun add_descent_div2v(v:  [m][n][k]f32
+let add_descent_div2v(v:  [m][n][k]f32
                  , xi: [m][n][k](f32,f32)
                  , g: [m][n][k]f32
                  , tp: f32 ): [m][n][k]f32 =
@@ -170,14 +170,14 @@ fun add_descent_div2v(v:  [m][n][k]f32
 -----------------------------------------------------
 -----------------------------------------------------
 
-fun main(v:  [m][n]f32
+let main(v:  [m][n]f32
                     , xi_0: [m][n]f32
                     , xi_1: [m][n]f32
                     , g: [m][n]f32
                     , tp: f32 ): [m][n]f32 =
     add_descent_div2s(v, zip@1 xi_0 xi_1, g, tp)
 
-fun main2(v:  [m][n][k]f32
+let main2(v:  [m][n][k]f32
                         , xi: [m][n][k](f32,f32)
                         , g: [m][n][k]f32
                         , tp: f32 ): [m][n][k]f32 =

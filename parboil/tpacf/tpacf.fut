@@ -12,24 +12,24 @@ import "futlib/math"
 
 type vec3 = (f64, f64, f64)
 
-fun pi(): f64 = 3.1415926535897932384626433832795029f64
-fun dec2rad(dec: f64): f64 = pi()/180.0f64 * dec
-fun rad2dec(rad: f64): f64 = 180.0f64/pi() * rad
-fun min_arcmin(): f64 = 1.0f64
-fun max_arcmin(): f64 = 10000.0f64
-fun bins_per_dec(): f64 = 5.0f64
-fun numBins(): i32 = 20
+let pi(): f64 = 3.1415926535897932384626433832795029f64
+let dec2rad(dec: f64): f64 = pi()/180.0f64 * dec
+let rad2dec(rad: f64): f64 = 180.0f64/pi() * rad
+let min_arcmin(): f64 = 1.0f64
+let max_arcmin(): f64 = 10000.0f64
+let bins_per_dec(): f64 = 5.0f64
+let numBins(): i32 = 20
 
-fun iota32(num: i32): [num]f64 =
+let iota32(num: i32): [num]f64 =
     map f64 (iota(num))
 
--- Prøv streamRed i stedet
-fun sumBins(bins: [numBinss][numBins]i32): *[numBins]i32 =
+-- Prøv stream_red i stedet
+let sumBins(bins: [numBinss][numBins]i32): *[numBins]i32 =
     map (\(binIndex: []i32): i32  -> reduce (+) 0i32 binIndex) (transpose(bins))
 
-fun log10(num: f64): f64 = f64.log(num) / f64.log(10.0)
+let log10(num: f64): f64 = f64.log(num) / f64.log(10.0)
 
-fun doCompute(data1: 
+let doCompute(data1: 
     [num1]vec3,
     data2: [num2]vec3,
     numBins: i32,
@@ -37,7 +37,7 @@ fun doCompute(data1:
     binb: [numBBins]f64
 ): *[numBins2]i32 =
     let value = map (\(xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32  ->
-            streamMap (\(inner: [chunk]vec3): *[numBins2]i32  ->
+            stream_map (\(inner: [chunk]vec3): *[numBins2]i32  ->
                     loop (dBins = replicate numBins2 0i32) = for i < chunk do
                         let (xInner, yInner, zInner) = inner[i]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
@@ -60,7 +60,7 @@ fun doCompute(data1:
 
     in sumBins(value)
 
-fun doComputeSelf(data: 
+let doComputeSelf(data: 
     [numD]vec3,
     numBins: i32,
     numBins2: i32,
@@ -90,14 +90,14 @@ fun doComputeSelf(data:
 
     in sumBins(value)
 
-fun fixPoints(ra: f64, dec: f64): vec3 =
+let fixPoints(ra: f64, dec: f64): vec3 =
     let rarad = dec2rad(ra)
     let decrad = dec2rad(dec)
     let cd = f64.cos(decrad)
 
     in (f64.cos(rarad)*cd, f64.sin(rarad)*cd, f64.sin(decrad))
 
-fun main(datapointsx: 
+let main(datapointsx: 
     [numD]f64,
     datapointsy: [numD]f64,
     randompointsx: [numRs][numR]f64,

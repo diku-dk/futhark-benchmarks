@@ -14,10 +14,10 @@ import "lib/bfs_main_typical"
 
 module BFS = BFSLIB({
 
-  fun max(a: i32) (b: i32): i32 =
+  let max(a: i32) (b: i32): i32 =
     if a > b then a else b
 
-  fun step(cost: *[n]i32,
+  let step(cost: *[n]i32,
            nodes_start_index: [n]i32,
            nodes_n_edges: [n]i32,
            edges_dest: [e]i32,
@@ -27,7 +27,7 @@ module BFS = BFSLIB({
     -- We calculate the maximum number of edges for a node.  This is necessary,
     -- since the number of edges are irregular, and since we want to construct a
     -- nested array.
-    let e_max = reduceComm max 0 (nodes_n_edges)
+    let e_max = reduce_comm max 0 (nodes_n_edges)
 
     let (inds_mask, ind_vals_upd0) =
       unzip(map (\(tid: i32): (i32, [e_max](i32,i32))  ->
@@ -59,5 +59,5 @@ module BFS = BFSLIB({
     in (cost', graph_mask', inds_upd)
 })
 
-fun main(nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
+let main(nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
   BFS.common_main(nodes_start_index, nodes_n_edges, edges_dest)

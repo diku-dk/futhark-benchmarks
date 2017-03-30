@@ -23,4 +23,4 @@
 
 import bfs_parallel_segmented_alternate
 
-fun f(): i32 = 0 -- hack
+let f(): i32 = 0 -- hack
