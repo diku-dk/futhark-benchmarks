@@ -24,19 +24,19 @@ import "futlib/math"
 
 default(f32)
 
-fun indexN(_rows: i32, i: i32): i32 =
+let indexN(_rows: i32, i: i32): i32 =
   if i == 0 then i else i - 1
 
-fun indexS(rows: i32, i: i32): i32 =
+let indexS(rows: i32, i: i32): i32 =
   if i == rows-1 then i else i + 1
 
-fun indexW(_cols: i32, j: i32): i32 =
+let indexW(_cols: i32, j: i32): i32 =
   if j == 0 then j else j - 1
 
-fun indexE(cols: i32, j: i32): i32 =
+let indexE(cols: i32, j: i32): i32 =
   if j == cols-1 then j else j + 1
 
-fun do_srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
+let do_srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
   let r1 = 0
   let r2 = rows - 1
   let c1 = 0
@@ -108,7 +108,7 @@ fun do_srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
                            f32.log(pixel)*255.0) row) image
   in image
 
-fun main(image: [rows][cols]u8): [rows][cols]f32 =
+let main(image: [rows][cols]u8): [rows][cols]f32 =
   let niter = 100
   let lambda = 0.5
   in do_srad(niter, lambda, image)

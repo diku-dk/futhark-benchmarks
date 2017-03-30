@@ -12,45 +12,7 @@
 
 import "lib/bfs_lib"
 
-
-fun main(nodes_start_index: [n]i32,
-         nodes_n_edges: [n]i32,
-         edges_dest: [e]i32): [n]i32 =
-  let graph_mask = replicate n false
-  let updating_graph_mask = replicate n false
-  let graph_visited = replicate n false
-  let source = 0
-  let graph_mask[source] = true
-  let graph_visited[source] = true
-  let cost = replicate n (-1)
-  let cost[source] = 0
-  loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
-        (cost, updating_graph_mask, graph_mask, graph_visited, true)) =
-    while continue do
-  let (cost', graph_mask', updating_graph_mask') =
-    step(cost,
-         nodes_start_index,
-         nodes_n_edges,
-         edges_dest,
-         graph_visited,
-         graph_mask,
-         updating_graph_mask)
-  let (updating_indices, n_indices) = get_updating_indices(updating_graph_mask')
-
-  let graph_mask'' =
-    write updating_indices (replicate n_indices true) graph_mask'
-
-  let graph_visited' =
-    write updating_indices (replicate n_indices true) graph_visited
-
-  let updating_graph_mask'' =
-    write updating_indices (replicate n_indices false) updating_graph_mask'
-
-  let continue' = n_indices > 0
-  in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
-  in cost
-
-fun step(cost: *[n]i32,
+let step(cost: *[n]i32,
          nodes_start_index: [n]i32,
          nodes_n_edges: [n]i32,
          edges_dest: [e]i32,
@@ -97,3 +59,40 @@ fun step(cost: *[n]i32,
     write write_indices (replicate full_length true) updating_graph_mask
 
   in (cost', graph_mask', updating_graph_mask')
+
+let main(nodes_start_index: [n]i32,
+         nodes_n_edges: [n]i32,
+         edges_dest: [e]i32): [n]i32 =
+  let graph_mask = replicate n false
+  let updating_graph_mask = replicate n false
+  let graph_visited = replicate n false
+  let source = 0
+  let graph_mask[source] = true
+  let graph_visited[source] = true
+  let cost = replicate n (-1)
+  let cost[source] = 0
+  loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
+        (cost, updating_graph_mask, graph_mask, graph_visited, true)) =
+    while continue do
+  let (cost', graph_mask', updating_graph_mask') =
+    step(cost,
+         nodes_start_index,
+         nodes_n_edges,
+         edges_dest,
+         graph_visited,
+         graph_mask,
+         updating_graph_mask)
+  let (updating_indices, n_indices) = get_updating_indices(updating_graph_mask')
+
+  let graph_mask'' =
+    write updating_indices (replicate n_indices true) graph_mask'
+
+  let graph_visited' =
+    write updating_indices (replicate n_indices true) graph_visited
+
+  let updating_graph_mask'' =
+    write updating_indices (replicate n_indices false) updating_graph_mask'
+
+  let continue' = n_indices > 0
+  in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
+  in cost

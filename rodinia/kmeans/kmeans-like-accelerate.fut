@@ -2,28 +2,28 @@
 -- roughly the same algorithm as the kmeans implementation
 -- accelerate-examples.
 
-fun euclid_dist_2(c1: (f32,f32)) (c2: (f32,f32)): f32 =
+let euclid_dist_2(c1: (f32,f32)) (c2: (f32,f32)): f32 =
   let (x1,y1) = c1
   let (x2,y2) = c2
   in (x2-x1)**2.0f32 + (y2-y1)**2.0f32
 
-fun closest_point(p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
+let closest_point(p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
   let (_,d1) = p1
   let (_,d2) = p2
   in if d1 < d2 then p1 else p2
 
-fun find_nearest_point(pts: [k](f32,f32)) (pt: (f32,f32)): i32 =
-  let (i, _) = reduceComm closest_point (0, euclid_dist_2 pt pts[0]) (
+let find_nearest_point(pts: [k](f32,f32)) (pt: (f32,f32)): i32 =
+  let (i, _) = reduce_comm closest_point (0, euclid_dist_2 pt pts[0]) (
                           zip (iota(k)) (
                               map (euclid_dist_2(pt)) pts))
   in i
 
-fun add_centroids(c1: (f32,f32)) (c2: (f32,f32)): (f32,f32) =
+let add_centroids(c1: (f32,f32)) (c2: (f32,f32)): (f32,f32) =
   let (x1,y1) = c1
   let (x2,y2) = c2
   in (x1+x2, y1+y2)
 
-fun centroids_of(k: i32, points: [n](f32,f32), membership: [n]i32): *[k](f32,f32) =
+let centroids_of(k: i32, points: [n](f32,f32), membership: [n]i32): *[k](f32,f32) =
   let (cluster_counts, cluster_points) =
     unzip(map (\(cluster: i32): [n](i32,(f32,f32))  ->
                 map (\(point_cluster: i32) (point: (f32,f32)): (i32, (f32,f32))  ->
@@ -36,15 +36,15 @@ fun centroids_of(k: i32, points: [n](f32,f32), membership: [n]i32): *[k](f32,f32
                           cluster_counts)
   let cluster_centres = map (\(count: i32) (my_points: [n](f32,f32)): (f32,f32)  ->
                                   let (x,y) =
-                                    reduceComm add_centroids (0f32, 0f32) my_points
+                                    reduce_comm add_centroids (0f32, 0f32) my_points
                                   in (x / f32(count), y / f32(count)))
                                   cluster_sizes cluster_points
   in cluster_centres
 
-fun fabs32(x: f32): f32 =
+let fabs32(x: f32): f32 =
   if x < 0.0f32 then -x else x
 
-fun main(threshold: i32,
+let main(threshold: i32,
        k: i32,
        max_iterations: i32,
        points: [n][d]f32): ([]f32,[]f32, i32) =

@@ -4,6 +4,7 @@ import "genlife"
 import "conway"
 import "quad"
 import "quad2"
+import "rule101"
 
 entry conway_init (bs: [n][m]bool) =
  conway.init bs
@@ -49,3 +50,12 @@ entry quad2_render (world: [n][m]quad2.cell) =
  quad2.render world
 entry quad2_uninit (world: [n][m]quad2.cell) =
  quad2.uninit world
+
+entry rule101_init (bs: [n][m]bool) =
+ rule101.init bs
+entry rule101_steps (k: i32) (world: [n][m]rule101.cell) =
+ loop (world) = for _i < k do rule101.step world in world
+entry rule101_render (world: [n][m]rule101.cell) =
+ rule101.render world
+entry rule101_uninit (world: [n][m]rule101.cell) =
+ rule101.uninit world

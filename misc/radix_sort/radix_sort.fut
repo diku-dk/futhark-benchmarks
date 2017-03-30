@@ -11,15 +11,7 @@
 -- input @ data/radix_sort_100.in
 -- output @ data/radix_sort_100.out
 
-fun main(xs: [n]u32): [n]u32 =
-  radix_sort(xs)
-
-fun radix_sort(xs: [n]u32): [n]u32 =
-  loop (xs) = for i < 32 do
-    radix_sort_step(xs, i)
-  in xs
-
-fun radix_sort_step(xs: [n]u32, digit_n: i32): [n]u32 =
+let radix_sort_step(xs: [n]u32, digit_n: i32): [n]u32 =
   let bits = map (\(x: u32): i32  -> i32((x >> u32(digit_n)) & 1u32)) xs
   let bits_inv = map (\(b: i32): i32  -> 1 - b) bits
   let ps0 = scan (+) 0 (bits_inv)
@@ -31,3 +23,11 @@ fun radix_sort_step(xs: [n]u32, digit_n: i32): [n]u32 =
   let ps = map (+) ps0_clean ps1_clean'
   let ps_actual = map (\(p: i32): i32  -> p - 1) ps
   in write ps_actual xs (copy xs)
+
+let radix_sort(xs: [n]u32): [n]u32 =
+  loop (xs) = for i < 32 do
+    radix_sort_step(xs, i)
+  in xs
+
+let main(xs: [n]u32): [n]u32 =
+  radix_sort(xs)

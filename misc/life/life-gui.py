@@ -7,7 +7,7 @@ import argparse
 import pyopencl as cl
 import sys
 
-rulesets = [ 'conway', 'conway_fading', 'quad', 'quad_fading', 'quad2' ]
+rulesets = [ 'conway', 'conway_fading', 'quad', 'quad_fading', 'quad2', 'rule101' ]
 
 def get_ruleset(l, s):
     return (getattr(l, s + '_init'),
