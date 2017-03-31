@@ -157,4 +157,4 @@ entry render(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
              max_mass: f32): [w][h]i32 =
   let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
                        (rotatePoints (zip xps yps zps) x_rotation y_rotation) ms)
-  in reshape (w,h) (write is vs (replicate (w*h) 0))
+  in reshape (w,h) (scatter (replicate (w*h) 0) is vs)

@@ -25,7 +25,7 @@ let plus_prescan(x: [n]i32): [n]i32 =
   in scan (+) 0 xshifted
 
 let permute(a: [n]u32, index: [n]i32): [n]u32 =
-  write index a (copy a)
+  scatter (copy a) index a
 
 let plus_scan_reverse_order(x: [n]i32): [n]i32 =
   let xreversed = map (\(i: i32): i32  -> x[n - i - 1]) (iota(n))

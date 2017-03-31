@@ -160,7 +160,7 @@ let selectStrong(img: [h][w]f32): []i32 =
                 then (-1, 0)
                 else (targetIdx[i], i+1)) (
               iota(w*h-1)))
-  in write indices' values zeros
+  in scatter zeros indices' values
 
 let main(low: f32, high: f32, img: [h][w]i32): []i32 =
   selectStrong

@@ -32,12 +32,12 @@ let step(cost: *[n]i32,
   let costs_new = map (\(tid: i32): i32  ->
                          unsafe cost[tid] + 1) tids
 
-  let cost' = write write_indices costs_new cost
+  let cost' = scatter cost write_indices costs_new
 
   let masked_indices = map (\(i: i32): i32  ->
                               if unsafe graph_mask[i] then i else -1) (iota n)
   let graph_mask' =
-    write masked_indices (replicate n false) graph_mask
+    scatter graph_mask masked_indices (replicate n false)
 
   in (cost', graph_mask', write_indices)
 
@@ -58,16 +58,16 @@ let main(nodes_start_index: [n]i32,
   let offsets = i32_excl_scan_from_incl_scan offsets0 0
 
   let mask0 = replicate e false
-  let mask = write offsets (replicate n true) mask0
+  let mask = scatter mask0 offsets (replicate n true)
 
   let is0 = replicate e 1
-  let is1 = write offsets nodes_start_index is0
+  let is1 = scatter is0 offsets nodes_start_index
   let is2 = i32_plus_scan_segm(is1, mask)
 
   let node_ids = map (\(i: i32): i32  -> unsafe edges_dest[i]) is2
 
   let tids0 = replicate e 0
-  let tids1 = write offsets (iota n) tids0
+  let tids1 = scatter tids0 offsets (iota n)
   let tids = i32_plus_scan_segm(tids1, mask)
 
   loop ((cost, graph_mask, graph_visited, continue) =
@@ -86,10 +86,10 @@ let main(nodes_start_index: [n]i32,
       let n_indices = (shape updating_indices)[0]
 
       let graph_mask'' =
-        write updating_indices (replicate n_indices true) graph_mask'
+        scatter graph_mask' updating_indices (replicate n_indices true)
 
       let graph_visited' =
-        write updating_indices (replicate n_indices true) graph_visited
+        scatter graph_visited updating_indices (replicate n_indices true)
 
       let tmp_arr = map (\(ind: i32): i32  ->
                           if ind == -1 then 0 else 1) (updating_indices)
