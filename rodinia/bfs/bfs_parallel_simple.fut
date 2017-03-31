@@ -66,10 +66,10 @@ module BFS = BFSLIB({
     let node_ids = reshape (full_length) changes_node_ids
     let costs = reshape (full_length) changes_costs
 
-    let cost' = write node_ids costs cost
+    let cost' = scatter cost node_ids costs
 
     let graph_mask' =
-      write active_indices (replicate n_indices false) graph_mask
+      scatter graph_mask active_indices (replicate n_indices false)
 
     in (cost', graph_mask', node_ids)
 })

@@ -24,7 +24,7 @@ let step(cost: *[n]i32,
   let n_indices = (shape active_indices)[0]
 
   let graph_mask' =
-    write active_indices (replicate n_indices false) graph_mask
+    scatter graph_mask active_indices (replicate n_indices false)
 
   let nodes_start_index' = map (\(i: i32): i32  -> unsafe nodes_start_index[i]) (
                                active_indices)
@@ -36,10 +36,10 @@ let step(cost: *[n]i32,
   let offsets = i32_excl_scan_from_incl_scan offsets0 0
 
   let mask0 = replicate full_length false
-  let mask = write offsets (replicate n_indices true) mask0
+  let mask = scatter mask0 offsets (replicate n_indices true)
 
   let is0 = replicate full_length 1
-  let is1 = write offsets nodes_start_index' is0
+  let is1 = scatter is0 offsets nodes_start_index'
   let is2 = i32_plus_scan_segm(is1, mask)
 
   let node_ids = map (\(i: i32): i32  -> unsafe edges_dest[i]) is2
@@ -49,14 +49,14 @@ let step(cost: *[n]i32,
 
   let costs_new0 = replicate full_length 0
   let costs_new1 =
-    write offsets
-          (map (\(id: i32): i32  -> unsafe cost[id] + 1) (active_indices))
-          costs_new0
+    scatter costs_new0
+            offsets
+            (map (\(id: i32): i32  -> unsafe cost[id] + 1) (active_indices))
   let costs_new = i32_plus_scan_segm(costs_new1, mask)
 
-  let cost' = write write_indices costs_new cost
+  let cost' = scatter cost write_indices costs_new
   let updating_graph_mask' =
-    write write_indices (replicate full_length true) updating_graph_mask
+    scatter updating_graph_mask write_indices (replicate full_length true)
 
   in (cost', graph_mask', updating_graph_mask')
 
@@ -85,13 +85,13 @@ let main(nodes_start_index: [n]i32,
   let (updating_indices, n_indices) = get_updating_indices(updating_graph_mask')
 
   let graph_mask'' =
-    write updating_indices (replicate n_indices true) graph_mask'
+    scatter graph_mask' updating_indices (replicate n_indices true)
 
   let graph_visited' =
-    write updating_indices (replicate n_indices true) graph_visited
+    scatter graph_visited updating_indices (replicate n_indices true)
 
   let updating_graph_mask'' =
-    write updating_indices (replicate n_indices false) updating_graph_mask'
+    scatter updating_graph_mask' updating_indices (replicate n_indices false)
 
   let continue' = n_indices > 0
   in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')

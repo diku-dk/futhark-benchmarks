@@ -52,10 +52,10 @@ module BFSLIB(S: STEP_FUN) = {
     let n_indices = (shape updating_indices)[0]
 
     let graph_mask'' =
-      write updating_indices (replicate n_indices true) graph_mask'
+      scatter graph_mask' updating_indices (replicate n_indices true)
 
     let graph_visited' =
-      write updating_indices (replicate n_indices true) graph_visited
+      scatter graph_visited updating_indices (replicate n_indices true)
 
     let tmp_arr = map (\(ind: i32): i32  -> if ind == -1 then 0 else 1) (updating_indices)
     let n_indices' = reduce (+) 0 (tmp_arr)
