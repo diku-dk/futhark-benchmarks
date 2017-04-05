@@ -36,7 +36,7 @@ let indexW(_cols: i32, j: i32): i32 =
 let indexE(cols: i32, j: i32): i32 =
   if j == cols-1 then j else j + 1
 
-let do_srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
+let do_srad(niter: i32, lambda: f32, image: [#rows][#cols]u8): [rows][cols]f32 =
   let r1 = 0
   let r2 = rows - 1
   let c1 = 0
@@ -108,12 +108,12 @@ let do_srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
                            f32.log(pixel)*255.0) row) image
   in image
 
-let main(image: [rows][cols]u8): [rows][cols]f32 =
+let main(image: [#rows][#cols]u8): [rows][cols]f32 =
   let niter = 100
   let lambda = 0.5
   in do_srad(niter, lambda, image)
 
 -- Entry point for interactive demo.  Here we can return an RGBA image.
-entry srad(niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]i32 =
+entry srad(niter: i32, lambda: f32, image: [#rows][#cols]u8): [rows][cols]i32 =
   map (\row -> map (\p -> (i32(p) << 16) | (i32(p) << 8) | (i32(p))) row)
       (do_srad(niter, lambda, image))

@@ -66,8 +66,8 @@ let colourise(max_visits: i32) (visits: i32): i32 =
   in c << 16 | c << 8 | c
 
 let visualise(n: i32, m: i32, view: (f32,f32,f32,f32),
-                          trajectories: [yprec][xprec][depth](f32,f32),
-                          escapes: [yprec][xprec]bool): [n][m]i32 =
+                          trajectories: [#yprec][#xprec][#depth](f32,f32),
+                          escapes: [#yprec][#xprec]bool): [n][m]i32 =
   let (xmin, ymin, xmax, ymax) = view
   let sizex = xmax - xmin
   let sizey = ymax - ymin
@@ -75,10 +75,10 @@ let visualise(n: i32, m: i32, view: (f32,f32,f32,f32),
   let escapes' = reshape (xprec*yprec) escapes
   let visits_per_pixel =
     reshape (n*m)
-            (stream_red_per (\(ass: [n][m]i32) (bss: [n][m]i32): [n][m]i32  ->
-                           map (\(as: [m]i32) (bs: [m]i32): [m]i32  ->
+            (stream_red_per (\(ass: [#n][#m]i32) (bss: [#n][#m]i32): [n][m]i32  ->
+                           map (\(as: [#m]i32) (bs: [#m]i32): [m]i32  ->
                                      map (+) as bs) ass bss) (
-                         \(inp: [chunk]([depth](f32,f32),bool)): [n][m]i32  ->
+                         \(inp: [#chunk]([#depth](f32,f32),bool)): [n][m]i32  ->
                              loop (acc = replicate n (replicate m 0)) = for i < chunk do
                                (let (trajectory, escaped) = inp[i]
                                 in if escaped then (loop (acc) = for j < depth do

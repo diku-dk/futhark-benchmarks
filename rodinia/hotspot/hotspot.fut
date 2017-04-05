@@ -38,7 +38,7 @@ let amb_temp(): f32 = 80.0
 -- Single iteration of the transient solver in the grid model.
 -- advances the solution of the discretized difference equations by
 -- one time step
-let single_iteration(temp: [row][col]f32, power: [row][col]f32,
+let single_iteration(temp: [#row][#col]f32, power: [#row][#col]f32,
                      cap: f32, rx: f32, ry: f32, rz: f32,
                      step: f32): [][]f32 =
   map  (\(r: i32): []f32  ->
@@ -85,7 +85,7 @@ let single_iteration(temp: [row][col]f32, power: [row][col]f32,
 -- difference equations by iterating.
 --
 -- Returns a new 'temp' array.
-entry compute_tran_temp(num_iterations: i32, temp: [row][col]f32, power: [row][col]f32): [row][col]f32 =
+entry compute_tran_temp(num_iterations: i32, temp: [#row][#col]f32, power: [#row][#col]f32): [row][col]f32 =
   let grid_height = chip_height() / f32(row)
   let grid_width = chip_width() / f32(col)
   let cap = factor_chip() * spec_heat_si() * t_chip() * grid_width * grid_height
@@ -101,7 +101,7 @@ entry compute_tran_temp(num_iterations: i32, temp: [row][col]f32, power: [row][c
 entry ambient_temps(row: i32, col: i32): [row][col]f32 =
   reshape (row,col) (replicate (row*col) (amb_temp ()))
 
-entry render_frame(temp: [row][col]f32): [row][col][3]i8 =
+entry render_frame(temp: [#row][#col]f32): [row][col][3]i8 =
   let hottest = 400f32
   let coldest = amb_temp ()
   in map (\(temp_r: []f32): [col][3]i8  ->
@@ -113,5 +113,5 @@ entry render_frame(temp: [row][col]f32): [row][col][3]i8 =
                  in [i8(intensity), i8(intensity/2f32), i8(intensity/2f32)]) (
                temp_r)) temp
 
-let main(num_iterations: i32, temp: [row][col]f32, power: [row][col]f32): [][]f32 =
+let main(num_iterations: i32, temp: [#row][#col]f32, power: [#row][#col]f32): [][]f32 =
   compute_tran_temp(num_iterations, temp, power)

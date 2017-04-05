@@ -26,7 +26,7 @@ let initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: i32, numY: i32, numT: i
   in (myXindex, myYindex, myX, myY, myTimeline)
 
 -- make the innermost dimension of the result of size 4 instead of 3?
-let initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
+let initOperator(x: [#n]f32): ([n][]f32,[n][]f32) =
   let dxu     = x[1] - x[0]
   let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]]
   let dxx_low = [[0.0, 0.0, 0.0]]
@@ -47,11 +47,11 @@ let initOperator(x: [n]f32): ([n][]f32,[n][]f32) =
 let max(x: f32, y: f32): f32 = if y < x then x else y
 let maxInt(x: i32, y: i32): i32 = if y < x then x else y
 
-let setPayoff(strike: f32, myX: [numX]f32, _myY: [numY]f32): *[numY][numX]f32 =
+let setPayoff(strike: f32, myX: [#numX]f32, _myY: [#numY]f32): *[numY][numX]f32 =
   replicate numY (map (\xi: f32  -> max(xi-strike, 0.0)) myX)
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
-let updateParams(myX:  [numX]f32, myY: [numY]f32, myTimeline: []f32,
+let updateParams(myX:  [#numX]f32, myY: [#numY]f32, myTimeline: []f32,
                  g: i32, _alpha: f32, beta: f32, nu: f32)
   : ([][]f32, [][]f32, [][]f32, [][]f32) =
   let myMuY  = replicate numX (replicate numY 0.0)
@@ -64,7 +64,7 @@ let updateParams(myX:  [numX]f32, myY: [numY]f32, myTimeline: []f32,
                    ) myY
   in  ( myMuX, myVarX, myMuY, myVarY )
 
-let tridagSeq(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
+let tridagSeq(a:  [#n]f32, b: *[#n]f32, c: [#n]f32, y: *[#n]f32 ): *[n]f32 =
   loop ((y, b)) =
     for 1 <= i < n do
       let beta = a[i] / b[i-1]
@@ -78,7 +78,7 @@ let tridagSeq(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
         in  y
       in  y
 
-let tridagPar(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
+let tridagPar(a:  [#n]f32, b: *[#n]f32, c: [#n]f32, y: *[#n]f32 ): *[n]f32 =
   unsafe
   ----------------------------------------------------
   -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --
@@ -147,13 +147,13 @@ let tridagPar(a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
   in y
 
 ------------------------------------------/
--- myD,myDD          : [m][3]f32
--- myMu,myVar,result : [n][m]f32
--- RETURN            : [n][m]f32
+-- myD,myDD          : [#m][3]f32
+-- myMu,myVar,result : [#n][#m]f32
+-- RETURN            : [#n][#m]f32
 ------------------------------------------/
-let explicitMethod(myD:    [m][3]f32,  myDD: [m][3]f32,
-                   myMu:   [n][m]f32,  myVar: [n][m]f32,
-                   result: [n][m]f32)
+let explicitMethod(myD:    [#m][3]f32,  myDD: [#m][3]f32,
+                   myMu:   [#n][#m]f32,  myVar: [#n][#m]f32,
+                   result: [#n][#m]f32)
                   : *[n][m]f32 =
   -- 0 <= i < m AND 0 <= j < n
   map (\mu_row var_row result_row: [m]f32  ->
@@ -170,14 +170,14 @@ let explicitMethod(myD:    [m][3]f32,  myDD: [m][3]f32,
       myMu myVar result
 
 ------------------------------------------/
--- myD,myDD     : [m][3]f32
--- myMu,myVar,u : [n][m]f32
--- RETURN       : [n][m]f32
+-- myD,myDD     : [#m][3]f32
+-- myMu,myVar,u : [#n][#m]f32
+-- RETURN       : [#n][#m]f32
 ------------------------------------------/
 -- for implicitY: should be called with transpose(u) instead of u
-let implicitMethod(myD:  [m][3]f32,  myDD:  [m][3]f32,
-                   myMu: [n][m]f32,  myVar: [n][m]f32,
-                   u:   *[n][m]f32,  dtInv: f32)
+let implicitMethod(myD:  [#m][3]f32,  myDD:  [#m][3]f32,
+                   myMu: [#n][#m]f32,  myVar: [#n][#m]f32,
+                   u:   *[#n][#m]f32,  dtInv: f32)
                   : *[n][m]f32 =
   map (\mu_row var_row (u_row: *[]f32): *[m]f32  ->
          let abc = map (\mu var d dd: (f32,f32,f32) ->
@@ -192,9 +192,9 @@ let implicitMethod(myD:  [m][3]f32,  myDD:  [m][3]f32,
       myMu myVar u
 
 let rollback
-  (_myX: [numX]f32, _myY: [numY]f32, myTimeline: []f32, myResult: *[][]f32,
-   myMuX: [][]f32, myDx: [numX][]f32, myDxx: [][]f32, myVarX: [][]f32,
-   myMuY: [][]f32, myDy: [numY][]f32, myDyy: [][]f32, myVarY: [][]f32, g: i32)
+  (_myX: [#numX]f32, _myY: [#numY]f32, myTimeline: []f32, myResult: *[][]f32,
+   myMuX: [][]f32, myDx: [#numX][]f32, myDxx: [][]f32, myVarX: [][]f32,
+   myMuY: [][]f32, myDy: [#numY][]f32, myDyy: [][]f32, myVarY: [][]f32, g: i32)
   : *[numY][numX]f32 =
 
   let dtInv = 1.0/(myTimeline[g+1]-myTimeline[g])

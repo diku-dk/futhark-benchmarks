@@ -23,24 +23,24 @@ let dot(a: (f32,f32,f32), b: (f32,f32,f32)): f32 =
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
 let main(alpha:  f32
-            , box_coefs_0: [number_boxes]i32
-            , box_coefs_1: [number_boxes]i32
-            , box_coefs_2: [number_boxes]i32
-            , box_coefs_3: [number_boxes]i32
-            , box_nnghs_0 : [][number_boxes]i32  -- outer dim should be num_neighbors
-            , box_nnghs_1 : [][number_boxes]i32  -- outer dim should be num_neighbors
-            , box_nnghs_2 : [][number_boxes]i32  -- outer dim should be num_neighbors
-            , box_nnghs_3 : [][number_boxes]i32  -- outer dim should be num_neighbors
-            , box_num_nghbs: [number_boxes]i32
-            , rv_0: [number_boxes][par_per_box]f32
-            , rv_1: [number_boxes][par_per_box]f32
-            , rv_2: [number_boxes][par_per_box]f32
-            , rv_3: [number_boxes][par_per_box]f32
-            , qv: [number_boxes][par_per_box]f32
+            , box_coefs_0: [#number_boxes]i32
+            , box_coefs_1: [#number_boxes]i32
+            , box_coefs_2: [#number_boxes]i32
+            , box_coefs_3: [#number_boxes]i32
+            , box_nnghs_0 : [][#number_boxes]i32  -- outer dim should be num_neighbors
+            , box_nnghs_1 : [][#number_boxes]i32  -- outer dim should be num_neighbors
+            , box_nnghs_2 : [][#number_boxes]i32  -- outer dim should be num_neighbors
+            , box_nnghs_3 : [][#number_boxes]i32  -- outer dim should be num_neighbors
+            , box_num_nghbs: [#number_boxes]i32
+            , rv_0: [#number_boxes][#par_per_box]f32
+            , rv_1: [#number_boxes][#par_per_box]f32
+            , rv_2: [#number_boxes][#par_per_box]f32
+            , rv_3: [#number_boxes][#par_per_box]f32
+            , qv: [#number_boxes][#par_per_box]f32
       ): ([number_boxes][par_per_box]f32,
-      [number_boxes][par_per_box]f32,
-      [number_boxes][par_per_box]f32,
-      [number_boxes][par_per_box]f32) =
+          [number_boxes][par_per_box]f32,
+          [number_boxes][par_per_box]f32,
+          [number_boxes][par_per_box]f32) =
   let box_coefs = zip (box_coefs_0) (box_coefs_1) (box_coefs_2) (box_coefs_3)
   let box_nnghs = zip@1 box_nnghs_0 box_nnghs_1 box_nnghs_2 box_nnghs_3
   let rv = zip@1 rv_0 rv_1 rv_2 rv_3
