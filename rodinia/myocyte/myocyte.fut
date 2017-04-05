@@ -21,8 +21,8 @@ let fmod(a: f32, b: f32): f32 = ( a - b * f32(i32(a / b)) )
 
 let fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
-let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
-                    parameter: [pars]f32, parameter_offset: i32, finavalu: *[equs]f32 ): *[equs]f32 =
+let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
+                    parameter: [#pars]f32, parameter_offset: i32, finavalu: *[#equs]f32 ): *[equs]f32 =
   unsafe 
   -- variable references
   let offset_1  = initvalu_offset
@@ -142,17 +142,17 @@ let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   let junctionRadius = 15.0e-3f32  in  -- junc radius []um
   let distSLcyto = 0.45f32    in  -- dist. SL to cytosol []um
   let distJuncSL = 0.5f32     in  -- dist. junc to SL []um
-  let dcaJuncSL = 1.64e-6f32  in  -- Dca junc to SL [cm^2/sec]
-  let dcaSLcyto = 1.22e-6f32  in  -- Dca SL to cyto [cm^2/sec]
-  let nnaJuncSL = 1.09e-5f32  in  -- Dna junc to SL [cm^2/sec]
-  let dnaSLcyto = 1.79e-5f32  in  -- Dna SL to cyto [cm^2/sec] 
+  let dcaJuncSL = 1.64e-6f32  in  -- Dca junc to SL [#cm^2/sec]
+  let dcaSLcyto = 1.22e-6f32  in  -- Dca SL to cyto [#cm^2/sec]
+  let nnaJuncSL = 1.09e-5f32  in  -- Dna junc to SL [#cm^2/sec]
+  let dnaSLcyto = 1.79e-5f32  in  -- Dna SL to cyto [#cm^2/sec] 
   let vcell = pi*pow(cellRadius,2.0f32)*cellLength*1.0e-15f32 in -- [L]
   let vmyo = 0.65f32*vcell
   let vsr = 0.035f32*vcell
   let vsl = 0.02f32 *vcell
   let vjunc = 0.0539f32 * 0.01f32 * vcell
-  let sajunc = 20150.0f32 * pi * 2.0f32 * junctionLength * junctionRadius in -- [um^2]
-  let sasl = pi * 2.0f32 * cellRadius * cellLength in -- [um^2]
+  let sajunc = 20150.0f32 * pi * 2.0f32 * junctionLength * junctionRadius in -- [#um^2]
+  let sasl = pi * 2.0f32 * cellRadius * cellLength in -- [#um^2]
   let j_ca_juncsl = 1.0f32/1.2134e12f32  in    -- [L/msec]
   let j_ca_slmyo  = 1.0f32/2.68510e11f32 in    -- [L/msec]
   let j_na_juncsl = 1.0f32/(1.6382e12f32 / 3.0f32 * 100.0f32) in -- [L/msec] 
@@ -181,9 +181,9 @@ let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   let ecl = (1.0f32/foRT)*f32.log(cli/clo)                     in -- []mV
 
   -- Na transport parameters
-  let gna =  16.0f32       in -- [mS/uF]
-  let gnaB = 0.297e-3f32   in -- [mS/uF] 
-  let iBarNaK = 1.90719f32 in -- [uA/uF]
+  let gna =  16.0f32       in -- [#mS/uF]
+  let gnaB = 0.297e-3f32   in -- [#mS/uF] 
+  let iBarNaK = 1.90719f32 in -- [#uA/uF]
   let kmNaip = 11.0f32     in -- []mM
   let kmko = 1.5f32        in -- []mM
   let q10NaK = 1.63f32
@@ -191,24 +191,24 @@ let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
 
   -- K current parameters
   let pNaK = 0.01833f32
-  let dToSlow = 0.06f32 in -- [mS/uF] 
-  let gToFast = 0.02f32 in -- [mS/uF] 
+  let dToSlow = 0.06f32 in -- [#mS/uF] 
+  let gToFast = 0.02f32 in -- [#mS/uF] 
   let gkp = 0.001f32    
 
   -- Cl current parameters
-  let gClCa = 0.109625f32 in -- [mS/uF]
-  let gClB = 9.0e-3f32      in -- [mS/uF]
+  let gClCa = 0.109625f32 in -- [#mS/uF]
+  let gClB = 9.0e-3f32      in -- [#mS/uF]
   let kdClCa = 100.0e-3f32     -- []mM
 
   -- i_Ca parameters
-  let pNa = 1.5e-8f32  in -- [cm/sec]
-  let pCa = 5.4e-4f32  in -- [cm/sec]
-  let pK = 2.7e-7f32   in -- [cm/sec]
+  let pNa = 1.5e-8f32  in -- [#cm/sec]
+  let pCa = 5.4e-4f32  in -- [#cm/sec]
+  let pK = 2.7e-7f32   in -- [#cm/sec]
   let kmCa = 0.6e-3f32 in -- []mM
   let q10CaL = 1.8f32 
 
   -- Ca transport parameters
-  let ibarNCX = 9.0f32   in -- [uA/uF]
+  let ibarNCX = 9.0f32   in -- [#uA/uF]
   let kmCai = 3.59e-3f32 in -- []mM
   let kmcao = 1.3f32     in -- []mM
   let kmNai = 12.29f32   in -- []mM
@@ -217,19 +217,19 @@ let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   let nu = 0.35f32       in -- []none
   let kdact = 0.256e-3f32 in -- []mM 
   let q10NCX = 1.57f32   in -- []none
-  let ibarSLCaP = 0.0673f32 in -- [uA/uF]
+  let ibarSLCaP = 0.0673f32 in -- [#uA/uF]
   let kmPCa = 0.5e-3f32  in -- []mM 
-  let gCaB = 2.513e-4f32 in -- [uA/uF] 
+  let gCaB = 2.513e-4f32 in -- [#uA/uF] 
   let q10SLCaP = 2.35f32 in -- []none
 
   -- SR flux parameters
   let q10SRCaP = 2.6f32 in -- []none
-  let vmax_SRCaP = 2.86e-4f32 in -- [mM/msec] (mmol/L cytosol/msec)
+  let vmax_SRCaP = 2.86e-4f32 in -- [#mM/msec] (mmol/L cytosol/msec)
   let kmf = 0.246e-3f32    in -- []mM
   let kmr = 1.7f32         in -- []mML cytosol
   let hillSRCaP = 1.787f32 in -- []mM
   let ks   = 25.0f32 in -- [1/ms]      
-  let koCa = 10.0f32 in -- [mM^-2 1/ms]      
+  let koCa = 10.0f32 in -- [#mM^-2 1/ms]      
   let kom  = 0.06f32 in -- [1/ms]     
   let kiCa = 0.5f32  in -- [1/mM/ms]
   let kim = 0.005f32 in -- [1/ms]
@@ -345,7 +345,7 @@ let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
   let finavalu[offset_8] = (xtoss-initvalu_8)/tauxtos
   let finavalu[offset_9] = (ytoss-initvalu_9)/tauytos
   let finavalu[offset_40]= (rtoss-initvalu_40)/taurtos
-  let i_tos = dToSlow*initvalu_8*(initvalu_9+0.5f32*initvalu_40)*(initvalu_39-ek) -- [uA/uF]
+  let i_tos = dToSlow*initvalu_8*(initvalu_9+0.5f32*initvalu_40)*(initvalu_39-ek) -- [#uA/uF]
 
   -- 
   let tauxtof = 3.5f32*f32.exp(-initvalu_39*initvalu_39/30.0f32/30.0f32)+1.5f32
@@ -451,54 +451,54 @@ let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
                             (kiSRCa*initvalu_36*initvalu_15-kim*initvalu_16) in -- O
   let finavalu[offset_16] = (kiSRCa*initvalu_36*initvalu_15-kim*initvalu_16) - 
                             (kom*initvalu_16-koSRCa*pow(initvalu_36,2.0f32)*ri) in -- i
-  let j_SRCarel = ks*initvalu_15*(initvalu_31-initvalu_36) in -- [mM/ms]
+  let j_SRCarel = ks*initvalu_15*(initvalu_31-initvalu_36) in -- [#mM/ms]
   let j_serca = pow(q10SRCaP,qpow)*vmax_SRCaP*(pow((initvalu_38/kmf),hillSRCaP)-pow((initvalu_31/kmr),hillSRCaP))
                                         /(1.0f32+pow((initvalu_38/kmf),hillSRCaP)+pow((initvalu_31/kmr),hillSRCaP))
-  let j_SRleak = 5.348e-6f32*(initvalu_31-initvalu_36) -- [mM/ms]
+  let j_SRleak = 5.348e-6f32*(initvalu_31-initvalu_36) -- [#mM/ms]
 
   -- Sodium and Calcium Buffering
-  let finavalu[offset_17] = kon_na*initvalu_32*(bmax_Naj-initvalu_17)-koff_na*initvalu_17   in -- NaBj  [mM/ms]
-  let finavalu[offset_18] = kon_na*initvalu_33*(bmax_Nasl-initvalu_18)-koff_na*initvalu_18  in -- NaBsl [mM/ms]
+  let finavalu[offset_17] = kon_na*initvalu_32*(bmax_Naj-initvalu_17)-koff_na*initvalu_17   in -- NaBj  [#mM/ms]
+  let finavalu[offset_18] = kon_na*initvalu_33*(bmax_Nasl-initvalu_18)-koff_na*initvalu_18  in -- NaBsl [#mM/ms]
   -- Cytosolic Ca Buffers
-  let finavalu[offset_19] = kon_tncl*initvalu_38*(bmax_Tnclow-initvalu_19)-koff_tncl*initvalu_19 in -- TnCL [mM/ms]
-  let finavalu[offset_20] = kon_tnchca*initvalu_38*(bmax_TnChigh-initvalu_20-initvalu_21)-koff_tnchca*initvalu_20 in -- TnCHc [mM/ms]
-  let finavalu[offset_21] = kon_tnchmg*mgi*(bmax_TnChigh-initvalu_20-initvalu_21)-koff_tnchmg*initvalu_21 in -- TnCHm [mM/ms]
-  let finavalu[offset_22] = 0.0f32 in -- CaM [mM/ms]
-  let finavalu[offset_23] = kon_myoca*initvalu_38*(bmax_myosin-initvalu_23-initvalu_24)-koff_myoca*initvalu_23 in -- Myosin_ca [mM/ms]
-  let finavalu[offset_24] = kon_myomg*mgi*(bmax_myosin-initvalu_23-initvalu_24)-koff_myomg*initvalu_24 in -- Myosin_mg [mM/ms]
-  let finavalu[offset_25] = kon_sr*initvalu_38*(bmax_SR-initvalu_25)-koff_sr*initvalu_25 in -- SRB [mM/ms]
+  let finavalu[offset_19] = kon_tncl*initvalu_38*(bmax_Tnclow-initvalu_19)-koff_tncl*initvalu_19 in -- TnCL [#mM/ms]
+  let finavalu[offset_20] = kon_tnchca*initvalu_38*(bmax_TnChigh-initvalu_20-initvalu_21)-koff_tnchca*initvalu_20 in -- TnCHc [#mM/ms]
+  let finavalu[offset_21] = kon_tnchmg*mgi*(bmax_TnChigh-initvalu_20-initvalu_21)-koff_tnchmg*initvalu_21 in -- TnCHm [#mM/ms]
+  let finavalu[offset_22] = 0.0f32 in -- CaM [#mM/ms]
+  let finavalu[offset_23] = kon_myoca*initvalu_38*(bmax_myosin-initvalu_23-initvalu_24)-koff_myoca*initvalu_23 in -- Myosin_ca [#mM/ms]
+  let finavalu[offset_24] = kon_myomg*mgi*(bmax_myosin-initvalu_23-initvalu_24)-koff_myomg*initvalu_24 in -- Myosin_mg [#mM/ms]
+  let finavalu[offset_25] = kon_sr*initvalu_38*(bmax_SR-initvalu_25)-koff_sr*initvalu_25 in -- SRB [#mM/ms]
   let j_CaB_cytosol =   finavalu[offset_19] + finavalu[offset_20] + finavalu[offset_21] + 
                         finavalu[offset_22] + finavalu[offset_23] + finavalu[offset_24] + finavalu[offset_25]
 
   -- Junctional and SL Ca Buffers
-  let finavalu[offset_26] = kon_sll*initvalu_36*(bmax_SLlowj-initvalu_26)-koff_sll*initvalu_26  in -- SLLj  [mM/ms]
-  let finavalu[offset_27] = kon_sll*initvalu_37*(bmax_SLlowsl-initvalu_27)-koff_sll*initvalu_27 in -- SLLsl [mM/ms]
-  let finavalu[offset_28] = kon_slh*initvalu_36*(bmax_SLhighj-initvalu_28)-koff_slh*initvalu_28 in -- SLHj  [mM/ms]
-  let finavalu[offset_29] = kon_slh*initvalu_37*(bmax_SLhighsl-initvalu_29)-koff_slh*initvalu_29 in-- SLHsl [mM/ms]
+  let finavalu[offset_26] = kon_sll*initvalu_36*(bmax_SLlowj-initvalu_26)-koff_sll*initvalu_26  in -- SLLj  [#mM/ms]
+  let finavalu[offset_27] = kon_sll*initvalu_37*(bmax_SLlowsl-initvalu_27)-koff_sll*initvalu_27 in -- SLLsl [#mM/ms]
+  let finavalu[offset_28] = kon_slh*initvalu_36*(bmax_SLhighj-initvalu_28)-koff_slh*initvalu_28 in -- SLHj  [#mM/ms]
+  let finavalu[offset_29] = kon_slh*initvalu_37*(bmax_SLhighsl-initvalu_29)-koff_slh*initvalu_29 in-- SLHsl [#mM/ms]
   let j_CaB_junction = finavalu[offset_26]+finavalu[offset_28]
   let j_CaB_sl = finavalu[offset_27]+finavalu[offset_29]
 
   -- SR Ca Concentrations
-  let finavalu[offset_30] = kon_csqn*initvalu_31*(bmax_Csqn-initvalu_30)-koff_csqn*initvalu_30 in -- Csqn [mM/ms]
+  let finavalu[offset_30] = kon_csqn*initvalu_31*(bmax_Csqn-initvalu_30)-koff_csqn*initvalu_30 in -- Csqn [#mM/ms]
   let oneovervsr = 1.0f32 / vsr
-  let finavalu[offset_31] = j_serca*vmyo*oneovervsr-(j_SRleak*vmyo*oneovervsr+j_SRCarel)-finavalu[offset_30] -- Ca_sr [mM/ms]
+  let finavalu[offset_31] = j_serca*vmyo*oneovervsr-(j_SRleak*vmyo*oneovervsr+j_SRCarel)-finavalu[offset_30] -- Ca_sr [#mM/ms]
 
   -- Sodium Concentrations
-  let i_Na_tot_junc = i_Na_junc+i_nabk_junc+3.0f32*i_ncx_junc+3.0f32*i_nak_junc+i_CaNa_junc in -- [uA/uF]
-  let i_Na_tot_sl = i_Na_sl+i_nabk_sl+3.0f32*i_ncx_sl+3.0f32*i_nak_sl+i_CaNa_sl in -- [uA/uF]
+  let i_Na_tot_junc = i_Na_junc+i_nabk_junc+3.0f32*i_ncx_junc+3.0f32*i_nak_junc+i_CaNa_junc in -- [#uA/uF]
+  let i_Na_tot_sl = i_Na_sl+i_nabk_sl+3.0f32*i_ncx_sl+3.0f32*i_nak_sl+i_CaNa_sl in -- [#uA/uF]
   let finavalu[offset_32] = -i_Na_tot_junc*cmem/(vjunc*frdy)+j_na_juncsl/vjunc*(initvalu_33-initvalu_32)-finavalu[offset_17]
   let oneovervsl = 1.0f32 / vsl
   let finavalu[offset_33] = -i_Na_tot_sl*cmem*oneovervsl/frdy+j_na_juncsl*oneovervsl*(initvalu_32-initvalu_33) +
                             j_na_slmyo*oneovervsl*(initvalu_34-initvalu_33)-finavalu[offset_18]
-  let finavalu[offset_34] = j_na_slmyo/vmyo*(initvalu_33-initvalu_34) -- [mM/msec] 
+  let finavalu[offset_34] = j_na_slmyo/vmyo*(initvalu_33-initvalu_34) -- [#mM/msec] 
 
   -- Potassium Concentration
-  let i_K_tot = i_to+i_kr+i_ks+i_ki-2.0f32*i_nak+i_CaK+i_kp in -- [uA/uF]
-  let finavalu[offset_35] = 0.0f32 -- [mM/msec]
+  let i_K_tot = i_to+i_kr+i_ks+i_ki-2.0f32*i_nak+i_CaK+i_kp in -- [#uA/uF]
+  let finavalu[offset_35] = 0.0f32 -- [#mM/msec]
 
   -- Calcium Concentrations
-  let i_Ca_tot_junc = i_Ca_junc+i_cabk_junc+i_pca_junc-2.0f32*i_ncx_junc in -- [uA/uF]
-  let i_Ca_tot_sl = i_Ca_sl+i_cabk_sl+i_pca_sl-2.0f32*i_ncx_sl in -- [uA/uF]
+  let i_Ca_tot_junc = i_Ca_junc+i_cabk_junc+i_pca_junc-2.0f32*i_ncx_junc in -- [#uA/uF]
+  let i_Ca_tot_sl = i_Ca_sl+i_cabk_sl+i_pca_sl-2.0f32*i_ncx_sl in -- [#uA/uF]
   let finavalu[offset_36] = -i_Ca_tot_junc*cmem/(vjunc*2.0f32*frdy)+
                             j_ca_juncsl/vjunc*(initvalu_37-initvalu_36) - 
                             j_CaB_junction+(j_SRCarel)*vsr/vjunc+j_SRleak*vmyo/vjunc in -- Ca_j
@@ -515,8 +515,8 @@ let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
               then 9.5f32 else 0.0f32
 
   -- Membrane Potential
-  let i_Na_tot = i_Na_tot_junc + i_Na_tot_sl in -- [uA/uF]
-  let i_Cl_tot = i_ClCa+i_Clbk in -- [uA/uF]
+  let i_Na_tot = i_Na_tot_junc + i_Na_tot_sl in -- [#uA/uF]
+  let i_Cl_tot = i_ClCa+i_Clbk in -- [#uA/uF]
   let i_Ca_tot = i_Ca_tot_junc + i_Ca_tot_sl
   let i_tot = i_Na_tot+i_Cl_tot+i_Ca_tot+i_K_tot
   let finavalu[offset_39] = -(i_tot-i_app) 
@@ -531,10 +531,10 @@ let ecc(timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
 ----- Cam MODULE -----
 ----------------------
 
-let cam(timeinst:  f32, initvalu: [equs]f32, 
-                            initvalu_offset: i32,
-                            parameter: [pars]f32, parameter_offset: i32, 
-                            finavalu: *[equs]f32, ca: f32 ): (f32, *[equs]f32) =
+let cam(timeinst:  f32, initvalu: [#equs]f32,
+        initvalu_offset: i32,
+        parameter: [#pars]f32, parameter_offset: i32,
+        finavalu: *[#equs]f32, ca: f32 ): (f32, *[equs]f32) =
   unsafe 
 
   -- input data and output data variable references
@@ -600,46 +600,46 @@ let cam(timeinst:  f32, initvalu: [equs]f32,
                                 (1.0f32+k/13.0f32-1.0f32/0.153f32+(mg-1.0f32)/0.150f32)
                           )
 
-  let k20 = 10.0f32  in -- [s^-1]      
-  let k02 = k20/kd02 in -- [uM^-2 s^-1]
-  let k42 = 500.0f32 in -- [s^-1]      
-  let k24 = k42/kd24    -- [uM^-2 s^-1]
+  let k20 = 10.0f32  in -- [#s^-1]      
+  let k02 = k20/kd02 in -- [#uM^-2 s^-1]
+  let k42 = 500.0f32 in -- [#s^-1]      
+  let k24 = k42/kd24    -- [#uM^-2 s^-1]
 
   -- caM buffering (B) parameters
-  let k0Boff = 0.0014f32 in -- [s^-1] 
-  let k0Bon = k0Boff/0.2f32 in -- [uM^-1 s^-1] kon = koff/kd
-  let k2Boff = k0Boff/100.0f32 in -- [s^-1] 
-  let k2Bon = k0Bon in -- [uM^-1 s^-1]
-  let k4Boff = k2Boff in -- [s^-1]
-  let k4Bon = k0Bon      -- [uM^-1 s^-1]
+  let k0Boff = 0.0014f32 in -- [#s^-1] 
+  let k0Bon = k0Boff/0.2f32 in -- [#uM^-1 s^-1] kon = koff/kd
+  let k2Boff = k0Boff/100.0f32 in -- [#s^-1] 
+  let k2Bon = k0Bon in -- [#uM^-1 s^-1]
+  let k4Boff = k2Boff in -- [#s^-1]
+  let k4Bon = k0Bon      -- [#uM^-1 s^-1]
 
   -- using thermodynamic constraints
-  let k20B = k20/100.0f32 in -- [s^-1] thermo constraint on loop 1
-  let k02B = k02 in -- [uM^-2 s^-1] 
-  let k42B = k42 in -- [s^-1] thermo constraint on loop 2
-  let k24B = k24    -- [uM^-2 s^-1]
+  let k20B = k20/100.0f32 in -- [#s^-1] thermo constraint on loop 1
+  let k02B = k02 in -- [#uM^-2 s^-1] 
+  let k42B = k42 in -- [#s^-1] thermo constraint on loop 2
+  let k24B = k24    -- [#uM^-2 s^-1]
 
   -- Wi Wa Wt Wp
-  let kbi = 2.2f32 in -- [s^-1] (ca4caM dissocation from Wb)
-  let kib = kbi/33.5e-3f32 in -- [uM^-1 s^-1]
-  let kpp1 = 1.72f32 in -- [s^-1] (pp1-dep dephosphorylation rates)
+  let kbi = 2.2f32 in -- [#s^-1] (ca4caM dissocation from Wb)
+  let kib = kbi/33.5e-3f32 in -- [#uM^-1 s^-1]
+  let kpp1 = 1.72f32 in -- [#s^-1] (pp1-dep dephosphorylation rates)
   let kmpp1 = 11.5f32 in -- []uM
   let kib2 = kib
   let kb2i = kib2*5.0f32
   let kb24 = k24
   let kb42 = k42*33.5e-3f32/5.0f32
-  let kta = kbi/1000.0f32 in -- [s^-1] (ca4caM dissociation from Wt)
-  let kat = kib in -- [uM^-1 s^-1] (ca4caM reassociation with Wa)
+  let kta = kbi/1000.0f32 in -- [#s^-1] (ca4caM dissociation from Wt)
+  let kat = kib in -- [#uM^-1 s^-1] (ca4caM reassociation with Wa)
   let kt42 = k42*33.5e-6f32/5.0f32
   let kt24 = k24
   let kat2 = kib
   let kt2a = kib*5.0f32
 
   -- caN parameters
-  let kcancaoff = 1.0f32 in -- [s^-1] 
-  let kcancaon = kcancaoff/0.5f32 in -- [uM^-1 s^-1] 
-  let kcancaM4on = 46.0f32 in -- [uM^-1 s^-1]
-  let kcancaM4off = 0.0013f32 in -- [s^-1]
+  let kcancaoff = 1.0f32 in -- [#s^-1] 
+  let kcancaon = kcancaoff/0.5f32 in -- [#uM^-1 s^-1] 
+  let kcancaM4on = 46.0f32 in -- [#uM^-1 s^-1]
+  let kcancaM4off = 0.0013f32 in -- [#s^-1]
   let kcancaM2on = kcancaM4on
   let kcancaM2off = 2508.0f32*kcancaM4off
   let kcancaM0on = kcancaM4on
@@ -724,17 +724,17 @@ let cam(timeinst:  f32, initvalu: [equs]f32,
 
   -- write to global variables for adjusting ca buffering in EC coupling model
   let jca = 1e-3f32*(2.0f32*caMKiitot*(rcnCktt2-rcnCkb2b) -
-            2.0f32*(rcn02+rcn24+rcn02B+rcn24B+rcnca4caN+rcn02caN+rcn24caN)) -- [uM/msec]
+            2.0f32*(rcn02+rcn24+rcn02B+rcn24B+rcnca4caN+rcn02caN+rcn24caN)) -- [#uM/msec]
   in ( jca, finavalu)
 
 ----------------------
 ----- Fin MODULE -----
 ----------------------
 
-let fin(initvalu:     [equs]f32, initvalu_offset_ecc: i32,
-                        initvalu_offset_Dyad: i32, initvalu_offset_SL: i32,
-                        initvalu_offset_Cyt: i32, parameter: [pars]f32,
-                        finavalu: *[equs]f32, jcaDyad: f32, jcaSL: f32, jcaCyt: f32 ): *[equs]f32 =
+let fin(initvalu:     [#equs]f32, initvalu_offset_ecc: i32,
+        initvalu_offset_Dyad: i32, initvalu_offset_SL: i32,
+        initvalu_offset_Cyt: i32, parameter: [#pars]f32,
+        finavalu: *[#equs]f32, jcaDyad: f32, jcaSL: f32, jcaCyt: f32 ): *[equs]f32 =
   unsafe
 
   let btotDyad      = parameter[2]
@@ -773,17 +773,17 @@ let fin(initvalu:     [equs]f32, initvalu_offset_ecc: i32,
                     + initvalu[initvalu_offset_Dyad+13]
                     + initvalu[initvalu_offset_Dyad+14]
 
-  let bdyad = btotDyad - caMtotDyad in -- [uM dyad]
+  let bdyad = btotDyad - caMtotDyad in -- [#uM dyad]
   let j_cam_dyadSL = 1e-3f32 * (  k0Boff*initvalu[initvalu_offset_Dyad+0] - 
-                        k0Bon*bdyad*initvalu[initvalu_offset_SL+0]) in -- [uM/msec dyad]
+                        k0Bon*bdyad*initvalu[initvalu_offset_SL+0]) in -- [#uM/msec dyad]
   let j_ca2cam_dyadSL = 1e-3f32 * (  k2Boff*initvalu[initvalu_offset_Dyad+1] - 
-                        k2Bon*bdyad*initvalu[initvalu_offset_SL+1]) in -- [uM/msec dyad]
+                        k2Bon*bdyad*initvalu[initvalu_offset_SL+1]) in -- [#uM/msec dyad]
   let j_ca4cam_dyadSL = 1e-3f32 * (  k2Boff*initvalu[initvalu_offset_Dyad+2] - 
-                        k4Bon*bdyad*initvalu[initvalu_offset_SL+2])    -- [uM/msec dyad]
+                        k4Bon*bdyad*initvalu[initvalu_offset_SL+2])    -- [#uM/msec dyad]
 
-  let j_cam_SLmyo    = kSLmyo * (  initvalu[initvalu_offset_SL+0] - initvalu[initvalu_offset_Cyt+0]) in -- [umol/msec]
-  let j_ca2cam_SLmyo = kSLmyo * (  initvalu[initvalu_offset_SL+1] - initvalu[initvalu_offset_Cyt+1]) in -- [umol/msec]
-  let j_ca4cam_SLmyo = kSLmyo * (  initvalu[initvalu_offset_SL+2] - initvalu[initvalu_offset_Cyt+2])    -- [umol/msec]
+  let j_cam_SLmyo    = kSLmyo * (  initvalu[initvalu_offset_SL+0] - initvalu[initvalu_offset_Cyt+0]) in -- [#umol/msec]
+  let j_ca2cam_SLmyo = kSLmyo * (  initvalu[initvalu_offset_SL+1] - initvalu[initvalu_offset_Cyt+1]) in -- [#umol/msec]
+  let j_ca4cam_SLmyo = kSLmyo * (  initvalu[initvalu_offset_SL+2] - initvalu[initvalu_offset_Cyt+2])    -- [#umol/msec]
 
   -- ADJUST CAM Dyad 
   let finavalu[initvalu_offset_Dyad+0] = finavalu[initvalu_offset_Dyad+0] - j_cam_dyadSL
@@ -813,7 +813,7 @@ let fin(initvalu:     [equs]f32, initvalu_offset_ecc: i32,
 --let bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != f32.sqrt(xp)
 --let bool isinf(f32 x) = ( x == inf() || x == minf() )
 
-let master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f32 =
+let master(timeinst:  f32, initvalu: [#equs]f32, parameter: [#pars]f32 ): *[equs]f32 =
   let finavalu = replicate equs 0.0f32
   -- ecc function
   let initvalu_offset_ecc  = 0
@@ -858,8 +858,8 @@ let master(timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f
 ----------------------------------------
 
 let embedded_fehlberg_7_8(timeinst:   f32, h: f32,
-                        initvalu: [equs]f32,
-                        parameter: [pars]f32 ): (*[equs]f32, *[equs]f32) =
+                          initvalu: [#equs]f32,
+                          parameter: [#pars]f32 ): (*[equs]f32, *[equs]f32) =
   let c_1_11 = 41.0f32 / 840.0f32
   let c6 = 34.0f32 / 105.0f32
   let c_7_8= 9.0f32 / 35.0f32
@@ -1065,7 +1065,7 @@ let attempts(): i32         = 12
 let max(x: f32) (y: f32): f32 = if ( x < y ) then y else x
 let min(x: f32) (y: f32): f32 = if ( x < y ) then x else y
 
-let solver(xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
+let solver(xmax: i32, params: [#pars]f32, y0: [#equs]f32): (bool,[equs]f32) =
   let err_exponent  = 1.0f32 / 7.0f32
   let last_interval = 0.0f32
   let h_init = 1.0f32
@@ -1169,15 +1169,15 @@ let main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [
 
 
 
-let main_EMBEDDED(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): ([91]f32, [91]f32) =
+let main_EMBEDDED(xmax: i32, y: [#workload][91]f32, params: [#workload][16]f32): ([91]f32, [91]f32) =
     embedded_fehlberg_7_8( 0.0f32, 1.0f32, y[0], params[0])
 
-let main_ECC_CAM(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): (f32, [91]f32) =
+let main_ECC_CAM(xmax: i32, y: [#workload][91]f32, params: [#workload][16]f32): (f32, [91]f32) =
     let finavalu = replicate 91 0.0f32
     let finavalu = ecc( 0.0f32, y[0], 0, params[0], 0, finavalu )
     let (res_val, finavalu) = cam(  0.0f32, y[0], 46, params[0],  
                                     1, finavalu, y[0, 35]*1e3f32 )
     in (res_val, finavalu)
 
-let main_MASTER(xmax: i32, y: [workload][91]f32, params: [workload][16]f32): [91]f32 =
+let main_MASTER(xmax: i32, y: [#workload][91]f32, params: [#workload][16]f32): [91]f32 =
     master( 0.0f32, y[0], params[0] ) 

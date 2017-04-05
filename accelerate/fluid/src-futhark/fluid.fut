@@ -75,8 +75,8 @@ let outermost_inner_index(i: i32, j: i32, g: i32, b: i32): (i32, i32, f32) =
 
 let lin_solve_inner(i: i32,
                     j: i32,
-                    s0: [g][g]f32,
-                    s1: [g][g]f32,
+                    s0: [#g][#g]f32,
+                    s1: [#g][#g]f32,
                     a: f32,
                     c: f32): f32 =
   -- A stencil.
@@ -88,8 +88,8 @@ let lin_solve_inner(i: i32,
 
 let lin_solve_outer_base(i: i32,
                          j: i32,
-                         s0: [g][g]f32,
-                         s1: [g][g]f32,
+                         s0: [#g][#g]f32,
+                         s1: [#g][#g]f32,
                          a: f32,
                          c: f32,
                          b: i32): f32 =
@@ -98,8 +98,8 @@ let lin_solve_outer_base(i: i32,
 
 let lin_solve_outer(i: i32,
                     j: i32,
-                    s0: [g][g]f32,
-                    s1: [g][g]f32,
+                    s0: [#g][#g]f32,
+                    s1: [#g][#g]f32,
                     a: f32,
                     c: f32,
                     b: i32): f32 =
@@ -110,7 +110,7 @@ let lin_solve_outer(i: i32,
   else lin_solve_outer_base(i, j, s0, s1, a, c, b)
 
 let lin_solve(n_solver_steps: i32,
-              s0: [g][g]f32,
+              s0: [#g][#g]f32,
               b: i32,
               a: f32,
               c: f32): [g][g]f32 =
@@ -130,7 +130,7 @@ let lin_solve(n_solver_steps: i32,
 -- diffuse.
 ------------------------------------------------------------
 
-let diffuse(s: [g][g]f32,
+let diffuse(s: [#g][#g]f32,
             b: i32,
             n_solver_steps: i32,
             diffusion_rate_or_viscosity: f32,
@@ -146,9 +146,9 @@ let diffuse(s: [g][g]f32,
 
 let advect_inner(i: i32,
                  j: i32,
-                 s: [g][g]f32,
-                 u: [g][g]f32,
-                 v: [g][g]f32,
+                 s: [#g][#g]f32,
+                 u: [#g][#g]f32,
+                 v: [#g][#g]f32,
                  time_step0: f32): f32 =
   let x = f32(i) - time_step0 * unsafe u[i, j]
   let y = f32(j) - time_step0 * unsafe v[i, j]
@@ -173,9 +173,9 @@ let advect_inner(i: i32,
 
 let advect_outer_base(i: i32,
                       j: i32,
-                      s: [g][g]f32,
-                      u: [g][g]f32,
-                      v: [g][g]f32,
+                      s: [#g][#g]f32,
+                      u: [#g][#g]f32,
+                      v: [#g][#g]f32,
                       time_step0: f32,
                       b: i32): f32 =
   let (i1, j1, f) = outermost_inner_index(i, j, g, b)
@@ -183,9 +183,9 @@ let advect_outer_base(i: i32,
 
 let advect_outer(i: i32,
                  j: i32,
-                 s: [g][g]f32,
-                 u: [g][g]f32,
-                 v: [g][g]f32,
+                 s: [#g][#g]f32,
+                 u: [#g][#g]f32,
+                 v: [#g][#g]f32,
                  time_step0: f32,
                  b: i32): f32 =
   if in_outside_corner(i, j, g)
@@ -194,9 +194,9 @@ let advect_outer(i: i32,
                     + advect_outer_base(i2, j2, s, u, v, time_step0, b))
   else advect_outer_base(i, j, s, u, v, time_step0, b)
 
-let advect(s0: [g][g]f32,
-           u: [g][g]f32,
-           v: [g][g]f32,
+let advect(s0: [#g][#g]f32,
+           u: [#g][#g]f32,
+           v: [#g][#g]f32,
            b: i32,
            time_step: f32): *[g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g
@@ -217,8 +217,8 @@ let advect(s0: [g][g]f32,
 
 let project_top_inner(i: i32,
                       j: i32,
-                      u0: [g][g]f32,
-                      v0: [g][g]f32): f32 =
+                      u0: [#g][#g]f32,
+                      v0: [#g][#g]f32): f32 =
   unsafe (-0.5f32 * (u0[i + 1, j]
                      - u0[i - 1, j]
                      + v0[i, j + 1]
@@ -226,23 +226,23 @@ let project_top_inner(i: i32,
 
 let project_top_outer_base(i: i32,
                            j: i32,
-                           u0: [g][g]f32,
-                           v0: [g][g]f32): f32 =
+                           u0: [#g][#g]f32,
+                           v0: [#g][#g]f32): f32 =
   let (i1, j1, _f) = outermost_inner_index(i, j, g, 0)
   in project_top_inner(i1, j1, u0, v0)
 
 let project_top_outer(i: i32,
                       j: i32,
-                      u0: [g][g]f32,
-                      v0: [g][g]f32): f32 =
+                      u0: [#g][#g]f32,
+                      v0: [#g][#g]f32): f32 =
   if in_outside_corner(i, j, g)
   then let (i1, j1, i2, j2) = corner_index_neighbors(i, j, g)
        in 0.5f32 * (project_top_outer_base(i1, j1, u0, v0)
                     + project_top_outer_base(i2, j2, u0, v0))
   else project_top_outer_base(i, j, u0, v0)
 
-let project_top(u0: [g][g]f32,
-                v0: [g][g]f32): [g][g]f32 =
+let project_top(u0: [#g][#g]f32,
+                v0: [#g][#g]f32): [g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g in
   reshape (g, g)
   (map (\(ij: i32): f32  ->
@@ -256,8 +256,8 @@ let project_top(u0: [g][g]f32,
 
 let project_bottom_inner(i: i32,
                          j: i32,
-                         p0: [g][g]f32,
-                         s0: [g][g]f32,
+                         p0: [#g][#g]f32,
+                         s0: [#g][#g]f32,
                          i0d: i32,
                          j0d: i32,
                          i1d: i32,
@@ -267,8 +267,8 @@ let project_bottom_inner(i: i32,
 
 let project_bottom_outer_base(i: i32,
                               j: i32,
-                              p0: [g][g]f32,
-                              s0: [g][g]f32,
+                              p0: [#g][#g]f32,
+                              s0: [#g][#g]f32,
                               i0d: i32,
                               j0d: i32,
                               i1d: i32,
@@ -279,8 +279,8 @@ let project_bottom_outer_base(i: i32,
 
 let project_bottom_outer(i: i32,
                          j: i32,
-                         p0: [g][g]f32,
-                         s0: [g][g]f32,
+                         p0: [#g][#g]f32,
+                         s0: [#g][#g]f32,
                          i0d: i32,
                          j0d: i32,
                          i1d: i32,
@@ -292,8 +292,8 @@ let project_bottom_outer(i: i32,
                     + project_bottom_outer_base(i2, j2, p0, s0, i0d, j0d, i1d, j1d, b))
   else project_bottom_outer_base(i, j, p0, s0, i0d, j0d, i1d, j1d, b)
 
-let project_bottom(p0: [g][g]f32,
-                   s0: [g][g]f32,
+let project_bottom(p0: [#g][#g]f32,
+                   s0: [#g][#g]f32,
                    b: i32,
                    i0d: i32,
                    j0d: i32,
@@ -311,8 +311,8 @@ let project_bottom(p0: [g][g]f32,
        ) (iota(g * g)))
 
 let project(n_solver_steps: i32,
-            u0: [g][g]f32,
-            v0: [g][g]f32): (*[g][g]f32, *[g][g]f32) =
+            u0: [#g][#g]f32,
+            v0: [#g][#g]f32): (*[g][g]f32, *[g][g]f32) =
   let div0 = project_top(u0, v0)
   let p0 = lin_solve(n_solver_steps, div0, 0, 1.0f32, 4.0f32)
   let u1 = project_bottom(p0, u0, 1, 1, 0, -1, 0)
@@ -323,9 +323,9 @@ let project(n_solver_steps: i32,
 -- Step functions.
 ------------------------------------------------------------
 
-let dens_step(d0: [g][g]f32,
-              u0: [g][g]f32,
-              v0: [g][g]f32,
+let dens_step(d0: [#g][#g]f32,
+              u0: [#g][#g]f32,
+              v0: [#g][#g]f32,
               n_solver_steps: i32,
               diffusion_rate: f32,
               time_step: f32): *[g][g]f32 =
@@ -333,8 +333,8 @@ let dens_step(d0: [g][g]f32,
   let d2 = advect(d1, u0, v0, 0, time_step)
   in d2
 
-let vel_step(u0: [g][g]f32,
-             v0: [g][g]f32,
+let vel_step(u0: [#g][#g]f32,
+             v0: [#g][#g]f32,
              n_solver_steps: i32,
              viscosity: f32,
              time_step: f32): (*[g][g]f32,
@@ -347,9 +347,9 @@ let vel_step(u0: [g][g]f32,
   let (u4, v4) = project(n_solver_steps, u3, v3)
   in (u4, v4)
 
-let step(u0: [g][g]f32,
-         v0: [g][g]f32,
-         d0: [g][g]f32,
+let step(u0: [#g][#g]f32,
+         v0: [#g][#g]f32,
+         d0: [#g][#g]f32,
          n_solver_steps: i32,
          time_step: f32,
          diffusion_rate: f32,
@@ -367,9 +367,9 @@ let step(u0: [g][g]f32,
 -- Wrapper functions.
 ------------------------------------------------------------
 
-let get_end_frame(u0: [g][g]f32,
-                  v0: [g][g]f32,
-                  d0: [g][g]f32,
+let get_end_frame(u0: [#g][#g]f32,
+                  v0: [#g][#g]f32,
+                  d0: [#g][#g]f32,
                   n_steps: i32,
                   n_solver_steps: i32,
                   time_step: f32,
@@ -382,9 +382,9 @@ let get_end_frame(u0: [g][g]f32,
          diffusion_rate, viscosity)
   in (u0, v0, d0)
 
-let get_all_frames(u0: [g][g]f32,
-                   v0: [g][g]f32,
-                   d0: [g][g]f32,
+let get_all_frames(u0: [#g][#g]f32,
+                   v0: [#g][#g]f32,
+                   d0: [#g][#g]f32,
                    n_steps: i32,
                    n_solver_steps: i32,
                    time_step: f32,

@@ -24,20 +24,20 @@ let iota32(num: i32): [num]f64 =
     map f64 (iota(num))
 
 -- Prøv stream_red i stedet
-let sumBins(bins: [numBinss][numBins]i32): *[numBins]i32 =
+let sumBins(bins: [#numBinss][#numBins]i32): *[numBins]i32 =
     map (\(binIndex: []i32): i32  -> reduce (+) 0i32 binIndex) (transpose(bins))
 
 let log10(num: f64): f64 = f64.log(num) / f64.log(10.0)
 
 let doCompute(data1: 
-    [num1]vec3,
-    data2: [num2]vec3,
+    [#num1]vec3,
+    data2: [#num2]vec3,
     numBins: i32,
     numBins2: i32,
-    binb: [numBBins]f64
+    binb: [#numBBins]f64
 ): *[numBins2]i32 =
     let value = map (\(xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32  ->
-            stream_map (\(inner: [chunk]vec3): *[numBins2]i32  ->
+            stream_map (\(inner: [#chunk]vec3): *[numBins2]i32  ->
                     loop (dBins = replicate numBins2 0i32) = for i < chunk do
                         let (xInner, yInner, zInner) = inner[i]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
@@ -61,10 +61,10 @@ let doCompute(data1:
     in sumBins(value)
 
 let doComputeSelf(data: 
-    [numD]vec3,
+    [#numD]vec3,
     numBins: i32,
     numBins2: i32,
-    binb: [numBBins]f64
+    binb: [#numBBins]f64
 ): *[numBins2]i32 =
 -- loop version
     let value = map (\(vec: vec3, index: i32): [numBins2]i32  ->
@@ -98,20 +98,20 @@ let fixPoints(ra: f64, dec: f64): vec3 =
     in (f64.cos(rarad)*cd, f64.sin(rarad)*cd, f64.sin(decrad))
 
 let main(datapointsx: 
-    [numD]f64,
-    datapointsy: [numD]f64,
-    randompointsx: [numRs][numR]f64,
-    randompointsy: [numRs][numR]f64
+    [#numD]f64,
+    datapointsy: [#numD]f64,
+    randompointsx: [#numRs][#numR]f64,
+    randompointsy: [#numRs][#numR]f64
 ): *[60]i32 =
     let numBins2 = numBins() + 2
     let binb = map (\(k: f64): f64  ->
                         f64.cos((10.0 ** (log10(min_arcmin()) + k*1.0/bins_per_dec())) / 60.0 * dec2rad(1.0))) (
                     iota32(numBins() + 1))
     let datapoints = map fixPoints (zip datapointsx datapointsy)
-    let randompoints = map (\(x: [numR]f64, y: [numR]f64): [numR]vec3  ->
+    let randompoints = map (\(x: [#numR]f64, y: [#numR]f64): [numR]vec3  ->
                             map fixPoints (zip x y)) (
                            zip randompointsx randompointsy)
-    let (rrs, drs) = unzip(map (\(random: [numR]vec3): (*[]i32, *[]i32)  ->
+    let (rrs, drs) = unzip(map (\(random: [#numR]vec3): (*[]i32, *[]i32)  ->
                                 (doComputeSelf(random, numBins(), numBins2, binb),
                                 doCompute(datapoints, random, numBins(), numBins2, binb))) randompoints)
     loop ((res, dd, rr, dr) = (replicate (numBins()*3) 0i32,

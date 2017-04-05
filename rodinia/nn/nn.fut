@@ -12,8 +12,8 @@ let infty(): f32 = 1.0f32 / 0.0f32
 let emptyRecord(): (i32, f32) = (0, 0.0f32)
 
 let main(resultsCount:    i32, lat: f32, lng: f32, 
-        locations_lat: [numRecords]f32, 
-        locations_lng: [numRecords]f32    ): ([resultsCount]i32, [resultsCount]f32) =
+        locations_lat: [#numRecords]f32, 
+        locations_lng: [#numRecords]f32    ): ([resultsCount]i32, [resultsCount]f32) =
   let locations    = zip (locations_lat) (locations_lng)
   -- let resultsCount = if (resultsCount > numRecords) then numRecords else resultsCount
   let distances = 

@@ -38,9 +38,9 @@ import "futlib/math"
 let pi(): f32 = 3.1415926535897932384626433832795029f32
 let pi2(): f32 = pi() * 2.0f32
 
-let main(kx: [numK]f32, ky: [numK]f32, kz: [numK]f32,
-                                  x: [numX]f32, y: [numX]f32, z: [numX]f32,
-                                  phiR: [numK]f32, phiI: [numK]f32): ([numX]f32, [numX]f32) =
+let main(kx: [#numK]f32, ky: [#numK]f32, kz: [#numK]f32,
+         x: [#numX]f32, y: [#numX]f32, z: [#numX]f32,
+         phiR: [#numK]f32, phiI: [#numK]f32): ([numX]f32, [numX]f32) =
   let phiMag = map (\(r: f32) (i: f32): f32  ->
                          r*r + i*i
                       ) phiR phiI
@@ -50,10 +50,10 @@ let main(kx: [numK]f32, ky: [numK]f32, kz: [numK]f32,
                                         kx_e * x_e + ky_e * y_e + kz_e * z_e
                                      ) kx ky kz)
                        ) x y z
-  let qr = map (\(row: [numK]f32): f32  ->
+  let qr = map (\(row: [#numK]f32): f32  ->
                  reduce (+) (0.0f32) (map (*) phiMag (map f32.cos row))
               ) expArgs
-  let qi = map (\(row: [numK]f32): f32  ->
+  let qi = map (\(row: [#numK]f32): f32  ->
                  reduce (+) (0.0f32) (map (*) phiMag (map f32.sin row))
               ) expArgs
   in (qr, qi)

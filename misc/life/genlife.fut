@@ -45,7 +45,7 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
      R.value se * R.weights[2,2])
 
   -- Note that the world is stored column-major.
-  let all_neighbour_sums(world: [n][m]cell): [n][m]i32 =
+  let all_neighbour_sums(world: [#n][#m]cell): [n][m]i32 =
     let ns  = rotate@1  (-1) world
     let ss  = rotate@1    1  world
     let ws  = rotate    (-1) world
@@ -59,7 +59,7 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
             nws_r ns_r nes_r ws_r world_r es_r sws_r ss_r ses_r)
            nws ns nes ws world es sws ss ses
 
-  let step(world: [n][m]cell): [n][m]cell =
+  let step(world: [#n][#m]cell): [n][m]cell =
     let all_sums = all_neighbour_sums world
     in map (\world_r all_sums_r -> map R.step world_r all_sums_r) world all_sums
 }
@@ -91,13 +91,13 @@ module type visualisation = {
 module gen_visualisation (V: visuals) : (visualisation with cell = V.cell) = {
   type cell = V.cell
 
-  let init(world: [n][m]bool): [n][m]cell =
+  let init(world: [#n][#m]bool): [n][m]cell =
     map (\row -> map V.init row) world
 
-  let uninit(world: [n][m]cell): [n][m]bool =
+  let uninit(world: [#n][#m]cell): [n][m]bool =
     map (\row -> map V.uninit row) world
 
-  let render(world: [n][m]cell): [n][m]i32 =
+  let render(world: [#n][#m]cell): [n][m]i32 =
     map (\ages -> map V.colour ages) world
 }
 

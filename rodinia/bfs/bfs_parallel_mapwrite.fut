@@ -17,12 +17,12 @@ module BFS = BFSLIB({
   let max(a: i32) (b: i32): i32 =
     if a > b then a else b
 
-  let step(cost: *[n]i32,
-           nodes_start_index: [n]i32,
-           nodes_n_edges: [n]i32,
-           edges_dest: [e]i32,
-           graph_visited: [n]bool,
-           graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[]i32) =
+  let step(cost: *[#n]i32,
+           nodes_start_index: [#n]i32,
+           nodes_n_edges: [#n]i32,
+           edges_dest: [#e]i32,
+           graph_visited: [#n]bool,
+           graph_mask: *[#n]bool): (*[n]i32, *[n]bool, *[]i32) =
 
     -- We calculate the maximum number of edges for a node.  This is necessary,
     -- since the number of edges are irregular, and since we want to construct a
@@ -59,5 +59,5 @@ module BFS = BFSLIB({
     in (cost', graph_mask', inds_upd)
 })
 
-let main(nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
+let main(nodes_start_index: [#n]i32, nodes_n_edges: [#n]i32, edges_dest: [#e]i32): [n]i32 =
   BFS.common_main(nodes_start_index, nodes_n_edges, edges_dest)

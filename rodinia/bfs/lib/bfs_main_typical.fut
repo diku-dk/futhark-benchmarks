@@ -7,7 +7,7 @@
 -- irregular).
 --
 -- Note: Rodinia also has a weight for each edge, but BFS doesn't use it.  It
--- could have been represented as `[e]i32 edges_weight` in Futhark.
+-- could have been represented as `[#e]i32 edges_weight` in Futhark.
 --
 -- Returns the cost for getting to each node from the source node.
 --
@@ -27,9 +27,9 @@ module type STEP_FUN = {
 
 module BFSLIB(S: STEP_FUN) = {
 
-  let common_main(nodes_start_index: [n]i32,
-                  nodes_n_edges: [n]i32,
-                  edges_dest: [e]i32): [n]i32 =
+  let common_main(nodes_start_index: [#n]i32,
+                  nodes_n_edges: [#n]i32,
+                  edges_dest: [#e]i32): [n]i32 =
     let graph_mask = replicate n false
     let updating_graph_mask = replicate n false
     let graph_visited = replicate n false
