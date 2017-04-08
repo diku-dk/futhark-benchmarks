@@ -13,11 +13,8 @@ module type fading = {
   val dying_speed: f32
 }
 
-module fading_life =
-  \(F: fading) ->
-  \(R: rules) ->
-  \(V: visuals with cell = R.cell)
-  : vis_game_of_life ->
+module fading_life (F: fading) (R: rules) (V: visuals with cell = R.cell)
+       : vis_game_of_life =
 {
 -- The cell, and the amount of time it has been dead.
 type cell = (R.cell, argb.colour, i32)

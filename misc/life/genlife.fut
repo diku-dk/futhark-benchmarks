@@ -88,7 +88,7 @@ module type visualisation = {
   val render: [][]cell -> [][]i32
 }
 
-module gen_visualisation (V: visuals) : (visualisation with cell = V.cell) = {
+module gen_visualisation (V: visuals) : visualisation with cell = V.cell = {
   type cell = V.cell
 
   let init(world: [#n][#m]bool): [n][m]cell =
@@ -101,16 +101,20 @@ module gen_visualisation (V: visuals) : (visualisation with cell = V.cell) = {
     map (\ages -> map V.colour ages) world
 }
 
-module type rules_and_visuals = {include rules include visuals}
+module type rules_and_visuals = {
+  include rules
+  include visuals with cell = cell -- cell type from game_of_life
+}
 
 -- A Game of Life that can also be initialised randomly and
 -- visualised.
 module type vis_game_of_life = {
   include game_of_life
-  include visualisation
+  include visualisation with cell = cell -- cell type from game_of_life
 }
 
-module gen_life_vis(R: rules) (V: visuals with cell = R.cell) : vis_game_of_life = {
+module gen_life_vis(R: rules) (V: visuals with cell = R.cell) :
+    vis_game_of_life with cell = R.cell = {
   open (gen_life R)
   open (gen_visualisation V)
 }
