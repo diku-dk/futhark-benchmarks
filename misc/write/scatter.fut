@@ -1,4 +1,4 @@
--- Benchmark the speed of write on different datasets.
+-- Benchmark the speed of scatter on different datasets.
 -- ==
 -- tags { disable }
 --
@@ -17,4 +17,4 @@
 let main(indices: [#k]i32,
          values: [#k]i32,
          array: *[#n]i32): [#n]i32 =
-  write indices values array
+  scatter indices values array

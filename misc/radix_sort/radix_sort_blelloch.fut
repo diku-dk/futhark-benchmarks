@@ -1,4 +1,4 @@
--- A least significant digit radix sort to test out `write`; this variant
+-- A least significant digit radix sort to test out `scatter`; this variant
 -- directly based on [1], which is apparently also the basis for one of
 -- Accelerate's example programs.
 --
