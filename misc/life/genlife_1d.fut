@@ -20,7 +20,10 @@ module type rules_1d = {
   val step: cell -> i32 -> cell
 }
 
-module type rules_and_visuals_1d = {include rules_1d include visuals}
+module type rules_and_visuals_1d = {
+  include rules_1d
+  include visuals with cell = cell
+}
 
 module gen_life_1d(R: rules_1d): game_of_life with cell = R.cell = {
   type cell = R.cell
