@@ -1,4 +1,4 @@
--- A least significant digit radix sort to test out `write`.
+-- A least significant digit radix sort to test out `scatter`.
 -- ==
 --
 -- input {
