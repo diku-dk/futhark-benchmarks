@@ -1,8 +1,6 @@
 -- Port of Accelerate's Mandelbrot example.
 --
--- Complicated a little bit by the fact that Futhark does not natively
--- support complex numbers.  We will represent a complex number as a
--- tuple {f32,f32}.
+-- We use the complex number library from futlib.
 --
 -- ==
 -- tags { futhark-c futhark-opencl }
@@ -14,27 +12,19 @@
 
 default(f32)
 
-type complex = (f32, f32)
+import "futlib/math"
+import "futlib/complex"
 
-let dot(c: complex): f32 =
-  let (r, i) = c
+module c32 = complex f32
+type c32 = c32.complex
+
+let dot(c: c32): f32 =
+  let (r, i) = (c32.re c, c32.im c)
   in r * r + i * i
 
-let multComplex(x: complex, y: complex): complex =
-  let (a, b) = x
-  let (c, d) = y
-  in (a*c - b * d,
-      a*d + b * c)
-
-let addComplex(x: complex, y: complex): complex =
-  let (a, b) = x
-  let (c, d) = y
-  in (a + c,
-      b + d)
-
-let divergence(depth: i32, c0: complex): i32 =
+let divergence(depth: i32, c0: c32): i32 =
   loop ((c, i) = (c0, 0)) = while i < depth && dot(c) < 4.0 do
-    (addComplex(c0, multComplex(c, c)),
+    (c0 c32.+ c c32.* c,
      i + 1)
   in i
 
@@ -43,12 +33,12 @@ let mandelbrot(screenX: i32, screenY: i32, depth: i32, view: (f32,f32,f32,f32)):
   let sizex = xmax - xmin
   let sizey = ymax - ymin
   in map (\(x: i32): [screenY]i32  ->
-           map  (\(y: i32): i32  ->
-                  let c0 = (xmin + (f32(x) * sizex) / f32(screenX),
-                            ymin + (f32(y) * sizey) / f32(screenY))
-                  in divergence(depth, c0)
-            ) (iota(screenY))) (
-        iota(screenX))
+           map (\(y: i32): i32  ->
+                  let c0 = c32.mk (xmin + (f32(x) * sizex) / f32(screenX))
+                                  (ymin + (f32(y) * sizey) / f32(screenY))
+                  in divergence(depth, c0))
+               (iota screenY))
+         (iota screenX)
 
 -- Returns RGB (no alpha channel).
 let escapeToColour(depth: i32) (divergence: i32): i32 =
