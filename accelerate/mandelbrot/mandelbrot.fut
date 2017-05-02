@@ -12,8 +12,8 @@
 
 default(f32)
 
-import "futlib/math"
-import "futlib/complex"
+import "/futlib/math"
+import "/futlib/complex"
 
 module c32 = complex f32
 type c32 = c32.complex

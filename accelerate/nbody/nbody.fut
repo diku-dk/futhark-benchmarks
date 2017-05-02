@@ -15,7 +15,7 @@
 -- input @ nbody-n_steps=1-n_bodies=10000-timestep=1.0-epsilon=50.0.in
 -- input @ nbody-n_steps=1-n_bodies=100000-timestep=1.0-epsilon=50.0.in
 
-import "futlib/math"
+import "/futlib/math"
 
 type mass = f32
 type vec3 = (f32, f32, f32)

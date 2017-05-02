@@ -6,7 +6,7 @@
 -- input @ data/medium.in
 -- output @ data/medium.out
 
-import "futlib/math"
+import "/futlib/math"
 
 let infty(): f32 = 1.0f32 / 0.0f32
 let emptyRecord(): (i32, f32) = (0, 0.0f32)
