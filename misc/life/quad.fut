@@ -2,7 +2,7 @@
 
 import "genlife"
 import "fading"
-import "futlib/colour"
+import "/futlib/colour"
 
 module quad_rules: rules_and_visuals = {
   type cell = i8

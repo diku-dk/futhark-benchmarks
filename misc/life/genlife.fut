@@ -1,6 +1,6 @@
 -- Generic facilities for constructing your very own Game of Life.
 
-import "futlib/colour"
+import "/futlib/colour"
 
 module type rules = {
   -- The abstract type of a cell.

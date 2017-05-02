@@ -7,7 +7,7 @@
 
 import "genlife"
 
-import "futlib/colour"
+import "/futlib/colour"
 
 module type fading = {
   val dying_speed: f32

@@ -7,7 +7,7 @@
 -- input @ data/10_boxes.in
 -- output @ data/10_boxes.out
 
-import "futlib/math"
+import "/futlib/math"
 
 default(f32)
 

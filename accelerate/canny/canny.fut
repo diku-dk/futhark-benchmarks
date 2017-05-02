@@ -25,7 +25,7 @@
 -- compiled input @ data/lena512.in
 -- output @ data/lena512.out
 
-import "futlib/math"
+import "/futlib/math"
 
 default (f32)
 

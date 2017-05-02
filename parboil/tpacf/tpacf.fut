@@ -8,7 +8,7 @@
 -- compiled input @ data/large.in
 -- output @ data/large.out
 
-import "futlib/math"
+import "/futlib/math"
 
 type vec3 = (f64, f64, f64)
 

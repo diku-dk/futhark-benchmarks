@@ -2,7 +2,7 @@
 --
 -- Algorithm from Rodinia.
 
-import "futlib/math"
+import "/futlib/math"
 
 default(f32)
 
