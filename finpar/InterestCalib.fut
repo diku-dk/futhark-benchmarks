@@ -12,6 +12,7 @@
 
 import "/futlib/math"
 import "/futlib/date"
+import "/futlib/array"
 
 default(f32)
 

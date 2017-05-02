@@ -8,6 +8,7 @@
 -- input @ data/medium.in
 -- output @ data/medium.out
 
+import "/futlib/array"
 
 let mult(xss: [#n][#m]f32, yss: [#m][#p]f32): [n][p]f32 =
   map (\(xs: []f32): [p]f32  ->

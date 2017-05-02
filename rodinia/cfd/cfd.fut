@@ -10,6 +10,7 @@
 -- output @ data/fvcorr.domn.193K.out
 
 import "/futlib/math"
+import "/futlib/array"
 
 default(f32)
 

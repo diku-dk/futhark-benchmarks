@@ -2,6 +2,8 @@
 -- roughly the same algorithm as the kmeans implementation
 -- accelerate-examples.
 
+import "/futlib/array"
+
 let euclid_dist_2(c1: (f32,f32)) (c2: (f32,f32)): f32 =
   let (x1,y1) = c1
   let (x2,y2) = c2

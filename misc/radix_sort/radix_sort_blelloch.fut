@@ -17,6 +17,8 @@
 -- input @ data/radix_sort_100.in
 -- output @ data/radix_sort_100.out
 
+import "/futlib/array"
+
 let plus_scan (x: [#n]i32): [n]i32 =
   scan (+) 0 x
 
