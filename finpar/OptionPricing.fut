@@ -10,6 +10,7 @@
 -- output @ OptionPricing-data/large.out
 
 import "/futlib/math"
+import "/futlib/array"
 
 default(f32)
 

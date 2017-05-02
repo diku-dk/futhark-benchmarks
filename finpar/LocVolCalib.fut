@@ -10,6 +10,7 @@
 -- output @ LocVolCalib-data/large.out
 
 import "/futlib/math"
+import "/futlib/array"
 
 default(f32)
 
@@ -218,7 +219,7 @@ let rollback
               (transpose u) v
 
   let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
-  in  transpose myResultTR
+  in  rearrange (1,0) myResultTR
 
 let value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =
   let (myXindex, myYindex, myX, myY, myTimeline) =

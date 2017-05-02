@@ -11,6 +11,8 @@
 -- input @ data/radix_sort_100.in
 -- output @ data/radix_sort_100.out
 
+import "/futlib/array"
+
 let radix_sort_step(xs: [#n]u32, digit_n: i32): [n]u32 =
   let bits = map (\(x: u32): i32  -> i32((x >> u32(digit_n)) & 1u32)) xs
   let bits_inv = map (\(b: i32): i32  -> 1 - b) bits

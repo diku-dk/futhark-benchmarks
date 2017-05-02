@@ -6,6 +6,7 @@
 -- input @ data/medium.in
 
 import "/futlib/math"
+import "/futlib/array"
 
 default(f32)
 

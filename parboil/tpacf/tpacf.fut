@@ -9,6 +9,7 @@
 -- output @ data/large.out
 
 import "/futlib/math"
+import "/futlib/array"
 
 type vec3 = (f64, f64, f64)
 
