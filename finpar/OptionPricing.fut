@@ -77,9 +77,8 @@ let sobolChunk(dir_vs: [#len][#num_bits]i32, n: i32, chunk: i32): [chunk][len]f3
   let sob_fact= 1.0 / f32(1 << num_bits)
   let sob_beg = sobolIndI(dir_vs, n+1)
   let contrbs = map (\(k: i32): []i32  ->
-                       let sob = k + n
-                       in if k==0 then sob_beg
-                          else recM(dir_vs, k+n))
+                       if k==0 then sob_beg
+                       else recM(dir_vs, k+n))
                     (iota chunk)
   let vct_ints= scan (\x y -> map (^) x y) (replicate len 0) contrbs
   in map (\xs -> map (\x -> f32(x) * sob_fact) xs) vct_ints
@@ -234,7 +233,7 @@ let brownianBridge (num_und: i32,
 ---------------------------------
 --- Black-Scholes
 ---------------------------------
-let take(n: i32, a: []f32): [n]f32 = let (first, rest) = split (n) a in first
+let take(n: i32, a: []f32): [n]f32 = let (first, _) = split (n) a in first
 
 let correlateDeltas(md_c:  [#num_und][#num_und]f32,
                     zds:   [#num_dates][#num_und]f32)
