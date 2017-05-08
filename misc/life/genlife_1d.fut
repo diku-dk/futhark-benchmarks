@@ -1,5 +1,7 @@
 -- A hack that models a 1D cellular automaton as a 2D automaton by
 -- turning the extra dimension into time.
+-- ==
+-- tags { disable }
 
 import "genlife"
 

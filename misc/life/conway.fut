@@ -1,4 +1,6 @@
 -- Usual Conway rules for Game of Life.
+-- ==
+-- tags { disable }
 
 import "genlife"
 import "fading"

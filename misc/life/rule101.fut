@@ -5,6 +5,8 @@
 --
 -- current pattern            111   110   101   100   011   010   001   000
 -- new state for center cell  0       1     1     0     1     1     1     0
+-- ==
+-- tags { disable }
 
 import "genlife"
 import "genlife_1d"

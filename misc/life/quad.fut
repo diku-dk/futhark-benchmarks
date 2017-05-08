@@ -1,4 +1,6 @@
 -- Torben Mogensen's four-state Game of Life.
+-- ==
+-- tags { disable }
 
 import "genlife"
 import "fading"
