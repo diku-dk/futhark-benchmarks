@@ -1,6 +1,4 @@
 -- Generic facilities for constructing your very own Game of Life.
--- ==
--- tags { disable }
 
 import "/futlib/colour"
 
