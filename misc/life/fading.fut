@@ -4,8 +4,6 @@
 -- When a cell goes "dead", it does not immediately switch to the
 -- colour of dead cells.  Instead, it will switch to the "dying"
 -- colour, and fade to the dead colour over some period of steps.
--- ==
--- tags { disable }
 
 import "genlife"
 
