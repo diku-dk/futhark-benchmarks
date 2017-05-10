@@ -1,8 +1,6 @@
 -- Torben Mogensen's alternative four-state Game of Life.
 --
 -- This is a variant where only orthogonal neighbours are considered.
--- ==
--- tags { disable }
 
 import "genlife"
 import "fading"
