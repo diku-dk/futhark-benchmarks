@@ -1,5 +1,7 @@
-module vec3 = import "vec3"
+import "/futlib/math"
+import "/futlib/vec3"
 
-type position = vec3.vec3
-type direction = vec3.vec3
-type noraml = (position,direction)
+module vec3 = mk_vec3 f32
+
+type position = vec3.vec
+type direction = vec3.vec
