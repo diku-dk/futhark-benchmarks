@@ -15,7 +15,7 @@ let apply_light ({spheres,planes}: objects) (point: position) (normal: direction
                 (light: light): argb.colour =
   let lp_p = #position light vec3.- point
   let dist = vec3.norm lp_p
-  let dir = (1.0 / dist) vec3.*^ lp_p
+  let dir = vec3.scale (1.0 / dist) lp_p
 
   let mag = vec3.dot normal dir / (dist * dist)
   let (r,g,b,_) = argb.to_rgba (#colour light)

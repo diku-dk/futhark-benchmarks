@@ -4,7 +4,6 @@ import "types"
 import "objects"
 import "intersection"
 import "lights"
-module vec3 = import "vec3"
 
 default (f32)
 
@@ -33,7 +32,7 @@ let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_pos: position)
 
 let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
              : (position, direction, argb.colour, f32) =
-  let point = orig vec3.+ dist vec3.*^ dir
+  let point = orig vec3.+ vec3.scale dist dir
   let normal = sphere_normal sph point
   let colour = #colour sph
   let shine = #shine sph
@@ -41,7 +40,7 @@ let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
 
 let hit_plane (pln: plane) (dist: f32) (orig: position) (dir: direction)
             : (position, direction, argb.colour, f32) =
-  let point = orig vec3.+ dist vec3.*^ dir
+  let point = orig vec3.+ vec3.scale dist dir
   let normal = #normal pln
   let colour = checkers point
   let shine = #shine pln
@@ -78,7 +77,7 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
       if dist_s < dist_p then next_s else next_p
 
     -- Determine reflection angle.
-    let newdir = dir vec3.- (2. * vec3.dot normal dir) vec3.*^ normal
+    let newdir = dir vec3.- vec3.scale (2. * vec3.dot normal dir) normal
 
     -- Determine direct lighting at this point.
     let direct = apply_lights {spheres=spheres,planes=planes} lights point normal

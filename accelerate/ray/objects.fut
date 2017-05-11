@@ -22,7 +22,7 @@ module sphere: object with object = sphere = {
                   (direction: direction): (bool, f32) =
     let pos = #position sphere
     let radius = #radius sphere
-    let p = origin vec3.+ (vec3.dot (pos vec3.- origin) direction vec3.*^ direction)
+    let p = origin vec3.+ (vec3.scale (vec3.dot (pos vec3.- origin) direction) direction)
     let d_cp = vec3.norm (p vec3.- pos)
     let sep = p vec3.- origin
     let miss = d_cp >= radius || vec3.dot sep direction <= 0.
