@@ -17,25 +17,16 @@
 
 import "/futlib/math"
 import "/futlib/array"
+import "/futlib/vec3"
+
+module vec3 = mk_vec3 f32
 
 type mass = f32
 type vec3 = (f32, f32, f32)
-type position = vec3
-type acceleration = vec3
-type velocity = vec3
+type position = vec3.vec
+type acceleration = vec3.vec
+type velocity = vec3.vec
 type body = (position, mass, velocity, acceleration)
-
-let vec_add((x1, y1, z1): vec3) ((x2, y2, z2): vec3): vec3 =
-  (x1 + x2, y1 + y2, z1 + z2)
-
-let vec_subtract((x1, y1, z1): vec3, (x2, y2, z2): vec3): vec3 =
-  (x1 - x2, y1 - y2, z1 - z2)
-
-let vec_mult_factor(factor: f32, (x, y, z): vec3): vec3 =
-  (x * factor, y * factor, z * factor)
-
-let dot((x1, y1, z1): vec3, (x2, y2, z2): vec3): f32 =
-  x1 * x2 + y1 * y2 + z1 * z2
 
 let matmult(x: [#n][#m]f32) (y: [#m][#p]f32): [n][p]f32 =
   map (\(xr) ->
@@ -44,29 +35,28 @@ let matmult(x: [#n][#m]f32) (y: [#m][#p]f32): [n][p]f32 =
       x
 
 let accel (epsilon: f32) ((pi, _, _ , _):body) ((pj, mj, _ , _): body)
-          : velocity =
-  let r = vec_subtract(pj, pi)
-  let rsqr = dot(r, r) + epsilon * epsilon
-  let invr = 1.0f32 / f32.sqrt(rsqr)
+        : velocity =
+  let r = pj vec3.- pi
+  let rsqr = vec3.dot r r + epsilon * epsilon
+  let invr = 1.0f32 / f32.sqrt rsqr
   let invr3 = invr * invr * invr
   let s = mj * invr3
-  in vec_mult_factor(s, r)
+  in vec3.scale s r
 
-let move(epsilon: f32, bodies: []body) (this_body: body): position =
-  let accels = map (accel epsilon this_body) bodies
-  in reduce_comm vec_add (0f32, 0f32, 0f32) accels
-
-let calc_accels(epsilon: f32, bodies: []body): []acceleration =
-  map (move(epsilon, bodies)) bodies
+let calc_accels (epsilon: f32) (bodies: []body): []acceleration =
+  let move (body: body) =
+    let accels = map (accel epsilon body) bodies
+    in reduce_comm (vec3.+) (0f32, 0f32, 0f32) accels
+  in map move bodies
 
 let advance_body(time_step: f32) ((pos, mass, vel, _):body) (acc:acceleration): body =
-  let acc' = vec_mult_factor(mass, acc)
-  let pos' = vec_add pos(vec_mult_factor(time_step, vel))
-  let vel' = vec_add vel(vec_mult_factor(time_step, acc'))
+  let acc' = vec3.scale mass acc
+  let pos' = pos vec3.+ vec3.scale time_step vel
+  let vel' = vel vec3.+ vec3.scale time_step acc'
   in (pos', mass, vel', acc')
 
 let advance_bodies(epsilon: f32, time_step: f32, bodies: [#n]body): [n]body =
-  let accels = calc_accels(epsilon, bodies)
+  let accels = calc_accels epsilon bodies
   in map (advance_body time_step) bodies accels
 
 let advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
