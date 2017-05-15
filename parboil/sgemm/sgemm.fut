@@ -5,7 +5,7 @@
 -- output @ data/tiny.out
 -- compiled input @ data/small.in
 -- output @ data/small.out
--- input @ data/medium.in
+-- compiled input @ data/medium.in
 -- output @ data/medium.out
 
 import "/futlib/array"

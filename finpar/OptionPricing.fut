@@ -3,10 +3,10 @@
 -- compiled input @ OptionPricing-data/small.in
 -- output @ OptionPricing-data/small.out
 --
--- input @ OptionPricing-data/medium.in
+-- compiled input @ OptionPricing-data/medium.in
 -- output @ OptionPricing-data/medium.out
 --
--- input @ OptionPricing-data/large.in
+-- compiled input @ OptionPricing-data/large.in
 -- output @ OptionPricing-data/large.out
 
 import "/futlib/math"
