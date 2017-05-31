@@ -4,16 +4,19 @@
 -- ==
 -- tags { futhark-opencl futhark-c }
 --
--- input @ nbody-acc-t0.in
--- output @ nbody-acc-t0.out
+-- input @ data/nbody-acc-t0.in
+-- output @ data/nbody-acc-t0.out
 --
--- input @ nbody-acc-t10.in
--- output @ nbody-acc-t10.out
+-- input @ data/nbody-acc-t10.in
+-- output @ data/nbody-acc-t10.out
 --
--- input @ nbody-n_steps=1-n_bodies=100-timestep=1.0-epsilon=50.0.in
--- input @ nbody-n_steps=1-n_bodies=1000-timestep=1.0-epsilon=50.0.in
--- input @ nbody-n_steps=1-n_bodies=10000-timestep=1.0-epsilon=50.0.in
--- input @ nbody-n_steps=1-n_bodies=100000-timestep=1.0-epsilon=50.0.in
+-- input @ data/100-bodies.in
+-- input @ data/1000-bodies.in
+-- input @ data/10000-bodies.in
+-- input @ data/100000-bodies.in
+
+-- "data/N-bodies.in" all have the other attributes n_steps=1, timestep=1.0, and
+-- epsilon=50.0.
 
 import "/futlib/math"
 import "/futlib/array"
