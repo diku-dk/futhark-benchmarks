@@ -1,6 +1,6 @@
 -- ==
 --
--- tags { disable }
+-- tags { }
 --
 -- compiled input @ data/regular_n2000_e1000.in
 --
@@ -22,6 +22,6 @@
 --
 -- compiled input @ data/variant_n200000_e2_18.in
 
-import bfs_parallel_simple
+import "bfs_parallel_simple"
 
 let f(): i32 = 0 -- hack
