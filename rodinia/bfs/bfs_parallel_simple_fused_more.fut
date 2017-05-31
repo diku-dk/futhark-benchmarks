@@ -22,6 +22,6 @@
 --
 -- compiled input @ data/variant_n200000_e2_18.in
 
-import "bfs_parallel_simple"
+import "bfs_parallel_simple_fused"
 
 let f(): i32 = 0 -- hack
