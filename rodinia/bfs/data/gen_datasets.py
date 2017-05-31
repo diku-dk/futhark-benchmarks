@@ -16,11 +16,18 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
     for i in range(n_nodes):
         node = nodes[i]
         n_edges = random.randint(n_edges_min, n_edges_max)
-        random.shuffle(tmp_indices)
         for j in range(n_edges):
-            node_dest = tmp_indices[j]
+            node_dest = random.randint(0, n_nodes-1)
             node.append(node_dest)
             nodes[node_dest].append(i)
+
+### COSMIN: shuffling the whole damn [0..n_nodes] takes 
+###         WAY TOO LONG
+#        random.shuffle(tmp_indices)
+#        for j in range(n_edges):
+#            node_dest = tmp_indices[j]
+#            node.append(node_dest)
+#            nodes[node_dest].append(i)
 
     fname = name + '.in.rodiniaformat'
     with open(fname, 'w') as f:
