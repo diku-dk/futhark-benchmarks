@@ -1,7 +1,9 @@
---
+-- Benchmark the rendering code without drawing it to the screen.
 -- ==
 -- tags { futhark-opencl futhark-c }
--- compiled input @ fluid-n_steps=1-n_solver_steps=40-grid_res=100.input
+-- compiled input @ medium.in
+
+-- medium.in attributes: n_steps=1, n_solver_steps=40, grid_res=100
 
 import "fluid"
 
