@@ -34,8 +34,6 @@
 --     `n_steps`, not spending memory to store the intermediate frames.
 --
 -- The different `main` functions take the same arguments.
--- ==
--- tags { disable }
 
 ------------------------------------------------------------
 -- General helper functions.

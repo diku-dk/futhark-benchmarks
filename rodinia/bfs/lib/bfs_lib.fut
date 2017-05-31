@@ -1,6 +1,4 @@
 -- Library functions.
--- ==
--- tags { disable }
 
 -- Convert an inclusive scan into an exclusive scan, although without the last
 -- element.
