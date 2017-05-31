@@ -66,16 +66,16 @@ import "/futlib/array"
 
     let changes = map (\ii -> let row = ii / e_max
                               let col = ii % e_max
-                              let start_index = unsafe start_indices[row]
                               let n_edges     = unsafe act_num_edges[row]
-                              let edge_index  = col+start_index
                               in  unsafe
                                   if col < n_edges
-                                  then let node_id = unsafe edges_dest[edge_index]
+                                  then let start_index = unsafe start_indices[row]
+                                       let edge_index  = col+start_index
+                                       let node_id = unsafe edges_dest[edge_index]
                                        in  if !(unsafe graph_visited[node_id])
                                            then (node_id, active_costs[row])
-                                           else (-1, active_costs[row])
-                                  else (-1, active_costs[row])
+                                           else (-1, -1)
+                                  else (-1, -1)
                       ) (iota (e_max*n_indices))
 
     let (changes_node_ids, changes_costs) = unzip(changes)
