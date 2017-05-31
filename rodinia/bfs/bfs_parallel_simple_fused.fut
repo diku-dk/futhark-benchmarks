@@ -34,66 +34,45 @@ import "/futlib/array"
     -- nested array.
     let e_max = reduce_comm max 0 (nodes_n_edges)
 
-    let start_indices = map (\tid -> unsafe nodes_start_index[tid]) active_indices
-    let act_num_edges = map (\tid -> unsafe nodes_n_edges[tid]    ) active_indices
-    let active_costs  = map (\tid -> unsafe cost[tid]+1           ) active_indices
+    -- let start_indices = map (\tid -> unsafe nodes_start_index[tid]) active_indices
+    -- let act_num_edges = map (\tid -> unsafe nodes_n_edges[tid]    ) active_indices
+    -- let active_costs  = map (\tid -> unsafe cost[tid]+1           ) active_indices
     -- let e_max = reduce_comm max 0 act_num_edges
-
-
---    let goOn = reduce (||) false
---               (map (\ start_index n_edges ->
---                        let (go,i) = (false,0)
---                        loop ((i,go)) = while (i < n_edges) && (!go) do
---                            let node_id = unsafe edges_dest[i+start_index]
---                            in  (i+1, !(unsafe graph_visited[node_id]))
---                        in go
---                    )
---                    start_indices act_num_edges)
-
---    let graph_not_visited = 
---        map (\ii -> let row = ii / e_max
---                    let col = ii % e_max
---                    let start_index = unsafe start_indices[row]
---                    let n_edges     = unsafe act_num_edges[row]
---                    let edge_index  = col+start_index
---                    in  unsafe
---                        if col < n_edges
---                        then let node_id = unsafe edges_dest[edge_index]
---                             in  !(unsafe graph_visited[node_id])
---                        else false
---            ) (iota (e_max*n_indices))
---    let goOn = reduce (||) false graph_not_visited
 
     let changes = map (\ii -> let row = ii / e_max
                               let col = ii % e_max
-                              let n_edges     = unsafe act_num_edges[row]
+                              -- let n_edges     = unsafe act_num_edges[row]
+                              let tid     = unsafe active_indices[row]
+                              let n_edges = unsafe nodes_n_edges[tid]
                               in  unsafe
                                   if col < n_edges
-                                  then let start_index = unsafe start_indices[row]
+                                  then -- let start_index = unsafe start_indices[row]
+                                       let start_index = unsafe nodes_start_index[tid]
                                        let edge_index  = col+start_index
                                        let node_id = unsafe edges_dest[edge_index]
                                        in  if !(unsafe graph_visited[node_id])
-                                           then (node_id, active_costs[row])
+                                           -- then (node_id, active_costs[row])
+                                           then (node_id, unsafe cost[tid] + 1)
                                            else (-1, -1)
                                   else (-1, -1)
                       ) (iota (e_max*n_indices))
 
     let (changes_node_ids, changes_costs) = unzip(changes)
 
-    let cost' = scatter cost changes_node_ids changes_costs
+    let cost' = scatter (copy cost) changes_node_ids changes_costs
 
     in (cost', graph_mask', changes_node_ids)
 
 let common_main(nodes_start_index: [#n]i32,
                   nodes_n_edges: [#n]i32,
                   edges_dest: [#e]i32): [n]i32 =
-    let graph_mask = replicate n false
-    let graph_visited = replicate n false
     let source = 0
-    let graph_mask[source] = true
-    let graph_visited[source] = true
-    let cost = replicate n (-1)
-    let cost[source] = 0
+    let (graph_mask, graph_visited, cost) = unzip (
+        map (\i ->  if i==source 
+                    then (true,true,0) 
+                    else (false,false,-1) 
+            ) (iota n)
+      )
     loop ((cost, graph_mask, graph_visited, continue) =
           (cost, graph_mask, graph_visited, true)) =
       while continue do
