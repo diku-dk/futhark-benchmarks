@@ -1,6 +1,6 @@
 -- ==
 --
--- tags { disable }
+-- tags { }
 --
 -- compiled input @ data/regular_n2000_e1000.in
 --
@@ -44,6 +44,6 @@
 -- output @ data/graph1MW_6.out
 
 
-import bfs_parallel_segmented_alternate
+import "bfs_parallel_segmented_alternate"
 
 let f(): i32 = 0 -- hack
