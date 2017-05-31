@@ -15,7 +15,7 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
     nodes = [[] for i in range(n_nodes)]
     for i in range(n_nodes):
         node = nodes[i]
-        n_edges = random.randint(n_edges_max, n_edges_max)
+        n_edges = random.randint(n_edges_min, n_edges_max)
         random.shuffle(tmp_indices)
         for j in range(n_edges):
             node_dest = tmp_indices[j]
