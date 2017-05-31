@@ -2,9 +2,6 @@
 --
 -- tags { }
 --
-
-
-
 -- compiled input @ data/regular_n2000_e1000.in
 --
 -- compiled input @ data/regular_n10000_e200.in
