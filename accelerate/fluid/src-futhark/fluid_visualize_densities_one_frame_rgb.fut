@@ -1,6 +1,4 @@
---
--- ==
--- tags { disable }
+-- Draw a single frame in RGB format.
 
 import "fluid"
 
