@@ -100,7 +100,7 @@ let common_main(nodes_start_index: [#n]i32,
             scatter graph_mask' step2_inds (replicate n true)
 
         let updating_graph_mask'' = 
-            scatter updating_graph_mask' step2_inds (replicate n false)
+            scatter (copy updating_graph_mask') step2_inds (replicate n false)
 
         let continue_indices = map (\x -> if x>=0 then 0 else -1) step2_inds
         let continue' = 
