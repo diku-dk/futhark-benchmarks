@@ -22,13 +22,13 @@ import "/futlib/array"
            nodes_n_edges: [#n]i32,
            edges_dest: [#e]i32,
            graph_visited: [#n]bool,
-           graph_mask: [#n]bool,
-           updating_graph_mask: *[#n]bool) : (*[n]i32, *[n]bool) =
+           graph_mask: *[#n]bool,
+           updating_graph_mask: *[#n]bool) : (*[n]i32, *[n]bool, *[n]bool) =
     let active_indices =
       filter (\i -> graph_mask[i]) (iota n)
     let n_indices = (shape active_indices)[0]
-    -- let graph_mask' =
-    --  scatter graph_mask active_indices (replicate n_indices false)
+    let graph_mask' =
+      scatter graph_mask active_indices (replicate n_indices false)
 
     -- We calculate the maximum number of edges for a node.  This is necessary,
     -- since the number of edges are irregular, and since we want to construct a
@@ -67,7 +67,7 @@ import "/futlib/array"
     let updating_graph_mask' = 
         scatter updating_graph_mask changes_node_ids (replicate flat_len true)
 
-    in (cost', updating_graph_mask')
+    in (cost', graph_mask', updating_graph_mask')
 
 let common_main(nodes_start_index: [#n]i32,
                   nodes_n_edges: [#n]i32,
@@ -82,7 +82,7 @@ let common_main(nodes_start_index: [#n]i32,
     loop ((cost, graph_mask, graph_visited, updating_graph_mask, continue) =
           (cost, graph_mask, graph_visited, replicate n false, true)) =
       while continue do
-        let (cost', updating_graph_mask') =
+        let (cost', graph_mask', updating_graph_mask') =
               step( cost,
                     nodes_start_index,
                     nodes_n_edges,
@@ -91,17 +91,16 @@ let common_main(nodes_start_index: [#n]i32,
                     graph_mask,
                     updating_graph_mask)
 
-        let graph_mask'= replicate n false
         let step2_inds = map (\i -> if (updating_graph_mask'[i]) then i else (-1)) (iota n)
-
-        let graph_mask'' =
-            scatter graph_mask' step2_inds (replicate n true)
 
         let graph_visited' =
             scatter graph_visited step2_inds (replicate n true)
 
+        let graph_mask'' =
+            scatter graph_mask' step2_inds (replicate n true)
+
         let updating_graph_mask'' = 
-            scatter (copy updating_graph_mask') step2_inds (replicate n false)
+            scatter updating_graph_mask' step2_inds (replicate n false)
 
         let continue_indices = map (\x -> if x>=0 then 0 else -1) step2_inds
         let continue' = 
