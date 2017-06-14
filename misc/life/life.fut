@@ -1,4 +1,15 @@
 -- Simple game of life implementation with a donut world.
+--
+-- ==
+-- compiled input {
+--   [[0, 0, 0, 0, 0],
+--    [0, 0, 1, 0, 0],
+--    [0, 0, 0, 1, 0],
+--    [0, 1, 1, 1, 0],
+--    [0, 0, 0, 0, 0]]
+--   10000
+--   4
+--   }
 
 import "genlife"
 import "conway"
@@ -59,3 +70,13 @@ entry rule101_render (world: [#n][#m]rule101.cell) =
  rule101.render world
 entry rule101_uninit (world: [#n][#m]rule101.cell) =
  rule101.uninit world
+
+-- Just a simple test to force the program to be compiled.
+let main [n][m] (base_pattern: [n][m]i32) (repeats: i32) (k: i32) =
+  let pattern = reshape (n*k,m*k)
+                (replicate k
+                 (map (\row -> reshape (k*m) (replicate k (map bool row)))
+                      base_pattern))
+  let world = conway.init pattern
+  loop (world) = for _i < k do conway.step world
+  in reduce (+) 0 (map i32 (reshape (k*n*k*m) world))
