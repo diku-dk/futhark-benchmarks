@@ -64,10 +64,9 @@ let voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
   let cell = (f32(i32(#1 xy)), f32(i32(#2 xy)))
   let cellOffset = (fract(#1 xy), fract(#2 xy))
   let sharpness = 1f32 + 63f32 * ((1f32-smoothness) ** 4f32)
-  loop (samples = (0f32,0f32)) = for (-2) <= i < 3 do
-    (loop (samples) = for (-2) <= j < 3 do
-     v2Add(samples, sample(irregular, cell, cellOffset, sharpness, i, j))
-     in samples)
+  let samples = loop (samples = (0f32,0f32)) for (-2) <= i < 3 do
+    (loop (samples) for (-2) <= j < 3 do
+     v2Add(samples, sample(irregular, cell, cellOffset, sharpness, i, j)))
   in #1 samples / #2 samples
 
 let mod'(n: f32, d: f32): f32 =

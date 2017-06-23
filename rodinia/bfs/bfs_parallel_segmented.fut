@@ -71,28 +71,29 @@ let main(nodes_start_index: [#n]i32,
   let graph_visited[source] = true
   let cost = replicate n (-1)
   let cost[source] = 0
-  loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
-        (cost, updating_graph_mask, graph_mask, graph_visited, true)) =
+  let (cost,_,_,_,_) =
+    loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
+          (cost, updating_graph_mask, graph_mask, graph_visited, true))
     while continue do
-  let (cost', graph_mask', updating_graph_mask') =
-    step(cost,
-         nodes_start_index,
-         nodes_n_edges,
-         edges_dest,
-         graph_visited,
-         graph_mask,
-         updating_graph_mask)
-  let (updating_indices, n_indices) = get_updating_indices(updating_graph_mask')
+      let (cost', graph_mask', updating_graph_mask') =
+        step(cost,
+             nodes_start_index,
+             nodes_n_edges,
+             edges_dest,
+             graph_visited,
+             graph_mask,
+             updating_graph_mask)
+      let (updating_indices, n_indices) = get_updating_indices(updating_graph_mask')
 
-  let graph_mask'' =
-    scatter graph_mask' updating_indices (replicate n_indices true)
+      let graph_mask'' =
+        scatter graph_mask' updating_indices (replicate n_indices true)
 
-  let graph_visited' =
-    scatter graph_visited updating_indices (replicate n_indices true)
+      let graph_visited' =
+        scatter graph_visited updating_indices (replicate n_indices true)
 
-  let updating_graph_mask'' =
-    scatter updating_graph_mask' updating_indices (replicate n_indices false)
+      let updating_graph_mask'' =
+        scatter updating_graph_mask' updating_indices (replicate n_indices false)
 
-  let continue' = n_indices > 0
-  in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
+      let continue' = n_indices > 0
+      in (cost', updating_graph_mask'', graph_mask'', graph_visited', continue')
   in cost

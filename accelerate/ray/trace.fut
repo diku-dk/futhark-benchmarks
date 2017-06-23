@@ -63,8 +63,9 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
                      normal=(0.,0.,0.),
                      colour=argb.black,
                      shine=0.}
-  loop ((bounces,refl_colour,point,dir,visibility) =
-        (0,argb.black,orig_point,orig_dir,1.)) = while bounces < limit do
+  let (_,refl_colour,_,_,_) =
+    loop ((bounces,refl_colour,point,dir,visibility) =
+          (0,argb.black,orig_point,orig_dir,1.)) while bounces < limit do
     let (hit_s, dist_s, s) = cast_ray_sphere.cast_ray spheres dummy_sphere point dir
     let (hit_p, dist_p, p) = cast_ray_plane.cast_ray planes dummy_plane point dir
     in if !(hit_s || hit_p) then (limit,refl_colour,point,dir,visibility) else

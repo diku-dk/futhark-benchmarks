@@ -15,17 +15,14 @@ let emptyRecord : (i32, f32) = (0, 0.0f32)
 let stride = 4i32
 
 let findMinNotIn (a : [stride](f32,i32)) (b : [stride](f32,i32)) (k : i32) : (f32,i32) =
-    let (m,ind) = (infty,-1)
-    loop((m,ind)) = for i < stride do
+    loop((m,ind) = (infty,-1)) for i < stride do
         let (a_v, a_i) = a[i] in
         if a_v >= m then (m,ind)
         else let ok = true
-             loop(ok) = for j < k do
+             let ok = loop (ok) for j < k do
                 let (_, b_i) = b[j]
                 in  ok && (b_i != a_i)
-             in if ok 
-                then (a_v, a_i) else (m, ind)
-    in  (m,ind)
+             in if ok then (a_v, a_i) else (m, ind)
 
 let main(resultsCount:    i32, lat: f32, lng: f32, 
         locations_lat: [#numRecords]f32, 
@@ -50,15 +47,15 @@ let main(resultsCount:    i32, lat: f32, lng: f32,
   let ne_v  = replicate stride infty 
   let ne_vi = zip ne_v (replicate stride (-1))
 
-  loop ((results_ind, results_dst, distances)) =
+  let (results_ind, results_dst, distances) =
+    loop ((results_ind, results_dst, distances))
     for i < loopCount do
         -- let arrinds = reshape (numQuads,stride) (zip distances (iota padNumRecords))
         let arrinds = map (\arr k-> zip arr ([stride*k, stride*k+1, stride*k+2, stride*k+3]) )
                           (reshape (numQuads,stride) distances) (iota numQuads)
         let minDistsLocs =
             reduce_comm (\(di1: [stride](f32,i32)) (di2: [stride](f32,i32)) : [stride](f32, i32) ->
-                            let res = replicate stride (infty, -1)
-                            loop (res) = for k < stride do
+                            loop (res = replicate stride (infty, -1)) for k < stride do
                                 let (d1, i1) = findMinNotIn di1 res k
                                 let (d2, i2) = findMinNotIn di2 res k
                                 let di = if(d1 < d2) then (d1, i1) 
@@ -67,7 +64,6 @@ let main(resultsCount:    i32, lat: f32, lng: f32,
                                          else                   (d2, i2)
                                 let res[k] = di
                                 in  res
-                            in  res
                         ) ne_vi arrinds
         let (minDists, minLocs) = unzip minDistsLocs
 

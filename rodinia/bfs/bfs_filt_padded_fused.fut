@@ -79,8 +79,9 @@ let common_main(nodes_start_index: [#n]i32,
                     else (false,false,-1) 
             ) (iota n)
       )
-    loop ((cost, graph_mask, graph_visited, updating_graph_mask, continue) =
-          (cost, graph_mask, graph_visited, replicate n false, true)) =
+    let (cost,_,_,_,_) =
+      loop ((cost, graph_mask, graph_visited, updating_graph_mask, continue) =
+            (cost, graph_mask, graph_visited, replicate n false, true))
       while continue do
         let (cost', graph_mask', updating_graph_mask') =
               step( cost,

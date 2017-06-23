@@ -25,7 +25,8 @@ let main [numRecords]
          ) locations
 
   let (results_ind, results_dst) = unzip (replicate resultsCount emptyRecord)
-  loop ((results_ind, results_dst, distances)) =
+  let (results_ind, results_dst, _) =
+    loop ((results_ind, results_dst, distances))
     for i < resultsCount do
         let (minDist, minLoc) =
           reduce_comm (\(d1, i1) (d2,i2) ->

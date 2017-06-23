@@ -38,30 +38,29 @@ module BFSLIB(S: STEP_FUN) = {
     let graph_visited[source] = true
     let cost = replicate n (-1)
     let cost[source] = 0
-    loop ((cost, graph_mask, graph_visited, continue) =
-          (cost, graph_mask, graph_visited, true)) =
-      while continue do
-    let (cost', graph_mask', updating_indices) =
-      S.step(cost,
-             nodes_start_index,
-             nodes_n_edges,
-             edges_dest,
-             graph_visited,
-             graph_mask)
+    let (cost, _, _, _) =
+      loop ((cost, graph_mask, graph_visited, continue) =
+            (cost, graph_mask, graph_visited, true)) while continue do
+        let (cost', graph_mask', updating_indices) =
+          S.step(cost,
+                 nodes_start_index,
+                 nodes_n_edges,
+                 edges_dest,
+                 graph_visited,
+                 graph_mask)
 
-    let n_indices = (shape updating_indices)[0]
+        let n_indices = (shape updating_indices)[0]
 
-    let graph_mask'' =
-      scatter graph_mask' updating_indices (replicate n_indices true)
+        let graph_mask'' =
+          scatter graph_mask' updating_indices (replicate n_indices true)
 
-    let graph_visited' =
-      scatter graph_visited updating_indices (replicate n_indices true)
+        let graph_visited' =
+          scatter graph_visited updating_indices (replicate n_indices true)
 
-    let tmp_arr = map (\(ind: i32): i32  -> if ind == -1 then 0 else 1) (updating_indices)
-    let n_indices' = reduce (+) 0 (tmp_arr)
+        let tmp_arr = map (\(ind: i32): i32  -> if ind == -1 then 0 else 1) (updating_indices)
+        let n_indices' = reduce (+) 0 (tmp_arr)
 
-    let continue' = n_indices' > 0
-    in (cost', graph_mask'', graph_visited', continue')
+        let continue' = n_indices' > 0
+        in (cost', graph_mask'', graph_visited', continue')
     in cost
-
 }

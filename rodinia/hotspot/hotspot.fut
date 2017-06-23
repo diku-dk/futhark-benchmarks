@@ -94,9 +94,8 @@ entry compute_tran_temp(num_iterations: i32, temp: [#row][#col]f32, power: [#row
   let rz = t_chip() / (k_si() * grid_height * grid_width)
   let max_slope = max_pd() / (factor_chip() * t_chip() * spec_heat_si())
   let step = precision() / max_slope
-  loop (temp) = for _i < num_iterations do
+  in loop (temp) for _i < num_iterations do
     single_iteration(temp, power, cap, rx, ry, rz, step)
-  in temp
 
 entry ambient_temps(row: i32, col: i32): [row][col]f32 =
   reshape (row,col) (replicate (row*col) (amb_temp ()))
