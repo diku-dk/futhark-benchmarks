@@ -13,7 +13,7 @@ let inv(a: i16): i32 =
   let b = 0x10001
   let u = 0
   let v = 1
-  let (_,_,_,u) = loop ((a,b,u,v)) while a > 0i32 do
+  let (_,_,u,_) = loop ((a,b,u,v)) while a > 0i32 do
     let q = i32((i64(b)&0xFFFFFFFFi64) // (i64(a)&0xFFFFi64))
     let r = i32((i64(b)&0xFFFFFFFFi64) %% (i64(a)&0xFFFFi64))
 
