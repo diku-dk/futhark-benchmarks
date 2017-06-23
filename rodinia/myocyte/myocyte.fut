@@ -823,7 +823,8 @@ let master(timeinst:  f32, initvalu: [#equs]f32, parameter: [#pars]f32 ): *[equs
   let jcaDyad = 0.0f32
   let jcaSL   = 0.0f32
   let jcaCyt  = 0.0f32
-  loop ((jcaDyad, jcaSL, jcaCyt, finavalu)) = for ii < 3 do
+  let (jcaDyad, jcaSL, jcaCyt, finavalu) =
+    loop ((jcaDyad, jcaSL, jcaCyt, finavalu)) for ii < 3 do
         let (initvalu_offset, parameter_offset, ind) = 
             if      (ii == 0) then -- cam function for Dyad
                 ( 46, 1, 35 ) 
@@ -936,7 +937,7 @@ let embedded_fehlberg_7_8(timeinst:   f32, h: f32,
   -- finavalu_temp[13, equations]
   let finavalu_temp = replicate 13 (replicate equs 0.0f32)
 
-  loop (finavalu_temp) = for ii < 13 do
+  let finavalu_temp = loop (finavalu_temp) for ii < 13 do
     let ( timeinst_temp, initvalu_temp ) = 
         if      (ii == 0) then 
             ( timeinst, initvalu )
@@ -1084,7 +1085,8 @@ let solver(xmax: i32, params: [#pars]f32, y0: [#equs]f32): (bool,[equs]f32) =
   -- initialize return and loop-variant params
   let failed = false
   let km1    = 0
-  loop((km1, failed, y_km1)) = while ( (!failed) && (km1 < xmax) ) do -- for km1 < xmax do
+  let (km1, failed, y_km1) =
+    loop((km1, failed, y_km1)) while ( (!failed) && (km1 < xmax) ) do -- for km1 < xmax do
     -- reinitialize variables
     let h          = h_init
     let scale_fina = 1.0f32
@@ -1093,7 +1095,8 @@ let solver(xmax: i32, params: [#pars]f32, y0: [#equs]f32): (bool,[equs]f32) =
     -- make attempts to minimize error
     let breakLoop  = false
     let j = 0
-    loop((j,h,y_k,breakLoop,scale_fina)) = while ( (!breakLoop) && (j < attempts()) ) do
+    let (j,h,y_k,breakLoop,scale_fina) =
+      loop((j,h,y_k,breakLoop,scale_fina)) while ( (!breakLoop) && (j < attempts()) ) do
       -- REiNiTiALiZE ALL VAriABLES
       let error   = 0
       let outside = 0

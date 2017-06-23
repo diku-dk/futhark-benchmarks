@@ -27,9 +27,7 @@ let radix_sort_step(xs: [#n]u32, digit_n: i32): [n]u32 =
   in scatter (copy xs) ps_actual xs
 
 let radix_sort(xs: [#n]u32): [n]u32 =
-  loop (xs) = for i < 32 do
-    radix_sort_step(xs, i)
-  in xs
+  loop (xs) for i < 32 do radix_sort_step(xs, i)
 
 let main(xs: [#n]u32): [n]u32 =
   radix_sort(xs)

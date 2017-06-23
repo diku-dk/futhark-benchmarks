@@ -145,8 +145,7 @@ let compute_flux(elements_surrounding_elements:    [#nnb][#nel]i32
             let (flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) = flux_i_momentum
             let flux_i_density_energy = 0.0
             let loop_res = (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z)
-            loop(loop_res) =
-              for j < nnb do
+            let loop_res = loop(loop_res) for j < nnb do
                 let (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) = loop_res
                 let nb = elements_surrounding_elements[j, i]
                 let normal_x = normals[0, j, i]
@@ -347,8 +346,7 @@ let main(areas:   [#nel]f32,
 --    in  time_step(0, variables, step_factors, fluxes)
 ---- END   DEBUG COSMIN
 
-    loop (variables) =
-      for i < iterations() do
+    in loop (variables) for i < iterations() do
         let step_factors = compute_step_factor(variables, areas)
         -- FIXME: to get around a variant allocation, we unroll the
         -- first iteration of the loop..
@@ -359,8 +357,7 @@ let main(areas:   [#nel]f32,
                                         ff_flux_contribution_momentum_z,
                                     ff_flux_contribution_density_energy )
         let new_variables = time_step(0, variables, step_factors, fluxes)
-        loop(new_variables) =
-          for 1 <= j < rk() do
+        in loop (new_variables) for 1 <= j < rk() do
             let fluxes = compute_flux(  elements_surrounding_elements, 
                                         normals, new_variables, ff_variable, 
                                         ff_flux_contribution_momentum_x, 
@@ -368,6 +365,3 @@ let main(areas:   [#nel]f32,
                                         ff_flux_contribution_momentum_z, 
                                         ff_flux_contribution_density_energy )
             in  time_step(j, variables, step_factors, fluxes)
-        in  new_variables
-    in variables
-

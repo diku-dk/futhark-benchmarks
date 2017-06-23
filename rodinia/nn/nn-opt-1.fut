@@ -30,7 +30,8 @@ let main(resultsCount:    i32, lat: f32, lng: f32,
   let ne_v  = [infty]
   let ne_iv = (ne_v, [0])
 
-  loop ((results_ind, results_dst, distances)) = 
+  let (results_ind, results_dst, distances) =
+    loop ((results_ind, results_dst, distances))
     for i < resultsCount do
         let (minDist, minLoc) = 
             reduce_comm (\(di1: ([1]f32,[1]i32)) (di2: ([1]f32,[1]i32)): ([1]f32, [1]i32)  ->

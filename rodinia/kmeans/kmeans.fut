@@ -34,11 +34,10 @@ let centroids_of(k: i32, points: [#n][#d]f32, membership: [#n]i32): *[k][d]f32 =
                      map (+) acc x)
                   (\(inp: [#chunk]i32) ->
                      stream_seq (\(acc: *[#k]i32) (inp': [#chunk']i32) ->
-                                loop (acc) = for i < chunk' do
+                                loop (acc) for i < chunk' do
                                   let c = inp'[i]
                                   in unsafe let acc[c] = acc[c] + 1
-                                            in acc
-                                in acc)
+                                            in acc)
                               (replicate k 0) inp)
                   membership
   let cluster_sums =
@@ -46,12 +45,11 @@ let centroids_of(k: i32, points: [#n][#d]f32, membership: [#n]i32): *[k][d]f32 =
                     map add_centroids acc elem)
                  (\ (inp: [#chunk]([#d]f32,i32)) ->
                    stream_seq (\(acc: *[#k][#d]f32) (inp': [#chunk']([#d]f32,i32)) ->
-                     loop (acc) = for i < chunk' do
+                     loop (acc) for i < chunk' do
                        let (point, c) = inp'[i]
                        in unsafe let acc[c] =
                                    add_centroids acc[c] (map (/(f32(points_in_clusters[c]))) point)
-                                 in acc
-                     in acc) (replicate k (replicate d 0f32)) inp)
+                                 in acc) (replicate k (replicate d 0f32)) inp)
                  (zip points membership)
   in cluster_sums
 
@@ -65,7 +63,8 @@ let main(threshold: i32, k: i32, max_iterations: i32,
   let membership = map (%k) (iota n)
   let delta = threshold + 1
   let i = 0
-  loop ((membership, cluster_centres, delta, i)) =
+  let (_,cluster_centres,_,i) =
+    loop ((membership, cluster_centres, delta, i))
     while delta > threshold && i < max_iterations do
       -- For each point, find the cluster with the closest centroid.
       let new_membership = map (find_nearest_point cluster_centres) points

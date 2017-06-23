@@ -117,8 +117,7 @@ let sobolIndR(dirVct: [#num_bits]i32) (n: i32): f32 =
     let norm_fact = 1.0 / ( f32(1 << num_bits) + 1.0 )
     let n_gray = (n >> 1) ^ n
     let res = 0
-    loop (res) =
-      for i < num_bits do
+    let res = loop (res) for i < num_bits do
         let t = 1 << i
         in if (n_gray & t) == t
            then res ^ dirVct[i]

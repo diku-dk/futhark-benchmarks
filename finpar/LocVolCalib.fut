@@ -66,18 +66,16 @@ let updateParams(myX:  [#numX]f32, myY: [#numY]f32, myTimeline: []f32,
   in  ( myMuX, myVarX, myMuY, myVarY )
 
 let tridagSeq(a:  [#n]f32, b: *[#n]f32, c: [#n]f32, y: *[#n]f32 ): *[n]f32 =
-  loop ((y, b)) =
-    for 1 <= i < n do
+  let (y,b) = loop ((y, b)) for 1 <= i < n do
       let beta = a[i] / b[i-1]
       let b[i] = b[i] - beta*c[i-1]
       let y[i] = y[i] - beta*y[i-1]
       in  (y, b)
 
-      let y[n-1] = y[n-1]/b[n-1]
-      loop (y) = for (n-1) > i >= 0 do
-        let y[i] = (y[i] - c[i]*y[i+1]) / b[i]
-        in  y
-      in  y
+  let y[n-1] = y[n-1]/b[n-1]
+  in loop (y) for (n-1) > i >= 0 do
+       let y[i] = (y[i] - c[i]*y[i+1]) / b[i]
+       in  y
 
 let tridagPar(a:  [#n]f32, b: *[#n]f32, c: [#n]f32, y: *[#n]f32 ): *[n]f32 =
   unsafe
@@ -228,8 +226,7 @@ let value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: 
   let (myDy, myDyy) = initOperator(myY)
   let myResult = setPayoff(strike, myX, myY)
 
-  loop (myResult) =
-    for (numT-1) > i do
+  let myResult = loop (myResult) for (numT-1) > i do
       let (myMuX, myVarX, myMuY, myVarY) =
         updateParams(myX, myY, myTimeline, i, alpha, beta, nu)
       let myResult = rollback(myX, myY, myTimeline, myResult,

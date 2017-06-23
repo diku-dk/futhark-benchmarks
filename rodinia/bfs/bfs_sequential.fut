@@ -21,8 +21,8 @@ let node_work(tid: i32,
   let start_index = nodes_start_index[tid]
   let n_edges = nodes_n_edges[tid]
   let graph_mask[tid] = false
-  loop ((cost, updating_graph_mask)) =
-    for start_index <= i < start_index + n_edges do
+  let (cost, updating_graph_mask) =
+    loop ((cost, updating_graph_mask)) for start_index <= i < start_index + n_edges do
       let id = edges_dest[i]
       let visited = graph_visited[id]
       in if ! visited
@@ -46,14 +46,12 @@ let step(cost: *[#n]i32,
 
   -- This loop is a kernel in Rodinia.  Futhark's regularity makes this a bit
   -- tricky to express as a map.
-  loop ((cost, graph_mask, updating_graph_mask)) =
-    for indices_i < (shape active_indices)[0] do
-      let i = active_indices[indices_i]
-      in node_work(i, cost, nodes_start_index, nodes_n_edges,
-                   edges_dest, graph_visited,
-                   graph_mask, updating_graph_mask)
-
-  in (cost, graph_mask, updating_graph_mask)
+  in loop ((cost, graph_mask, updating_graph_mask))
+     for indices_i < (shape active_indices)[0] do
+       let i = active_indices[indices_i]
+       in node_work(i, cost, nodes_start_index, nodes_n_edges,
+                    edges_dest, graph_visited,
+                    graph_mask, updating_graph_mask)
 
 let main(nodes_start_index: [#n]i32,
                   nodes_n_edges: [#n]i32,
@@ -66,8 +64,9 @@ let main(nodes_start_index: [#n]i32,
   let graph_visited[source] = true
   let cost = replicate n (-1)
   let cost[source] = 0
-  loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
-        (cost, updating_graph_mask, graph_mask, graph_visited, true)) =
+  let (cost, _, _, _, _) =
+    loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
+          (cost, updating_graph_mask, graph_mask, graph_visited, true))
     while continue do
       let (cost', graph_mask', updating_graph_mask') =
         step(cost,
@@ -79,14 +78,14 @@ let main(nodes_start_index: [#n]i32,
              updating_graph_mask)
 
       let continue' = false
-      loop ((graph_mask', graph_visited, updating_graph_mask', continue')) =
+      let (graph_mask', graph_visited, updating_graph_mask', continue') =
+        loop ((graph_mask', graph_visited, updating_graph_mask', continue'))
         for tid < n do
-          if updating_graph_mask'[tid]
-          then let graph_mask'[tid] = true
-               let graph_visited[tid] = true
-               let updating_graph_mask'[tid] = false
-               in (graph_mask', graph_visited, updating_graph_mask', true)
-          else (graph_mask', graph_visited, updating_graph_mask', continue')
-
+           if updating_graph_mask'[tid]
+           then let graph_mask'[tid] = true
+                let graph_visited[tid] = true
+                let updating_graph_mask'[tid] = false
+                in (graph_mask', graph_visited, updating_graph_mask', true)
+           else (graph_mask', graph_visited, updating_graph_mask', continue')
       in (cost', updating_graph_mask', graph_mask', graph_visited, continue')
   in cost
