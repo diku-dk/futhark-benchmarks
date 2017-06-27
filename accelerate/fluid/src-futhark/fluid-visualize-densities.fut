@@ -1,6 +1,9 @@
 --
 -- ==
--- tags { }
+-- tags {disable }
+
+-- Disabled because of unimplemented safety checks in the in-place lowering
+-- optimisation.
 
 import "fluid"
 
