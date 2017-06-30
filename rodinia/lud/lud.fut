@@ -101,13 +101,13 @@ let lud_diagonal2(ain: [#b][#b]f32, m: i32): *[b][b]f32 =  -- CORRECT
     let ains= copy(replicate one ain) in
     let ress= map (\ (a: *[#b][#b]f32, q: i32): *[b][b]f32  -> unsafe
                      loop(a) for i < b do
-                        let a = loop(a) for i <= j < b do
+                        let a = loop(a) for j in range i b 1 do
                             let sum = loop(sum=0.0f32) for k < i do
                                 sum + a[i,k]*a[k,j] + f32(q)
                             let a[i,j] = a[i,j] - sum
                             in a
                         let tmp = 1.0f32 / a[i,i] in
-                        loop(a) for (i+1) <= j < b do
+                        loop(a) for j in range (i+1) b 1 do
                             let sum = loop(sum=0.0f32) for k < i do
                                 sum + a[j,k] * a[k,i]
                             let a[j,i] = (a[j,i] - sum) * tmp
