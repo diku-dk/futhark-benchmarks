@@ -10,6 +10,8 @@
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
 
+import "/futlib/array"
+
 let node_work(tid: i32,
             cost: *[#n]i32,
             nodes_start_index: [#n]i32,
@@ -22,7 +24,7 @@ let node_work(tid: i32,
   let n_edges = nodes_n_edges[tid]
   let graph_mask[tid] = false
   let (cost, updating_graph_mask) =
-    loop ((cost, updating_graph_mask)) for start_index <= i < start_index + n_edges do
+    loop ((cost, updating_graph_mask)) for i in steps start_index n_edges 1 do
       let id = edges_dest[i]
       let visited = graph_visited[id]
       in if ! visited

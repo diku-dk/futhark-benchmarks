@@ -44,7 +44,7 @@ let encryptionKey(userkey: [8]i16): [52]i16 =
   -- member and right (with zero fill) in the other. For the last
   -- two subkeys in any group of eight, those 16 bits start to
   -- wrap around to the first two members of the previous eight.
-  let z = loop (z) for 8 <= i < 52 do
+  let z = loop (z) for i in map (8+) (iota (52-8)) do
     let j = i %% 8
     let z[i] = if      j  < 6 then (z[i-7]>>>9i16) | (z[i-6]<<7i16)
                else if j == 6 then (z[i-7]>>>9i16) | (z[i-14]<<7i16)

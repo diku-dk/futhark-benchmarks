@@ -20,7 +20,7 @@ let iterations(): i32 = 2000
 --#define NDIM 3
 --#define NNB 4
 
-let rk(): i32 = 3	-- 3rd order rk
+let rk: i32 = 3	-- 3rd order rk
 let ff_mach(): f32 = 1.2
 let deg_angle_of_attack(): f32 = 0.0
 
@@ -282,7 +282,7 @@ let time_step(j:  i32,
               fluxes: [5][#nel]f32  ): [5][nel]f32 =
   transpose(
     map (\(i: i32): [5]f32  ->
-            let factor = step_factors[i] / f32(rk()+1-j)
+            let factor = step_factors[i] / f32(rk+1-j)
             in [ old_variables[var_density(),    i] + factor*fluxes[var_density(),    i]
                , old_variables[var_momentum()+0, i] + factor*fluxes[var_momentum()+0, i]
                , old_variables[var_momentum()+1, i] + factor*fluxes[var_momentum()+1, i]
@@ -357,7 +357,7 @@ let main(areas:   [#nel]f32,
                                         ff_flux_contribution_momentum_z,
                                     ff_flux_contribution_density_energy )
         let new_variables = time_step(0, variables, step_factors, fluxes)
-        in loop (new_variables) for 1 <= j < rk() do
+        in loop (new_variables) for j in range 1 rk 1 do
             let fluxes = compute_flux(  elements_surrounding_elements, 
                                         normals, new_variables, ff_variable, 
                                         ff_flux_contribution_momentum_x, 
