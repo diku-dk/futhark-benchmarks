@@ -23,7 +23,7 @@ let fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
 let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
                     parameter: [#pars]f32, parameter_offset: i32, finavalu: *[#equs]f32 ): *[equs]f32 =
-  unsafe 
+  unsafe
   -- variable references
   let offset_1  = initvalu_offset
   let offset_2  = initvalu_offset+1
@@ -71,7 +71,7 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let offset_44 = initvalu_offset+43
   let offset_45 = initvalu_offset+44
   let offset_46 = initvalu_offset+45
-  
+
   -- variable references
   let parameter_offset_1  = parameter_offset
 
@@ -97,7 +97,6 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let initvalu_19 = initvalu[offset_19]
   let initvalu_20 = initvalu[offset_20]
   let initvalu_21 = initvalu[offset_21]
-  let initvalu_22 = initvalu[offset_22]
   let initvalu_23 = initvalu[offset_23]
   let initvalu_24 = initvalu[offset_24]
   let initvalu_25 = initvalu[offset_25]
@@ -116,20 +115,14 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let initvalu_38 = initvalu[offset_38]
   let initvalu_39 = initvalu[offset_39]
   let initvalu_40 = initvalu[offset_40]
-  let initvalu_41 = initvalu[offset_41]
-  let initvalu_42 = initvalu[offset_42]
-  let initvalu_43 = initvalu[offset_43]
-  let initvalu_44 = initvalu[offset_44]
-  let initvalu_45 = initvalu[offset_45]
-  let initvalu_46 = initvalu[offset_46]
 
   -- decoded input parameters
   let parameter_1 = parameter[parameter_offset_1]
 
   -- constants
   let pi   = 3.1416f32
-  let r    = 8314.0f32     in -- [J/kmol*K]  
-  let frdy = 96485.0f32    in -- [C/mol]  
+  let r    = 8314.0f32     in -- [J/kmol*K]
+  let frdy = 96485.0f32    in -- [C/mol]
   let temp = 310.0f32      in -- [K] 310
   let foRT = frdy/r/temp
   let cmem = 1.3810e-10f32 in -- [F] membrane capacitance
@@ -138,26 +131,16 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   -- Cell geometry
   let cellLength = 100.0f32   in  -- cell length []um
   let cellRadius = 10.25f32   in  -- cell radius []um
-  let junctionLength = 160.0e-3f32 in  -- junc length []um
-  let junctionRadius = 15.0e-3f32  in  -- junc radius []um
-  let distSLcyto = 0.45f32    in  -- dist. SL to cytosol []um
-  let distJuncSL = 0.5f32     in  -- dist. junc to SL []um
-  let dcaJuncSL = 1.64e-6f32  in  -- Dca junc to SL [#cm^2/sec]
-  let dcaSLcyto = 1.22e-6f32  in  -- Dca SL to cyto [#cm^2/sec]
-  let nnaJuncSL = 1.09e-5f32  in  -- Dna junc to SL [#cm^2/sec]
-  let dnaSLcyto = 1.79e-5f32  in  -- Dna SL to cyto [#cm^2/sec] 
   let vcell = pi*pow(cellRadius,2.0f32)*cellLength*1.0e-15f32 in -- [L]
   let vmyo = 0.65f32*vcell
   let vsr = 0.035f32*vcell
   let vsl = 0.02f32 *vcell
   let vjunc = 0.0539f32 * 0.01f32 * vcell
-  let sajunc = 20150.0f32 * pi * 2.0f32 * junctionLength * junctionRadius in -- [#um^2]
-  let sasl = pi * 2.0f32 * cellRadius * cellLength in -- [#um^2]
   let j_ca_juncsl = 1.0f32/1.2134e12f32  in    -- [L/msec]
   let j_ca_slmyo  = 1.0f32/2.68510e11f32 in    -- [L/msec]
-  let j_na_juncsl = 1.0f32/(1.6382e12f32 / 3.0f32 * 100.0f32) in -- [L/msec] 
+  let j_na_juncsl = 1.0f32/(1.6382e12f32 / 3.0f32 * 100.0f32) in -- [L/msec]
   let j_na_slmyo  = 1.0f32/(1.8308e10f32 / 3.0f32 * 100.0f32) in -- [L/msec]
-  
+
   -- Fractional currents in compartments
   let fjunc = 0.11f32
   let fsl = 1.0f32 - fjunc
@@ -171,7 +154,7 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let nao = 140.0f32 in -- Extracellular Na  []mM
   let cao = 1.8f32   in -- Extracellular Ca  []mM
   let mgi = 1.0f32
-  
+
   -- Nernst Potentials
   let ena_junc = (1.0f32/foRT)*f32.log(nao/initvalu_32)        in -- []mV
   let ena_sl = (1.0f32/foRT)*f32.log(nao/initvalu_33)          in -- []mV
@@ -182,18 +165,16 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
 
   -- Na transport parameters
   let gna =  16.0f32       in -- [#mS/uF]
-  let gnaB = 0.297e-3f32   in -- [#mS/uF] 
+  let gnaB = 0.297e-3f32   in -- [#mS/uF]
   let iBarNaK = 1.90719f32 in -- [#uA/uF]
   let kmNaip = 11.0f32     in -- []mM
   let kmko = 1.5f32        in -- []mM
-  let q10NaK = 1.63f32
-  let q10KmNai = 1.39f32   
 
   -- K current parameters
   let pNaK = 0.01833f32
-  let dToSlow = 0.06f32 in -- [#mS/uF] 
-  let gToFast = 0.02f32 in -- [#mS/uF] 
-  let gkp = 0.001f32    
+  let dToSlow = 0.06f32 in -- [#mS/uF]
+  let gToFast = 0.02f32 in -- [#mS/uF]
+  let gkp = 0.001f32
 
   -- Cl current parameters
   let gClCa = 0.109625f32 in -- [#mS/uF]
@@ -204,8 +185,7 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let pNa = 1.5e-8f32  in -- [#cm/sec]
   let pCa = 5.4e-4f32  in -- [#cm/sec]
   let pK = 2.7e-7f32   in -- [#cm/sec]
-  let kmCa = 0.6e-3f32 in -- []mM
-  let q10CaL = 1.8f32 
+  let q10CaL = 1.8f32
 
   -- Ca transport parameters
   let ibarNCX = 9.0f32   in -- [#uA/uF]
@@ -213,13 +193,13 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let kmcao = 1.3f32     in -- []mM
   let kmNai = 12.29f32   in -- []mM
   let kmnao = 87.5f32    in -- []mM
-  let ksat = 0.27f32     in -- []none  
+  let ksat = 0.27f32     in -- []none
   let nu = 0.35f32       in -- []none
-  let kdact = 0.256e-3f32 in -- []mM 
+  let kdact = 0.256e-3f32 in -- []mM
   let q10NCX = 1.57f32   in -- []none
   let ibarSLCaP = 0.0673f32 in -- [#uA/uF]
-  let kmPCa = 0.5e-3f32  in -- []mM 
-  let gCaB = 2.513e-4f32 in -- [#uA/uF] 
+  let kmPCa = 0.5e-3f32  in -- []mM
+  let gCaB = 2.513e-4f32 in -- [#uA/uF]
   let q10SLCaP = 2.35f32 in -- []none
 
   -- SR flux parameters
@@ -228,43 +208,40 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let kmf = 0.246e-3f32    in -- []mM
   let kmr = 1.7f32         in -- []mML cytosol
   let hillSRCaP = 1.787f32 in -- []mM
-  let ks   = 25.0f32 in -- [1/ms]      
-  let koCa = 10.0f32 in -- [#mM^-2 1/ms]      
-  let kom  = 0.06f32 in -- [1/ms]     
+  let ks   = 25.0f32 in -- [1/ms]
+  let koCa = 10.0f32 in -- [#mM^-2 1/ms]
+  let kom  = 0.06f32 in -- [1/ms]
   let kiCa = 0.5f32  in -- [1/mM/ms]
   let kim = 0.005f32 in -- [1/ms]
   let ec50SR = 0.45f32  in -- []mM
 
   -- Buffering parameters
-  let bmax_Naj = 7.561f32 in -- []mM 
+  let bmax_Naj = 7.561f32 in -- []mM
   let bmax_Nasl = 1.65f32 in -- []mM
   let koff_na = 1.0e-3f32   in -- [1/ms]
   let kon_na = 0.1e-3f32  in -- [1/mM/ms]
   let bmax_Tnclow = 70e-3f32 in -- []mM, TnC low affinity
-  let koff_tncl = 19.6e-3f32 in -- [1/ms] 
+  let koff_tncl = 19.6e-3f32 in -- [1/ms]
   let kon_tncl = 32.7f32     in -- [1/mM/ms]
-  let bmax_TnChigh = 140.0e-3f32  in -- []mM, TnC high affinity 
-  let koff_tnchca = 0.032e-3f32 in -- [1/ms] 
+  let bmax_TnChigh = 140.0e-3f32  in -- []mM, TnC high affinity
+  let koff_tnchca = 0.032e-3f32 in -- [1/ms]
   let kon_tnchca = 2.37f32      in -- [1/mM/ms]
-  let koff_tnchmg = 3.33e-3f32  in -- [1/ms] 
+  let koff_tnchmg = 3.33e-3f32  in -- [1/ms]
   let kon_tnchmg = 3.0e-3f32      in -- [1/mM/ms]
-  let bmax_CaM = 24.0e-3f32       in -- []mM, CaM buffering
-  let koff_cam = 238.0e-3f32      in -- [1/ms] 
-  let kon_cam = 34.0f32           in -- [1/mM/ms]
   let bmax_myosin = 140.0e-3f32   in -- []mM, Myosin buffering
   let koff_myoca = 0.46e-3f32     in -- [1/ms]
   let kon_myoca = 13.8f32         in -- [1/mM/ms]
   let koff_myomg = 0.057e-3f32    in -- [1/ms]
   let kon_myomg = 0.0157f32       in -- [1/mM/ms]
-  let bmax_SR = 19.0f32 * 0.9e-3f32 in -- []mM 
+  let bmax_SR = 19.0f32 * 0.9e-3f32 in -- []mM
   let koff_sr = 60.0e-3f32        in -- [1/ms]
   let kon_sr = 100.0f32           in -- [1/mM/ms]
   let bmax_SLlowsl = 37.38e-3f32 * vmyo / vsl in -- []mM, SL buffering
-  let bmax_SLlowj = 4.62e-3f32   * vmyo / vjunc * 0.1f32 in -- []mM    
+  let bmax_SLlowj = 4.62e-3f32   * vmyo / vjunc * 0.1f32 in -- []mM
   let koff_sll = 1300.0e-3f32     in -- [1/ms]
   let kon_sll = 100.0f32          in -- [1/mM/ms]
-  let bmax_SLhighsl = 13.35e-3f32 * vmyo / vsl in -- []mM 
-  let bmax_SLhighj = 1.65e-3f32 * vmyo / vjunc * 0.1f32 in -- []mM 
+  let bmax_SLhighsl = 13.35e-3f32 * vmyo / vsl in -- []mM
+  let bmax_SLhighj = 1.65e-3f32 * vmyo / vjunc * 0.1f32 in -- []mM
   let koff_slh = 30e-3f32 in -- [1/ms]
   let kon_slh = 100.0f32  in -- [1/mM/ms]
   let bmax_Csqn = 2.7f32  in -- 140e-3*vmyo/Vsr; []mM
@@ -275,10 +252,10 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let am = 0.32f32 * (initvalu_39 + 47.13f32) / (1.0f32 - f32.exp(-0.1f32*(initvalu_39+47.13f32)))
   let bm = 0.08f32 * f32.exp(-initvalu_39/11.0f32)
   let ( ah, aj, bh, bj ) =  if (initvalu_39 >= -40.0f32)
-                            then ( 0.0f32, 
+                            then ( 0.0f32,
                                    0.0f32,
                                    1.0f32/(0.13f32*(1.0f32+f32.exp(-(initvalu_39+10.66f32)/11.1f32))),
-                                   0.3f32*f32.exp(-2.535e-7f32*initvalu_39)/(1.0f32+f32.exp(-0.1f32*(initvalu_39+32.0f32))) 
+                                   0.3f32*f32.exp(-2.535e-7f32*initvalu_39)/(1.0f32+f32.exp(-0.1f32*(initvalu_39+32.0f32)))
                                  )
                             else ( 0.135f32*f32.exp((80.0f32+initvalu_39)/(-6.8f32)),
                                    ( -127140.0f32*f32.exp(0.2444f32*initvalu_39) - 3.474e-5f32*f32.exp(-0.04391f32*initvalu_39) ) *
@@ -292,19 +269,17 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let finavalu[offset_3] = aj*(1.0f32-initvalu_3) - bj*initvalu_3
   let i_Na_junc = fjunc*gna*pow(initvalu_1,3.0f32)*initvalu_2*initvalu_3*(initvalu_39-ena_junc)
   let i_Na_sl = fsl*gna*pow(initvalu_1,3.0f32)*initvalu_2*initvalu_3*(initvalu_39-ena_sl)
-  let i_Na = i_Na_junc + i_Na_sl 
 
   -- i_nabk: Na Background Current
   let i_nabk_junc = fjunc*gnaB*(initvalu_39-ena_junc)
   let i_nabk_sl   = fsl  *gnaB*(initvalu_39-ena_sl  )
-  let i_nabk      = i_nabk_junc + i_nabk_sl
 
   -- i_nak: Na/K Pump Current
   let sigma = (f32.exp(nao/67.3f32)-1.0f32)/7.0f32
   let fnak = 1.0f32/(1.0f32+0.1245f32*f32.exp(-0.1f32*initvalu_39*foRT)+0.0365f32*sigma*f32.exp(-initvalu_39*foRT))
   let i_nak_junc = fjunc*iBarNaK*fnak*ko / (1.0f32+pow((kmNaip/initvalu_32),4.0f32)) /(ko+kmko)
   let i_nak_sl = fsl*iBarNaK*fnak*ko /(1.0f32+pow((kmNaip/initvalu_33),4.0f32)) /(ko+kmko)
-  let i_nak = i_nak_junc + i_nak_sl 
+  let i_nak = i_nak_junc + i_nak_sl
 
   -- i_kr: Rapidly Activating K Current
   let gkr = 0.03f32 * f32.sqrt(ko/5.4f32)
@@ -322,7 +297,7 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let gks_sl = 0.07f32*(0.057f32 +0.19f32/(1.0f32+ f32.exp((-7.2f32+pcaks_sl)/0.6f32)))
   let eks = (1.0f32/foRT)*f32.log((ko+pNaK*nao)/(initvalu_35+pNaK*initvalu_34))
   let xsss = 1.0f32/(1.0f32+f32.exp(-(initvalu_39-1.5f32)/16.7f32))
-  let tauxs = 1.0f32/(7.19e-5f32*(initvalu_39+30.0f32)/(1.0f32-f32.exp(-0.148f32*(initvalu_39+30.0f32))) + 
+  let tauxs = 1.0f32/(7.19e-5f32*(initvalu_39+30.0f32)/(1.0f32-f32.exp(-0.148f32*(initvalu_39+30.0f32))) +
                 1.31e-4f32*(initvalu_39+30.0f32)/(f32.exp(0.0687f32*(initvalu_39+30.0f32))-1.0f32))
   let finavalu[offset_13] = (xsss-initvalu_13) / tauxs
   let i_ks_junc = fjunc*gks_junc*pow(initvalu_12,2.0f32)*(initvalu_39-eks)
@@ -347,26 +322,26 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let finavalu[offset_40]= (rtoss-initvalu_40)/taurtos
   let i_tos = dToSlow*initvalu_8*(initvalu_9+0.5f32*initvalu_40)*(initvalu_39-ek) -- [#uA/uF]
 
-  -- 
+  --
   let tauxtof = 3.5f32*f32.exp(-initvalu_39*initvalu_39/30.0f32/30.0f32)+1.5f32
   let tauytof = 20.0f32/(1.0f32+f32.exp((initvalu_39+33.5f32)/10.0f32))+20.0f32
   let finavalu[offset_10] = (xtoss-initvalu_10)/tauxtof
   let finavalu[offset_11] = (ytoss-initvalu_11)/tauytof
   let i_tof = gToFast*initvalu_10*initvalu_11*(initvalu_39-ek)
-  let i_to = i_tos + i_tof 
+  let i_to = i_tos + i_tof
 
   -- i_ki: Time-independent K Current
   let aki = 1.02f32/(1.0f32+f32.exp(0.2385f32*(initvalu_39-ek-59.215f32)))
   let bki =(0.49124f32*f32.exp(0.08032f32*(initvalu_39+5.476f32-ek)) + f32.exp(0.06175f32*(initvalu_39-ek-594.31f32))) /
                 (1.0f32 + f32.exp(-0.5143f32*(initvalu_39-ek+4.753f32)))
   let kiss = aki/(aki+bki)
-  let i_ki = 0.9f32*f32.sqrt(ko/5.4f32)*kiss*(initvalu_39-ek) 
+  let i_ki = 0.9f32*f32.sqrt(ko/5.4f32)*kiss*(initvalu_39-ek)
 
   -- i_ClCa: Ca-activated Cl Current, i_Clbk: background Cl Current
   let i_ClCa_junc = fjunc*gClCa/(1.0f32+kdClCa/initvalu_36)*(initvalu_39-ecl)
   let i_ClCa_sl = fsl*gClCa/(1.0f32+kdClCa/initvalu_37)*(initvalu_39-ecl)
   let i_ClCa = i_ClCa_junc+i_ClCa_sl
-  let i_Clbk = gClB*(initvalu_39-ecl) 
+  let i_Clbk = gClB*(initvalu_39-ecl)
 
   -- i_Ca: L-type Calcium Current
   let dss = 1.0f32/(1.0f32+f32.exp(-(initvalu_39+14.5f32)/6.0f32))
@@ -375,10 +350,10 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let tauf = 1.0f32/(0.0197f32*f32.exp(-pow(0.0337f32*(initvalu_39+14.5f32),2.0f32))+0.02f32)
   let finavalu[offset_4] = (dss-initvalu_4)/taud
   let finavalu[offset_5] = (fss-initvalu_5)/tauf
-  let finavalu[offset_6] = 1.7f32*initvalu_36*(1.0f32-initvalu_6)-11.9e-3f32*initvalu_6 in -- fCa_junc  
+  let finavalu[offset_6] = 1.7f32*initvalu_36*(1.0f32-initvalu_6)-11.9e-3f32*initvalu_6 in -- fCa_junc
   let finavalu[offset_7] = 1.7f32*initvalu_37*(1.0f32-initvalu_7)-11.9e-3f32*initvalu_7    -- fCa_sl
 
-  -- 
+  --
   let ibarca_j = pCa*4.0f32*(initvalu_39*frdy*foRT) * (0.341f32*initvalu_36*f32.exp(2.0f32*initvalu_39*foRT)-0.341f32*cao) /
                     (f32.exp(2.0f32*initvalu_39*foRT)-1.0f32)
   let ibarca_sl= pCa*4.0f32*(initvalu_39*frdy*foRT) * (0.341f32*initvalu_37*f32.exp(2.0f32*initvalu_39*foRT)-0.341f32*cao) /
@@ -396,8 +371,6 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let i_CaK = (ibark*initvalu_4*initvalu_5*(fjunc_CaL*(1.0f32-initvalu_6)+fsl_CaL*(1.0f32-initvalu_7))*pow(q10CaL,qpow))*0.45f32
   let i_CaNa_junc = (fjunc_CaL*ibarna_j*initvalu_4*initvalu_5*(1.0f32-initvalu_6)*pow(q10CaL,qpow))*0.45f32
   let i_CaNa_sl = (fsl_CaL*ibarna_sl*initvalu_4*initvalu_5*(1.0f32-initvalu_7)*pow(q10CaL,qpow))*0.45f32
-  let i_CaNa = i_CaNa_junc+i_CaNa_sl
-  let i_Catot = i_Ca+i_CaK+i_CaNa 
 
   -- i_ncx: Na/Ca Exchanger flux
   let ka_junc = 1.0f32/(1.0f32+pow((kdact/initvalu_36),3.0f32))
@@ -420,23 +393,23 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
 
   -- i_pca: Sarcolemmal Ca Pump Current
   let i_pca_junc =  fjunc *
-                    pow(q10SLCaP,qpow) * 
+                    pow(q10SLCaP,qpow) *
                     ibarSLCaP *
                     pow(initvalu_36,1.6f32) /
                     (pow(kmPCa,1.6f32) + pow(initvalu_36,1.6f32))
   let i_pca_sl = fsl *
                 pow(q10SLCaP,qpow) *
                 ibarSLCaP *
-                pow(initvalu_37,1.6f32) / 
+                pow(initvalu_37,1.6f32) /
                 (pow(kmPCa,1.6f32) + pow(initvalu_37,1.6f32))
   let i_pca = i_pca_junc + i_pca_sl
-  let finavalu[offset_44] = -i_pca*cmem/(vmyo*2.0f32*frdy)*1e3f32 
+  let finavalu[offset_44] = -i_pca*cmem/(vmyo*2.0f32*frdy)*1e3f32
 
   -- i_cabk: Ca Background Current
   let i_cabk_junc = fjunc*gCaB*(initvalu_39-eca_junc)
   let i_cabk_sl = fsl*gCaB*(initvalu_39-eca_sl)
   let i_cabk = i_cabk_junc+i_cabk_sl
-  let finavalu[offset_46] = -i_cabk*cmem/(vmyo*2.0f32*frdy)*1e3f32 
+  let finavalu[offset_46] = -i_cabk*cmem/(vmyo*2.0f32*frdy)*1e3f32
 
   -- SR fluxes: Calcium Release, SR Ca pump, SR Ca leak
   let maxSR = 15.0f32
@@ -445,11 +418,11 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let koSRCa = koCa/kCaSR
   let kiSRCa = kiCa*kCaSR
   let ri = 1.0f32 - initvalu_14 - initvalu_15 - initvalu_16
-  let finavalu[offset_14] = (kim*ri-kiSRCa*initvalu_36*initvalu_14) - 
+  let finavalu[offset_14] = (kim*ri-kiSRCa*initvalu_36*initvalu_14) -
                             (koSRCa*pow(initvalu_36,2.0f32) * initvalu_14-kom*initvalu_15) in -- R
-  let finavalu[offset_15] = (koSRCa*pow(initvalu_36,2.0f32) * initvalu_14-kom*initvalu_15) - 
+  let finavalu[offset_15] = (koSRCa*pow(initvalu_36,2.0f32) * initvalu_14-kom*initvalu_15) -
                             (kiSRCa*initvalu_36*initvalu_15-kim*initvalu_16) in -- O
-  let finavalu[offset_16] = (kiSRCa*initvalu_36*initvalu_15-kim*initvalu_16) - 
+  let finavalu[offset_16] = (kiSRCa*initvalu_36*initvalu_15-kim*initvalu_16) -
                             (kom*initvalu_16-koSRCa*pow(initvalu_36,2.0f32)*ri) in -- i
   let j_SRCarel = ks*initvalu_15*(initvalu_31-initvalu_36) in -- [#mM/ms]
   let j_serca = pow(q10SRCaP,qpow)*vmax_SRCaP*(pow((initvalu_38/kmf),hillSRCaP)-pow((initvalu_31/kmr),hillSRCaP))
@@ -467,7 +440,7 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let finavalu[offset_23] = kon_myoca*initvalu_38*(bmax_myosin-initvalu_23-initvalu_24)-koff_myoca*initvalu_23 in -- Myosin_ca [#mM/ms]
   let finavalu[offset_24] = kon_myomg*mgi*(bmax_myosin-initvalu_23-initvalu_24)-koff_myomg*initvalu_24 in -- Myosin_mg [#mM/ms]
   let finavalu[offset_25] = kon_sr*initvalu_38*(bmax_SR-initvalu_25)-koff_sr*initvalu_25 in -- SRB [#mM/ms]
-  let j_CaB_cytosol =   finavalu[offset_19] + finavalu[offset_20] + finavalu[offset_21] + 
+  let j_CaB_cytosol =   finavalu[offset_19] + finavalu[offset_20] + finavalu[offset_21] +
                         finavalu[offset_22] + finavalu[offset_23] + finavalu[offset_24] + finavalu[offset_25]
 
   -- Junctional and SL Ca Buffers
@@ -490,7 +463,7 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let oneovervsl = 1.0f32 / vsl
   let finavalu[offset_33] = -i_Na_tot_sl*cmem*oneovervsl/frdy+j_na_juncsl*oneovervsl*(initvalu_32-initvalu_33) +
                             j_na_slmyo*oneovervsl*(initvalu_34-initvalu_33)-finavalu[offset_18]
-  let finavalu[offset_34] = j_na_slmyo/vmyo*(initvalu_33-initvalu_34) -- [#mM/msec] 
+  let finavalu[offset_34] = j_na_slmyo/vmyo*(initvalu_33-initvalu_34) -- [#mM/msec]
 
   -- Potassium Concentration
   let i_K_tot = i_to+i_kr+i_ks+i_ki-2.0f32*i_nak+i_CaK+i_kp in -- [#uA/uF]
@@ -500,16 +473,12 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let i_Ca_tot_junc = i_Ca_junc+i_cabk_junc+i_pca_junc-2.0f32*i_ncx_junc in -- [#uA/uF]
   let i_Ca_tot_sl = i_Ca_sl+i_cabk_sl+i_pca_sl-2.0f32*i_ncx_sl in -- [#uA/uF]
   let finavalu[offset_36] = -i_Ca_tot_junc*cmem/(vjunc*2.0f32*frdy)+
-                            j_ca_juncsl/vjunc*(initvalu_37-initvalu_36) - 
+                            j_ca_juncsl/vjunc*(initvalu_37-initvalu_36) -
                             j_CaB_junction+(j_SRCarel)*vsr/vjunc+j_SRleak*vmyo/vjunc in -- Ca_j
-  let finavalu[offset_37] = -i_Ca_tot_sl*cmem/(vsl*2.0f32*frdy) + 
+  let finavalu[offset_37] = -i_Ca_tot_sl*cmem/(vsl*2.0f32*frdy) +
                             j_ca_juncsl/vsl*(initvalu_36-initvalu_37) +
                             j_ca_slmyo/vsl*(initvalu_38-initvalu_37)-j_CaB_sl in -- Ca_sl
   let finavalu[offset_38] = -j_serca-j_CaB_cytosol +j_ca_slmyo/vmyo*(initvalu_37-initvalu_38)
-  let junc_sl=j_ca_juncsl/vsl*(initvalu_36-initvalu_37)
-  let sl_junc=j_ca_juncsl/vjunc*(initvalu_37-initvalu_36)
-  let sl_myo=j_ca_slmyo/vsl*(initvalu_38-initvalu_37)
-  let myo_sl=j_ca_slmyo/vmyo*(initvalu_37-initvalu_38) 
 
   let i_app = if(fmod(timeinst,parameter_1) <= 5.0f32)
               then 9.5f32 else 0.0f32
@@ -519,7 +488,7 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
   let i_Cl_tot = i_ClCa+i_Clbk in -- [#uA/uF]
   let i_Ca_tot = i_Ca_tot_junc + i_Ca_tot_sl
   let i_tot = i_Na_tot+i_Cl_tot+i_Ca_tot+i_K_tot
-  let finavalu[offset_39] = -(i_tot-i_app) 
+  let finavalu[offset_39] = -(i_tot-i_app)
 
   -- Set unused output values to 0 (MATLAB does it by default)
   let finavalu[offset_41] = 0.0f32
@@ -535,7 +504,7 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
         initvalu_offset: i32,
         parameter: [#pars]f32, parameter_offset: i32,
         finavalu: *[#equs]f32, ca: f32 ): (f32, *[equs]f32) =
-  unsafe 
+  unsafe
 
   -- input data and output data variable references
   let offset_1  = initvalu_offset
@@ -555,11 +524,10 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
   let offset_15 = initvalu_offset+14
 
   -- input parameters variable references
-  let parameter_offset_1  = parameter_offset
   let parameter_offset_2  = parameter_offset+1
   let parameter_offset_3  = parameter_offset+2
   let parameter_offset_4  = parameter_offset+3
-  let parameter_offset_5  = parameter_offset+4 
+  let parameter_offset_5  = parameter_offset+4
 
   -- decoding input array
   let caM   = initvalu[offset_1]
@@ -576,18 +544,17 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
   let ca4caN  = initvalu[offset_12]
   let caMca4caN = initvalu[offset_13]
   let ca2caMca4caN = initvalu[offset_14]
-  let ca4caMca4caN = initvalu[offset_15] 
+  let ca4caMca4caN = initvalu[offset_15]
 
   -- decoding input parameters
-  let caMtot    = parameter[parameter_offset_1]
   let btot      = parameter[parameter_offset_2]
   let caMKiitot = parameter[parameter_offset_3]
   let caNtot    = parameter[parameter_offset_4]
-  let pp1tot    = parameter[parameter_offset_5] 
+  let pp1tot    = parameter[parameter_offset_5]
 
   -- values [CONSTANTS FOR ALL THREADS]
   let k = 135.0f32
-  let mg = 1.0f32  
+  let mg = 1.0f32
 
   -- ca/caM parameters
   let (kd02, kd24) = if (mg <= 1.0f32)
@@ -600,22 +567,22 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
                                 (1.0f32+k/13.0f32-1.0f32/0.153f32+(mg-1.0f32)/0.150f32)
                           )
 
-  let k20 = 10.0f32  in -- [#s^-1]      
+  let k20 = 10.0f32  in -- [#s^-1]
   let k02 = k20/kd02 in -- [#uM^-2 s^-1]
-  let k42 = 500.0f32 in -- [#s^-1]      
+  let k42 = 500.0f32 in -- [#s^-1]
   let k24 = k42/kd24    -- [#uM^-2 s^-1]
 
   -- caM buffering (B) parameters
-  let k0Boff = 0.0014f32 in -- [#s^-1] 
+  let k0Boff = 0.0014f32 in -- [#s^-1]
   let k0Bon = k0Boff/0.2f32 in -- [#uM^-1 s^-1] kon = koff/kd
-  let k2Boff = k0Boff/100.0f32 in -- [#s^-1] 
+  let k2Boff = k0Boff/100.0f32 in -- [#s^-1]
   let k2Bon = k0Bon in -- [#uM^-1 s^-1]
   let k4Boff = k2Boff in -- [#s^-1]
   let k4Bon = k0Bon      -- [#uM^-1 s^-1]
 
   -- using thermodynamic constraints
   let k20B = k20/100.0f32 in -- [#s^-1] thermo constraint on loop 1
-  let k02B = k02 in -- [#uM^-2 s^-1] 
+  let k02B = k02 in -- [#uM^-2 s^-1]
   let k42B = k42 in -- [#s^-1] thermo constraint on loop 2
   let k24B = k24    -- [#uM^-2 s^-1]
 
@@ -636,8 +603,8 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
   let kt2a = kib*5.0f32
 
   -- caN parameters
-  let kcancaoff = 1.0f32 in -- [#s^-1] 
-  let kcancaon = kcancaoff/0.5f32 in -- [#uM^-1 s^-1] 
+  let kcancaoff = 1.0f32 in -- [#s^-1]
+  let kcancaon = kcancaoff/0.5f32 in -- [#uM^-1 s^-1]
   let kcancaM4on = 46.0f32 in -- [#uM^-1 s^-1]
   let kcancaM4off = 0.0013f32 in -- [#s^-1]
   let kcancaM2on = kcancaM4on
@@ -647,7 +614,7 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
   let k02can = k02
   let k20can = k20/165.0f32
   let k24can = k24
-  let k42can = k20/2508.0f32 
+  let k42can = k20/2508.0f32
 
   -- caM Reaction fluxes
   let rcn02 = k02*pow(ca,2.0f32)*caM - k20*ca2caM
@@ -659,16 +626,16 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
   let rcn24B = k24B*pow(ca,2.0f32)*ca2caMB - k42B*ca4caMB
   let rcn0B = k0Bon*caM*b - k0Boff*caMB
   let rcn2B = k2Bon*ca2caM*b - k2Boff*ca2caMB
-  let rcn4B = k4Bon*ca4caM*b - k4Boff*ca4caMB 
+  let rcn4B = k4Bon*ca4caM*b - k4Boff*ca4caMB
 
-  -- caN reaction fluxes 
+  -- caN reaction fluxes
   let ca2caN = caNtot - ca4caN - caMca4caN - ca2caMca4caN - ca4caMca4caN
   let rcnca4caN = kcancaon*pow(ca,2.0f32)*ca2caN - kcancaoff*ca4caN
   let rcn02caN = k02can*pow(ca,2.0f32)*caMca4caN - k20can*ca2caMca4caN
   let rcn24caN = k24can*pow(ca,2.0f32)*ca2caMca4caN - k42can*ca4caMca4caN
   let rcn0caN = kcancaM0on*caM*ca4caN - kcancaM0off*caMca4caN
   let rcn2caN = kcancaM2on*ca2caM*ca4caN - kcancaM2off*ca2caMca4caN
-  let rcn4caN = kcancaM4on*ca4caM*ca4caN - kcancaM4off*ca4caMca4caN 
+  let rcn4caN = kcancaM4on*ca4caM*ca4caN - kcancaM4off*ca4caMca4caN
 
   -- caMkii reaction fluxes
   let pix = 1.0f32 - pb2 - pb - pt - pt2 - pa
@@ -690,7 +657,7 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
   let dca4caM = 1e-3f32*(rcn24 - rcn4B - rcn4caN + caMKiitot*(-rcnCkib+rcnCkta) )
   let dcaMB = 1e-3f32*(rcn0B-rcn02B)
   let dca2caMB = 1e-3f32*(rcn02B + rcn2B - rcn24B)
-  let dca4caMB = 1e-3f32*(rcn24B + rcn4B) 
+  let dca4caMB = 1e-3f32*(rcn24B + rcn4B)
 
   -- caMkii equations
   let dpb2 = 1e-3f32*(rcnCkib2 - rcnCkb2b + rcnCkt2b2) in -- pb2
@@ -738,19 +705,17 @@ let fin(initvalu:     [#equs]f32, initvalu_offset_ecc: i32,
   unsafe
 
   let btotDyad      = parameter[2]
-  let caMKiitotDyad = parameter[3] 
+  let caMKiitotDyad = parameter[3]
 
   -- set variables
   let vmyo = 2.1454e-11f32
   let vdyad = 1.7790e-14f32
   let vsl = 6.6013e-13f32
-  let kDyadSL = 3.6363e-16f32
   let kSLmyo = 8.587e-15f32
   let k0Boff = 0.0014f32
   let k0Bon = k0Boff/0.2f32
   let k2Boff = k0Boff/100.0f32
   let k2Bon = k0Bon
-  let k4Boff = k2Boff
   let k4Bon = k0Bon
 
   -- ADJUST ECC incorporate ca buffering from caM, convert jcaCyt from uM/msec to mM/msec
@@ -774,18 +739,18 @@ let fin(initvalu:     [#equs]f32, initvalu_offset_ecc: i32,
                     + initvalu[initvalu_offset_Dyad+14]
 
   let bdyad = btotDyad - caMtotDyad in -- [#uM dyad]
-  let j_cam_dyadSL = 1e-3f32 * (  k0Boff*initvalu[initvalu_offset_Dyad+0] - 
+  let j_cam_dyadSL = 1e-3f32 * (  k0Boff*initvalu[initvalu_offset_Dyad+0] -
                         k0Bon*bdyad*initvalu[initvalu_offset_SL+0]) in -- [#uM/msec dyad]
-  let j_ca2cam_dyadSL = 1e-3f32 * (  k2Boff*initvalu[initvalu_offset_Dyad+1] - 
+  let j_ca2cam_dyadSL = 1e-3f32 * (  k2Boff*initvalu[initvalu_offset_Dyad+1] -
                         k2Bon*bdyad*initvalu[initvalu_offset_SL+1]) in -- [#uM/msec dyad]
-  let j_ca4cam_dyadSL = 1e-3f32 * (  k2Boff*initvalu[initvalu_offset_Dyad+2] - 
+  let j_ca4cam_dyadSL = 1e-3f32 * (  k2Boff*initvalu[initvalu_offset_Dyad+2] -
                         k4Bon*bdyad*initvalu[initvalu_offset_SL+2])    -- [#uM/msec dyad]
 
   let j_cam_SLmyo    = kSLmyo * (  initvalu[initvalu_offset_SL+0] - initvalu[initvalu_offset_Cyt+0]) in -- [#umol/msec]
   let j_ca2cam_SLmyo = kSLmyo * (  initvalu[initvalu_offset_SL+1] - initvalu[initvalu_offset_Cyt+1]) in -- [#umol/msec]
   let j_ca4cam_SLmyo = kSLmyo * (  initvalu[initvalu_offset_SL+2] - initvalu[initvalu_offset_Cyt+2])    -- [#umol/msec]
 
-  -- ADJUST CAM Dyad 
+  -- ADJUST CAM Dyad
   let finavalu[initvalu_offset_Dyad+0] = finavalu[initvalu_offset_Dyad+0] - j_cam_dyadSL
   let finavalu[initvalu_offset_Dyad+1] = finavalu[initvalu_offset_Dyad+1] - j_ca2cam_dyadSL
   let finavalu[initvalu_offset_Dyad+2] = finavalu[initvalu_offset_Dyad+2] - j_ca4cam_dyadSL
@@ -795,7 +760,7 @@ let fin(initvalu:     [#equs]f32, initvalu_offset_ecc: i32,
   let finavalu[initvalu_offset_SL+1] = finavalu[initvalu_offset_SL+1] + j_ca2cam_dyadSL*vdyad/vsl - j_ca2cam_SLmyo/vsl
   let finavalu[initvalu_offset_SL+2] = finavalu[initvalu_offset_SL+2] + j_ca4cam_dyadSL*vdyad/vsl - j_ca4cam_SLmyo/vsl
 
-  -- ADJUST CAM Cyt 
+  -- ADJUST CAM Cyt
   let finavalu[initvalu_offset_Cyt+0] = finavalu[initvalu_offset_Cyt+0] + j_cam_SLmyo/vmyo
   let finavalu[initvalu_offset_Cyt+1] = finavalu[initvalu_offset_Cyt+1] + j_ca2cam_SLmyo/vmyo
   let finavalu[initvalu_offset_Cyt+2] = finavalu[initvalu_offset_Cyt+2] + j_ca4cam_SLmyo/vmyo
@@ -804,14 +769,6 @@ let fin(initvalu:     [#equs]f32, initvalu_offset_ecc: i32,
 -------------------------
 ----- Master MODULE -----
 -------------------------
-
---let f32  inf() = 1.0f32 / 0.0f32
---let f32 minf() = 0.0f32 - inf()
---let f32  nan() = inf()  / inf()
---let f32 mnan() = 0.0f32 - nan()
-
---let bool isnan(f32 x) = let xp = fabs(x) in pow(xp,0.5f32) != f32.sqrt(xp)
---let bool isinf(f32 x) = ( x == inf() || x == minf() )
 
 let master(timeinst:  f32, initvalu: [#equs]f32, parameter: [#pars]f32 ): *[equs]f32 =
   let finavalu = replicate equs 0.0f32
@@ -825,11 +782,11 @@ let master(timeinst:  f32, initvalu: [#equs]f32, parameter: [#pars]f32 ): *[equs
   let jcaCyt  = 0.0f32
   let (jcaDyad, jcaSL, jcaCyt, finavalu) =
     loop ((jcaDyad, jcaSL, jcaCyt, finavalu)) for ii < 3 do
-        let (initvalu_offset, parameter_offset, ind) = 
+        let (initvalu_offset, parameter_offset, ind) =
             if      (ii == 0) then -- cam function for Dyad
-                ( 46, 1, 35 ) 
+                ( 46, 1, 35 )
             else if (ii == 1) then -- cam function for SL
-                ( 61, 6, 36 ) 
+                ( 61, 6, 36 )
             else -- if (ii == 2) then -- cam function for Cyt
                 ( 76, 11, 37 )
 
@@ -837,20 +794,20 @@ let master(timeinst:  f32, initvalu: [#equs]f32, parameter: [#pars]f32 ): *[equs
         let (res_val, finavalu) = cam(  timeinst, initvalu, initvalu_offset, parameter,
                                         parameter_offset, finavalu, inp_val )
 
-        let ( jcaDyad, jcaSL, jcaCyt ) = 
+        let ( jcaDyad, jcaSL, jcaCyt ) =
             if      (ii == 0) then ( res_val, jcaSL,   jcaCyt )
             else if (ii == 1) then ( jcaDyad, res_val, jcaCyt )
             else                   ( jcaDyad, jcaSL,   res_val)
         in  ( jcaDyad, jcaSL, jcaCyt, finavalu)
 
   -- final adjustments
-  let finavalu = fin(  initvalu, initvalu_offset_ecc, 46, 61, 76, 
-                       parameter, finavalu, jcaDyad, jcaSL, jcaCyt ) 
+  let finavalu = fin(  initvalu, initvalu_offset_ecc, 46, 61, 76,
+                       parameter, finavalu, jcaDyad, jcaSL, jcaCyt )
 
-  in map (\(x: f32): f32  -> 
-            if ( f32.isnan(x) || f32.isinf(x) ) 
+  in map (\(x: f32): f32  ->
+            if ( f32.isnan(x) || f32.isinf(x) )
             then 0.0001f32
-            else x 
+            else x
          ) finavalu
 
 
@@ -932,14 +889,14 @@ let embedded_fehlberg_7_8(timeinst:   f32, h: f32,
 
   let err_factor  = -41.0f32 / 840.0f32
   let h2_7 = a2 * h
-  
+
   -- initvalu_temp[equations]
   -- finavalu_temp[13, equations]
   let finavalu_temp = replicate 13 (replicate equs 0.0f32)
 
   let finavalu_temp = loop (finavalu_temp) for ii < 13 do
-    let ( timeinst_temp, initvalu_temp ) = 
-        if      (ii == 0) then 
+    let ( timeinst_temp, initvalu_temp ) =
+        if      (ii == 0) then
             ( timeinst, initvalu )
         else if (ii == 1) then
             let timeinst_temp = timeinst + h2_7
@@ -948,92 +905,92 @@ let embedded_fehlberg_7_8(timeinst:   f32, h: f32,
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 2) then
             let timeinst_temp = timeinst + a3*h
-            let initvalu_temp = map (\(xy: (f32,f32,f32)): f32  -> 
+            let initvalu_temp = map (\(xy: (f32,f32,f32)): f32  ->
                                         let (x,y1,y2) = xy
                                         in x + h * ( b31*y1 + b32*y2 )
                                    ) (zip initvalu (finavalu_temp[0]) (finavalu_temp[1]) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 3) then
             let timeinst_temp = timeinst + a4*h
-            let initvalu_temp = map (\(xy: (f32,f32,f32)): f32  -> 
+            let initvalu_temp = map (\(xy: (f32,f32,f32)): f32  ->
                                         let (x,y1,y2) = xy
                                         in x + h * ( b41*y1 + b43*y2 )
                                    ) (zip initvalu (finavalu_temp[0]) (finavalu_temp[2]) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 4) then
             let timeinst_temp = timeinst + a5*h
-            let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b51*finavalu_temp[0,i] + 
+            let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b51*finavalu_temp[0,i] +
                                         b53*finavalu_temp[2,i] + b54*finavalu_temp[3,i])
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 5) then
             let timeinst_temp = timeinst + a6*h
-            let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b61*finavalu_temp[0,i] + 
+            let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b61*finavalu_temp[0,i] +
                                         b64*finavalu_temp[3,i] + b65*finavalu_temp[4,i] )
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 6) then
               let timeinst_temp = timeinst + a7 * h
-              let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b71*finavalu_temp[0,i] + 
-                                        b74*finavalu_temp[3,i] + b75*finavalu_temp[4,i] + 
+              let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b71*finavalu_temp[0,i] +
+                                        b74*finavalu_temp[3,i] + b75*finavalu_temp[4,i] +
                                         b76*finavalu_temp[5,i] )
                                      ) (iota(equs) )
               in ( timeinst_temp, initvalu_temp )
         else if (ii == 7) then
               let timeinst_temp = timeinst + a8 * h
-              let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b81*finavalu_temp[0,i] + 
-                                        b85*finavalu_temp[4,i] + b86*finavalu_temp[5,i] + 
+              let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b81*finavalu_temp[0,i] +
+                                        b85*finavalu_temp[4,i] + b86*finavalu_temp[5,i] +
                                         b87*finavalu_temp[6,i] )
                                      ) (iota(equs) )
               in ( timeinst_temp, initvalu_temp )
         else if (ii == 8) then
             let timeinst_temp = timeinst + a9*h
-            let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b91*finavalu_temp[0,i] + 
-                                        b94*finavalu_temp[3,i] + b95*finavalu_temp[4,i] + 
-                                        b96*finavalu_temp[5,i] + b97*finavalu_temp[6,i] + 
+            let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b91*finavalu_temp[0,i] +
+                                        b94*finavalu_temp[3,i] + b95*finavalu_temp[4,i] +
+                                        b96*finavalu_temp[5,i] + b97*finavalu_temp[6,i] +
                                         b98*finavalu_temp[7,i] )
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 9) then
             let timeinst_temp = timeinst + a10*h
-            let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b10_1*finavalu_temp[0,i] + 
-                                        b10_4*finavalu_temp[3,i] + b10_5*finavalu_temp[4,i] + 
-                                        b10_6*finavalu_temp[5,i] + b10_7*finavalu_temp[6,i] + 
+            let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b10_1*finavalu_temp[0,i] +
+                                        b10_4*finavalu_temp[3,i] + b10_5*finavalu_temp[4,i] +
+                                        b10_6*finavalu_temp[5,i] + b10_7*finavalu_temp[6,i] +
                                         b10_8*finavalu_temp[7,i] + b10_9*finavalu_temp[8,i] )
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 10) then
             let timeinst_temp = timeinst + h
-            let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b11_1*finavalu_temp[0,i] + 
-                                        b11_4*finavalu_temp[3,i] + b11_5*finavalu_temp[4,i] + 
-                                        b11_6*finavalu_temp[5,i] + b11_7*finavalu_temp[6,i] + 
-                                        b11_8*finavalu_temp[7,i] + b11_9*finavalu_temp[8,i] + 
+            let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b11_1*finavalu_temp[0,i] +
+                                        b11_4*finavalu_temp[3,i] + b11_5*finavalu_temp[4,i] +
+                                        b11_6*finavalu_temp[5,i] + b11_7*finavalu_temp[6,i] +
+                                        b11_8*finavalu_temp[7,i] + b11_9*finavalu_temp[8,i] +
                                         b11_10 * finavalu_temp[9,i])
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
         else if (ii == 11) then
             let timeinst_temp = timeinst
-            let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b12_1*finavalu_temp[0,i] + 
-                                        b12_6*finavalu_temp[5,i] + b12_7*finavalu_temp[6,i] + 
-                                        b12_8*finavalu_temp[7,i] + b12_9*finavalu_temp[8,i] + 
+            let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b12_1*finavalu_temp[0,i] +
+                                        b12_6*finavalu_temp[5,i] + b12_7*finavalu_temp[6,i] +
+                                        b12_8*finavalu_temp[7,i] + b12_9*finavalu_temp[8,i] +
                                         b12_10 * finavalu_temp[9,i] )
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
         else -- if (ii == 12) then
             let timeinst_temp = timeinst + h
-            let initvalu_temp = map (\(i: i32): f32  -> 
-                                        initvalu[i] + h * ( b13_1*finavalu_temp[0,i] + 
-                                        b13_4*finavalu_temp[3,i] + b13_5*finavalu_temp[4,i] + 
-                                        b13_6*finavalu_temp[5,i] + b13_7*finavalu_temp[6,i] + 
-                                        b13_8*finavalu_temp[7,i] + b13_9*finavalu_temp[8,i] + 
+            let initvalu_temp = map (\(i: i32): f32  ->
+                                        initvalu[i] + h * ( b13_1*finavalu_temp[0,i] +
+                                        b13_4*finavalu_temp[3,i] + b13_5*finavalu_temp[4,i] +
+                                        b13_6*finavalu_temp[5,i] + b13_7*finavalu_temp[6,i] +
+                                        b13_8*finavalu_temp[7,i] + b13_9*finavalu_temp[8,i] +
                                         b13_10*finavalu_temp[9,i] + finavalu_temp[11,i] )
                                    ) (iota(equs) )
             in ( timeinst_temp, initvalu_temp )
@@ -1068,54 +1025,45 @@ let min(x: f32) (y: f32): f32 = if ( x < y ) then x else y
 
 let solver(xmax: i32, params: [#pars]f32, y0: [#equs]f32): (bool,[equs]f32) =
   let err_exponent  = 1.0f32 / 7.0f32
-  let last_interval = 0.0f32
   let h_init = 1.0f32
   let h = h_init
   let xmin = 0
   let tolerance = 10.0f32 / f32(xmax-xmin)
-  let y_km1  = y0 in -- copy(y0)
+  let y_km1  = y0 in
 
-  if (xmax < xmin || h <= 0.0f32) then ( false, y_km1 )
-  else if ( xmax == xmin ) then ( true, y_km1 )
-  else 
-  let (h, last_interval) = if (h > f32(xmax - xmin) )
-                           then ( f32(xmax - xmin), 1.0f32 )
-                           else ( h, last_interval )
+  if xmax < xmin || h <= 0.0f32 then (false, y_km1)
+  else if xmax == xmin then (true, y_km1)
+  else
 
   -- initialize return and loop-variant params
   let failed = false
   let km1    = 0
-  let (km1, failed, y_km1) =
+  let (_, failed, y_km1) =
     loop((km1, failed, y_km1)) while ( (!failed) && (km1 < xmax) ) do -- for km1 < xmax do
     -- reinitialize variables
     let h          = h_init
     let scale_fina = 1.0f32
     let y_k = replicate equs 0.0f32
-    
+
     -- make attempts to minimize error
     let breakLoop  = false
     let j = 0
-    let (j,h,y_k,breakLoop,scale_fina) =
+    let (_,_,y_k,breakLoop,_) =
       loop((j,h,y_k,breakLoop,scale_fina)) while ( (!breakLoop) && (j < attempts()) ) do
       -- REiNiTiALiZE ALL VAriABLES
-      let error   = 0
-      let outside = 0
       let scale_min = max_scale_factor()
 
       -- EVALUATE ALL equations
       let (y_k, err) = reshape (equs) (embedded_fehlberg_7_8( f32(km1), h, y_km1, params))
-      
+
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
       let errs = map (\(e: f32): bool  -> if e > 0.0f32 then true else false) err
       let error= reduce (||) false errs
 
---      let {breakLoop, scale_fina} = if(!error)
---                                    then {true,  max_scale_factor()}
---                                    else {false, scale_fina}
       in
       if (!error)
       then (j+1, h, y_k, true, max_scale_factor())
-      else 
+      else
       -- FiGURE OUT SCALE AS THE MiNiMUM OF COMPONENT SCALES
       let yy = map (\(x: f32): f32  ->
                         if (x == 0.0f32) then tolerance else fabs(x)
@@ -1166,21 +1114,6 @@ let main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [
             let add_fact = f32(i % repeat)*eps
             let y_row = map (+add_fact) y0
           in solver(xmax, params, y_row)
-        ) (iota(workload) ) )
+        ) (iota workload))
 
   in ( reduce (&&) true oks, y_res )
-
-
-
-let main_EMBEDDED(xmax: i32, y: [#workload][91]f32, params: [#workload][16]f32): ([91]f32, [91]f32) =
-    embedded_fehlberg_7_8( 0.0f32, 1.0f32, y[0], params[0])
-
-let main_ECC_CAM(xmax: i32, y: [#workload][91]f32, params: [#workload][16]f32): (f32, [91]f32) =
-    let finavalu = replicate 91 0.0f32
-    let finavalu = ecc( 0.0f32, y[0], 0, params[0], 0, finavalu )
-    let (res_val, finavalu) = cam(  0.0f32, y[0], 46, params[0],  
-                                    1, finavalu, y[0, 35]*1e3f32 )
-    in (res_val, finavalu)
-
-let main_MASTER(xmax: i32, y: [#workload][91]f32, params: [#workload][16]f32): [91]f32 =
-    master( 0.0f32, y[0], params[0] ) 
