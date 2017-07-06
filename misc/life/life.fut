@@ -78,5 +78,5 @@ let main [n][m] (base_pattern: [n][m]i32) (repeats: i32) (k: i32) =
                  (map (\row -> reshape (k*m) (replicate k (map bool row)))
                       base_pattern))
   let world =
-    loop (world = conway.init pattern) for _i < k do conway.step world
+    loop world = conway.init pattern for _i < k do conway.step world
   in reduce (+) 0 (map i32 (reshape (k*n*k*m) world))

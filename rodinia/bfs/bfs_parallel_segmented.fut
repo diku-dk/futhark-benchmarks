@@ -72,8 +72,8 @@ let main(nodes_start_index: [#n]i32,
   let cost = replicate n (-1)
   let cost[source] = 0
   let (cost,_,_,_,_) =
-    loop ((cost, updating_graph_mask, graph_mask, graph_visited, continue) =
-          (cost, updating_graph_mask, graph_mask, graph_visited, true))
+    loop (cost, updating_graph_mask, graph_mask, graph_visited, continue) =
+         (cost, updating_graph_mask, graph_mask, graph_visited, true)
     while continue do
       let (cost', graph_mask', updating_graph_mask') =
         step(cost,

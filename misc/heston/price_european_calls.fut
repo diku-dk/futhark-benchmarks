@@ -290,7 +290,7 @@ let price_european_calls
 
        -- write reduction as loop to avoid pointless segmented
        -- reduction (the inner parallelism is not needed).
-       let res = map (\x -> loop (v = real 0.0) for i < nb_points do v + x[i])
+       let res = map (\x -> loop v = real 0.0 for i < nb_points do v + x[i])
                      (transpose (map iter (iota nb_points)))
        in map (\moneyness resk m ->
                let day_count_fraction = unsafe day_count_fractions[m]

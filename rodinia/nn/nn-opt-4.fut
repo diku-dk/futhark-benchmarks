@@ -15,7 +15,7 @@ let emptyRecord : (i32, f32) = (0, 0.0f32)
 let stride = 4i32
 
 let findMinNotIn (a : [stride](f32,i32)) (b : [stride](f32,i32)) (k : i32) : (f32,i32) =
-    loop((m,ind) = (infty,-1)) for i < stride do
+    loop (m,ind) = (infty,-1) for i < stride do
         let (a_v, a_i) = a[i] in
         if a_v >= m then (m,ind)
         else let ok = true
@@ -55,7 +55,7 @@ let main(resultsCount:    i32, lat: f32, lng: f32,
                           (reshape (numQuads,stride) distances) (iota numQuads)
         let minDistsLocs =
             reduce_comm (\(di1: [stride](f32,i32)) (di2: [stride](f32,i32)) : [stride](f32, i32) ->
-                            loop (res = replicate stride (infty, -1)) for k < stride do
+                            loop res = replicate stride (infty, -1) for k < stride do
                                 let (d1, i1) = findMinNotIn di1 res k
                                 let (d2, i2) = findMinNotIn di2 res k
                                 let di = if(d1 < d2) then (d1, i1) 

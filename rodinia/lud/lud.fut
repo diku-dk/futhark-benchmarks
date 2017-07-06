@@ -26,11 +26,11 @@ import "/futlib/array"
 let lud_diagonal0(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let a_rows = copy(a) in
-    let (a_rows,a_cols) = loop( (a_rows,a_cols) ) for i < b do
+    let (a_rows,a_cols) = loop (a_rows,a_cols) for i < b do
         let it_row = map (\ (j: i32): f32  ->
                             if j < i then 0.0f32 else
                             let sum = 0.0f32 in
-                            let sum = loop(sum) for k < i do
+                            let sum = loop sum for k < i do
                                 sum + a_cols[k,i]*a_rows[k,j]
                             in  a_rows[i,j]-sum
                         ) (iota(b) )
@@ -38,7 +38,7 @@ let lud_diagonal0(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
         let it_col = map (\ (j: i32): f32  ->
                             if j < (i+1) then 0.0f32 else
                             let sum = 0.0f32 in
-                            let sum = loop(sum) for k < i do
+                            let sum = loop sum for k < i do
                                 sum + a_cols[k,j]*a_rows[k,i]
                             in  (a_cols[i,j]-sum) / it_row[i]
                         ) (iota(b) )
@@ -62,18 +62,18 @@ let lud_diagonal1(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
                                 else unsafe a_cols[i,j-b]
                            ) (iota(b2) )
                   ) (iota(b) )
-    let a_rc = loop( a_rc ) for i < (b-1) do
+    let a_rc = loop a_rc for i < (b-1) do
         let it_rc  = map (\ (j: i32): f32  ->
                             if (j < b) -- row case
                             then let i = i + 1 in
                                  if j < i then 0.0f32 else
                                  --let sum = a[0,j]*a_rc[k,b+i+1] in
-                                 let sum = loop(sum=0.0f32) for k < i do
+                                 let sum = loop sum=0.0f32 for k < i do
                                     sum + a_rc[k,b+i-1]*(if k==0 then a[0,j] else a_rc[k-1,j])
                                  in  a_rc[i,j]-sum
                             else let j = j - b in -- column case
                                  if j < (i+1) then 0.0f32 else
-                                 let sum = loop(sum=0.0f32) for k < i do
+                                 let sum = loop sum=0.0f32 for k < i do
                                     sum + a_rc[k,b+j] * (if k==0 then a[0,i] else a_rc[k-1,i])
                                  in  (a_rc[i,b+j]-sum) / (if i==0 then a[i,i] else a_rc[i-1,i]) --it_row[i]
                         ) (iota(b2) )
@@ -100,15 +100,15 @@ let lud_diagonal2(ain: [#b][#b]f32, m: i32): *[b][b]f32 =  -- CORRECT
     let one = (m*m+2*m+1)/(m+1) - m in
     let ains= copy(replicate one ain) in
     let ress= map (\ (a: *[#b][#b]f32, q: i32): *[b][b]f32  -> unsafe
-                     loop(a) for i < b do
-                        let a = loop(a) for j in range i b 1 do
-                            let sum = loop(sum=0.0f32) for k < i do
+                     loop a for i < b do
+                        let a = loop a for j in range i b 1 do
+                            let sum = loop sum=0.0f32 for k < i do
                                 sum + a[i,k]*a[k,j] + f32(q)
                             let a[i,j] = a[i,j] - sum
                             in a
                         let tmp = 1.0f32 / a[i,i] in
-                        loop(a) for j in range (i+1) b 1 do
-                            let sum = loop(sum=0.0f32) for k < i do
+                        loop a for j in range (i+1) b 1 do
+                            let sum = loop sum=0.0f32 for k < i do
                                 sum + a[j,k] * a[k,i]
                             let a[j,i] = (a[j,i] - sum) * tmp
                             in a
@@ -126,22 +126,22 @@ let lud_diagonal(a: [#b][#b]f32, step: i32): *[b][b]f32 =  -- CORRECT
                                 else unsafe a_cols[i,j-b]
                            ) (iota(b2) )
                   ) (iota(b) )
-    let a_rc = loop( a_rc ) for i < b do
+    let a_rc = loop a_rc for i < b do
         let row_col =
             map (\ (j: i32): f32  ->
                     if j < b
                     then
                         if j < i then 0.0f32 else
-                        let sum = loop(sum=0.0f32) for k < i do
+                        let sum = loop sum=0.0f32 for k < i do
                             sum + a_rc[k,i+b]*a_rc[k,j]
                         in  a_rc[i,j]-sum
                     else
                         let j = j - b in
                         if j < (i+1) then 0.0f32 else
-                        let aii = loop(aii=a_rc[i,i]) for k < i do
+                        let aii = loop aii=a_rc[i,i] for k < i do
                             aii - (a_rc[k,i+b]*a_rc[k,i])
                         in
-                        let sum = loop(sum=0.0f32) for k < i do
+                        let sum = loop sum=0.0f32 for k < i do
                             sum + a_rc[k,j+b]*a_rc[k,i]
                         in  (a_rc[i,j+b]-sum) / aii
                ) (iota(b2) )
@@ -170,8 +170,8 @@ let lud_perimeter_upper(step: i32, diag: [#b][#b]f32, a0s: [#m][#b][#b]f32): *[m
     let a2s =
         map  (\ (a1: [#b][#b]f32, jj: i32): *[b][b]f32  ->
         map  (\ (row0: [#b]f32): *[b]f32  ->   -- Upper
-                loop(row=replicate b 0.0f32) for i < b do
-                  let sum = loop (sum=0.0f32) for k < i do
+                loop row=replicate b 0.0f32 for i < b do
+                  let sum = loop sum=0.0f32 for k < i do
                       sum + diag[i,k] * row[k]
                   let row[i] = row0[i] - sum
                   in  row
@@ -183,8 +183,8 @@ let lud_perimeter_upper2(step: i32, diag: [#b][#b]f32, a0s: [#m][#b][#b]f32): *[
     let a2s =
         map  (\ (blk: [#b][#b]f32, jj: i32): *[b][b]f32  ->
         map  (\ (j: i32): *[b]f32  ->   -- Upper
-                loop (row=replicate b 0.0f32) for i < b do
-                    let sum = loop(sum=0.0f32) for k < i do
+                loop row=replicate b 0.0f32 for i < b do
+                    let sum = loop sum=0.0f32 for k < i do
                         sum + diag[i,k] * row[k]
                     let row[i] = blk[i,j] - sum
                     in  row
@@ -210,8 +210,8 @@ let lud_perimeter_lower1(step: i32, diag: [#b][#b]f32, mat: [#m][#m][#b][#b]f32)
   let slice = mat[0:m,0] in
   map  (\ (blk: [#b][#b]f32, ii: i32): *[b][b]f32  ->
         map  (\ (row0: [#b]f32): *[b]f32  ->   -- Lower
-                loop(row=replicate b 0.0f32) for j < b do
-                        let sum = loop(sum=0.0f32) for k < j do
+                loop row=replicate b 0.0f32 for j < b do
+                        let sum = loop sum=0.0f32 for k < j do
                             sum + diag[k,j] * row[k]
                         let row[j] = (row0[j] - sum) / diag[j,j]
                         in  row
@@ -230,8 +230,8 @@ let lud_perimeter_lower(step: i32, diag: [#b][#b]f32, mat: [#m][#m][#b][#b]f32):
 --  let slice = copy(reshape((m,b,b),slice0)) in
   map  (\ (blk: [#b][#b]f32, ii: i32): *[b][b]f32  ->
         map  (\ (row0: [#b]f32): *[b]f32  ->   -- Lower
-                loop (row=replicate b 0.0f32) for j < b do
-                        let sum = loop(sum=0.0f32) for k < j do
+                loop row=replicate b 0.0f32 for j < b do
+                        let sum = loop sum=0.0f32 for k < j do
                             sum + diag[k,j] * row[k]
                         let row[j] = (row0[j] - sum) / diag[j,j]
                         in  row
@@ -258,7 +258,7 @@ let lud_internal0(d:  i32, top_per: [#mp1][#b][#b]f32, lft_per: [#mp1][#b][#b]f3
                let lft = lft_per[ii+1] in
                 map  (\ (i: i32): [b]f32  ->
                         map  (\ (j: i32): f32  ->
-                                let sum = loop (sum = 0.0f32) for k < b do
+                                let sum = loop sum = 0.0f32 for k < b do
                                           sum + lft[i,k] * top[k,j]
                                 in mat[ii+1,jj+1,i,j] - sum
 
@@ -277,7 +277,7 @@ let lud_internal1(d:  i32, top_per: [#mp1][#b][#b]f32, lft_per: [#mp1][#b][#b]f3
         map (\ (mat_blk: [b][b]f32, top: [b][b]f32, jj: i32): [b][b]f32  ->
                 map  (\ (mat_row: [b]f32, i: i32): [b]f32  ->
                         map  (\ (mat_el: f32, j: i32): f32  ->
-                                let sum = loop (sum = 0.0f32) for k < b do
+                                let sum = loop sum = 0.0f32 for k < b do
                                           sum + lft[i,k] * top[k,j]
                                 in mat_el - sum
 

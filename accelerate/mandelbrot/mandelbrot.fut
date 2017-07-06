@@ -24,7 +24,7 @@ let dot(c: c32): f32 =
 
 let divergence(depth: i32, c0: c32): i32 =
   let (_,i) =
-    loop ((c, i) = (c0, 0)) while i < depth && dot(c) < 4.0 do
+    loop (c, i) = (c0, 0) while i < depth && dot(c) < 4.0 do
     (c0 c32.+ c c32.* c,
      i + 1)
   in i

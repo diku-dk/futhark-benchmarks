@@ -39,8 +39,8 @@ module BFSLIB(S: STEP_FUN) = {
     let cost = replicate n (-1)
     let cost[source] = 0
     let (cost, _, _, _) =
-      loop ((cost, graph_mask, graph_visited, continue) =
-            (cost, graph_mask, graph_visited, true)) while continue do
+      loop (cost, graph_mask, graph_visited, continue) =
+           (cost, graph_mask, graph_visited, true) while continue do
         let (cost', graph_mask', updating_indices) =
           S.step(cost,
                  nodes_start_index,

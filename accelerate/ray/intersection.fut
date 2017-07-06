@@ -8,8 +8,8 @@ import "objects"
 
 module cast_ray(O: object) = {
   let cast_ray [n] (objects: [n]O.object) (dummy: O.object) (orig: position) (dir: direction): (bool, f32, O.object) =
-    loop ((hit, closest_hit_dist, closest_hit_obj) =
-          (false, f32.inf, dummy)) for i < n do
+    loop (hit, closest_hit_dist, closest_hit_obj) =
+         (false, f32.inf, dummy) for i < n do
       (let (new_hit, dist) = O.distance_to objects[i] orig dir
        in if new_hit && dist < closest_hit_dist
           then (new_hit, dist, objects[i])
@@ -24,7 +24,7 @@ module cast_ray_plane = cast_ray plane
 module check_ray(O: object) = {
   let check_ray [n] (objects: [n]O.object) (orig: position) (dir: direction) (dist: f32): bool =
     let (hit, _) =
-      loop ((hit,i) = (false,0)) while !hit && i < n do
+      loop (hit,i) = (false,0) while !hit && i < n do
         let (new_hit,dist') = O.distance_to (unsafe objects[i]) orig dir
         in if new_hit && dist' < dist then (true, i) else (false, i+1)
     in hit

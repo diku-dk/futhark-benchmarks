@@ -28,5 +28,5 @@ let apply_lights [num_lights]
                  (objects: objects) ({lights:[num_lights]light}: lights)
                  (point: position) (normal: direction)
                 : argb.colour =
-  loop (c = argb.black) for i < num_lights do
+  loop c = argb.black for i < num_lights do
     argb.mix 1.0 c 1.0 (apply_light objects point normal lights[i])

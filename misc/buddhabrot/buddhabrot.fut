@@ -23,7 +23,7 @@ let addComplex(x: (f32,f32), y: (f32,f32)): (f32,f32) =
 let divergence(depth: i32, c0: (f32,f32)): ([depth](f32,f32),bool) =
   let trajectory = replicate depth (0.0, 0.0)
   let (trajectory, _, i) =
-    loop ((trajectory, c, i) = (trajectory, c0, 0)) while i < depth && dot(c) < 4.0 do
+    loop (trajectory, c, i) = (trajectory, c0, 0) while i < depth && dot(c) < 4.0 do
       unsafe
       let c' = addComplex(c0, multComplex(c, c))
       let trajectory[i] = c'
@@ -80,9 +80,9 @@ let visualise(n: i32, m: i32, view: (f32,f32,f32,f32),
                            map (\(as: [#m]i32) (bs: [#m]i32): [m]i32  ->
                                      map (+) as bs) ass bss) (
                          \(inp: [#chunk]([#depth](f32,f32),bool)): [n][m]i32  ->
-                             loop (acc = replicate n (replicate m 0)) for i < chunk do
+                             loop acc = replicate n (replicate m 0) for i < chunk do
                                (let (trajectory, escaped) = inp[i]
-                                in if escaped then (loop (acc) for j < depth do
+                                in if escaped then (loop acc for j < depth do
                                                       (unsafe
                                                        let (x,y) = trajectory[j]
                                                        let i = toI(n, view, y)
