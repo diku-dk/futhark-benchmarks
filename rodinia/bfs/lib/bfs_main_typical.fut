@@ -18,7 +18,7 @@
 -- ==
 -- tags { disable }
 
-import "lib/bfs_lib"
+import "bfs_lib"
 
 module type STEP_FUN = {
   val step: (*[]i32, []i32, []i32, []i32, []bool, *[]bool) ->
