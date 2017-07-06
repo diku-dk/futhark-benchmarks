@@ -29,7 +29,7 @@ let main (iterations: i32) (nx: i32) (A0_slice: [#ny][#nz]f32): [ny][nz]f32 =
   let c0 = 1.0f32/6.0f32
   let c1=1.0f32/6.0f32/6.0f32
 
-  let A0 = loop (A0 = replicate nx A0_slice) for _i < iterations do
+  let A0 = loop A0 = replicate nx A0_slice for _i < iterations do
     map (\i -> map (\j -> map (\k -> next c0 c1 A0 i j k) (iota nz)) (iota ny)) (iota nx)
 
   in A0[0]

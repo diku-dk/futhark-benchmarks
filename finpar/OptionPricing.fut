@@ -45,7 +45,7 @@ let sobolIndR(dir_vs: [#m][#num_bits]i32) (n: i32): [m]f32 =
 ---- STRENGTH-REDUCED FORMULA
 --------------------------------
 let index_of_least_significant_0(x: i32): i32 =
-  loop (i = 0) while i < 32 && ((x>>i)&1) != 0 do i + 1
+  loop i = 0 while i < 32 && ((x>>i)&1) != 0 do i + 1
 
 let sobolRecI(sob_dir_vs: [][#num_bits]i32, prev: [#n]i32, x: i32): [n]i32 =
   let bit = index_of_least_significant_0 x
@@ -192,7 +192,7 @@ let brownianBridgeDates (bb_inds: [3][#num_dates]i32)
   let bbrow = replicate num_dates 0.0
   let bbrow[ bi[0]-1 ] = sd[0] * gauss[0]
 
-  let bbrow = loop (bbrow) for i < num_dates-1 do  -- use i+1 since i in 1 .. num_dates-1
+  let bbrow = loop bbrow for i < num_dates-1 do  -- use i+1 since i in 1 .. num_dates-1
     unsafe
     let j  = li[i+1] - 1
     let k  = ri[i+1] - 1
@@ -209,7 +209,7 @@ let brownianBridgeDates (bb_inds: [3][#num_dates]i32)
 
   -- This can be written as map-reduce, but it
   --   needs delayed arrays to be mapped nicely!
-  in loop (bbrow) for ii < num_dates-1 do
+  in loop bbrow for ii < num_dates-1 do
        let i = num_dates - (ii+1)
        let bbrow[i] = bbrow[i] - bbrow[i-1]
        in  bbrow

@@ -33,14 +33,14 @@ let centroids_of(k: i32, points: [#n][#d]f32, membership: [#n]i32): *[k][d]f32 =
      stream_red_per (\(acc: [k]i32) (x: [k]i32) ->
                      map (+) acc x)
                     (\(inp: []i32) ->
-                     loop (acc = (replicate k 0)) for c in inp do
+                     loop acc = (replicate k 0) for c in inp do
                        unsafe let acc[c] = acc[c] + 1 in acc)
                     membership
   let cluster_sums =
     stream_red_per (\(acc: [k][d]f32) (elem: [k][d]f32) ->
                     map add_centroids acc elem)
                    (\(inp: []([d]f32,i32)) ->
-                       loop (acc = replicate k (replicate d 0f32)) for (point,c) in inp do
+                       loop acc = replicate k (replicate d 0f32) for (point,c) in inp do
                          unsafe let acc[c] =
                                   add_centroids acc[c] (map (/(f32(points_in_clusters[c]))) point)
                                 in acc)
@@ -58,7 +58,7 @@ let main(threshold: i32, k: i32, max_iterations: i32,
   let delta = threshold + 1
   let i = 0
   let (_,cluster_centres,_,i) =
-    loop ((membership, cluster_centres, delta, i))
+    loop (membership, cluster_centres, delta, i)
     while delta > threshold && i < max_iterations do
       -- For each point, find the cluster with the closest centroid.
       let new_membership = map (find_nearest_point cluster_centres) points

@@ -145,9 +145,9 @@ module least_squares (real: real)
        let (rng,a) = random_i32.rand (0,np) rng
        let (rng,b) = random_i32.rand (0,np) rng
        let (rng,c) = random_i32.rand (0,np) rng
-       let (rng,a) = loop ((rng,a)) while a i32.== i do random_i32.rand (0,np) rng
-       let (rng,b) = loop ((rng,b)) while b i32.== i || b i32.== a do random_i32.rand (0,np) rng
-       let (rng,c) = loop ((rng,c)) while c i32.== i || c i32.== a || c i32.== b do random_i32.rand (0,np) rng
+       let (rng,a) = loop (rng,a) while a i32.== i do random_i32.rand (0,np) rng
+       let (rng,b) = loop (rng,b) while b i32.== i || b i32.== a do random_i32.rand (0,np) rng
+       let (rng,c) = loop (rng,c) while c i32.== i || c i32.== a || c i32.== b do random_i32.rand (0,np) rng
        let (rng,r) = random_real.rand bounds rng
        let x_r1 = unsafe if r <= real.from_fraction 1 2 then x[best_idx] else x[a]
        let x_r2 = unsafe x[b]
@@ -179,8 +179,8 @@ module least_squares (real: real)
     -- function quite as in LexiFi's code (they use a closure that
     -- increments a counter), but we should be close.
     let (_,ncalls,nb_it,(_,_,_,x)) =
-      loop ((rng, ncalls, nb_it, (fx0, best_idx, fx, x)) =
-            (rng, np, max_iterations, (fx0, best_idx, fx, x)))
+      loop (rng, ncalls, nb_it, (fx0, best_idx, fx, x)) =
+           (rng, np, max_iterations, (fx0, best_idx, fx, x))
       while nb_it i32.> 0 && max_global i32.> ncalls && fx0 > target do
       (let (rng,differential_weight) = random_real.rand (real.from_fraction 1 2, real.from_i32 1) rng
        let rngs = rand.split_rng np rng

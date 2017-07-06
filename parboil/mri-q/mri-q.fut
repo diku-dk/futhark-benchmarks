@@ -1,10 +1,10 @@
 -- Port based on the CPU implementation in Parboil.
 --
--- Anyway, performance is okayish.  On the small data set, Parboil runs
--- 4 seconds on the CPU, and Futhark runs in 7.5 seconds.  On the GPU, on
--- the large dataset, we run in 39ms, and Parboil (CUDA) runs in something
--- like 4ms (but this does not include all memsets and allocations, whilst
--- the Futhark runtime does include some).
+-- Anyway, performance is okayish.  On the small data set, Parboil
+-- runs 4 seconds on the CPU, and Futhark runs in 7.5 seconds.  On the
+-- GPU, on the large dataset, we run in 39ms, and Parboil (CUDA) runs
+-- in something like 4ms (but this does not include all memsets and
+-- allocations, whilst the Futhark runtime does include some).
 --
 -- The biggest kernel is essentially a map-with-reduce where we just
 -- sequentialise the reduction and run a map.  Parboil does essentially the
@@ -26,7 +26,6 @@
 -- to sin() and cos().
 --
 -- I am not sure what to check next.
---
 -- ==
 -- compiled input @ data/small.in
 -- output @ data/small.out
