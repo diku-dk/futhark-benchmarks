@@ -32,17 +32,17 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
   let sum_of_neighbours (nw: cell) (n: cell) (ne: cell)
                         (w:  cell) (c: cell) (e:  cell)
                         (sw: cell) (s: cell) (se: cell): i32 =
-    (R.value nw * R.weights[0,0] +
-     R.value n  * R.weights[0,1] +
-     R.value ne * R.weights[0,2]) +
+    (R.value nw * R.weights[0][0] +
+     R.value n  * R.weights[0][1] +
+     R.value ne * R.weights[0][2]) +
 
-    (R.value w * R.weights[1,0] +
-     R.value c * R.weights[1,1] +
-     R.value e * R.weights[1,2]) +
+    (R.value w * R.weights[1][0] +
+     R.value c * R.weights[1][1] +
+     R.value e * R.weights[1][2]) +
 
-    (R.value sw * R.weights[2,0] +
-     R.value s  * R.weights[2,1] +
-     R.value se * R.weights[2,2])
+    (R.value sw * R.weights[2][0] +
+     R.value s  * R.weights[2][1] +
+     R.value se * R.weights[2][2])
 
   -- Note that the world is stored column-major.
   let all_neighbour_sums(world: [#n][#m]cell): [n][m]i32 =
