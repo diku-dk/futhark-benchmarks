@@ -352,7 +352,7 @@ let main(areas:   [#nel]f32,
                                         ff_flux_contribution_momentum_z,
                                     ff_flux_contribution_density_energy )
         let new_variables = time_step(0, variables, step_factors, fluxes)
-        in loop (new_variables) for j in range 1 rk 1 do
+        in loop (new_variables) for j in [1..<rk] do
             let fluxes = compute_flux(  elements_surrounding_elements,
                                         normals, new_variables, ff_variable,
                                         ff_flux_contribution_momentum_x,
