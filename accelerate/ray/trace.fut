@@ -115,12 +115,12 @@ let make_objects (time: f32): objects =
                colour=argb.from_rgba 0.4 0.4 1.0 1.0,
                shine=0.5},
 
-              {position=(0.0, -150., -100.),
+              {position=(0.0, -150.0, -100.0),
                radius=50.0,
                colour=argb.from_rgba 1.0 1.0 1.0 1.0,
                shine=0.8}],
 
-   planes = [{position=(0.0, 100., 0.0),
+   planes = [{position=(0.0, 100.0, 0.0),
               normal=(0.0, -0.9805807, -0.19611613),
               colour=argb.white,
               shine=0.2}]}
