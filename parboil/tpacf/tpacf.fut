@@ -70,7 +70,7 @@ let doComputeSelf(data:
 -- loop version
     let value = map (\(vec: vec3, index: i32): [numBins2]i32  ->
                     let (xOuter, yOuter, zOuter) = vec
-                    in loop dBins = replicate numBins2 0i32 for j in range (index+1) numD 1 do
+                    in loop dBins = replicate numBins2 0i32 for j in [index+1..<numD] do
                         let (xInner, yInner, zInner) = data[j]
                         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
                         let (min,max) = loop (min, max) = (0, numBins) while (min+1) < max do

@@ -393,7 +393,7 @@ let get_all_frames(u0: [#g][#g]f32,
   let u_out = replicate n_steps u0
   let v_out = replicate n_steps v0
   let d_out = replicate n_steps d0
-  in loop (u_out, v_out, d_out) for i in range 1 n_steps 1 do
+  in loop (u_out, v_out, d_out) for i in [1..<n_steps] do
     let (u0, v0, d0) = (u_out[i - 1], v_out[i - 1], d_out[i - 1])
     let (u1, v1, d1) = step(u0, v0, d0, n_solver_steps, time_step,
                             diffusion_rate, viscosity)
