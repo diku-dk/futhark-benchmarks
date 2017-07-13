@@ -16,6 +16,7 @@ module heston (real: real)
 
 type real = real.t
 let real (x: f64) = real.from_f64 x
+let int (x: i32) = real.from_i32 x
 
 let (x: real) +. (y: real) = x real.+ y
 let (x: real) *. (y: real) = x real.* y
@@ -46,7 +47,7 @@ module heston_least_squares = least_squares real rand {
     let heston_parameters = heston_parameters_from_vector x
     let prices = price_european_calls_real.price_european_calls
                  gauss_laguerre_coefficients
-                 false (real 1.0) (real 1.0) (real 1.0)
+                 false (int 1) (int 1) (int 1)
                  heston_parameters
                  day_count_fractions
                  (map (\q -> {maturity=#maturity q, strike=#strike q}) quotes)
@@ -80,12 +81,12 @@ let run_calibration({today,
                      integral_iterations,
                      variables}: calibration_input): calibration_result real =
   let price_and_vega_of_quote (strike: real) (maturity: date) (quote: real) =
-    (let (price, vega) = price_european_calls_real.bs_call true today (real 1.) strike maturity quote
+    (let (price, vega) = price_european_calls_real.bs_call true today (int 1) strike maturity quote
      in (price, real.max (real 1e-1) vega))
-  let strike_weight (p: real) (x: real) = real.exp (p *. (real.log x +. real 1.0 -. x))
+  let strike_weight (p: real) (x: real) = real.exp (p *. (real.log x +. int 1 -. x))
   let maturity_weight (x0: real) (gamma: real) (x: real) =
-      (let k = real 1.0 /. (real.exp(gamma *. x0) -. real 1.0)
-       in if x <=. x0 then k *. (real.exp(gamma *. x) -. real 1.0) else real 1.0)
+      (let k = int 1 /. (real.exp(gamma *. x0) -. int 1)
+       in if x <=. x0 then k *. (real.exp(gamma *. x) -. int 1) else int 1)
   let weight (strike: real) (mat: date) =
     maturity_weight maturity_weight_x0 maturity_weight_gamma (real (diff_dates today mat)) *.
     strike_weight strike_weight_bandwidth strike
@@ -121,15 +122,15 @@ let date_of_int(x: i32) =
 
 let default_variables: []optimization_variable real =
   [heston_least_squares.optimize_value
-   {lower_bound =  real 1e-6, initial_value = real 4e-2, upper_bound = real 1.},
+   {lower_bound =  real 1e-6, initial_value = real 4e-2, upper_bound = int 1},
    heston_least_squares.optimize_value
-   {lower_bound =  real 1e-6, initial_value = real 4e-2, upper_bound = real 1.},
+   {lower_bound =  real 1e-6, initial_value = real 4e-2, upper_bound = int 1},
    heston_least_squares.optimize_value
-   {lower_bound =  real (-1.), initial_value = real (-0.5), upper_bound = real 0.},
+   {lower_bound =  int (-1), initial_value = real (-0.5), upper_bound = int 0},
    heston_least_squares.optimize_value
-   {lower_bound =  real 1e-4, initial_value = real 1e-2, upper_bound = real 4.},
+   {lower_bound =  real 1e-4, initial_value = real 1e-2, upper_bound = int 4},
    heston_least_squares.optimize_value
-   {lower_bound =  real 1e-4, initial_value = real 0.4, upper_bound = real 2.}
+   {lower_bound =  real 1e-4, initial_value = real 0.4, upper_bound = int 2}
   ]
 
 let heston (max_global: i32)
@@ -145,9 +146,9 @@ let heston (max_global: i32)
                       quotes_maturity quotes_strike quotes_quote
                     , max_global = max_global
                     , np = np
-                    , strike_weight_bandwidth = real 0.0
-                    , maturity_weight_x0 = real 0.0
-                    , maturity_weight_gamma = real 1.0
+                    , strike_weight_bandwidth = int 0
+                    , maturity_weight_x0 = int 0
+                    , maturity_weight_gamma = int 1
                     , integral_iterations = if nb_points == 10 then ten else twenty
                     , variables = default_variables
                       }
