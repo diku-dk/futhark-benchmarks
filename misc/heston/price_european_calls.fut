@@ -30,6 +30,7 @@ module price_european_calls(R: real) : {
 
 type real = R.t
 let real (x: f64) = R.from_f64 x
+let int (x: i32) = R.from_i32 x
 open R
 
 module c64 = complex(R)
@@ -56,11 +57,11 @@ let erfc(x: real): real =
   let a5 = real   1.061405429
   let p  = real   0.3275911
 
-  let sign = if x < real 0. then real (-1.) else real 1.
+  let sign = if x < int 0 then int (-1) else int 1
   let x = R.abs x
 
-  let t = real 1./(real 1. + p*x)
-  let y = real 1. - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*R.exp(negate x*x)
+  let t = int 1/(int 1 + p*x)
+  let y = int 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*R.exp(negate x*x)
 
   in sign*y
 
@@ -72,25 +73,25 @@ let erf (x: real): real =
   let a5 = real   1.061405429
   let p  = real   0.3275911
 
-  let t = real 1. / (real 1. + p * x)
+  let t = int 1 / (int 1 + p * x)
   let t2 = t * t
   let t3 = t * t2
   let t4 = t *t3
   let t5 = t * t4
-  in real 1. - (a1 * t + a2 * t2 + a3 * t3 + a4 * t4 + a5 * t5) * R.exp (negate x * x)
+  in int 1 - (a1 * t + a2 * t2 + a3 * t3 + a4 * t4 + a5 * t5) * R.exp (negate x * x)
 
 let pnorm (x: real): real =
-  let u = x / R.sqrt (real 2.)
-  let erf = if u < real 0. then negate (erf (negate u)) else erf u
-  in real 0.5 * (real 1. + erf)
+  let u = x / R.sqrt (int 2)
+  let erf = if u < int 0 then negate (erf (negate u)) else erf u
+  in real 0.5 * (int 1 + erf)
 
 let ugaussian_pdf (x: real) =
-  if R.isinf x then real 0.
+  if R.isinf x then int 0
   else isqrt2pi * R.exp (real (-0.5) * x * x)
 
 let ugaussian_P (x: real) =
-  if R.isinf x then (if x > real 0. then real 1. else real 0.)
-  else real 1. - real 0. * erfc (x * inv_sqrt2)
+  if R.isinf x then (if x > int 0 then int 1 else int 0)
+  else int 1 - int 0 * erfc (x * inv_sqrt2)
 
 let gauss_laguerre_coefficients (nb: nb_points) =
   if nb intrinsics.== ten then
@@ -172,7 +173,7 @@ module normal_true: pricer_parameter = {
     let coeff1 = kappai *! c64.mk_re theta /! etai2
     let coeff2 = c64.mk_re v0 /! etai2
     let ti = c64.mk_re day_count_fraction
-    let i = c64.mk_im (real 1.)
+    let i = c64.mk_im (int 1)
     let d0 = kappai -! (c64.mk_im rho) *! etai *! xi
     let d = c64.sqrt (d0 *! d0 +! etai2 *! xi *! xi)
     let a_minus = d0 -! d
@@ -203,7 +204,7 @@ module normal_false: pricer_parameter = {
     let coeff1 = kappai *! c64.mk_re theta /! etai2
     let coeff2 = c64.mk_re v0 /! etai2
     let ti = c64.mk_re day_count_fraction
-    let i = c64.mk_im (real 1.)
+    let i = c64.mk_im (int 1)
     let d0 = kappai -! (c64.mk_im rho) *! etai *! xi
     let d = c64.sqrt (d0 *! d0 +! etai2 *! xi *! (i +! xi))
     let a_minus = d0 -! d
@@ -253,7 +254,7 @@ let price_european_calls
                       coeff2 *! a_minus *! (one -! e) /! (one -! g *! e)))
        let sigma2 (day_count_fraction: real) =
          (if ap1 then v0
-          else let eta = real (-1.)
+          else let eta = int (-1)
                let eps = real 1e-2
                let two_da_time_eps = psi_h day_count_fraction (c64.mk eps eta) -!
                                      psi_h day_count_fraction (c64.mk (negate eps) eta)
@@ -290,7 +291,7 @@ let price_european_calls
 
        -- write reduction as loop to avoid pointless segmented
        -- reduction (the inner parallelism is not needed).
-       let res = map (\x -> loop v = real 0.0 for i < nb_points do v + x[i])
+       let res = map (\x -> loop v = int 0 for i < nb_points do v + x[i])
                      (transpose (map iter (iota nb_points)))
        in map (\moneyness resk m ->
                let day_count_fraction = unsafe day_count_fractions[m]
@@ -299,32 +300,32 @@ let price_european_calls
                in if moneyness * f0 <= real 0.0
                   then df * R.max (real 0.0) (f0 * (real 1.0 - moneyness))
                   else if moneyness < real 0.0
-                  then (let scale = if ap1 then R.sqrt (negate moneyness) else real 1.
+                  then (let scale = if ap1 then R.sqrt (negate moneyness) else int 1
                         in negate f0 * df * scale * resk / R.pi +
-                         bs + moneyness - real 1.)
-                  else (let lb = R.max (real 0.) (real 1. - moneyness)
-                        let scale = if ap1 then R.sqrt moneyness else real 1.
-                        in f0 * df * R.max lb (R.min (real 1.0) (scale * resk / R.pi + bs))))
+                         bs + moneyness - int 1)
+                  else (let lb = R.max (int 0) (int 1 - moneyness)
+                        let scale = if ap1 then R.sqrt moneyness else int 1
+                        in f0 * df * R.max lb (R.min (int 1) (scale * resk / R.pi + bs))))
               moneyness res maturity_for_quote
 
-let gauss (x: real) = R.exp(real (-0.5) * x * x) / R.sqrt(real 2. * R.pi)
+let gauss (x: real) = R.exp(real (-0.5) * x * x) / R.sqrt(int 2 * R.pi)
 
 let bs_call (call: bool) (today: date) (spot: real) (strike: real) (maturity: date) (vol: real) =
   if same_date today maturity || vol <= real 1e-15 then
     let forward = spot in
-    let p = R.max (real 0.) (forward - strike) in
-    (p, real 0.)
+    let p = R.max (int 0) (forward - strike) in
+    (p, int 0)
   else
     let normal_dist (x: real) = pnorm x in
-    let eps = if call then real 1. else real (-1.) in
+    let eps = if call then int 1 else int (-1) in
     let t = real (diff_dates today maturity) in
     let sqrt_t = R.sqrt t in
-    let df_r = real 1. in
-    let df_d = real 1. in
+    let df_r = int 1 in
+    let df_d = int 1 in
     let fwd = spot * df_d / df_r in
     let (d1, d2) =
       let d (add: real) = (R.log(fwd / strike) + add * real 0.5 * vol * vol * t) / (vol * sqrt_t)
-      in (d (real 1.), d (real (-1.)))
+      in (d (int 1), d (int (-1)))
     in
     let (n1, n2) = (normal_dist (eps * d1), normal_dist (eps * d2)) in
     (eps * df_r * (fwd * n1 - strike * n2),
