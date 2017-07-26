@@ -73,7 +73,8 @@ let main(nodes_start_index: [#n]i32,
         (cost, graph_mask, graph_visited, true)) =
     while continue do
 
-      let (graph_mask',updating_graph_mask) = unzip (replicate n (false,false))    
+      let (graph_mask',updating_graph_mask) = unzip (replicate n (false,false))
+      -- let (graph_mask',updating_graph_mask) = unzip (map (\_-> (false,false)) (iota n))
 
       let (cost', updating_graph_mask') =
         step(cost,
