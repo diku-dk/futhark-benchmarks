@@ -25,13 +25,11 @@ let sobolDirVcts(): [30]i32 =
 let sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
     let n_gray = (n >> 1) ^ n
     let res = 0
-    loop (res) =
-      for i < 30 do
+    in loop (res) for i < 30 do
         let t = 1 << i
         in if (n_gray & t) == t
            then res ^ dirVct[i]
            else res
-    in res
 
 let main(cols: i32, rows: i32): [cols]i32 =
     let dirVct = sobolDirVcts()
@@ -49,7 +47,7 @@ let main(cols: i32, rows: i32): [cols]i32 =
     ---------------
     -- 1. Kernel --
     ---------------
-    loop (result) = for t < (rows-1) do
+    in loop (result) for t < (rows-1) do
         map (\(i: i32): i32  ->
                 let res = result[i]
                 let res = if (i >  0)     then min(res, unsafe result[i-1]) else res
@@ -58,4 +56,3 @@ let main(cols: i32, rows: i32): [cols]i32 =
 
                 in wall[t+1, i] + res 
            ) (iota(cols) )
-    in result

@@ -15,7 +15,7 @@ let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
   let x2 = mk16b(block[3], block[2])
   let x3 = mk16b(block[5], block[4])
   let x4 = mk16b(block[7], block[6])
-  loop ((x1,x2,x3,x4)) = for i < 8 do
+  let (x1,x2,x3,x4) = loop ((x1,x2,x3,x4)) for i < 8 do
     let ik = i * 6
     -- 1) Multiply (modulo 0x10001), 1st text sub-block with 1st key
     -- sub-block.

@@ -13,7 +13,7 @@ let inv(a: i16): i32 =
   let b = 0x10001
   let u = 0
   let v = 1
-  loop ((a,b,u,v)) = while a > 0i32 do
+  let (_,_,u,_) = loop ((a,b,u,v)) while a > 0i32 do
     let q = i32((i64(b)&0xFFFFFFFFi64) // (i64(a)&0xFFFFi64))
     let r = i32((i64(b)&0xFFFFFFFFi64) %% (i64(a)&0xFFFFi64))
 
@@ -31,7 +31,7 @@ let encryptionKey(userkey: [8]i16): [52]i16 =
   -- Key starts out blank.
   let z = replicate 52 0i16
   -- First 8 subkeys are userkey itself.
-  loop (z) = for i < 8 do
+  let z = loop (z) for i < 8 do
     let z[i] = userkey[i]
     in z
   -- Each set of 8 subkeys thereafter is derived from left rotating
@@ -44,7 +44,7 @@ let encryptionKey(userkey: [8]i16): [52]i16 =
   -- member and right (with zero fill) in the other. For the last
   -- two subkeys in any group of eight, those 16 bits start to
   -- wrap around to the first two members of the previous eight.
-  loop (z) = for 8 <= i < 52 do
+  let z = loop (z) for i in map (8+) (iota (52-8)) do
     let j = i %% 8
     let z[i] = if      j  < 6 then (z[i-7]>>>9i16) | (z[i-6]<<7i16)
                else if j == 6 then (z[i-7]>>>9i16) | (z[i-14]<<7i16)
@@ -62,7 +62,7 @@ let decryptionKey(z: [52]i16): [52]i16 =
   let dk[50] = i16(t3)
   let dk[49] = i16(t2)
   let dk[48] = i16(t1)
-  loop (dk) = for i < 7 do
+  let dk = loop (dk) for i < 7 do
     let kb = 4 + 6 * i
     let jb = 47 - 6 * i
     let t1 = z[kb+0]

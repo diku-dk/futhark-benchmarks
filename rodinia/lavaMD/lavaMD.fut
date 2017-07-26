@@ -52,8 +52,7 @@ let main(alpha:  f32
         map  (\(rA_el:  (f32,f32,f32,f32) ): (f32,f32,f32,f32)  -> --(i32 i) ->
                 let (rai_v, rai_x, rai_y, rai_z) = rA_el in -- rA[i]
                 let acc = (0.0,0.0,0.0,0.0)
-                loop(acc) = 
-                  for k < box_num_nghbs[l]+1 do
+                in loop(acc) for k < box_num_nghbs[l]+1 do
                           let pointer = if (k > 0)
                                         then let (_,_,_,num) = unsafe box_nnghs[k-1, l] in num
                                         else l
@@ -87,6 +86,5 @@ let main(alpha:  f32
                                   ) (0.0,0.0,0.0,0.0) pres
                           let (a1, a2, a3, a4) = acc
                           in  (a1+r1, a2+r2, a3+r3, a4+r4)
-                in acc
             ) rA
      ) (iota(number_boxes) ))

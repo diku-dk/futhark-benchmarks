@@ -22,10 +22,10 @@ module sphere: object with object = sphere = {
                   (direction: direction): (bool, f32) =
     let pos = #position sphere
     let radius = #radius sphere
-    let p = origin vec3.+ (vec3.scale (vec3.dot (pos vec3.- origin) direction) direction)
-    let d_cp = vec3.norm (p vec3.- pos)
-    let sep = p vec3.- origin
-    let miss = d_cp >= radius || vec3.dot sep direction <= 0.
+    let p = vec3.(origin + (scale (dot (pos - origin) direction) direction))
+    let d_cp = vec3.(norm (p - pos))
+    let sep = vec3.(p - origin)
+    let miss = d_cp >= radius || vec3.dot sep direction <= 0.0
     in if miss
        then (false, f32.inf)
        else (true, vec3.norm sep - f32.sqrt (radius*radius - d_cp * d_cp))
@@ -50,9 +50,9 @@ module plane: object with object = plane = {
     let pos = #position plane
     let normal = #normal plane
     let theta = vec3.dot direction normal
-    in if theta >= 0.
+    in if theta >= 0.0
        then (false, f32.inf)
-       else (true, vec3.dot (pos vec3.- origin) normal / theta)
+       else (true, vec3.(dot (pos - origin) normal) / theta)
 }
 
 let checkers ((x,_,z): position): argb.colour =

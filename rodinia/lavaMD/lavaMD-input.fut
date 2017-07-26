@@ -16,13 +16,11 @@ let sobolDirVcts(): [30]i32 =
 let sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
   let n_gray = (n >> 1) ^ n
   let res = 0
-  loop (res) =
-    for i < 30 do
-      let t = 1 << i
-      in if (n_gray & t) == t
-         then res ^ dirVct[i]
-         else res
-  in res
+  in loop (res) for i < 30 do
+       let t = 1 << i
+       in if (n_gray & t) == t
+          then res ^ dirVct[i]
+          else res
 
 -----------------------
 -----------------------
@@ -65,8 +63,7 @@ let main(boxes1d: i32): (f32,
           let box_coef = ( k, j, i, nh )
           -- initialize neighbor boxes
           let box_nngh_cur_nn = (replicate num_nn (0,0,0,0), 0)
-          loop (box_nngh_cur_nn) =
-            for nn < num_nn do
+          let (box_nngh_cur_nn) = loop (box_nngh_cur_nn) for nn < num_nn do
               let (box_nngh, cur_nn) = box_nngh_cur_nn
               let n = (nn % 3) - 1
               let nr= nn / 3
