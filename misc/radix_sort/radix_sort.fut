@@ -2,10 +2,10 @@
 -- ==
 --
 -- input {
---   [83, 1, 4, 99, 33, 0, 6, 5]
+--   [83u32, 1u32, 4u32, 99u32, 33u32, 0u32, 6u32, 5u32]
 -- }
 -- output {
---   [0, 1, 4, 5, 6, 33, 83, 99]
+--   [0u32, 1u32, 4u32, 5u32, 6u32, 33u32, 83u32, 99u32]
 -- }
 --
 -- input @ data/radix_sort_100.in
@@ -27,9 +27,7 @@ let radix_sort_step(xs: [#n]u32, digit_n: i32): [n]u32 =
   in scatter (copy xs) ps_actual xs
 
 let radix_sort(xs: [#n]u32): [n]u32 =
-  loop (xs) = for i < 32 do
-    radix_sort_step(xs, i)
-  in xs
+  loop (xs) for i < 32 do radix_sort_step(xs, i)
 
 let main(xs: [#n]u32): [n]u32 =
   radix_sort(xs)

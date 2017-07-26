@@ -64,9 +64,8 @@ let advance_bodies(epsilon: f32, time_step: f32, bodies: [#n]body): [n]body =
 
 let advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
                          bodies: [#n]body): [n]body =
-  loop (bodies) = for _i < n_steps do
+  loop (bodies) for _i < n_steps do
     advance_bodies(epsilon, time_step, bodies)
-  in bodies
 
 let wrap_body (posx: f32, posy: f32, posz: f32,
                mass: f32,

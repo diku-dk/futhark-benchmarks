@@ -61,16 +61,18 @@ let main(threshold: i32,
   let membership = map (%k) (iota(n))
   let continue = true
   let i = 0
-  loop ((membership, cluster_centres, continue, i)) = while continue && i < max_iterations do
-    -- For each point, find the cluster with the closest centroid.
-    let new_membership = map (find_nearest_point(cluster_centres)) points
-    -- Then, find the new centres of the clusters.
-    let new_centres = centroids_of(k, points, new_membership)
-    let continue = reduce (||) false (
-                          map (\(c1: (f32,f32)) (c2: (f32,f32)): bool  ->
-                                    let (x1,y1) = c1
-                                    let (x2,y2) = c2
-                                    in fabs32(x1-x2) > 0.01f32 || fabs32(y1-y2) > 0.01f32) (
-                                  copy(new_centres)) (cluster_centres))
-    in (new_membership, new_centres, continue, i+1)
+  let (_,cluster_centres,_,i) = 
+    loop ((membership, cluster_centres, continue, i))
+    while continue && i < max_iterations do
+      -- For each point, find the cluster with the closest centroid.
+      let new_membership = map (find_nearest_point(cluster_centres)) points
+      -- Then, find the new centres of the clusters.
+      let new_centres = centroids_of(k, points, new_membership)
+      let continue = reduce (||) false (
+                            map (\(c1: (f32,f32)) (c2: (f32,f32)): bool  ->
+                                      let (x1,y1) = c1
+                                      let (x2,y2) = c2
+                                      in fabs32(x1-x2) > 0.01f32 || fabs32(y1-y2) > 0.01f32) (
+                                    copy(new_centres)) (cluster_centres))
+      in (new_membership, new_centres, continue, i+1)
   in (#1 (unzip(cluster_centres)), #2 (unzip(cluster_centres)), i)

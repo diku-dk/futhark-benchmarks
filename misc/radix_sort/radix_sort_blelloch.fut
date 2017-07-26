@@ -8,10 +8,10 @@
 -- ==
 --
 -- input {
---   [83, 1, 4, 99, 33, 0, 6, 5]
+--   [83u32, 1u32, 4u32, 99u32, 33u32, 0u32, 6u32, 5u32]
 -- }
 -- output {
---   [0, 1, 4, 5, 6, 33, 83, 99]
+--   [0u32, 1u32, 4u32, 5u32, 6u32, 33u32, 83u32, 99u32]
 -- }
 --
 -- input @ data/radix_sort_100.in
@@ -44,10 +44,9 @@ let split_blelloch(a: [#n]u32, flags: [#n]i32): [n]u32 =
   in permute(a, index)
 
 let split_radix_sort(a: [#n]u32, number_of_bits: i32): [n]u32 =
-  loop (a) = for i < number_of_bits do
+  loop (a) for i < number_of_bits do
     let ai = map (\(a: u32): i32  -> i32((a >> u32(i)) & 1u32)) a
     in split_blelloch(a, ai)
-  in a
 
 let main(xs: [#n]u32): [n]u32 =
   split_radix_sort(xs, 32)

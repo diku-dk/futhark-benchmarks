@@ -22,12 +22,13 @@ let addComplex(x: (f32,f32), y: (f32,f32)): (f32,f32) =
 
 let divergence(depth: i32, c0: (f32,f32)): ([depth](f32,f32),bool) =
   let trajectory = replicate depth (0.0, 0.0)
-  loop ((trajectory, c, i) = (trajectory, c0, 0)) = while i < depth && dot(c) < 4.0 do
-    unsafe
-    let c' = addComplex(c0, multComplex(c, c))
-    let trajectory[i] = c'
-    in (trajectory, c', i + 1)
-    in (trajectory, i == depth)
+  let (trajectory, _, i) =
+    loop (trajectory, c, i) = (trajectory, c0, 0) while i < depth && dot(c) < 4.0 do
+      unsafe
+      let c' = addComplex(c0, multComplex(c, c))
+      let trajectory[i] = c'
+      in (trajectory, c', i + 1)
+  in (trajectory, i == depth)
 
 let trajectories(depth: i32, xprec: i32, yprec: i32,
                                         field: (f32,f32,f32,f32)): ([yprec][xprec][depth](f32,f32),
@@ -79,9 +80,9 @@ let visualise(n: i32, m: i32, view: (f32,f32,f32,f32),
                            map (\(as: [#m]i32) (bs: [#m]i32): [m]i32  ->
                                      map (+) as bs) ass bss) (
                          \(inp: [#chunk]([#depth](f32,f32),bool)): [n][m]i32  ->
-                             loop (acc = replicate n (replicate m 0)) = for i < chunk do
+                             loop acc = replicate n (replicate m 0) for i < chunk do
                                (let (trajectory, escaped) = inp[i]
-                                in if escaped then (loop (acc) = for j < depth do
+                                in if escaped then (loop acc for j < depth do
                                                       (unsafe
                                                        let (x,y) = trajectory[j]
                                                        let i = toI(n, view, y)
@@ -89,10 +90,8 @@ let visualise(n: i32, m: i32, view: (f32,f32,f32,f32),
                                                        in if i >= 0 && i < n && j >= 0 && j < m
                                                           then let acc[i,j] = acc[i,j] + 1
                                                                in acc
-                                                          else acc)
-                                                    in acc)
-                                              else acc)
-                             in acc) (zip (trajectories') (escapes')))
+                                                          else acc))
+                                              else acc)) (zip (trajectories') (escapes')))
   let max_visits = reduce max 0 (reshape (n*m) visits_per_pixel)
   let coloured = map (colourise(max_visits)) (visits_per_pixel)
   in reshape (n,m) coloured

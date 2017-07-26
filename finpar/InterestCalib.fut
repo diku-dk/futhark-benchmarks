@@ -143,9 +143,8 @@ let rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
     let it        = 0
     let d         = 0.0     in
 
-    loop ((a,b,c,d,fa,fb,fc,mflag,it)) =
-        for i < iter_max do
-
+    let (_,b,_,_,_,fb,_,_,it) =
+      loop ((a,b,c,d,fa,fb,fc,mflag,it)) for i < iter_max do
             if( fb==0.0 || f32.abs(b-a)<tol )
             then (a,b,c,d,fa,fb,fc,mflag,it)
             else
@@ -206,8 +205,7 @@ let sobolInd(dirVct:  [#m]i32) (n: i32): f32 =
     let norm_fact = 1.0 / ( f32(1 << m) + 1.0 )
     let n_gray = (n >> 1) ^ n
     let res = 0 in
-    loop (res) =
-      for i < m do
+    let res = loop (res) for i < m do
         let t = 1 << i in
         if (n_gray & t) == t
         then res ^ dirVct[i]
@@ -660,7 +658,8 @@ let interestCalibKernel(pop:  i32
 --  genomes[pop/2]
   let proposals = copy(genomes)
   let sob_offs = 5*pop+1        in
-  loop ((genomes,proposals,logLiks,sob_offs)) =
+  let (genomes,proposals,logLiks,sob_offs) =
+    loop ((genomes,proposals,logLiks,sob_offs))
     for j < mcmc_conv do
       let rand01   = sobolInd sobDirVct sob_offs
       let move_type= selectMoveType(rand01)
