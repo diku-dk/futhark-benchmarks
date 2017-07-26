@@ -210,6 +210,7 @@ let brownianBridgeDates (bb_inds: [3][#num_dates]i32)
   -- This can be written as map-reduce, but it
   --   needs delayed arrays to be mapped nicely!
   in loop bbrow for ii in [1...num_dates-1] do
+       unsafe
        let i = num_dates - ii
        let bbrow[i] = bbrow[i] - bbrow[i-1]
        in  bbrow
