@@ -8,7 +8,21 @@ interactive visualisation.  Just run
     make run
 
 for pretty pictures.  Note that the implementation uses 32-bit
-floating point numbers, so it can't zoom far before it gets choppy.
+floating point numbers by default, so it can't zoom far before it gets
+choppy.
+
+The key controls are very similar to the ones in the Accelerate implementation:
+
+| Key | Action |
+| --- | ------ |
+| Arrow keys | Pan the view port |
+| Left mouse button | Drag the view port |
+| q/e | Decrease and increase the iteration limit gradually. |
+| a/d | Decrease and increase the iteration by a single largish step. |
+| w/s | Zoom in and out. |
+| z/c | Decrease and increase the radius for determining escape trajectories. |
+| 0-9 | Go to a predefined part of the Mandelbrot set.  Some are invisible when using single precision. |
+| Escape | Exit |
 
 ## Runtime results on gpu01-diku-apl (GTX 780 Ti)
 

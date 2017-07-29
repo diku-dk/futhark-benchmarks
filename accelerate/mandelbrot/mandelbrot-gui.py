@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import mandelbrot
+import mandelbrot32
+import mandelbrot64
 import numpy
 import pygame
 import time
@@ -9,14 +10,31 @@ import sys
 width=1024
 height=768
 limit=255
-size=(width,height)
+radius=4.0
+size=(1024,768)
 frame_every=1.0/30.0
 startpos=(-2.23,-1.15,0.83,1.15)
 
-futm = mandelbrot.mandelbrot(interactive=True)
+presets = {
+    '0': (-0.7,                   0.0,                             3.067,                  100,   16.0),
+    '1': (0.20508818500545423,    0.9014915666351141   * 900/1440, 6.375321937544527e-6,   629,   256.0),
+    '2': (0.4510757067879078,     0.6144133202705898   * 900/1440, 7.632248223018773e-5,   399,   4.0),
+    '3': (0.3469337523117071,     0.6866350870407725   * 900/1440, 3.508380713647269e-5,   505,   1048576.0),
+    '4': (-0.7902001921590814,    0.24910667566731381  * 900/1440, 5.071115028132377e-4,   1176,  3.4359738368e10),
+    '5': (2.3127178455019423e-2, -1.301205470975472    * 900/1440, 3.6349313304610088e-9,  566,   4.0),
+    '6': (2.3127176148480418e-2, -1.3012054707668765   * 900/1440, 2.71444790387451e-10,   604,   4.0),
+    '7': (2.3127176156746785e-2, -1.301205470242045    * 900/1440, 4.49615119202067e-12,   2000,  4.0),
+    '8': (0.2550376327692795,     8.962363618058007e-4 * 900/1440, 7.351698819132829e-5,   1412,  256.0),
+    '9': (0.25498593633806477,    8.726424280526077e-4 * 900/1440, 1.6858526052251987e-10, 10492, 4.0)
+}
+
+precision=32
+m32 = mandelbrot32.mandelbrot32(interactive=True)
+m64 = None # Loaded on demand.
+mandelbrot = m32
 
 def make_mandelbrot(minx, miny, maxx, maxy):
-    return futm.main(width, height, limit, minx, miny, maxx, maxy).get()
+    return mandelbrot.render_mandelbrot(width, height, limit, radius, minx, miny, maxx, maxy).get()
 
 backend='Futhark'
 
@@ -27,6 +45,15 @@ x_inc_ratio = 1.0 + 0.01 * aspect_ratio
 x_dec_ratio = 1.0 - 0.01 * aspect_ratio
 y_inc_ratio = 1.0 + 0.01
 y_dec_ratio = 1.0 - 0.01
+
+def switchPrecision():
+    global m64
+    if precision == 32:
+        if m64 == None:
+            m64 = mandelbrot64.mandelbrot64(device_pref=m32.device.name)
+        mandelbrot = m64
+    else:
+        mandelbrot = m32
 
 def resetPos():
     global minx, maxx, miny, maxy
@@ -77,6 +104,12 @@ def moveRight():
     minx += x_dist * 0.01
     maxx += x_dist * 0.01
 
+def moveXPixels(pixels):
+    global minx, maxx
+    unit_per_pixel = (maxx-minx)/width
+    minx += unit_per_pixel * pixels
+    maxx += unit_per_pixel * pixels
+
 def moveUp():
     global miny, maxy
     y_dist = abs(maxy-miny)
@@ -88,6 +121,12 @@ def moveDown():
     y_dist = abs(maxy-miny)
     miny += y_dist * 0.01
     maxy += y_dist * 0.01
+
+def moveYPixels(pixels):
+    global miny, maxy
+    unit_per_pixel = (maxy-miny)/height
+    miny += unit_per_pixel * pixels
+    maxy += unit_per_pixel * pixels
 
 pygame.init()
 pygame.display.set_caption('Mandelbrot Explorer!')
@@ -107,7 +146,7 @@ def render():
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
 
-    infomessage = "Region: (%f,%f) to (%f,%f)    Rendering limit: %d" % (minx, miny, maxx, maxy, limit)
+    infomessage = "Region: (%f,%f) to (%f,%f)    iterations: %d; radius: %f" % (minx, miny, maxx, maxy, limit, radius)
     showText(infomessage, (10,10))
 
     speedmessage = "%s call took %.2fms" % (backend, (end-start)*1000)
@@ -120,29 +159,58 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
+
         elif event.type == pygame.KEYDOWN:
-            repeats = 5 if pygame.key.get_mods() & pygame.KMOD_CTRL else 1
-            for i in range(repeats):
-              if event.key == pygame.K_RIGHT:
-                  moveRight()
-              if event.key == pygame.K_LEFT:
-                  moveLeft()
-              if event.key == pygame.K_UP:
-                  moveUp()
-              if event.key == pygame.K_DOWN:
-                  moveDown()
-              if event.key == pygame.K_HOME:
-                  resetPos()
-              if event.unicode == 'q':
-                  limit -= 1
-              if event.unicode == 'w':
-                  limit += 1
-              if event.unicode == '+':
-                  zoomIn()
-              if event.unicode == '-':
-                  zoomOut()
+            keydown=True
+            if event.key == pygame.K_RIGHT:
+                moveRight()
+            if event.key == pygame.K_LEFT:
+                moveLeft()
+            if event.key == pygame.K_UP:
+                moveUp()
+            if event.key == pygame.K_DOWN:
+                moveDown()
+            if event.unicode == 'q':
+                limit -= 1
+            if event.unicode == 'e':
+                limit += 1
+            if event.key == pygame.K_w:
+                zoomIn()
+            if event.key == pygame.K_s:
+                zoomOut()
+            if event.key == pygame.K_z:
+                radius = radius * 0.99
+            if event.key == pygame.K_c:
+                radius = radius * 1.01
+            if event.key == pygame.K_ESCAPE:
+                sys.exit()
+
+            if presets.get(event.unicode) != None:
+                (preset_x, preset_y, preset_width, preset_limit, preset_radius) = presets[event.unicode]
+                minx=preset_x
+                miny=preset_y
+                maxx=preset_x+preset_width
+                maxy=preset_y+(1/aspect_ratio)*preset_width
+                limit=preset_limit
+                radius=preset_radius
+
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                limit = int(limit * 0.8)
+            if event.key == pygame.K_d:
+                limit = int(limit * 1.2)
+            if event.key == pygame.K_p:
+                switchPrecision()
+
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if pygame.mouse.get_pressed()[0]:
-                zoomTo(pygame.mouse.get_pos(), 0.25)
-            if pygame.mouse.get_pressed()[2]:
-                zoomTo(pygame.mouse.get_pos(), 1.25)
+            # Handle scroll wheel.
+            if event.button == 4:
+                zoomIn()
+            elif event.button == 5:
+                zoomOut()
+
+        elif event.type == pygame.MOUSEMOTION:
+            if event.buttons[0] == 1:
+                (xd,yd) = event.rel
+                moveXPixels(-xd)
+                moveYPixels(-yd)
