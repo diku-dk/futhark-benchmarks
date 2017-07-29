@@ -47,12 +47,14 @@ y_inc_ratio = 1.0 + 0.01
 y_dec_ratio = 1.0 - 0.01
 
 def switchPrecision():
-    global m64
+    global m64, mandelbrot, precision
     if precision == 32:
         if m64 == None:
             m64 = mandelbrot64.mandelbrot64(device_pref=m32.device.name)
+        precision = 64
         mandelbrot = m64
     else:
+        precision = 32
         mandelbrot = m32
 
 def resetPos():
