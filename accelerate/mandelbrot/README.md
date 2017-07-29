@@ -22,6 +22,7 @@ The key controls are very similar to the ones in the Accelerate implementation:
 | w/s | Zoom in and out. |
 | z/c | Decrease and increase the radius for determining escape trajectories. |
 | 0-9 | Go to a predefined part of the Mandelbrot set.  Some are invisible when using single precision. |
+| p | Switch between using double- and single-precision floats.  Some GPUs do not support double precision. |
 | Escape | Exit |
 
 ## Runtime results on gpu01-diku-apl (GTX 780 Ti)

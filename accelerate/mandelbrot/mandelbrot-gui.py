@@ -148,7 +148,7 @@ def render():
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
 
-    infomessage = "Region: (%f,%f) to (%f,%f)    iterations: %d; radius: %f" % (minx, miny, maxx, maxy, limit, radius)
+    infomessage = "Region: (%f,%f) to (%f,%f); bits: %d; iterations: %d; radius: %.2f" % (minx, miny, maxx, maxy, precision, limit, radius)
     showText(infomessage, (10,10))
 
     speedmessage = "%s call took %.2fms" % (backend, (end-start)*1000)
