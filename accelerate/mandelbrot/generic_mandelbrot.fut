@@ -71,9 +71,8 @@ let interp (x0:f32, x1:f32)
                     0.0
 
 -- the ultraPalette from Accelerate.
-let palette (ix: i32): argb.colour =
-  let points = 2048
-  let p = f32 (ix %% points) / f32 points
+let mk_palette (points: i32) (ix: i32): argb.colour =
+  let p = f32 ix / f32 points
 
   let p0 = 0.0
   let p1 = 0.16
@@ -108,13 +107,14 @@ let palette (ix: i32): argb.colour =
 
 let log2 (x: f32) = f32.log x / f32.log 2.0
 
-let escape_to_colour(limit: i32) (z: complex, n: i32): argb.colour =
+let escape_to_colour [points] (limit: i32) (palette: [points]argb.colour)
+                              (z: complex, n: i32): argb.colour =
   if limit == n then argb.black
   else let smooth = log2 (log2 (f32 (real.to_f64 (complex.mag z))))
        let scale = 256.0
        let shift = 1664.0
        let ix = i32 (f32.sqrt (f32 n + 1.0 - smooth) * scale + shift)
-       in palette ix
+       in unsafe palette[ix %% points]
 
 let render_mandelbrot (screenX: i32) (screenY: i32)
                       (xcentre: real) (ycentre: real) (width: real)
@@ -126,5 +126,7 @@ let render_mandelbrot (screenX: i32) (screenY: i32)
   let (xmax,ymax) = (real.(xcentre + width/int 2),
                      real.(ycentre + (int 1/aspect_ratio)*width/int 2))
   let escapes = mandelbrot screenX screenY depth radius (xmin, ymin, xmax, ymax)
-  in map (\row -> map (escape_to_colour depth) row) escapes
+  let points = 2048
+  let palette = map (mk_palette points) [0..<points]
+  in map (\row -> map (escape_to_colour depth palette) row) escapes
 }

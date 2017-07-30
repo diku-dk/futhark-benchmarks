@@ -2,10 +2,10 @@
 
 all: mandelbrot32.py mandelbrot64.py
 
-mandelbrot32.py: mandelbrot32.fut
+mandelbrot32.py: mandelbrot32.fut generic_mandelbrot.fut
 	futhark-pyopencl --library mandelbrot32.fut
 
-mandelbrot64.py: mandelbrot64.fut
+mandelbrot64.py: mandelbrot64.fut generic_mandelbrot.fut
 	futhark-pyopencl --library mandelbrot64.fut
 
 clean:
