@@ -46,6 +46,16 @@ x_dec_ratio = 1.0 - 0.01 * aspect_ratio
 y_inc_ratio = 1.0 + 0.01
 y_dec_ratio = 1.0 - 0.01
 
+def setPreset(preset):
+    global minx,miny,maxx,maxy,limit,radius
+    (preset_x, preset_y, preset_width, preset_limit, preset_radius) = presets[preset]
+    minx=preset_x-preset_width/2
+    miny=preset_y-(1/aspect_ratio)*preset_width/2
+    maxx=preset_x+preset_width/2
+    maxy=preset_y+(1/aspect_ratio)*preset_width/2
+    limit=preset_limit
+    radius=preset_radius
+
 def switchPrecision():
     global m64, mandelbrot, precision
     if precision == 32:
@@ -156,6 +166,8 @@ def render():
 
     pygame.display.flip()
 
+setPreset('0')
+
 while True:
     render()
     for event in pygame.event.get():
@@ -188,13 +200,7 @@ while True:
                 sys.exit()
 
             if presets.get(event.unicode) != None:
-                (preset_x, preset_y, preset_width, preset_limit, preset_radius) = presets[event.unicode]
-                minx=preset_x
-                miny=preset_y
-                maxx=preset_x+preset_width
-                maxy=preset_y+(1/aspect_ratio)*preset_width
-                limit=preset_limit
-                radius=preset_radius
+                setPreset(event.unicode)
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
