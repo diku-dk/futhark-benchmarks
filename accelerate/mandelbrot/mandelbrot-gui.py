@@ -7,13 +7,13 @@ import pygame
 import time
 import sys
 
-width=1024
-height=768
+screenX=1024
+screenY=768
 limit=255
 radius=4.0
-size=(1024,768)
+size=(screenX,screenY)
+aspect_ratio = float(screenX)/float(screenY)
 frame_every=1.0/30.0
-startpos=(-2.23,-1.15,0.83,1.15)
 
 presets = {
     '0': (-0.7,                   0.0,                             3.067,                  100,   16.0),
@@ -33,28 +33,10 @@ m32 = mandelbrot32.mandelbrot32(interactive=True)
 m64 = None # Loaded on demand.
 mandelbrot = m32
 
-def make_mandelbrot(minx, miny, maxx, maxy):
-    return mandelbrot.render_mandelbrot(width, height, limit, radius, minx, miny, maxx, maxy).get()
+def make_mandelbrot():
+    return mandelbrot.render_mandelbrot(screenX, screenY, xcentre, ycentre, width, limit, radius).get()
 
-backend='Futhark'
-
-minx, miny, maxx, maxy = startpos
-
-aspect_ratio = float(width)/float(height)
-x_inc_ratio = 1.0 + 0.01 * aspect_ratio
-x_dec_ratio = 1.0 - 0.01 * aspect_ratio
-y_inc_ratio = 1.0 + 0.01
-y_dec_ratio = 1.0 - 0.01
-
-def setPreset(preset):
-    global minx,miny,maxx,maxy,limit,radius
-    (preset_x, preset_y, preset_width, preset_limit, preset_radius) = presets[preset]
-    minx=preset_x-preset_width/2
-    miny=preset_y-(1/aspect_ratio)*preset_width/2
-    maxx=preset_x+preset_width/2
-    maxy=preset_y+(1/aspect_ratio)*preset_width/2
-    limit=preset_limit
-    radius=preset_radius
+(xcentre,ycentre,width,limit,radius) = presets['0']
 
 def switchPrecision():
     global m64, mandelbrot, precision
@@ -67,78 +49,42 @@ def switchPrecision():
         precision = 32
         mandelbrot = m32
 
-def resetPos():
-    global minx, maxx, miny, maxy
-    minx, miny, maxx, maxy = startpos
-
-def zoomTo(pos, factor):
-    global minx, maxx, miny, maxy
-    pos_x, pos_y = pos
-    rel_x = float(pos_x) / float(width)
-    rel_y = float(pos_y) / float(height)
-    x_span = maxx - minx
-    y_span = maxy - miny
-    x = minx + x_span * rel_x
-    y = miny + y_span * rel_y
-
-    minx = x - factor * x_span
-    maxx = x + factor * x_span
-    miny = y - factor * y_span
-    maxy = y + factor * y_span
-
 def zoomIn():
-    global minx, maxx, miny, maxy
-    x_dist = abs(maxx-minx)
-    y_dist = abs(maxy-miny)
-    minx += x_dist * 0.01
-    maxx -= x_dist * 0.01
-    miny += y_dist * 0.01
-    maxy -= y_dist * 0.01
+    global width
+    width *= 0.99
 
 def zoomOut():
-    global minx, maxx, miny, maxy
-    x_dist = abs(maxx-minx)
-    y_dist = abs(maxy-miny)
-    minx -= x_dist * 0.01
-    maxx += x_dist * 0.01
-    miny -= y_dist * 0.01
-    maxy += y_dist * 0.01
+    global width
+    width *= 1.01
 
 def moveLeft():
-    global minx, maxx
-    x_dist = abs(maxx-minx)
-    minx -= x_dist * 0.01
-    maxx -= x_dist * 0.01
+    global xcentre
+    xcentre -= width*0.01
 
 def moveRight():
-    global minx, maxx
-    x_dist = abs(maxx-minx)
-    minx += x_dist * 0.01
-    maxx += x_dist * 0.01
+    global xcentre
+    xcentre += width*0.01
 
 def moveXPixels(pixels):
-    global minx, maxx
-    unit_per_pixel = (maxx-minx)/width
-    minx += unit_per_pixel * pixels
-    maxx += unit_per_pixel * pixels
+    global xcentre
+    unit_per_pixel = width/screenX
+    xcentre += unit_per_pixel * pixels
 
 def moveUp():
-    global miny, maxy
-    y_dist = abs(maxy-miny)
-    miny -= y_dist * 0.01
-    maxy -= y_dist * 0.01
+    global ycentre
+    height = width*(1/aspect_ratio)
+    ycentre -= height*0.01
 
 def moveDown():
-    global miny, maxy
-    y_dist = abs(maxy-miny)
-    miny += y_dist * 0.01
-    maxy += y_dist * 0.01
+    global ycentre
+    height = width*(1/aspect_ratio)
+    ycentre += height*0.01
 
 def moveYPixels(pixels):
-    global miny, maxy
-    unit_per_pixel = (maxy-miny)/height
-    miny += unit_per_pixel * pixels
-    maxy += unit_per_pixel * pixels
+    global ycentre
+    height = width*(1/aspect_ratio)
+    unit_per_pixel = height/screenY
+    ycentre += unit_per_pixel * pixels
 
 pygame.init()
 pygame.display.set_caption('Mandelbrot Explorer!')
@@ -153,20 +99,18 @@ def showText(what, where):
 
 def render():
     start = time.time()
-    frame = make_mandelbrot(minx, miny, maxx, maxy)
+    frame = make_mandelbrot()
     end = time.time()
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
 
-    infomessage = "Region: (%f,%f) to (%f,%f); bits: %d; iterations: %d; radius: %.2f" % (minx, miny, maxx, maxy, precision, limit, radius)
+    infomessage = "Centre: (%f,%f); width: %f; bits: %d; iterations: %d; radius: %.2f" % (xcentre, ycentre, width, precision, limit, radius)
     showText(infomessage, (10,10))
 
-    speedmessage = "%s call took %.2fms" % (backend, (end-start)*1000)
+    speedmessage = "Futhark call took %.2fms" % ((end-start)*1000,)
     showText(speedmessage, (10, 40))
 
     pygame.display.flip()
-
-setPreset('0')
 
 while True:
     render()
@@ -200,7 +144,7 @@ while True:
                 sys.exit()
 
             if presets.get(event.unicode) != None:
-                setPreset(event.unicode)
+                (xcentre,ycentre,width,limit,radius) = presets[event.unicode]
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a:

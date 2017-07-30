@@ -2,16 +2,19 @@
 --
 -- ==
 -- tags { futhark-c futhark-opencl }
--- input {  800  600 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
--- input { 1000 1000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
--- input { 2000 2000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
--- input { 4000 4000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
--- input { 8000 8000 255 -2.23f32 -1.15f32 0.83f32 1.15f32 }
+-- compiled input {  800  600 -0.7f32 0f32 3.067f32 100 16f32 }
+-- compiled input { 1000 1000 -0.7f32 0f32 3.067f32 100 16f32 }
+-- compiled input { 2000 2000 -0.7f32 0f32 3.067f32 100 16f32 }
+-- compiled input { 4000 4000 -0.7f32 0f32 3.067f32 100 16f32 }
+-- compiled input { 8000 8000 -0.7f32 0f32 3.067f32 100 16f32 }
 
 import "/futlib/math"
 import "generic_mandelbrot"
 
 module mandelbrot = mandelbrot f32
 
-let main(screenX: i32, screenY: i32, depth: i32, xmin: f32, ymin: f32, xmax: f32, ymax: f32): [screenX][screenY]i32 =
-  mandelbrot.render_mandelbrot screenX screenY depth 4f32 xmin ymin xmax ymax
+let main (screenX: i32) (screenY: i32)
+         (xcentre: f32) (ycentre: f32) (width: f32)
+         (depth: i32) (radius: f32)
+         : [screenX][screenY]i32 =
+  mandelbrot.render_mandelbrot screenX screenY xcentre ycentre width depth radius
