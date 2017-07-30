@@ -107,14 +107,14 @@ let mk_palette (points: i32) (ix: i32): argb.colour =
 
 let log2 (x: f32) = f32.log x / f32.log 2.0
 
-let escape_to_colour [points] (limit: i32) (palette: [points]argb.colour)
-                              (z: complex, n: i32): argb.colour =
+let escape_to_colour (limit: i32) (points: i32)
+                     (z: complex, n: i32): argb.colour =
   if limit == n then argb.black
   else let smooth = log2 (log2 (f32 (real.to_f64 (complex.mag z))))
        let scale = 256.0
        let shift = 1664.0
        let ix = i32 (f32.sqrt (f32 n + 1.0 - smooth) * scale + shift)
-       in unsafe palette[ix %% points]
+       in mk_palette points (ix %% points)
 
 let render_mandelbrot (screenX: i32) (screenY: i32)
                       (xcentre: real) (ycentre: real) (width: real)
@@ -127,6 +127,5 @@ let render_mandelbrot (screenX: i32) (screenY: i32)
                      real.(ycentre + (int 1/aspect_ratio)*width/int 2))
   let escapes = mandelbrot screenX screenY depth radius (xmin, ymin, xmax, ymax)
   let points = 2048
-  let palette = map (mk_palette points) [0..<points]
-  in map (\row -> map (escape_to_colour depth palette) row) escapes
+  in map (\row -> map (escape_to_colour depth points) row) escapes
 }
