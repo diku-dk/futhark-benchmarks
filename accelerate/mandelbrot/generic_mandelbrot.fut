@@ -12,8 +12,8 @@ default (f32)
 module mandelbrot(real: real): {
   val render_mandelbrot:
     (screenX: i32) -> (screenY: i32) ->
+    (xcentre: real.t) -> (ycentre: real.t) -> (width: real.t) ->
     (depth: i32) -> (radius: real.t) ->
-    (xmin: real.t) -> (ymin: real.t) -> (xmax: real.t) -> (ymax: real.t) ->
     [screenX][screenY]i32
 } = {
 type real = real.t
@@ -117,9 +117,14 @@ let escape_to_colour(limit: i32) (z: complex, n: i32): argb.colour =
        in palette ix
 
 let render_mandelbrot (screenX: i32) (screenY: i32)
+                      (xcentre: real) (ycentre: real) (width: real)
                       (depth: i32) (radius: real)
-                      (xmin: real) (ymin: real) (xmax: real) (ymax: real)
                       : [screenX][screenY]i32 =
+  let aspect_ratio = real.(int screenX / int screenY)
+  let (xmin,ymin) = (real.(xcentre - width/int 2),
+                     real.(ycentre - (int 1/aspect_ratio)*width/int 2))
+  let (xmax,ymax) = (real.(xcentre + width/int 2),
+                     real.(ycentre + (int 1/aspect_ratio)*width/int 2))
   let escapes = mandelbrot screenX screenY depth radius (xmin, ymin, xmax, ymax)
   in map (\row -> map (escape_to_colour depth) row) escapes
 }
