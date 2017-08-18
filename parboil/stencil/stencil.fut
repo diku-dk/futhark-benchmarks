@@ -1,18 +1,19 @@
 -- Simple seven-point stencil - in three dimensions, which is at least
 -- a little interesting.
 --
--- Parboil has both 'large' and 'default' data sets, but they are
--- identical, so we only have 'large'.  In fact, we don't even have
--- 'large' - I just generated some random garbage of the same size.
--- The running time is not data-sensitive here anyway.
+-- Out input data is just random garbage of the same size as the
+-- Parboil data sets.  The running time is not data-sensitive here
+-- anyway.
 --
 -- Actually, we don't even have garbage of the same size (too big for
 -- Github), so we replicate a smaller slice.  And slice it for the
 -- output.  Should not affect running time much.
 --
 -- ==
--- compiled input @ data/large.in
--- output @ data/large.out
+-- compiled input @ data/small.in
+-- output @ data/small.out
+-- compiled input @ data/default.in
+-- output @ data/default.out
 
 let next (c0: f32) (c1: f32) (A0: [#nx][#ny][#nz]f32) (i: i32) (j: i32) (k: i32): f32 =
   -- We map the edge to itself.
