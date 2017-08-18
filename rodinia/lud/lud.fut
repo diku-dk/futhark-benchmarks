@@ -215,7 +215,7 @@ let lud_internal(top_per: [#mp1][#b][#b]f32, lft_per: [#mp1][#b][#b]f32, mat: [#
            ) (zip (mat_arr) (top_slice) )
      ) (zip (mat_slice) (lft_slice) )
 
-let block_size = 128
+let block_size = 32
 
 --------------------------------------------
 ---- Main Driver:
