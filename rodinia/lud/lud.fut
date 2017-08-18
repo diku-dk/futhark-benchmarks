@@ -1,4 +1,4 @@
--- Sequential LU-decomposition.
+-- Parallel blocked LU-decomposition.
 --
 -- ==
 -- input @ data/16by16.in
@@ -215,13 +215,21 @@ let lud_internal(top_per: [#mp1][#b][#b]f32, lft_per: [#mp1][#b][#b]f32, mat: [#
            ) (zip (mat_arr) (top_slice) )
      ) (zip (mat_slice) (lft_slice) )
 
+let block_size = 128
 
 --------------------------------------------
 ---- Main Driver:
 --------------------------------------------
-let main(mat: [#n][#n]f32): [n][n]f32 =
-    let b = 16 in -- 16 in
-    let num_blocks = n / b in
+let main [m] (mat: [m][m]f32): [m][m]f32 =
+    let b = block_size
+    let num_blocks = (m+b-1) / b -- rounding up
+    let n = b * num_blocks
+    -- Maybe pad the input to be a multiple of the block size.
+    let padding = n - m
+    let mat = if padding != 0
+              then concat (map (\r -> concat r (replicate padding 0f32)) mat)
+                          (replicate padding (replicate n 0f32))
+              else mat
     -------------------------------------------------
     ---- transform matrix in [#n/b,n/b,b,b] block ----
     ---- versions for upper and lower parts      ----
@@ -295,13 +303,14 @@ let main(mat: [#n][#n]f32): [n][n]f32 =
     in
     let last_step = (n / b) - 1 in
     let upper[last_step,last_step] =
-            lud_diagonal( reshape (b,b) matb ) in
-    map  (\ (i_ind: i32): [n]f32  ->
-            map  (\ (j_ind: i32): f32  ->
-                    let (ii, jj) = (i_ind/b, j_ind/b) in
-                    let ( i,  j) = (i_ind - ii*b, j_ind - jj*b) in
-                    if (ii <= jj)
-                    then unsafe upper[ii,jj,i,j]
-                    else unsafe lower[jj,ii,i,j]
-                ) (iota(n) )
-        ) (iota(n) )
+      lud_diagonal( reshape (b,b) matb ) in
+    let ret_padded = map (\(i_ind: i32): [n]f32  ->
+                          map  (\ (j_ind: i32): f32  ->
+                                let (ii, jj) = (i_ind/b, j_ind/b) in
+                                let ( i,  j) = (i_ind - ii*b, j_ind - jj*b) in
+                                if (ii <= jj)
+                                then unsafe upper[ii,jj,i,j]
+                                else unsafe lower[jj,ii,i,j]
+                               ) (iota n)
+                         ) (iota n)
+    in take m (map (take m) ret_padded)
