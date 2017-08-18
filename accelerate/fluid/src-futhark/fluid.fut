@@ -116,14 +116,13 @@ let lin_solve(n_solver_steps: i32,
               c: f32): [g][g]f32 =
   let one = (g*g+2*g+1)/(g+1) - g
   in loop s1 = replicate g (replicate g 0.0f32) for _k < n_solver_steps do
-    reshape (g, g)
-    (map (\(ij: i32): f32  ->
-            let i = ij / g
-            let j = ij % g
-            in if inside(i, j, g)
-               then lin_solve_inner(i, j, s0, s1, a, c)
-               else lin_solve_outer(i/one, j/one, s0, s1, a, c, b/one)
-         ) (iota(g * g)))
+    map (\i ->
+         map (\j ->
+              if inside(i, j, g)
+              then lin_solve_inner(i, j, s0, s1, a, c)
+              else lin_solve_outer(i/one, j/one, s0, s1, a, c, b/one))
+             (iota g))
+        (iota g)
 
 ------------------------------------------------------------
 -- diffuse.
@@ -198,16 +197,13 @@ let advect(s0: [#g][#g]f32,
            v: [#g][#g]f32,
            b: i32,
            time_step: f32): *[g][g]f32 =
-  let one = (g*g+2*g+1)/(g+1) - g
   let time_step0 = time_step * f32(g - 2)
-  in reshape(g, g)
-  (map (\(ij: i32): f32  ->
-          let i = ij / g
-          let j = ij % g
-          in if inside(i, j, g)
-             then advect_inner(i, j, s0, u, v, time_step0)
-             else advect_outer(i/one, j/one, s0, u, v, time_step0, b/one))
-   (iota(g * g)))
+  in map (\i -> map (\j ->
+                     if inside(i, j, g)
+                     then advect_inner(i, j, s0, u, v, time_step0)
+                     else advect_outer(i, j, s0, u, v, time_step0, b))
+                    (iota g))
+         (iota g)
 
 ------------------------------------------------------------
 -- project.
@@ -242,15 +238,12 @@ let project_top_outer(i: i32,
 
 let project_top(u0: [#g][#g]f32,
                 v0: [#g][#g]f32): [g][g]f32 =
-  let one = (g*g+2*g+1)/(g+1) - g in
-  reshape (g, g)
-  (map (\(ij: i32): f32  ->
-          let i = ij / g
-          let j = ij % g
-          in if inside(i, j, g)
-             then project_top_inner(i, j, u0, v0)
-             else project_top_outer(i/one, j/one, u0, v0)
-       ) (iota(g * g)))
+  map (\i -> map (\j ->
+                   if inside(i, j, g)
+                   then project_top_inner(i, j, u0, v0)
+                   else project_top_outer(i, j, u0, v0))
+                  (iota g))
+       (iota g)
 
 
 let project_bottom_inner(i: i32,
@@ -298,16 +291,12 @@ let project_bottom(p0: [#g][#g]f32,
                    j0d: i32,
                    i1d: i32,
                    j1d: i32): *[g][g]f32 =
-  let one = (g*g+2*g+1)/(g+1) - g in
-  reshape (g, g)
-  (map (\(ij: i32): f32  ->
-          let i = ij / g
-          let j = ij % g
-          in if inside(i, j, g)
-             then project_bottom_inner(i, j, p0, s0, i0d, j0d, i1d, j1d)
-             else project_bottom_outer(i/one, j/one, p0, s0,
-                                       i0d/one, j0d/one, i1d/one, j1d/one, b/one)
-       ) (iota(g * g)))
+  map (\i -> map (\j ->
+                  if inside(i, j, g)
+                  then project_bottom_inner(i, j, p0, s0, i0d, j0d, i1d, j1d)
+                  else project_bottom_outer(i, j, p0, s0, i0d, j0d, i1d, j1d, b))
+                 (iota g))
+      (iota g)
 
 let project(n_solver_steps: i32,
             u0: [#g][#g]f32,
