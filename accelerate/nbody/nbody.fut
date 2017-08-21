@@ -147,7 +147,9 @@ let renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_
 entry render(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
              xps: [#n]f32, yps: [#n]f32, zps: [#n]f32, ms: [#n]f32,
              x_rotation: f32, y_rotation: f32,
-             max_mass: f32): [w][h]i32 =
+             max_mass: f32, invert: bool): [w][h]i32 =
+  let background = if invert then 0x00FFFFFF else 0
   let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
                        (rotatePoints (zip xps yps zps) x_rotation y_rotation) ms)
-  in reshape (w,h) (scatter (replicate (w*h) 0) is vs)
+  let vs' = map (\x -> if invert then ~x else x) vs
+  in reshape (w,h) (scatter (replicate (w*h) background) is vs')

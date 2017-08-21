@@ -105,16 +105,16 @@ font = pygame.font.Font(None, 36)
 
 curtime=0
 
-def showText(what, where):
-    text = font.render(what, 1, (255, 255, 255))
+def showText(what, where, color):
+    text = font.render(what, 1, color)
     screen.blit(text, where)
 
-def render(time_step):
+def render(time_step,invert):
     global xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas,angle
     start = time.time()
     (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = \
       step_nbody(steps_per_call, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas)
-    frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps, ms, x_rotation, y_rotation, max_mass).get()
+    frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps, ms, x_rotation, y_rotation, max_mass, invert).get()
     end = time.time()
     futhark_time = (end-start)*1000
     start = time.time()
@@ -125,7 +125,8 @@ def render(time_step):
     speedmessage = "Futhark call took %.2fms; blitting %.2fms (N=%d, timestep=%s)" % \
                    (futhark_time, blit_time, N,
                     "(paused)" if time_step == 0 else str(time_step))
-    showText(speedmessage, (10, 10))
+    color = (0,0,0) if invert else (255, 255, 255)
+    showText(speedmessage, (10, 10), color)
 
     pygame.display.flip()
 
@@ -245,6 +246,8 @@ for i in range(joystick_count):
 
 time_step = default_time_step
 time_then = time.time()
+
+invert = False
 while True:
     time_now = time.time()
     time_delta = time_now - time_then
@@ -253,7 +256,7 @@ while True:
     rotating_x = 0.0
     rotating_y = 0.0
 
-    render(time_step)
+    render(time_step,invert)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -308,6 +311,8 @@ while True:
                 x_rotation=0.0
                 y_rotation=0.0
                 (x_ul, y_ul, x_br, y_br) = (-width/2, -height/2, width/2, height/2)
+            if event.key == pygame.K_i:
+                invert = not invert
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 blob(pygame.mouse.get_pos())
