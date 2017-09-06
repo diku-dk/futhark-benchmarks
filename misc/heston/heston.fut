@@ -61,10 +61,10 @@ type calibration_input = { today: date
                          , strike_weight_bandwidth: real
                          , maturity_weight_x0: real
                          , maturity_weight_gamma: real
-                         , integral_iterations: nb_points
+                         , integral_iterations: num_points
                          , variables: []optimization_variable real }
 
-let distinct_maturities (dates: [#n]date): ([]date, [n]i32) =
+let distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
   let switched (x: date) (i: i32) =
     i == 0 || unsafe !(same_date x dates[i - 1])
   let switches = map switched dates (iota n)
@@ -93,7 +93,7 @@ let run_calibration({today,
 
 
   let (maturity_dates, quotes_to_maturities) =
-    distinct_maturities (map (\q -> #maturity q) quotes)
+    distinct_maturities (map #maturity quotes)
   let weights = map (\{maturity, strike, quote=_} -> weight strike maturity) quotes
   let prices_and_vegas = map (\{maturity, strike, quote} ->
                               price_and_vega_of_quote strike maturity quote) quotes
@@ -133,13 +133,14 @@ let default_variables: []optimization_variable real =
    {lower_bound =  real 1e-4, initial_value = real 0.4, upper_bound = int 2}
   ]
 
-let heston (max_global: i32)
-           (nb_points: i32)
+let heston [num_quotes]
+           (max_global: i32)
+           (num_points: i32)
            (np: i32)
            (today: i32)
-           (quotes_maturity: [#num_quotes]i32)
-           (quotes_strike: [#num_quotes]real)
-           (quotes_quote: [#num_quotes]real) =
+           (quotes_maturity: [num_quotes]i32)
+           (quotes_strike: [num_quotes]real)
+           (quotes_quote: [num_quotes]real) =
   let result =
     run_calibration { today = date_of_int today
                     , quotes = map (\m k q -> {maturity = date_of_int m, strike = k, quote = q})
@@ -149,7 +150,7 @@ let heston (max_global: i32)
                     , strike_weight_bandwidth = int 0
                     , maturity_weight_x0 = int 0
                     , maturity_weight_gamma = int 1
-                    , integral_iterations = if nb_points == 10 then ten else twenty
+                    , integral_iterations = if num_points == 10 then ten else twenty
                     , variables = default_variables
                       }
   let { initial_variance,
@@ -158,7 +159,7 @@ let heston (max_global: i32)
         mean_reversion,
         variance_volatility} = heston_parameters_from_vector (#parameters result)
   in (#root_mean_squared_error result,
-      #nb_feval result,
+      #num_feval result,
       initial_variance,
       long_term_variance,
       mean_reversion,

@@ -11,7 +11,7 @@ module absolute_distance(R: real): distance with real = R.t = {
 
   open R
 
-  let distance (quotes: [#num_quotes]real) (prices: [#num_quotes]real): real =
+  let distance [num_quotes] (quotes: [num_quotes]real) (prices: [num_quotes]real): real =
     let norm (price: real) (quote: real) =
       (let rel = (price - quote) / quote
        in rel * rel)
@@ -23,7 +23,7 @@ module relative_distance(R: real): distance with real = R.t = {
 
   open R
 
-  let distance (quotes: [#num_quotes]real) (prices: [#num_quotes]real): real =
+  let distance [num_quotes] (quotes: [num_quotes]real) (prices: [num_quotes]real): real =
     let norm (price: real) (quote: real) =
       (let dif = price - quote
        in dif * dif)
@@ -53,7 +53,7 @@ type calibration_result 'real = { parameters: []real,
                                   root_mean_squared_error: real,
                                   quoted_prices: []real,
                                   calibrated_prices: []real,
-                                  nb_feval: i32 }
+                                  num_feval: i32 }
 
 module least_squares (real: real)
                      (rand: rng_engine)
@@ -98,11 +98,12 @@ module least_squares (real: real)
   let max_global_reached: status = 1
   let target_reached: status = 2
 
-  type result = {x0: []real, f: real, nb_feval: i32, status: status}
+  type result = {x0: []real, f: real, num_feval: i32, status: status}
 
-  let active_vars (vars_to_free_vars: [#num_vars]i32)
-                  (variables: [#num_vars]optimization_variable real)
-                  (xs: [#num_active]real) =
+  let active_vars [num_vars] [num_active]
+                  (vars_to_free_vars: [num_vars]i32)
+                  (variables: [num_vars]optimization_variable real)
+                  (xs: [num_active]real) =
     map (\fv (fixed,x,_) -> if fixed then x else unsafe xs[fv])
         vars_to_free_vars variables
 
@@ -112,13 +113,14 @@ module least_squares (real: real)
     else if a_i i32.< b_i then (a, a_i)
     else                       (b, b_i)
 
-  let optimize (pricer_ctx: P.pricer_ctx)
-               (quotes: [#num_quotes]real)
-               (vars_to_free_vars: [#num_vars]i32)
-               (variables: [#num_vars]optimization_variable real)
+  let optimize [num_quotes] [num_vars] [num_free_vars]
+               (pricer_ctx: P.pricer_ctx)
+               (quotes: [num_quotes]real)
+               (vars_to_free_vars: [num_vars]i32)
+               (variables: [num_vars]optimization_variable real)
                ({np, cr}: mutation)
-               (lower_bounds: [#num_free_vars]real)
-               (upper_bounds: [#num_free_vars]real)
+               (lower_bounds: [num_free_vars]real)
+               (upper_bounds: [num_free_vars]real)
                ({max_iterations,max_global,target}: termination): result =
     -- The objective function.  This could be factored out into a
     -- function argument (as a parametric module).
@@ -178,34 +180,34 @@ module least_squares (real: real)
     -- We are not counting the numer of invocations of the objective
     -- function quite as in LexiFi's code (they use a closure that
     -- increments a counter), but we should be close.
-    let (_,ncalls,nb_it,(_,_,_,x)) =
-      loop (rng, ncalls, nb_it, (fx0, best_idx, fx, x)) =
+    let (_,ncalls,num_it,(_,_,_,x)) =
+      loop (rng, ncalls, num_it, (fx0, best_idx, fx, x)) =
            (rng, np, max_iterations, (fx0, best_idx, fx, x))
-      while nb_it i32.> 0 && max_global i32.> ncalls && fx0 > target do
+      while num_it i32.> 0 && max_global i32.> ncalls && fx0 > target do
       (let (rng,differential_weight) = random_real.rand (real.from_fraction 1 2, real.from_i32 1) rng
        let rngs = rand.split_rng np rng
        let (rngs, v) = unzip (map (mutation differential_weight best_idx x) rngs (iota np) x)
        let rng = rngs[0]
        let (fx0, best_idx, fx, x) = recombination fx0 best_idx fx x v
-       in (rng, ncalls i32.+ np, nb_it i32.- 1,
+       in (rng, ncalls i32.+ np, num_it i32.- 1,
            (fx0, best_idx, fx, x)))
     let x0 = x[best_idx]
     let status = if      fx0 <= target           then target_reached
                  else if max_global i32.< ncalls then max_global_reached
-                 else if nb_it i32.== 0          then max_iterations_reached
+                 else if num_it i32.== 0          then max_iterations_reached
                  else 1337 -- never reached
-    in {x0=x0, f=fx0, nb_feval=ncalls, status=status}
+    in {x0=x0, f=fx0, num_feval=ncalls, status=status}
 
-  let least_squares
+  let least_squares [num_vars] [num_quotes]
       (pricer_ctx: P.pricer_ctx)
       (max_global: i32)
       (np: i32)
-      (variables: [#num_vars]optimization_variable real)
-      (quotes: [#num_quotes]real)
+      (variables: [num_vars]optimization_variable real)
+      (quotes: [num_quotes]real)
       : calibration_result real =
     let (free_vars_to_vars, free_vars) =
       unzip (filter (\(_, (fixed, _, _)) -> !fixed) (zip (iota num_vars) variables))
-    let num_free_vars = (shape free_vars)[0]
+    let num_free_vars = length free_vars
     let vars_to_free_vars = scatter (replicate num_vars (-1))
                                     free_vars_to_vars (iota num_free_vars)
     let (x, lower_bounds, upper_bounds) =
@@ -214,14 +216,14 @@ module least_squares (real: real)
 
     let rms_of_error (err: real) = real.sqrt(err * (real.from_i32 10000 / real.from_i32 num_quotes))
 
-    let (x, nb_feval) =
+    let (x, num_feval) =
       if max_global i32.> 0
       then let res = (optimize pricer_ctx quotes vars_to_free_vars variables
                       {np = np, cr = real.from_fraction 9 10} lower_bounds upper_bounds
                       {max_iterations = 0x7FFFFFFF,
                        max_global = max_global,
                        target = real.from_i32 0})
-           in (#x0 res, #nb_feval res)
+           in (#x0 res, #num_feval res)
       else (x, 0)
 
     let prices = P.pricer pricer_ctx (active_vars vars_to_free_vars variables x)
@@ -230,5 +232,5 @@ module least_squares (real: real)
         root_mean_squared_error = rms_of_error (P.distance quotes prices),
         quoted_prices = quotes,
         calibrated_prices = prices,
-        nb_feval = nb_feval}
+        num_feval = num_feval}
 }
