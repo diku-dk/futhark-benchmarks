@@ -38,12 +38,12 @@ module heston_least_squares = least_squares real rand {
 
   let real (x: f64) = real.from_f64 x
 
-  type pricer_ctx = {day_count_fractions: []real.t,
-                     quotes: []{maturity: i32, strike: real.t, vega: real.t, weight: real.t},
-                     gauss_laguerre_coefficients: ([]real.t, []real.t)
-                     }
+  type objective_ctx = {day_count_fractions: []real.t,
+                        quotes: []{maturity: i32, strike: real.t, vega: real.t, weight: real.t},
+                        gauss_laguerre_coefficients: ([]real.t, []real.t)
+                        }
 
-  let pricer ({day_count_fractions, quotes, gauss_laguerre_coefficients}: pricer_ctx) (x: []real): []real =
+  let objective ({day_count_fractions, quotes, gauss_laguerre_coefficients}: objective_ctx) (x: []real): []real =
     let heston_parameters = heston_parameters_from_vector x
     let prices = price_european_calls_real.price_european_calls
                  gauss_laguerre_coefficients

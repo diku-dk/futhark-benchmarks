@@ -3,7 +3,7 @@ import "/futlib/random"
 
 module type distance = {
   type real
-  val distance: []real -> []real -> real
+  val distance [n]: [n]real -> [n]real -> real
 }
 
 module absolute_distance(R: real): distance with real = R.t = {
@@ -31,10 +31,10 @@ module relative_distance(R: real): distance with real = R.t = {
     in reduce (+) (R.from_i32 0) (intrinsics.opaque a)
 }
 
-module type pricer = {
-  type pricer_ctx
+module type objective = {
+  type objective_ctx
   type real
-  val pricer: pricer_ctx -> []real -> []real
+  val objective: objective_ctx -> []real -> []real
 
   include distance with real = real
 }
@@ -57,11 +57,11 @@ type calibration_result 'real = { parameters: []real,
 
 module least_squares (real: real)
                      (rand: rng_engine)
-                     (P: pricer with real = real.t) : {
+                     (P: objective with real = real.t) : {
   val fixed_value: P.real -> optimization_variable P.real
   val optimize_value: range P.real -> optimization_variable P.real
 
-  val least_squares: P.pricer_ctx -> i32 -> i32
+  val least_squares: P.objective_ctx -> i32 -> i32
                    -> []optimization_variable P.real
                    -> []P.real
                    -> calibration_result P.real
@@ -114,7 +114,7 @@ module least_squares (real: real)
     else                       (b, b_i)
 
   let optimize [num_quotes] [num_vars] [num_free_vars]
-               (pricer_ctx: P.pricer_ctx)
+               (objective_ctx: P.objective_ctx)
                (quotes: [num_quotes]real)
                (vars_to_free_vars: [num_vars]i32)
                (variables: [num_vars]optimization_variable real)
@@ -125,7 +125,7 @@ module least_squares (real: real)
     -- The objective function.  This could be factored out into a
     -- function argument (as a parametric module).
     let objective (x: [num_free_vars]real): real =
-      P.distance quotes (P.pricer pricer_ctx (active_vars vars_to_free_vars variables x))
+      P.distance quotes (P.objective objective_ctx (active_vars vars_to_free_vars variables x))
 
     let bounds = (real.from_i32 0, real.from_i32 1)
     let rng = rand.rng_from_seed [0x123]
@@ -199,7 +199,7 @@ module least_squares (real: real)
     in {x0=x0, f=fx0, num_feval=ncalls, status=status}
 
   let least_squares [num_vars] [num_quotes]
-      (pricer_ctx: P.pricer_ctx)
+      (objective_ctx: P.objective_ctx)
       (max_global: i32)
       (np: i32)
       (variables: [num_vars]optimization_variable real)
@@ -218,7 +218,7 @@ module least_squares (real: real)
 
     let (x, num_feval) =
       if max_global i32.> 0
-      then let res = (optimize pricer_ctx quotes vars_to_free_vars variables
+      then let res = (optimize objective_ctx quotes vars_to_free_vars variables
                       {np = np, cr = real.from_fraction 9 10} lower_bounds upper_bounds
                       {max_iterations = 0x7FFFFFFF,
                        max_global = max_global,
@@ -226,7 +226,7 @@ module least_squares (real: real)
            in (#x0 res, #num_feval res)
       else (x, 0)
 
-    let prices = P.pricer pricer_ctx (active_vars vars_to_free_vars variables x)
+    let prices = P.objective objective_ctx (active_vars vars_to_free_vars variables x)
 
     in {parameters = active_vars vars_to_free_vars variables x,
         root_mean_squared_error = rms_of_error (P.distance quotes prices),
