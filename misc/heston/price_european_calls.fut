@@ -3,9 +3,9 @@ import "/futlib/array"
 import "/futlib/complex"
 import "/futlib/date"
 
-type nb_points = bool -- Pretend it's opaque.
-let ten: nb_points = true
-let twenty: nb_points = false
+type num_points = bool -- Pretend it's opaque.
+let ten: num_points = true
+let twenty: num_points = false
 
 type heston_parameters 'real = { initial_variance: real
                                , long_term_variance: real
@@ -15,7 +15,7 @@ type heston_parameters 'real = { initial_variance: real
 
 module price_european_calls(R: real) : {
   type real = R.t
-  val gauss_laguerre_coefficients: nb_points -> ([]real, []real)
+  val gauss_laguerre_coefficients: num_points -> ([]real, []real)
   val bs_call: bool -> date -> real -> real -> date -> real -> (real,real)
   val price_european_calls: ([]real, []real) ->
                             bool ->
@@ -93,7 +93,7 @@ let ugaussian_P (x: real) =
   if R.isinf x then (if x > int 0 then int 1 else int 0)
   else int 1 - int 0 * erfc (x * inv_sqrt2)
 
-let gauss_laguerre_coefficients (nb: nb_points) =
+let gauss_laguerre_coefficients (nb: num_points) =
   if nb intrinsics.== ten then
   (map real
    [
@@ -223,19 +223,19 @@ let bs_control (moneyness: real) (sigma_sqrtt: real) =
   let d1 = negate (R.log moneyness) / sigma_sqrtt + real 0.5 * sigma_sqrtt
   in pnorm d1 - moneyness * pnorm (d1 - sigma_sqrtt)
 
-let price_european_calls
-    (x: [#nb_points]real, w: [#nb_points]real)
+let price_european_calls [num_points] [num_maturities] [num_quotes]
+    (x: [num_points]real, w: [num_points]real)
     (ap1: bool)
     (spot: real)
     (df_div: real)
     (df: real)
     (heston_parameters: heston_parameters real)
-    (day_count_fractions: [#num_maturities]real)
-    (quotes: [#num_quotes]{strike: real, maturity: i32})
+    (day_count_fractions: [num_maturities]real)
+    (quotes: [num_quotes]{strike: real, maturity: i32})
   : [num_quotes]real =
        let {initial_variance = v0, long_term_variance = theta, mean_reversion = kappa, correlation = rho, variance_volatility = eta} = heston_parameters
-       let maturity_for_quote = map (\q -> #maturity q) quotes
-       let strikes = map (\q -> #strike q) quotes
+       let maturity_for_quote = map #maturity quotes
+       let strikes = map #strike quotes
        let f0 = spot * df_div / df
        let kappai = c64.mk_re kappa
        let etai = c64.mk_re eta
@@ -269,10 +269,8 @@ let price_european_calls
        let moneyness = map (/f0) strikes
        let minus_ik = map (\k -> c64.mk_im (negate (R.log k))) moneyness
 
-       let iter (j: i32): [num_quotes]real =
-         (let xj = x[j]
-          let wj = w[j]
-          let x = c64.mk_re xj
+       let iter (xj: real) (wj: real): [num_quotes]real =
+         (let x = c64.mk_re xj
           let mk_w_and_coeff_k (day_count_fraction: real) =
             (if ap1
              then (let x_minus_half_i = x -! c64.mk_im (real 0.5)
@@ -291,8 +289,8 @@ let price_european_calls
 
        -- write reduction as loop to avoid pointless segmented
        -- reduction (the inner parallelism is not needed).
-       let res = map (\x -> loop v = int 0 for i < nb_points do v + x[i])
-                     (transpose (map iter (iota nb_points)))
+       let res = map (\x -> loop v = int 0 for i < num_points do v + x[i])
+                     (transpose (map iter x w))
        in map (\moneyness resk m ->
                let day_count_fraction = unsafe day_count_fractions[m]
                let sigma_sqrtt = R.sqrt (sigma2 day_count_fraction * day_count_fraction)
