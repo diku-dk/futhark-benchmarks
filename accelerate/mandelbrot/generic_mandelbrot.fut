@@ -13,7 +13,7 @@ module mandelbrot(real: real): {
   val render_mandelbrot:
     (screenX: i32) -> (screenY: i32) ->
     (xcentre: real.t) -> (ycentre: real.t) -> (width: real.t) ->
-    (depth: i32) -> (radius: real.t) ->
+    (limit: i32) -> (radius: real.t) ->
     [screenX][screenY]i32
 } = {
 type real = real.t
@@ -27,12 +27,12 @@ let dot (c: complex): real =
   let (r, i) = (complex.re c, complex.im c)
   in real.(r * r + i * i)
 
-let divergence (depth: i32) (radius: real) (c0: complex): (complex,i32) =
-  loop (c, i) = (c0, 0) while i < depth && dot c real.< radius do
+let divergence (limit: i32) (radius: real) (c0: complex): (complex,i32) =
+  loop (c, i) = (c0, 0) while i < limit && dot c real.< radius do
     (c0 complex.+ c complex.* c,
      i + 1)
 
-let mandelbrot (screenX: i32) (screenY: i32) (depth: i32) (radius: real)
+let mandelbrot (screenX: i32) (screenY: i32) (limit: i32) (radius: real)
                ((xmin, ymin, xmax, ymax): (real,real,real,real))
     : [screenX][screenY](complex,i32) =
   let sizex = real.(xmax - xmin)
@@ -41,7 +41,7 @@ let mandelbrot (screenX: i32) (screenY: i32) (depth: i32) (radius: real)
            map (\y  ->
                   let c0 = complex.mk real.(xmin + (int x * sizex) / int screenX)
                                       real.(ymin + (int y * sizey) / int screenY)
-                  in divergence depth radius c0)
+                  in divergence limit radius c0)
                (iota screenY))
          (iota screenX)
 
@@ -118,14 +118,14 @@ let escape_to_colour (limit: i32) (points: i32)
 
 let render_mandelbrot (screenX: i32) (screenY: i32)
                       (xcentre: real) (ycentre: real) (width: real)
-                      (depth: i32) (radius: real)
+                      (limit: i32) (radius: real)
                       : [screenX][screenY]i32 =
   let aspect_ratio = real.(int screenX / int screenY)
   let (xmin,ymin) = (real.(xcentre - width/int 2),
                      real.(ycentre - (int 1/aspect_ratio)*width/int 2))
   let (xmax,ymax) = (real.(xcentre + width/int 2),
                      real.(ycentre + (int 1/aspect_ratio)*width/int 2))
-  let escapes = mandelbrot screenX screenY depth radius (xmin, ymin, xmax, ymax)
+  let escapes = mandelbrot screenX screenY limit radius (xmin, ymin, xmax, ymax)
   let points = 2048
-  in map (\row -> map (escape_to_colour depth points) row) escapes
+  in map (\row -> map (escape_to_colour limit points) row) escapes
 }
