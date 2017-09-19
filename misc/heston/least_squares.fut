@@ -34,7 +34,7 @@ module relative_distance(R: real): distance with real = R.t = {
 module type objective = {
   type objective_ctx
   type real
-  val objective: objective_ctx -> []real -> []real
+  val objective [n]: objective_ctx -> [n]real -> [n]real
 
   include distance with real = real
 }
