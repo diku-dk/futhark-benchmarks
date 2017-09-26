@@ -95,7 +95,7 @@ class FluidGUI:
 
     def run(self):
         self.clear()
-        self.futhark = fluid.fluid_visualize_densities_one_frame_rgb(interactive=True)
+        self.futhark = fluid.fluid()
 
         pygame.init()
         pygame.display.set_caption('Fluid Simulation GUI!')
@@ -116,7 +116,7 @@ class FluidGUI:
         self.D = np.zeros((g, g), dtype=np.float32)
 
     def new_frame(self):
-        frame, U1, V1, D1 = self.futhark.main(
+        frame, U1, V1, D1 = self.futhark.draw_one_frame_raw(
             self.U, self.V, self.D,
             self.n_solver_steps, self.time_step,
             self.diffusion_rate, self.viscosity)
