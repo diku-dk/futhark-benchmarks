@@ -23,9 +23,9 @@
 -- Gradient based terms are easy as boundary conditions are 
 -- simple to manipulate. Divergence based terms are messy.
 -----------------------------------------------------------------------
-let add_ascent_grad2s( xi:  [#m][#n](f32,f32)
-                     , v: [#m][#n]f32
-                     , td: f32 ): [m][n](f32,f32) =
+let add_ascent_grad2s [m][n] ( xi:  [m][n](f32,f32)
+                             , v: [m][n]f32
+                             , td: f32 ): [m][n](f32,f32) =
   map (\(i: i32): [n](f32,f32)  ->
         map (\(j: i32): (f32,f32)  -> unsafe
                 let (elm1, elm2) = xi[i,j]
@@ -56,9 +56,9 @@ let add_ascent_grad2s( xi:  [#m][#n](f32,f32)
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-let add_ascent_grad2v(xi:  [#m][#n][#k](f32,f32)
-                 , v: [#m][#n][#k]f32
-                 , td: f32 ): [m][n][k](f32,f32) =
+let add_ascent_grad2v [m][n][k] (xi:  [m][n][k](f32,f32)
+                                , v: [m][n][k]f32
+                                , td: f32 ): [m][n][k](f32,f32) =
   map (\(i: i32): [n][k](f32,f32)  ->
         map (\(j: i32): [k](f32,f32)  ->
                 map (\(l: i32): (f32,f32)  -> unsafe
@@ -91,8 +91,9 @@ let add_ascent_grad2v(xi:  [#m][#n][#k](f32,f32)
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-let add_ascent_grad3s(xi:  [#m][#n][#p](f32,f32,f32)
-                     , v: [#m][#n][#p]f32
+let add_ascent_grad3s [m][n][p]
+                      (xi:  [m][n][p](f32,f32,f32)
+                     , v: [m][n][p]f32
                      , td: f32 ): [m][n][p](f32,f32,f32) =
   map (\(i: i32): [n][p](f32,f32,f32)  ->
         map (\(j: i32): [p](f32,f32,f32)  ->
@@ -132,9 +133,9 @@ let add_ascent_grad3s(xi:  [#m][#n][#p](f32,f32,f32)
 -- v : label array
 -- td: gradient ascent time step
 -----------------------------------------------------------------------
-let add_ascent_grad3v(xi:  [#m][#n][#p][#k](f32,f32,f32)
-                 , v: [#m][#n][#p][#k]f32
-                 , td: f32 ): [m][n][p][k](f32,f32,f32) =
+let add_ascent_grad3v [m][n][p][k] (xi:  [m][n][p][k](f32,f32,f32)
+                                   , v: [m][n][p][k]f32
+                                   , td: f32 ): [m][n][p][k](f32,f32,f32) =
   map (\(i: i32): [n][p][k](f32,f32,f32)  ->
         map (\(j: i32): [p][k](f32,f32,f32)  ->
               map (\(q: i32): [k](f32,f32,f32)  ->
@@ -165,12 +166,12 @@ let add_ascent_grad3v(xi:  [#m][#n][#p][#k](f32,f32,f32)
      ) (iota(m) )
 
 
-let main(xi_0:  [#m][#n][#p][#k]f32
-        , xi_1: [#m][#n][#p][#k]f32
-        , xi_2: [#m][#n][#p][#k]f32
-        , v: [#m][#n][#p][#k]f32
-        , td: f32 ): ([m][n][p][k]f32,
-                      [m][n][p][k]f32,
-                      [m][n][p][k]f32) =
+let main [m][n][p][k] (xi_0:  [m][n][p][k]f32
+                      , xi_1: [m][n][p][k]f32
+                      , xi_2: [m][n][p][k]f32
+                      , v: [m][n][p][k]f32
+                      , td: f32 ): ([m][n][p][k]f32,
+                                    [m][n][p][k]f32,
+                                    [m][n][p][k]f32) =
   unzip(add_ascent_grad3v( zip@3 xi_0 xi_1 xi_2, v, td ))
 

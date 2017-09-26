@@ -7,8 +7,8 @@ import pygame
 import time
 import sys
 
-screenX=1024
-screenY=768
+screenX=1000
+screenY=1000
 limit=255
 radius=4.0
 size=(screenX,screenY)
@@ -105,10 +105,10 @@ def render():
     screen.blit(surface, (0, 0))
 
     infomessage = "Centre: (%f,%f); width: %f; bits: %d; iterations: %d; radius: %.2f" % (xcentre, ycentre, width, precision, limit, radius)
-    showText(infomessage, (10,10))
+#    showText(infomessage, (10,10))
 
     speedmessage = "Futhark call took %.2fms" % ((end-start)*1000,)
-    showText(speedmessage, (10, 40))
+#    showText(speedmessage, (10, 40))
 
     pygame.display.flip()
 

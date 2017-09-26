@@ -13,7 +13,7 @@
 
 import "/futlib/array"
 
-let radix_sort_step(xs: [#n]u32, digit_n: i32): [n]u32 =
+let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
   let bits = map (\(x: u32): i32  -> i32((x >> u32(digit_n)) & 1u32)) xs
   let bits_inv = map (\(b: i32): i32  -> 1 - b) bits
   let ps0 = scan (+) 0 (bits_inv)
@@ -26,8 +26,8 @@ let radix_sort_step(xs: [#n]u32, digit_n: i32): [n]u32 =
   let ps_actual = map (\(p: i32): i32  -> p - 1) ps
   in scatter (copy xs) ps_actual xs
 
-let radix_sort(xs: [#n]u32): [n]u32 =
+let radix_sort [n] (xs: [n]u32): [n]u32 =
   loop (xs) for i < 32 do radix_sort_step(xs, i)
 
-let main(xs: [#n]u32): [n]u32 =
+let main [n] (xs: [n]u32): [n]u32 =
   radix_sort(xs)

@@ -27,9 +27,9 @@ module type STEP_FUN = {
 
 module BFSLIB(S: STEP_FUN) = {
 
-  let common_main(nodes_start_index: [#n]i32,
-                  nodes_n_edges: [#n]i32,
-                  edges_dest: [#e]i32): [n]i32 =
+  let common_main [n][e] (nodes_start_index: [n]i32,
+                          nodes_n_edges: [n]i32,
+                          edges_dest: [e]i32): [n]i32 =
     let graph_mask = replicate n false
     let updating_graph_mask = replicate n false
     let graph_visited = replicate n false

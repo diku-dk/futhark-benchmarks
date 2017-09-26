@@ -21,8 +21,8 @@ let fmod(a: f32, b: f32): f32 = ( a - b * f32(i32(a / b)) )
 
 let fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
-let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
-                    parameter: [#pars]f32, parameter_offset: i32, finavalu: *[#equs]f32 ): *[equs]f32 =
+let ecc [equs][pars] (timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
+                      parameter: [pars]f32, parameter_offset: i32, finavalu: *[equs]f32 ): *[equs]f32 =
   unsafe
   -- variable references
   let offset_1  = initvalu_offset
@@ -500,10 +500,10 @@ let ecc(timeinst:  f32, initvalu: [#equs]f32, initvalu_offset: i32,
 ----- Cam MODULE -----
 ----------------------
 
-let cam(timeinst:  f32, initvalu: [#equs]f32,
-        initvalu_offset: i32,
-        parameter: [#pars]f32, parameter_offset: i32,
-        finavalu: *[#equs]f32, ca: f32 ): (f32, *[equs]f32) =
+let cam [equs][pars] (timeinst:  f32, initvalu: [equs]f32,
+                      initvalu_offset: i32,
+                      parameter: [pars]f32, parameter_offset: i32,
+                      finavalu: *[equs]f32, ca: f32 ): (f32, *[equs]f32) =
   unsafe
 
   -- input data and output data variable references
@@ -698,10 +698,11 @@ let cam(timeinst:  f32, initvalu: [#equs]f32,
 ----- Fin MODULE -----
 ----------------------
 
-let fin(initvalu:     [#equs]f32, initvalu_offset_ecc: i32,
+let fin [equs][pars]
+       (initvalu:     [equs]f32, initvalu_offset_ecc: i32,
         initvalu_offset_Dyad: i32, initvalu_offset_SL: i32,
-        initvalu_offset_Cyt: i32, parameter: [#pars]f32,
-        finavalu: *[#equs]f32, jcaDyad: f32, jcaSL: f32, jcaCyt: f32 ): *[equs]f32 =
+        initvalu_offset_Cyt: i32, parameter: [pars]f32,
+        finavalu: *[equs]f32, jcaDyad: f32, jcaSL: f32, jcaCyt: f32 ): *[equs]f32 =
   unsafe
 
   let btotDyad      = parameter[2]
@@ -770,7 +771,7 @@ let fin(initvalu:     [#equs]f32, initvalu_offset_ecc: i32,
 ----- Master MODULE -----
 -------------------------
 
-let master(timeinst:  f32, initvalu: [#equs]f32, parameter: [#pars]f32 ): *[equs]f32 =
+let master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f32 =
   let finavalu = replicate equs 0.0f32
   -- ecc function
   let initvalu_offset_ecc  = 0
@@ -815,9 +816,10 @@ let master(timeinst:  f32, initvalu: [#equs]f32, parameter: [#pars]f32 ): *[equs
 ----- embedded_fehlberg_7_8 MODULE -----
 ----------------------------------------
 
-let embedded_fehlberg_7_8(timeinst:   f32, h: f32,
-                          initvalu: [#equs]f32,
-                          parameter: [#pars]f32 ): (*[equs]f32, *[equs]f32) =
+let embedded_fehlberg_7_8 [equs][pars]
+                         (timeinst:   f32, h: f32,
+                          initvalu: [equs]f32,
+                          parameter: [pars]f32 ): (*[equs]f32, *[equs]f32) =
   let c_1_11 = 41.0f32 / 840.0f32
   let c6 = 34.0f32 / 105.0f32
   let c_7_8= 9.0f32 / 35.0f32
@@ -1023,7 +1025,7 @@ let attempts(): i32         = 12
 let max(x: f32) (y: f32): f32 = if ( x < y ) then y else x
 let min(x: f32) (y: f32): f32 = if ( x < y ) then x else y
 
-let solver(xmax: i32, params: [#pars]f32, y0: [#equs]f32): (bool,[equs]f32) =
+let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
   let err_exponent  = 1.0f32 / 7.0f32
   let h_init = 1.0f32
   let h = h_init

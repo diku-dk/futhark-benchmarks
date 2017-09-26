@@ -27,10 +27,10 @@
 -- g : data term gradient array, size (m,n,p,q).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-let add_descent_div3v(v:  [#m][#n][#p][#q]f32
-                 , xi: [#m][#n][#p][#q](f32,f32,f32)
-                 , g: [#m][#n][#p][#q]f32
-                 , tp: f32 ): [m][n][p][q]f32 =
+let add_descent_div3v [m][n][p][q] (v:  [m][n][p][q]f32
+                                   , xi: [m][n][p][q](f32,f32,f32)
+                                   , g: [m][n][p][q]f32
+                                   , tp: f32 ): [m][n][p][q]f32 =
   let one = (m*m+2*m+1)/(m+1) - m
   let res_flat = 
     map (\(ind: i32): f32  -> unsafe
@@ -205,10 +205,10 @@ let add_descent_div3v(v:  [#m][#n][#p][#q]f32
 -----------------------------------------------------
 -----------------------------------------------------
 
-let main1( v:  [#m][#n][#p][#q]f32
-         , xi: [#m][#n][#p][#q](f32,f32,f32)
-         , g: [#m][#n][#p][#q]f32
-         , tp: f32 ): [m][n][p][q]f32 =
+let main1 [m][n][p][q] ( v:  [m][n][p][q]f32
+                       , xi: [m][n][p][q](f32,f32,f32)
+                       , g: [m][n][p][q]f32
+                       , tp: f32 ): [m][n][p][q]f32 =
 
     add_descent_div3v(v, xi, g, tp)
 

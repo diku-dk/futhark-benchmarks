@@ -76,7 +76,8 @@ let compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_e
        )
 
 --
-let compute_step_factor(variables: [5][#nelr]f32, areas: [#nelr]f32): [nelr]f32 = -- 5 == nvar
+let compute_step_factor [nelr]
+                        (variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = -- 5 == nvar
     map (\(i: i32): f32  ->
             let density    = variables[var_density,    i]
             let momentum_x = variables[var_momentum+0, i]
@@ -92,9 +93,10 @@ let compute_step_factor(variables: [5][#nelr]f32, areas: [#nelr]f32): [nelr]f32 
        ) (iota(nelr))
 
 --5 == nvar
-let compute_flux(elements_surrounding_elements:    [#nnb][#nel]i32
-                ,   normals: [#ndim][#nnb][#nel]f32
-                ,   variables: [5][#nel]f32
+let compute_flux [nnb][nel][ndim]
+                   (elements_surrounding_elements:    [nnb][nel]i32
+                ,   normals: [ndim][nnb][nel]f32
+                ,   variables: [5][nel]f32
                 ,   ff_variable: [5]f32
                 ,   ff_flux_contribution_momentum_x: (f32,f32,f32)
                 ,   ff_flux_contribution_momentum_y: (f32,f32,f32)
@@ -273,10 +275,11 @@ let compute_flux(elements_surrounding_elements:    [#nnb][#nel]i32
     )
 
 --
-let time_step(j:  i32,
-              old_variables: [5][#nel]f32,
-              step_factors: [#nel]f32,
-              fluxes: [5][#nel]f32  ): [5][nel]f32 =
+let time_step [nel]
+             (j:  i32,
+              old_variables: [5][nel]f32,
+              step_factors: [nel]f32,
+              fluxes: [5][nel]f32  ): [5][nel]f32 =
   transpose(
     map (\(i: i32): [5]f32  ->
             let factor = step_factors[i] / f32(rk+1-j)
@@ -292,9 +295,10 @@ let time_step(j:  i32,
 --------------------------
 ---- MAIN ENTRY POINT ----
 --------------------------
-let main(areas:   [#nel]f32,
-         elements_surrounding_elements: [4][#nel]i32,
-         normals: [3][4][#nel]f32 ): [5][nel]f32 =
+let main [nel]
+        (areas:   [nel]f32,
+         elements_surrounding_elements: [4][nel]i32,
+         normals: [3][4][nel]f32 ): [5][nel]f32 =
     let angle_of_attack = (3.1415926535897931 / 180.0) * deg_angle_of_attack
 
     let var_of_density = 1.4f32
