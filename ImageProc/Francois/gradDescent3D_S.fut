@@ -22,10 +22,10 @@
 -- g : data term gradient array, size (m,n,p).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-let add_descent_div3s(v:  [#m][#n][#p]f32
-                 , xi: [#m][#n][#p](f32,f32,f32)
-                 , g: [#m][#n][#p]f32
-                 , tp: f32 ): [m][n][p]f32 =
+let add_descent_div3s [m][n][p] (v:  [m][n][p]f32
+                                , xi: [m][n][p](f32,f32,f32)
+                                , g: [m][n][p]f32
+                                , tp: f32 ): [m][n][p]f32 =
   map (\(i: i32): [n][p]f32  ->
         map (\(j: i32): [p]f32  -> 
               map (\(k: i32): f32  -> unsafe
@@ -185,12 +185,12 @@ let add_descent_div3s(v:  [#m][#n][#p]f32
 -----------------------------------------------------
 -----------------------------------------------------
 
-let main( v:  [#m][#n][#p]f32
-        , xi_0: [#m][#n][#p]f32
-        , xi_1: [#m][#n][#p]f32
-        , xi_2: [#m][#n][#p]f32
-        , g: [#m][#n][#p]f32
-        , tp: f32 ): [m][n][p]f32 =
+let main [m][n][p] ( v:  [m][n][p]f32
+                   , xi_0: [m][n][p]f32
+                   , xi_1: [m][n][p]f32
+                   , xi_2: [m][n][p]f32
+                   , g: [m][n][p]f32
+                   , tp: f32 ): [m][n][p]f32 =
     add_descent_div3s(v, zip@2 xi_0 xi_1 xi_2, g, tp)
 
  

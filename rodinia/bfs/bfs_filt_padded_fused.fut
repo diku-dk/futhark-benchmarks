@@ -17,13 +17,14 @@ import "/futlib/array"
   let max(a: i32) (b: i32): i32 =
     if a > b then a else b
 
-  let step(cost: *[#n]i32,
-           nodes_start_index: [#n]i32,
-           nodes_n_edges: [#n]i32,
-           edges_dest: [#e]i32,
-           graph_visited: [#n]bool,
-           graph_mask: *[#n]bool,
-           updating_graph_mask: *[#n]bool) : (*[n]i32, *[n]bool, *[n]bool) =
+  let step [n][e]
+          (cost: *[n]i32,
+           nodes_start_index: [n]i32,
+           nodes_n_edges: [n]i32,
+           edges_dest: [e]i32,
+           graph_visited: [n]bool,
+           graph_mask: *[n]bool,
+           updating_graph_mask: *[n]bool) : (*[n]i32, *[n]bool, *[n]bool) =
     let active_indices =
       filter (\i -> graph_mask[i]) (iota n)
     let n_indices = (shape active_indices)[0]
@@ -69,9 +70,9 @@ import "/futlib/array"
 
     in (cost', graph_mask', updating_graph_mask')
 
-let common_main(nodes_start_index: [#n]i32,
-                  nodes_n_edges: [#n]i32,
-                  edges_dest: [#e]i32): [n]i32 =
+let common_main [n][e] (nodes_start_index: [n]i32,
+                        nodes_n_edges: [n]i32,
+                        edges_dest: [e]i32): [n]i32 =
     let source = 0
     let (graph_mask, graph_visited, cost) = unzip (
         map (\i ->  if i==source 
@@ -111,5 +112,5 @@ let common_main(nodes_start_index: [#n]i32,
 
     in cost
 
-let main(nodes_start_index: [#n]i32, nodes_n_edges: [#n]i32, edges_dest: [#e]i32): [n]i32 =
+let main [n][e] (nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
   common_main(nodes_start_index, nodes_n_edges, edges_dest)

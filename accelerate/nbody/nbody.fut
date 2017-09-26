@@ -31,7 +31,7 @@ type acceleration = vec3.vec
 type velocity = vec3.vec
 type body = (position, mass, velocity, acceleration)
 
-let matmult(x: [#n][#m]f32) (y: [#m][#p]f32): [n][p]f32 =
+let matmult [n][m][p] (x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
   map (\(xr) ->
         map (\(yc) -> reduce (+) 0f32 (map (*) xr yc))
             (transpose(y)))
@@ -58,12 +58,12 @@ let advance_body(time_step: f32) ((pos, mass, vel, _):body) (acc:acceleration): 
   let vel' = vel vec3.+ vec3.scale time_step acc'
   in (pos', mass, vel', acc')
 
-let advance_bodies(epsilon: f32, time_step: f32, bodies: [#n]body): [n]body =
+let advance_bodies [n] (epsilon: f32, time_step: f32, bodies: [n]body): [n]body =
   let accels = calc_accels epsilon bodies
   in map (advance_body time_step) bodies accels
 
-let advance_bodies_steps(n_steps: i32, epsilon: f32, time_step: f32,
-                         bodies: [#n]body): [n]body =
+let advance_bodies_steps [n] (n_steps: i32, epsilon: f32, time_step: f32,
+                              bodies: [n]body): [n]body =
   loop (bodies) for _i < n_steps do
     advance_bodies(epsilon, time_step, bodies)
 
@@ -77,19 +77,20 @@ let unwrap_body(((posx, posy, posz), mass, (velx, vely, velz), (accx, accy, accz
   : (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) =
   (posx, posy, posz, mass, velx, vely, velz, accx, accy, accz)
 
-let main(n_steps: i32,
+let main [n]
+        (n_steps: i32,
          epsilon: f32,
          time_step: f32,
-         xps: [#n]f32,
-         yps: [#n]f32,
-         zps: [#n]f32,
-         ms: [#n]f32,
-         xvs: [#n]f32,
-         yvs: [#n]f32,
-         zvs: [#n]f32,
-         xas: [#n]f32,
-         yas: [#n]f32,
-         zas: [#n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
+         xps: [n]f32,
+         yps: [n]f32,
+         zps: [n]f32,
+         ms: [n]f32,
+         xvs: [n]f32,
+         yvs: [n]f32,
+         zvs: [n]f32,
+         xas: [n]f32,
+         yas: [n]f32,
+         zas: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
   let bodies  = map wrap_body (zip xps yps zps ms xvs yvs zvs xas yas zas)
   let bodies' = advance_bodies_steps(n_steps, epsilon, time_step, bodies)
   let bodies'' = map unwrap_body (bodies')
@@ -100,7 +101,7 @@ let rotatePointByMatrix (rotation: [3][3]f32) ((x,y,z): position): position =
    x*rotation[0,1] + y*rotation[1,1] + z*rotation[2,1],
    x*rotation[0,2] + y*rotation[1,2] + z*rotation[2,2])
 
-let rotatePointsByMatrix (rotation: [3][3]f32)(ps: [#n]position): [n]position =
+let rotatePointsByMatrix [n] (rotation: [3][3]f32)(ps: [n]position): [n]position =
   map (rotatePointByMatrix rotation) ps
 
 let rotateXMatrix (angle: f32): [3][3]f32 =
@@ -122,7 +123,7 @@ let inverseRotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
 entry inverseRotatePoint (x: f32, y: f32, z: f32, x_rotation: f32, y_rotation: f32): position =
   rotatePointByMatrix (inverseRotationMatrix x_rotation y_rotation) (x,y,z)
 
-let rotatePoints(ps: [#n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
+let rotatePoints [n] (ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
   rotatePointsByMatrix (rotationMatrix x_rotation y_rotation) ps
 
 let renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_mass: f32)
@@ -144,8 +145,9 @@ let renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_
                  0xFF
     in (x''*h + y'', colour)
 
-entry render(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-             xps: [#n]f32, yps: [#n]f32, zps: [#n]f32, ms: [#n]f32,
+entry render [n]
+            (w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
+             xps: [n]f32, yps: [n]f32, zps: [n]f32, ms: [n]f32,
              x_rotation: f32, y_rotation: f32,
              max_mass: f32, invert: bool): [w][h]i32 =
   let background = if invert then 0x00FFFFFF else 0

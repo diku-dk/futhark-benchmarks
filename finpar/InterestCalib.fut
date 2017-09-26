@@ -200,7 +200,7 @@ let rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
 --------------------------------------------------/
 
 
-let sobolInd(dirVct:  [#m]i32) (n: i32): f32 =
+let sobolInd [m] (dirVct:  [m]i32) (n: i32): f32 =
     -- placed norm_fact here to check that hoisting does its job!
     let norm_fact = 1.0 / ( f32(1 << m) + 1.0 )
     let n_gray = (n >> 1) ^ n
@@ -283,7 +283,7 @@ let perturbation(gamma1:  f32, ampl_rat : f32)
   let perturb       = ( amplitude * r01 - semiamplitude )
   in  gene + perturb + gamma1 * ( gene_k - gene_l )
 
-let mutate_dims_all(tup: ([#n]f32,[]f32,[]f32)): (*[]f32,f32) =
+let mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
   let (sob_row, orig, muta) = tup
   let gene_bds = genomeBounds()
   let amplitude = moves_unif_ampl_ratio()
@@ -294,7 +294,7 @@ let mutate_dims_all(tup: ([#n]f32,[]f32,[]f32)): (*[]f32,f32) =
   let fb_rat    = reduce (*) (1.0) (fb_rats)
   in  (copy(new_genome), fb_rat)
 
-let mutate_dims_one(dim_j: i32) (tup: ([]f32,[#n]f32,[]f32)): (*[]f32,f32) =
+let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
   let (sob_row, orig, muta) = tup
   let gene_bds = genomeBounds()
   let amplitudes= map (\(i: i32): f32  ->

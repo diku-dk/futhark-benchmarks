@@ -23,7 +23,7 @@ import "/futlib/array"
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 
-let lud_diagonal0(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal0 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let a_rows = copy(a) in
     let (a_rows,a_cols) = loop (a_rows,a_cols) for i < b do
@@ -46,13 +46,13 @@ let lud_diagonal0(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
         let a_rows[i] = it_row in
         let a_cols[i] = it_col in
         (a_rows,a_cols)
-    in map (\ (a_rows_r: [#b]f32) (a_cols_r: [#b]f32) (i: i32): [b]f32  ->
+    in map (\ a_rows_r a_cols_r (i: i32): [b]f32  ->
                     map (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
                                 if (i <= j) then row_el else col_el
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose(a_cols)) (iota(b) )
 
-let lud_diagonal1(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal1 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let b2 = 2*b in
     let a_rc = map (\ (i: i32): [b2]f32  ->
@@ -89,17 +89,17 @@ let lud_diagonal1(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
                ) (iota(b*b) )
         ) in
     let (a_rows, a_cols) = ( reshape (b,b) a_rows0, reshape (b,b) a_cols0 )
-    in map (\ (a_rows_r: [#b]f32) (a_cols_r: [#b]f32) (i: i32): [b]f32  ->
+    in map (\ (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: i32): [b]f32  ->
                     map (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
                                 if (i <= j) then row_el else col_el
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose a_cols) (iota b)
 
 
-let lud_diagonal2(ain: [#b][#b]f32, m: i32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal2 [b] (ain: [b][b]f32, m: i32): *[b][b]f32 =  -- CORRECT
     let one = (m*m+2*m+1)/(m+1) - m in
     let ains= copy(replicate one ain) in
-    let ress= map (\ (a: *[#b][#b]f32, q: i32): *[b][b]f32  -> unsafe
+    let ress= map (\ (a: *[b][b]f32, q: i32): *[b][b]f32  -> unsafe
                      loop a for i < b do
                         let a = loop a for j in [i..<b] do
                             let sum = loop sum=0.0f32 for k < i do
@@ -116,7 +116,7 @@ let lud_diagonal2(ain: [#b][#b]f32, m: i32): *[b][b]f32 =  -- CORRECT
     in reshape (b,b) ress
 
 
-let lud_diagonal(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
     let a_cols = copy(transpose(a)) in
     let b2 = 2*b in
     let a_rc = map (\ (i: i32): [b2]f32  ->
@@ -159,8 +159,8 @@ let lud_diagonal(a: [#b][#b]f32): *[b][b]f32 =  -- CORRECT
 ------------------------------
 ------------------------------
 
-let lud_perimeter_upper(diag: [#b][#b]f32, a0s: [#m][#b][#b]f32): *[m][b][b]f32 =
-    let a1s = map (\ (x: [#b][#b]f32): [b][b]f32  -> transpose(x)) a0s in
+let lud_perimeter_upper [m][b] (diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f32 =
+    let a1s = map (\ (x: [b][b]f32): [b][b]f32  -> transpose(x)) a0s in
     let a2s =
         map  (\a1: [b][b]f32  ->
               map  (\row0: [b]f32  ->   -- Upper
@@ -179,10 +179,10 @@ let lud_perimeter_upper(diag: [#b][#b]f32, a0s: [#m][#b][#b]f32): *[m][b][b]f32 
 ------------------------------
 ------------------------------
 
-let lud_perimeter_lower(diag: [#b][#b]f32, mat: [#m][#m][#b][#b]f32): *[m][b][b]f32 =
+let lud_perimeter_lower [b][m] (diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 =
   let slice = mat[0:m,0] in
   map  (\blk: [b][b]f32  ->
-        map  (\ (row0: [#b]f32): *[b]f32  ->   -- Lower
+        map  (\ (row0: [b]f32): *[b]f32  ->   -- Lower
                 loop row=replicate b 0.0f32 for j < b do
                         let sum = loop sum=0.0f32 for k < j do
                             sum + diag[k,j] * row[k]
@@ -198,14 +198,14 @@ let lud_perimeter_lower(diag: [#b][#b]f32, mat: [#m][#m][#b][#b]f32): *[m][b][b]
 ------------------------------
 ------------------------------
 
-let lud_internal(top_per: [#mp1][#b][#b]f32, lft_per: [#mp1][#b][#b]f32, mat: [#mp1][#mp1][#b][#b]f32 ): *[][][b][b]f32 =
+let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
   let top_slice0= top_per[1:mp1] in
   let top_slice = rearrange (0,2,1) top_slice0 in
   let lft_slice = lft_per[1:mp1] in
   let mat_slice = mat[1:mp1,1:mp1] in
-  map (\ (mat_arr: [#m][#b][#b]f32, lft: [#b][#b]f32): [m][b][b]f32  ->
-        map (\ (mat_blk: [#b][#b]f32, top: [#b][#b]f32): [b][b]f32  ->
-                map  (\ (mat_row: [#b]f32, lft_row: [#b]f32): [b]f32  ->
+  map (\[m] (mat_arr: [m][b][b]f32, lft: [b][b]f32): [m][b][b]f32  ->
+        map (\ (mat_blk: [b][b]f32, top: [b][b]f32): [b][b]f32  ->
+                map  (\ (mat_row: [b]f32, lft_row: [b]f32): [b]f32  ->
                         map  (\(mat_el, top_row)  ->
                                 let prods = map (*) (lft_row) (top_row) in
                                 let sum   = reduce (+) (0.0f32) prods     in
@@ -231,7 +231,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
                           (replicate padding (replicate n 0f32))
               else mat
     -------------------------------------------------
-    ---- transform matrix in [#n/b,n/b,b,b] block ----
+    ---- transform matrix in [n/b,n/b,b,b] block ----
     ---- versions for upper and lower parts      ----
     ---- the blocks of the lower part            ----
     -------------------------------------------------

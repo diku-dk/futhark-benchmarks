@@ -51,9 +51,8 @@ let edgeNone: f32 = 0.0
 let edgeWeak: f32 = 0.5
 let edgeStrong: f32 = 1.0
 
-let toGreyscale(img: *[#h][#w]i32): *[h][w]f32 =
-  map (\(row: [#w]i32): [w]f32  ->
-        map (255.0*) (map luminanceOfRGBA32 row)) img
+let toGreyscale [h][w] (img: *[h][w]i32): *[h][w]f32 =
+  map (\row -> map (255.0*) (map luminanceOfRGBA32 row)) img
 
 let gaussianX [h][w] (img: *[h][w]f32): *[h][w]f32 =
   unsafe
