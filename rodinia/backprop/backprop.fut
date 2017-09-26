@@ -19,7 +19,7 @@ let fabs   (x: f32): f32 = if x < 0.0 then 0.0 - x else x
 
 -- Computational kernels
 
-let bpnn_output_error(target: [#n]f32, output: [#n]f32): (f32, [n]f32) =
+let bpnn_output_error [n] (target: [n]f32, output: [n]f32): (f32, [n]f32) =
     let (errs, delta) = unzip (
         map ( \(t: f32, o: f32): (f32,f32)  ->
                 let d = o * (1.0 - o) * (t - o)
@@ -29,7 +29,7 @@ let bpnn_output_error(target: [#n]f32, output: [#n]f32): (f32, [n]f32) =
     in  ( err, delta )
 
 
-let bpnn_hidden_error(delta_o: [#no]f32, who: [#nh][#no]f32, hidden: [#nh]f32): (f32, [nh]f32) =
+let bpnn_hidden_error [no][nh] (delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32, [nh]f32) =
     let (errs, delta_h) = unzip (
         map ( \(hidden_el: f32, who_row: []f32): (f32,f32)  ->
                 let prods  = map (*) delta_o who_row
@@ -40,7 +40,7 @@ let bpnn_hidden_error(delta_o: [#no]f32, who: [#nh][#no]f32, hidden: [#nh]f32): 
     let err = reduce (+) 0.0 errs
     in  ( err, delta_h )
 
-let bpnn_adjust_weights(delta: [#ndelta]f32, ly: [#nlym1]f32, w: [#nly][#ndelta]f32, oldw: [#nly][#ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
+let bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
   let lyext = map( \(k: i32): f32  ->
                         if k < 1 then 1.0 else unsafe ly[k-1])
                  (iota nly)
@@ -52,7 +52,7 @@ let bpnn_adjust_weights(delta: [#ndelta]f32, ly: [#nlym1]f32, w: [#nly][#ndelta]
             (zip w oldw lyext))
 
 
-let bpnn_layerforward_GOOD(l1: [#n1]f32, conn: [#n1][#n2]f32, conn_fstrow: [#n2]f32): [n2]f32 =
+let bpnn_layerforward_GOOD [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
   let res_tmp   = map ( \(conn_tr_row: [n1]f32): f32  ->
                             let prods = map (*) conn_tr_row l1
@@ -62,7 +62,7 @@ let bpnn_layerforward_GOOD(l1: [#n1]f32, conn: [#n1][#n2]f32, conn_fstrow: [#n2]
   (zip (res_tmp) (conn_fstrow))
 
 
-let bpnn_layerforward(l1: [#n1]f32, conn: [#n1][#n2]f32, conn_fstrow: [#n2]f32): [n2]f32 =
+let bpnn_layerforward [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
   let res_map   = map ( \(conn_tr_row: [n1]f32): [n1]f32  ->
                         map (*) conn_tr_row l1)
@@ -83,12 +83,13 @@ let bpnn_layerforward(l1: [#n1]f32, conn: [#n1][#n2]f32, conn_fstrow: [#n2]f32):
 
 --------------------------------------------------------/
 
-let bpnn_train_kernel( input_units:  [#n_in]f32
-                     , target: [#n_out]f32
-                     , input_weights: [#n_inp1][#n_hid]f32
-                     , hidden_weights: [#n_hidp1][#n_out]f32
-                     , input_prev_weights: [#n_inp1][#n_hid]f32
-                     , hidden_prev_weights: [#n_hidp1][#n_out]f32
+let bpnn_train_kernel [n_in][n_out][n_inp1][n_hid][n_hidp1]
+                     ( input_units:  [n_in]f32
+                     , target: [n_out]f32
+                     , input_weights: [n_inp1][n_hid]f32
+                     , hidden_weights: [n_hidp1][n_out]f32
+                     , input_prev_weights: [n_inp1][n_hid]f32
+                     , hidden_prev_weights: [n_hidp1][n_out]f32
                      ): ( f32, f32
                         , [n_inp1][n_hid]f32
                         , [n_hidp1][n_out]f32
@@ -112,7 +113,7 @@ let bpnn_train_kernel( input_units:  [#n_in]f32
 
 ----------------------------------------------------/
 
-let sobolIndR(dirVct: [#num_bits]i32) (n: i32): f32 =
+let sobolIndR [num_bits] (dirVct: [num_bits]i32) (n: i32): f32 =
     -- placed norm_fact here to check that hoisting does its job!
     let norm_fact = 1.0 / ( f32(1 << num_bits) + 1.0 )
     let n_gray = (n >> 1) ^ n
@@ -190,7 +191,7 @@ let bpnn_create(n_in: i32, n_inp1: i32, n_hid: i32, n_hidp1: i32, n_out: i32, of
        (hidden_weights, hidden_weights_fstcol),
        input_prev_weights, hidden_prev_weights)
 
-let consColumn(mat: [#m][#n]f32, col: [#m]f32): [m][]f32 =
+let consColumn [m][n] (mat: [m][n]f32, col: [m]f32): [m][]f32 =
     let np1 = n+1
     in map ( \(matrow: []f32, colelm: f32): []f32  ->
                map ( \(k: i32): f32  ->
@@ -198,7 +199,7 @@ let consColumn(mat: [#m][#n]f32, col: [#m]f32): [m][]f32 =
              (iota(n+1)))
              (zip mat col)
 
-let main(n_in: i32, dirVct: [#num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
+let main [num_bits] (n_in: i32, dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
     let (n_inp1, n_hid, n_hidp1, n_out) = (n_in+1, 16, 16+1, 1)
     let (   input_units, target,
            ( input_weights,  input_weights_fstcol),

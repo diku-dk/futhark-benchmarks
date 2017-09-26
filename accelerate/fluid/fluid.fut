@@ -100,23 +100,44 @@ let outermost_inner_index
   then (i, g - 2, if b == 2 then -1.0 else 1.0)
   else (0, 0, 0.0) -- This is not supposed to happen.
 
+module type edge_handling_mapper = {
+  type info
+
+  val inner: i32 -> i32 -> i32 -> info -> f32
+}
+
+module edge_handling (mapper: edge_handling_mapper) = {
+  let handle
+    (i: i32) (j: i32) (g: i32) (b: i32)
+    (info: mapper.info): f32 =
+
+    let outer =
+      let base (i': i32) (j': i32): f32 =
+        let (i1, j1, f) = outermost_inner_index i' j' g b
+        in f * mapper.inner i1 j1 g info
+
+      in if in_outside_corner i j g
+         then let (i1, j1, i2, j2) = corner_index_neighbors i j g
+              in 0.5 * (base i1 j1 + base i2 j2)
+         else base i j
+
+    in if inside i j g
+       then mapper.inner i j g info
+       else outer
+}
 
 ------------------------------------------------------------
 -- lin_solve.
 ------------------------------------------------------------
 
-let lin_solve
-  (n_solver_steps: i32)
-  (s0: [#g][#g]f32)
-  (b: i32)
-  (a: f32)
-  (c: f32):
-  [g][g]f32 =
+module edge_handling_lin_solve = edge_handling({
+  type info = ([][]f32, [][]f32, f32, f32)
 
-  let lin_solve_inner
+  let inner
     (i: i32)
     (j: i32)
-    (s1: [#g][#g]f32):
+    (_g: i32)
+    ((s0, s1, a, c): info):
     f32 =
     -- A stencil.
     unsafe ((s0[i, j] + a *
@@ -125,31 +146,19 @@ let lin_solve
               + s1[i, (j - 1)]
               + s1[i, (j + 1)])) / c)
 
-  let lin_solve_outer
-    (i: i32)
-    (j: i32)
-    (s1: [#g][#g]f32):
-    f32 =
+})
 
-    let lin_solve_outer_base
-      (i': i32)
-      (j': i32):
-      f32 =
-      let (i1, j1, f) = outermost_inner_index i' j' g b
-      in f * lin_solve_inner i1 j1 s1
-
-    in if in_outside_corner i j g
-       then let (i1, j1, i2, j2) = corner_index_neighbors i j g
-            in 0.5 * (lin_solve_outer_base i1 j1
-                      + lin_solve_outer_base i2 j2)
-       else lin_solve_outer_base i j
-
-  in loop s1 = replicate g (replicate g 0.0) for _k < n_solver_steps do
+let lin_solve [g]
+  (n_solver_steps: i32)
+  (s0: [g][g]f32)
+  (b: i32)
+  (a: f32)
+  (c: f32):
+  [g][g]f32 =
+  loop s1 = replicate g (replicate g 0.0) for _k < n_solver_steps do
     map (\i ->
          map (\j ->
-              if inside i j g
-              then lin_solve_inner i j s1
-              else lin_solve_outer i j s1)
+              edge_handling_lin_solve.handle i j g b (s0, s1, a, c))
              [0..<g])
         [0..<g]
 
@@ -157,8 +166,8 @@ let lin_solve
 -- diffuse.
 ------------------------------------------------------------
 
-let diffuse
-  (s: [#g][#g]f32)
+let diffuse [g]
+  (s: [g][g]f32)
   (b: i32)
   (n_solver_steps: i32)
   (diffusion_rate_or_viscosity: f32)
@@ -172,19 +181,14 @@ let diffuse
 -- advect.
 ------------------------------------------------------------
 
-let advect
-  (s0: [#g][#g]f32)
-  (u: [#g][#g]f32)
-  (v: [#g][#g]f32)
-  (b: i32)
-  (time_step: f32):
-  *[g][g]f32 =
+module edge_handling_advect = edge_handling({
+  type info = ([][]f32, [][]f32, [][]f32, f32)
 
-  let time_step0 = time_step * f32 (g - 2)
-
-  let advect_inner
+  let inner
     (i: i32)
-    (j: i32):
+    (j: i32)
+    (g: i32)
+    ((s0, u, v, time_step0): info):
     f32 =
     let x = f32 i - time_step0 * unsafe u[i, j]
     let y = f32 j - time_step0 * unsafe v[i, j]
@@ -206,29 +210,19 @@ let advect
 
     in unsafe (s0' * (t0 * s0[i0, j0] + t1 * s0[i0, j1])
                + s1 * (t0 * s0[i1, j0] + t1 * s0[i1, j1]))
+})
 
-  let advect_outer
-    (i: i32)
-    (j: i32):
-    f32 =
+let advect [g]
+  (s0: [g][g]f32)
+  (u: [g][g]f32)
+  (v: [g][g]f32)
+  (b: i32)
+  (time_step: f32):
+  *[g][g]f32 =
 
-    let advect_outer_base
-      (i': i32)
-      (j': i32):
-      f32 =
-      let (i1, j1, f) = outermost_inner_index i' j' g b
-      in f * advect_inner i1 j1
-
-    in if in_outside_corner i j g
-       then let (i1, j1, i2, j2) = corner_index_neighbors i j g
-            in 0.5 * (advect_outer_base i1 j1
-                      + advect_outer_base i2 j2)
-       else advect_outer_base i j
-
+  let time_step0 = time_step * f32 (g - 2)
   in map (\i -> map (\j ->
-                     if inside i j g
-                     then advect_inner i j
-                     else advect_outer i j)
+                     edge_handling_advect.handle i j g b (s0, u, v, time_step0))
                     [0..<g])
          [0..<g]
 
@@ -236,51 +230,37 @@ let advect
 -- project.
 ------------------------------------------------------------
 
-let project
-  (n_solver_steps: i32)
-  (u0: [#g][#g]f32)
-  (v0: [#g][#g]f32):
-  (*[g][g]f32, *[g][g]f32) =
+module edge_handling_project_top = edge_handling({
+  type info = ([][]f32, [][]f32)
 
-  let project_top_inner
+  let inner
     (i: i32)
-    (j: i32):
+    (j: i32)
+    (g: i32)
+    ((u0, v0): info):
     f32 =
     unsafe (-0.5f32 * (u0[i + 1, j]
                        - u0[i - 1, j]
                        + v0[i, j + 1]
                        - v0[i, j - 1]) / f32 g)
+})
 
-  let project_top_outer
-    (i: i32)
-    (j: i32):
-    f32 =
-
-    let project_top_outer_base
-      (i': i32)
-      (j': i32):
-      f32 =
-      let (i1, j1, _f) = outermost_inner_index i' j' g 0
-      in project_top_inner i1 j1
-
-    in if in_outside_corner i j g
-       then let (i1, j1, i2, j2) = corner_index_neighbors i j g
-            in 0.5 * (project_top_outer_base i1 j1
-                      + project_top_outer_base i2 j2)
-       else project_top_outer_base i j
+let project [g]
+  (n_solver_steps: i32)
+  (u0: [g][g]f32)
+  (v0: [g][g]f32):
+  (*[g][g]f32, *[g][g]f32) =
 
   let project_top:
     [g][g]f32 =
     map (\i -> map (\j ->
-                     if inside i j g
-                     then project_top_inner i j
-                     else project_top_outer i j)
+                     edge_handling_project_top.handle i j g 0 (u0, v0))
                     [0..<g])
          [0..<g]
 
-  let project_bottom
-    (p0: [#g][#g]f32)
-    (s0: [#g][#g]f32)
+  let project_bottom [g]
+    (p0: [g][g]f32)
+    (s0: [g][g]f32)
     (b: i32)
     (i0d: i32)
     (j0d: i32)
@@ -292,7 +272,7 @@ let project
       (i: i32)
       (j: i32):
       f32 =
-      unsafe (s0[i, j] - 0.5f32 * f32(g - 2)
+      unsafe (s0[i, j] - 0.5 * f32 (g - 2)
               * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
 
     let project_bottom_outer
@@ -330,10 +310,10 @@ let project
 -- Step functions.
 ------------------------------------------------------------
 
-let dens_step
-  (d0: [#g][#g]f32)
-  (u0: [#g][#g]f32)
-  (v0: [#g][#g]f32)
+let dens_step [g]
+  (d0: [g][g]f32)
+  (u0: [g][g]f32)
+  (v0: [g][g]f32)
   (n_solver_steps: i32)
   (diffusion_rate: f32)
   (time_step: f32):
@@ -342,9 +322,9 @@ let dens_step
   let d2 = advect d1 u0 v0 0 time_step
   in d2
 
-let vel_step
-  (u0: [#g][#g]f32)
-  (v0: [#g][#g]f32)
+let vel_step [g]
+  (u0: [g][g]f32)
+  (v0: [g][g]f32)
   (n_solver_steps: i32)
   (viscosity: f32)
   (time_step: f32):
@@ -357,10 +337,10 @@ let vel_step
   let (u4, v4) = project n_solver_steps u3 v3
   in (u4, v4)
 
-let step
-  (u0: [#g][#g]f32)
-  (v0: [#g][#g]f32)
-  (d0: [#g][#g]f32)
+let step [g]
+  (u0: [g][g]f32)
+  (v0: [g][g]f32)
+  (d0: [g][g]f32)
   (n_solver_steps: i32)
   (time_step: f32)
   (diffusion_rate: f32)
@@ -377,8 +357,8 @@ let step
 -- Visualisation.
 ------------------------------------------------------------
 
-let draw_densities
-  (ds: [#g][#g]f32)
+let draw_densities [g]
+  (ds: [g][g]f32)
   (g_minus_two: i32):
   [g_minus_two][g_minus_two][3]i8 =
   let ks = [1...g_minus_two]
@@ -387,10 +367,10 @@ let draw_densities
                    let value = clamp (255.0f32 * unsafe ds[i, j])
                    in [value, value, value]) ks) ks
 
-let draw_one_frame
-  (u0: [#g][#g]f32)
-  (v0: [#g][#g]f32)
-  (d0: [#g][#g]f32)
+let draw_one_frame [g]
+  (u0: [g][g]f32)
+  (v0: [g][g]f32)
+  (d0: [g][g]f32)
   (n_solver_steps: i32)
   (time_step: f32)
   (diffusion_rate: f32)
@@ -402,10 +382,10 @@ let draw_one_frame
                           time_step diffusion_rate viscosity
   in (draw_densities d1 g_minus_two, u1, v1, d1)
 
-entry draw_one_frame_raw
-  (u0: [#g][#g]f32,
-   v0: [#g][#g]f32,
-   d0: [#g][#g]f32,
+entry draw_one_frame_raw [g]
+  (u0: [g][g]f32,
+   v0: [g][g]f32,
+   d0: [g][g]f32,
    n_solver_steps: i32,
    time_step: f32,
    diffusion_rate: f32,
@@ -420,10 +400,10 @@ entry draw_one_frame_raw
 -- Benchmarking.
 ------------------------------------------------------------
 
-let get_end_frame
-  (u0: [#g][#g]f32)
-  (v0: [#g][#g]f32)
-  (d0: [#g][#g]f32)
+let get_end_frame [g]
+  (u0: [g][g]f32)
+  (v0: [g][g]f32)
+  (d0: [g][g]f32)
   (n_steps: i32)
   (n_solver_steps: i32)
   (time_step: f32)
@@ -434,15 +414,16 @@ let get_end_frame
     step u0 v0 d0 n_solver_steps time_step
          diffusion_rate viscosity
 
-let main (u0: [#g][#g]f32,
-          v0: [#g][#g]f32,
-          d0: [#g][#g]f32,
-          n_steps: i32,
-          n_solver_steps: i32,
-          time_step: f32,
-          diffusion_rate: f32,
-          viscosity: f32): ([g][g]f32,
-                            [g][g]f32,
-                            [g][g]f32) =
+let main [g]
+ (u0: [g][g]f32,
+  v0: [g][g]f32,
+  d0: [g][g]f32,
+  n_steps: i32,
+  n_solver_steps: i32,
+  time_step: f32,
+  diffusion_rate: f32,
+  viscosity: f32): ([g][g]f32,
+                    [g][g]f32,
+                    [g][g]f32) =
   get_end_frame u0 v0 d0 n_steps n_solver_steps
                 time_step diffusion_rate viscosity

@@ -23,10 +23,10 @@
 -- g : data term gradient array, size (m,n).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-let add_descent_div2s( v:  [#m][#n]f32
-                     , xi: [#m][#n](f32,f32)
-                     , g: [#m][#n]f32
-                     , tp: f32 ): [m][n]f32 =
+let add_descent_div2s [m][n] ( v:  [m][n]f32
+                             , xi: [m][n](f32,f32)
+                             , g: [m][n]f32
+                             , tp: f32 ): [m][n]f32 =
   map (\(i: i32): [n]f32  ->
         map (\(j: i32): f32  -> unsafe
                 let v_el = v[i,j]
@@ -101,10 +101,10 @@ let add_descent_div2s( v:  [#m][#n]f32
 -- g : data term gradient array, size (m,n,k).
 -- tp: gradient descent time step
 -----------------------------------------------------------------------
-let add_descent_div2v(v:  [#m][#n][#k]f32
-                 , xi: [#m][#n][#k](f32,f32)
-                 , g: [#m][#n][#k]f32
-                 , tp: f32 ): [m][n][k]f32 =
+let add_descent_div2v [m][n][k] (v:  [m][n][k]f32
+                                , xi: [m][n][k](f32,f32)
+                                , g: [m][n][k]f32
+                                , tp: f32 ): [m][n][k]f32 =
   map (\(i: i32): [n][k]f32  ->
         map (\(j: i32): [k]f32  -> 
                 map (\(q: i32): f32  -> unsafe
@@ -170,15 +170,15 @@ let add_descent_div2v(v:  [#m][#n][#k]f32
 -----------------------------------------------------
 -----------------------------------------------------
 
-let main(v:  [#m][#n]f32
-                    , xi_0: [#m][#n]f32
-                    , xi_1: [#m][#n]f32
-                    , g: [#m][#n]f32
-                    , tp: f32 ): [m][n]f32 =
+let main [m][n] (v:  [m][n]f32
+               , xi_0: [m][n]f32
+               , xi_1: [m][n]f32
+               , g: [m][n]f32
+               , tp: f32 ): [m][n]f32 =
     add_descent_div2s(v, zip@1 xi_0 xi_1, g, tp)
 
-let main2(v:  [#m][#n][#k]f32
-                        , xi: [#m][#n][#k](f32,f32)
-                        , g: [#m][#n][#k]f32
-                        , tp: f32 ): [m][n][k]f32 =
+let main2 [m][n][k] (v:  [m][n][k]f32
+                    , xi: [m][n][k](f32,f32)
+                    , g: [m][n][k]f32
+                    , tp: f32 ): [m][n][k]f32 =
     add_descent_div2v(v, xi, g, tp)

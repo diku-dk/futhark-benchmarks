@@ -15,15 +15,12 @@
 import "lib/bfs_lib"
 import "/futlib/array"
 
-let step(cost: *[#n]i32,
---       nodes_start_index: [#n]i32,
---       nodes_n_edges: [#n]i32,
---       edges_dest: [#e]i32,
-       graph_visited: [#n]bool,
-       graph_mask: *[#n]bool,
-       node_ids: [#e]i32,
-       tids: [#e]i32,
-       updating_graph_mask: *[#n]bool): (*[n]i32, *[n]bool) =
+let step [n][e] (cost: *[n]i32,
+                 graph_visited: [n]bool,
+                 graph_mask: *[n]bool,
+                 node_ids: [e]i32,
+                 tids: [e]i32,
+                 updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool) =
 
   let write_indices = map (\(id: i32, tid: i32): i32  ->
                              if (unsafe graph_visited[id]
@@ -42,9 +39,9 @@ let step(cost: *[#n]i32,
   in (cost', updating_graph_mask')
 
 
-let main(nodes_start_index: [#n]i32,
-                  nodes_n_edges: [#n]i32,
-                  edges_dest: [#e]i32): [n]i32 =
+let main [n][e] (nodes_start_index: [n]i32,
+                 nodes_n_edges: [n]i32,
+                 edges_dest: [e]i32): [n]i32 =
     let source = 0
     let (graph_mask, graph_visited, cost) = unzip (
         map (\i ->  if i==source 
