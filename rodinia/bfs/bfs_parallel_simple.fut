@@ -17,13 +17,14 @@ module BFS = BFSLIB({
   let max(a: i32) (b: i32): i32 =
     if a > b then a else b
 
-  let node_work(tid: i32,
+  let node_work [n][e]
+               (tid: i32,
                 e_max: i32,
-                cost: [#n]i32,
-                nodes_start_index: [#n]i32,
-                nodes_n_edges: [#n]i32,
-                edges_dest: [#e]i32,
-                graph_visited: [#n]bool): ([e_max]i32, [e_max]i32) =
+                cost: [n]i32,
+                nodes_start_index: [n]i32,
+                nodes_n_edges: [n]i32,
+                edges_dest: [e]i32,
+                graph_visited: [n]bool): ([e_max]i32, [e_max]i32) =
     let start_index = unsafe nodes_start_index[tid]
     let n_edges = unsafe nodes_n_edges[tid]
     let edge_indices = map (+start_index) (iota e_max)
@@ -38,12 +39,13 @@ module BFS = BFSLIB({
     let costs = replicate e_max (unsafe cost[tid] + 1)
     in (node_ids, costs)
 
-  let step(cost: *[#n]i32,
-           nodes_start_index: [#n]i32,
-           nodes_n_edges: [#n]i32,
-           edges_dest: [#e]i32,
-           graph_visited: [#n]bool,
-           graph_mask: *[#n]bool): (*[n]i32, *[n]bool, *[]i32) =
+  let step [n][e]
+          (cost: *[n]i32,
+           nodes_start_index: [n]i32,
+           nodes_n_edges: [n]i32,
+           edges_dest: [e]i32,
+           graph_visited: [n]bool,
+           graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[]i32) =
     let active_indices =
       filter (\i -> graph_mask[i]) (iota n)
     let n_indices = (shape active_indices)[0]
@@ -73,5 +75,5 @@ module BFS = BFSLIB({
     in (cost', graph_mask', node_ids)
 })
 
-let main(nodes_start_index: [#n]i32, nodes_n_edges: [#n]i32, edges_dest: [#e]i32): [n]i32 =
+let main [n][e] (nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
   BFS.common_main(nodes_start_index, nodes_n_edges, edges_dest)

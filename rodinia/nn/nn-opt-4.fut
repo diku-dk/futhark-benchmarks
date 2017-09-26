@@ -24,9 +24,10 @@ let findMinNotIn (a : [stride](f32,i32)) (b : [stride](f32,i32)) (k : i32) : (f3
                 in  ok && (b_i != a_i)
              in if ok then (a_v, a_i) else (m, ind)
 
-let main(resultsCount:    i32, lat: f32, lng: f32, 
-        locations_lat: [#numRecords]f32, 
-        locations_lng: [#numRecords]f32    ): ([]i32, []f32) =
+let main [numRecords]
+       (resultsCount:    i32, lat: f32, lng: f32, 
+        locations_lat: [numRecords]f32, 
+        locations_lng: [numRecords]f32    ): ([]i32, []f32) =
   let locations    = zip (locations_lat) (locations_lng)
   -- let resultsCount = if (resultsCount > numRecords) then numRecords else resultsCount
 

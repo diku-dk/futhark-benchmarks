@@ -77,10 +77,10 @@ let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
      , u8(x4), u8(x4>>>8u16)
      ]
 
-let cipher_idea(key: [52]u16, text: [#n]u8): [n]u8 =
+let cipher_idea [n] (key: [52]u16, text: [n]u8): [n]u8 =
   let blocks = reshape (n//8,8) text
   in reshape (n) (map (cipher_idea_block(key)) blocks)
 
-let main(z: [52]u16, dk: [52]u16, text: [#n]u8): ([n]u8, [n]u8) =
+let main [n] (z: [52]u16, dk: [52]u16, text: [n]u8): ([n]u8, [n]u8) =
   let text_encrypted = cipher_idea(z, text)
   in (text_encrypted, cipher_idea(dk, text_encrypted))
