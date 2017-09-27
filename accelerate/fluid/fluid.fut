@@ -25,29 +25,20 @@
 -- first calculate all the inner values, and then write the outer values
 -- afterwards.
 --
--- This file has no main function, only fluid simulation library functions.  Two
--- Futhark programs use this library:
---
---   + `fluid-visualize-densities.fut`: Generate `n_steps` frames with the
---     evolving densities.
---   + `fluid-measure.fut`: Calculate the resulting densities and forces after
---     `n_steps`, not spending memory to store the intermediate frames.
---
--- The different `main` functions take the same arguments.
---
 -- ==
 -- compiled input @ benchmarking/medium.in
 
 -- medium.in attributes: n_steps=1, n_solver_steps=40, grid_res=100
 
 
-------------------------------------------------------------
--- General helper functions.
-------------------------------------------------------------
-
 import "/futlib/array"
 
 default (f32, i32)
+
+
+------------------------------------------------------------
+-- General helper functions.
+------------------------------------------------------------
 
 let clamp (x: f32): i8 =
   if x < 0.0
@@ -126,8 +117,9 @@ module edge_handling (mapper: edge_handling_mapper) = {
        else outer
 }
 
+
 ------------------------------------------------------------
--- lin_solve.
+-- Implementation.
 ------------------------------------------------------------
 
 module edge_handling_lin_solve = edge_handling({
@@ -162,9 +154,6 @@ let lin_solve [g]
              [0..<g])
         [0..<g]
 
-------------------------------------------------------------
--- diffuse.
-------------------------------------------------------------
 
 let diffuse [g]
   (s: [g][g]f32)
@@ -177,9 +166,6 @@ let diffuse [g]
            * f32 (g - 2) * f32 (g - 2))
   in lin_solve n_solver_steps s b a (1.0 + 4.0 * a)
 
-------------------------------------------------------------
--- advect.
-------------------------------------------------------------
 
 module edge_handling_advect = edge_handling({
   type info = ([][]f32, [][]f32, [][]f32, f32)
@@ -226,9 +212,6 @@ let advect [g]
                     [0..<g])
          [0..<g]
 
-------------------------------------------------------------
--- project.
-------------------------------------------------------------
 
 module edge_handling_project_top = edge_handling({
   type info = ([][]f32, [][]f32)
@@ -239,10 +222,23 @@ module edge_handling_project_top = edge_handling({
     (g: i32)
     ((u0, v0): info):
     f32 =
-    unsafe (-0.5f32 * (u0[i + 1, j]
-                       - u0[i - 1, j]
-                       + v0[i, j + 1]
-                       - v0[i, j - 1]) / f32 g)
+    unsafe (-0.5 * (u0[i + 1, j]
+                    - u0[i - 1, j]
+                    + v0[i, j + 1]
+                    - v0[i, j - 1]) / f32 g)
+})
+
+module edge_handling_project_bottom = edge_handling({
+  type info = ([][]f32, [][]f32, i32, i32, i32, i32)
+
+  let inner
+    (i: i32)
+    (j: i32)
+    (g: i32)
+    ((p0, s0, i0d, j0d, i1d, j1d): info):
+    f32 =
+    unsafe (s0[i, j] - 0.5 * f32 (g - 2)
+            * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
 })
 
 let project [g]
@@ -251,14 +247,13 @@ let project [g]
   (v0: [g][g]f32):
   (*[g][g]f32, *[g][g]f32) =
 
-  let project_top:
-    [g][g]f32 =
+  let project_top: [g][g]f32 =
     map (\i -> map (\j ->
                      edge_handling_project_top.handle i j g 0 (u0, v0))
-                    [0..<g])
-         [0..<g]
+                   [0..<g])
+        [0..<g]
 
-  let project_bottom [g]
+  let project_bottom
     (p0: [g][g]f32)
     (s0: [g][g]f32)
     (b: i32)
@@ -267,37 +262,10 @@ let project [g]
     (i1d: i32)
     (j1d: i32):
     *[g][g]f32 =
-
-    let project_bottom_inner
-      (i: i32)
-      (j: i32):
-      f32 =
-      unsafe (s0[i, j] - 0.5 * f32 (g - 2)
-              * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
-
-    let project_bottom_outer
-      (i: i32)
-      (j: i32):
-      f32 =
-
-      let project_bottom_outer_base
-        (i': i32)
-        (j': i32):
-        f32 =
-        let (i1, j1, f) = outermost_inner_index i' j' g b
-        in f * project_bottom_inner i1 j1
-
-      in if in_outside_corner i j g
-         then let (i1, j1, i2, j2) = corner_index_neighbors i j g
-              in 0.5f32 * (project_bottom_outer_base i1 j1
-                           + project_bottom_outer_base i2 j2)
-         else project_bottom_outer_base i j
-
-    in map (\i -> map (\j ->
-                       if inside i j g
-                       then project_bottom_inner i j
-                       else project_bottom_outer i j)
-                  [0..<g])
+    map (\i -> map (\j ->
+                    edge_handling_project_bottom.handle i j g b
+                      (p0, s0, i0d, j0d, i1d, j1d))
+                   [0..<g])
         [0..<g]
 
   let div0 = project_top
@@ -306,36 +274,10 @@ let project [g]
   let v1 = project_bottom p0 v0 2 0 1 0 (-1)
   in (u1, v1)
 
-------------------------------------------------------------
--- Step functions.
-------------------------------------------------------------
 
-let dens_step [g]
-  (d0: [g][g]f32)
-  (u0: [g][g]f32)
-  (v0: [g][g]f32)
-  (n_solver_steps: i32)
-  (diffusion_rate: f32)
-  (time_step: f32):
-  *[g][g]f32 =
-  let d1 = diffuse d0 0 n_solver_steps diffusion_rate time_step
-  let d2 = advect d1 u0 v0 0 time_step
-  in d2
-
-let vel_step [g]
-  (u0: [g][g]f32)
-  (v0: [g][g]f32)
-  (n_solver_steps: i32)
-  (viscosity: f32)
-  (time_step: f32):
-  (*[g][g]f32, *[g][g]f32) =
-  let u1 = diffuse u0 1 n_solver_steps viscosity time_step
-  let v1 = diffuse v0 2 n_solver_steps viscosity time_step
-  let (u2, v2) = project n_solver_steps u1 v1
-  let u3 = advect u2 u2 v2 1 time_step
-  let v3 = advect v2 u2 v2 2 time_step
-  let (u4, v4) = project n_solver_steps u3 v3
-  in (u4, v4)
+------------------------------------------------------------
+-- Step function.
+------------------------------------------------------------
 
 let step [g]
   (u0: [g][g]f32)
@@ -346,10 +288,23 @@ let step [g]
   (diffusion_rate: f32)
   (viscosity: f32):
   (*[g][g]f32, *[g][g]f32, *[g][g]f32) =
-  let (u1, v1) = vel_step u0 v0 n_solver_steps
-                          viscosity time_step
-  let d1 = dens_step d0 u0 v0 n_solver_steps
-                     diffusion_rate time_step
+
+  let vel_step =
+    let u1 = diffuse u0 1 n_solver_steps viscosity time_step
+    let v1 = diffuse v0 2 n_solver_steps viscosity time_step
+    let (u2, v2) = project n_solver_steps u1 v1
+    let u3 = advect u2 u2 v2 1 time_step
+    let v3 = advect v2 u2 v2 2 time_step
+    let (u4, v4) = project n_solver_steps u3 v3
+    in (u4, v4)
+
+  let dens_step =
+    let d1 = diffuse d0 0 n_solver_steps diffusion_rate time_step
+    let d2 = advect d1 u0 v0 0 time_step
+    in d2
+
+  let (u1, v1) = vel_step
+  let d1 = dens_step
   in (u1, v1, d1)
 
 
@@ -364,7 +319,7 @@ let draw_densities [g]
   let ks = [1...g_minus_two]
   in map (\(i: i32): [g_minus_two][3]i8  ->
             map (\(j: i32): [3]i8  ->
-                   let value = clamp (255.0f32 * unsafe ds[i, j])
+                   let value = clamp (255.0 * unsafe ds[i, j])
                    in [value, value, value]) ks) ks
 
 let draw_one_frame [g]
