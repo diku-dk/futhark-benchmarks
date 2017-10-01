@@ -221,7 +221,7 @@ let value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: 
   let (myDy, myDyy) = initOperator(myY)
   let myResult = setPayoff(strike, myX, myY)
 
-  let myResult = loop (myResult) for i in [numT-1..numT-2...0] do
+  let myResult = loop (myResult) for i in [numT-2..numT-3...0] do
       let (myMuX, myVarX, myMuY, myVarY) =
         updateParams(myX, myY, myTimeline, i, alpha, beta, nu)
       let myResult = rollback(myX, myY, myTimeline, myResult,
