@@ -1056,7 +1056,7 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
       let scale_min = max_scale_factor()
 
       -- EVALUATE ALL equations
-      let (y_k, err) = reshape (equs) (embedded_fehlberg_7_8( f32(km1), h, y_km1, params))
+      let (y_k, err) = unsafe reshape (equs) (embedded_fehlberg_7_8( f32(km1), h, y_km1, params))
 
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
       let errs = map (\(e: f32): bool  -> if e > 0.0f32 then true else false) err
