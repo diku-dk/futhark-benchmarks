@@ -32,6 +32,7 @@ let initOperator [n] (x: [n]f32): ([n][]f32,[n][]f32) =
   let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]]
   let dxx_low = [[0.0, 0.0, 0.0]]
   let dx_mids = map (\(i: i32): ([]f32,[]f32)  ->
+                       unsafe
                        let dxl = x[i] - x[i-1]
                        let dxu = x[i+1] - x[i]
                        in ( [ -dxu/dxl/(dxl+dxu), (dxu/dxl - dxl/dxu)/(dxl+dxu),      dxl/dxu/(dxl+dxu) ],
