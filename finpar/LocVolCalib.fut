@@ -54,15 +54,15 @@ let setPayoff [numX][numY] (strike: f32, myX: [numX]f32, _myY: [numY]f32): *[num
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
 let updateParams [numX][numY]
-                (myX:  [numX]f32, myY: [numY]f32, myTimeline: []f32,
-                 g: i32, _alpha: f32, beta: f32, nu: f32)
+                (myX:  [numX]f32, myY: [numY]f32,
+                 tnow: f32, _alpha: f32, beta: f32, nu: f32)
   : ([][]f32, [][]f32, [][]f32, [][]f32) =
   let myMuY  = replicate numX (replicate numY 0.0)
   let myVarY = replicate numX (replicate numY (nu*nu))
   let myMuX  = replicate numY (replicate numX 0.0)
   let myVarX = map (\yj  ->
                       map (\xi: f32  ->
-                             f32.exp(2.0*(beta*f32.log(xi) + yj - 0.5*nu*nu*myTimeline[g]))
+                             f32.exp(2.0*(beta*f32.log(xi) + yj - 0.5*nu*nu*tnow))
                           ) myX
                    ) myY
   in  ( myMuX, myVarX, myMuY, myVarY )
@@ -186,12 +186,12 @@ let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
 
 let rollback
   [numX][numY]
-  (_myX: [numX]f32, _myY: [numY]f32, myTimeline: []f32, myResult: *[][]f32,
+  (tnow: f32, tnext: f32, myResult: [numY][numX]f32,
    myMuX: [][]f32, myDx: [numX][]f32, myDxx: [][]f32, myVarX: [][]f32,
-   myMuY: [][]f32, myDy: [numY][]f32, myDyy: [][]f32, myVarY: [][]f32, g: i32)
+   myMuY: [][]f32, myDy: [numY][]f32, myDyy: [][]f32, myVarY: [][]f32)
   : *[numY][numX]f32 =
 
-  let dtInv = 1.0/(myTimeline[g+1]-myTimeline[g])
+  let dtInv = 1.0/(tnext-tnow)
 
   -- explicitX
   let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult )
@@ -220,13 +220,14 @@ let value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: 
   let (myDx, myDxx) = initOperator(myX)
   let (myDy, myDyy) = initOperator(myY)
   let myResult = setPayoff(strike, myX, myY)
+  let myTimeline_neighbours = reverse (zip (init myTimeline) (tail myTimeline))
 
-  let myResult = loop (myResult) for i in [numT-2..numT-3...0] do
+  let myResult = loop (myResult) for (tnow,tnext) in myTimeline_neighbours do
       let (myMuX, myVarX, myMuY, myVarY) =
-        updateParams(myX, myY, myTimeline, i, alpha, beta, nu)
-      let myResult = rollback(myX, myY, myTimeline, myResult,
+        updateParams(myX, myY, tnow, alpha, beta, nu)
+      let myResult = rollback(tnow, tnext, myResult,
                               myMuX, myDx, myDxx, myVarX,
-                              myMuY, myDy, myDyy, myVarY, i)
+                              myMuY, myDy, myDyy, myVarY)
 
       in myResult
   in myResult[myYindex,myXindex]
