@@ -3,7 +3,7 @@
 --
 -- ==
 --
--- input @ data/medium.in
+-- compiled input @ data/medium.in
 -- output @ data/medium.out
 
 import "/futlib/math"
