@@ -834,7 +834,7 @@ let pricer_of_swaption(today:  date,
     let swaption = extended_swaption_of_swaption(swaption)
     let (maturity, schedulei, (strike,unused)) = swaption
 
-    let n_schedi = (shape schedulei)[0]
+    let n_schedi = length schedulei
     let ci = map (\(i: i32): f32  ->
                         let (d_beg,d_end) = schedulei[i]
                         let tau = date_act_365(d_end,d_beg)in

@@ -49,7 +49,7 @@ module BFSLIB(S: STEP_FUN) = {
                  graph_visited,
                  graph_mask)
 
-        let n_indices = (shape updating_indices)[0]
+        let n_indices = length updating_indices
 
         let graph_mask'' =
           scatter graph_mask' updating_indices (replicate n_indices true)

@@ -25,7 +25,7 @@ let step [n][e] (cost: *[n]i32,
                  graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[]i32) =
   let active_indices =
     filter (\i -> graph_mask[i]) (iota n)
-  let n_indices = (shape active_indices)[0]
+  let n_indices = length active_indices
   let graph_mask' =
     scatter graph_mask active_indices (replicate n_indices false)
 
@@ -85,7 +85,7 @@ let common_main [n][e] (nodes_start_index: [n]i32,
                     graph_visited,
                     graph_mask)
 
-        let n_indices = (shape updating_indices)[0]
+        let n_indices = length updating_indices
 
         let graph_mask'' =
             scatter graph_mask' updating_indices (replicate n_indices true)

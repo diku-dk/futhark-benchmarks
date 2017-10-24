@@ -27,7 +27,7 @@ import "/futlib/array"
            updating_graph_mask: *[n]bool) : (*[n]i32, *[n]bool, *[n]bool) =
     let active_indices =
       filter (\i -> graph_mask[i]) (iota n)
-    let n_indices = (shape active_indices)[0]
+    let n_indices = length active_indices
     let graph_mask' =
       scatter graph_mask active_indices (replicate n_indices false)
 
