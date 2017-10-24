@@ -20,7 +20,7 @@ let i32_plus_scan_segm [k] (array: [k]i32, mask: [k]bool): [k]i32 =
 -- Get the updating indices through a filter.
 let get_updating_indices_alt0 [n] (updating_graph_mask: [n]bool): (*[]i32, i32) =
   let updating_indices = filter (\i -> updating_graph_mask[i]) (iota(n))
-  let n_indices = (shape updating_indices)[0]
+  let n_indices = length updating_indices
   in (updating_indices, n_indices)
 
 -- Alternatively, get the updating indices through two maps and a reduce, and

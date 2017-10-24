@@ -84,7 +84,7 @@ let main [n][e] (nodes_start_index: [n]i32,
              node_ids,
              tids)
 
-      let n_indices = (shape updating_indices)[0]
+      let n_indices = length updating_indices
 
       let graph_mask'' =
         scatter graph_mask' updating_indices (replicate n_indices true)

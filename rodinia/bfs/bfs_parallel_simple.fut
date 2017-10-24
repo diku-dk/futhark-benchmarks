@@ -48,7 +48,7 @@ module BFS = BFSLIB({
            graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[]i32) =
     let active_indices =
       filter (\i -> graph_mask[i]) (iota n)
-    let n_indices = (shape active_indices)[0]
+    let n_indices = length active_indices
 
     -- We calculate the maximum number of edges for a node.  This is necessary,
     -- since the number of edges are irregular, and since we want to construct a
