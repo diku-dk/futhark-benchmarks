@@ -36,26 +36,27 @@ let doCompute [num1][num2][numBBins]
               numBins2: i32,
               binb: [numBBins]f64
              ): *[numBins2]i32 =
-    let value = map (\(xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32  ->
-            stream_map (\[chunk] (inner: [chunk]vec3): *[numBins2]i32  ->
-                    loop dBins = replicate numBins2 0i32 for i < chunk do
-                        let (xInner, yInner, zInner) = inner[i]
-                        let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
-                        let (min,max) =
-                          loop (min, max) = (0, numBins) while (min+1) < max do
-                            let k = (min+max) / 2
-                            in unsafe if dot >= binb[k]
-                                      then (min, k)
-                                      else (k, max)
+    let value = map (\(xOuter: f64, yOuter: f64, zOuter: f64): *[numBins2]i32 ->
+            -- There used to be a stream_map here, but it was used
+            -- incorrectly.
+            let inner = data2 let chunk = num2 in
+            loop dBins = replicate numBins2 0i32 for i < chunk do
+                let (xInner, yInner, zInner) = inner[i]
+                let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
+                let (min,max) =
+                  loop (min, max) = (0, numBins) while (min+1) < max do
+                    let k = (min+max) / 2
+                    in unsafe if dot >= binb[k]
+                              then (min, k)
+                              else (k, max)
 
-                        let index = unsafe if dot >= binb[min]
-                                    then min
-                                    else if dot < binb[max]
-                                        then max+1
-                                        else max
+                let index = unsafe if dot >= binb[min]
+                            then min
+                            else if dot < binb[max]
+                                then max+1
+                                else max
 
-                        in unsafe let dBins[index] = dBins[index] + 1i32 in dBins
-                ) data2
+                in unsafe let dBins[index] = dBins[index] + 1i32 in dBins
         ) data1
 
     in sumBins(value)
