@@ -29,8 +29,8 @@ module price_european_calls(R: real) : {
 } = {
 
 type real = R.t
-let real (x: f64) = R.from_f64 x
-let int (x: i32) = R.from_i32 x
+let real (x: f64) = R.f64 x
+let int (x: i32) = R.i32 x
 open R
 
 module c64 = complex(R)

@@ -20,8 +20,8 @@ type real = real.t
 module complex = complex real
 type complex = complex.complex
 
-let real (x: f32) = real.from_f64 (f64 x)
-let int (x: i32) = real.from_i32 x
+let real (x: f32) = real.f32 x
+let int (x: i32) = real.i32 x
 
 let dot (c: complex): real =
   let (r, i) = (complex.re c, complex.im c)

@@ -15,8 +15,8 @@ module heston (real: real)
 } = {
 
 type real = real.t
-let real (x: f64) = real.from_f64 x
-let int (x: i32) = real.from_i32 x
+let real (x: f64) = real.f64 x
+let int (x: i32) = real.i32 x
 
 let (x: real) +. (y: real) = x real.+ y
 let (x: real) *. (y: real) = x real.* y
@@ -36,7 +36,7 @@ module price_european_calls_real = price_european_calls real
 module heston_least_squares = least_squares real rand {
   open (relative_distance real)
 
-  let real (x: f64) = real.from_f64 x
+  let real (x: f64) = real.f64 x
 
   type objective_ctx = {day_count_fractions: []real.t,
                         quotes: []{maturity: i32, strike: real.t, vega: real.t, weight: real.t},

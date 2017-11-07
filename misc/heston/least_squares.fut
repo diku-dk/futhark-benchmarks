@@ -15,7 +15,7 @@ module absolute_distance(R: real): distance with real = R.t = {
     let norm (price: real) (quote: real) =
       (let rel = (price - quote) / quote
        in rel * rel)
-    in reduce (+) (R.from_i32 0) (map norm quotes prices)
+    in reduce (+) (R.i32 0) (map norm quotes prices)
 }
 
 module relative_distance(R: real): distance with real = R.t = {
@@ -28,7 +28,7 @@ module relative_distance(R: real): distance with real = R.t = {
       (let dif = price - quote
        in dif * dif)
     let a = map norm quotes prices
-    in reduce (+) (R.from_i32 0) (intrinsics.opaque a)
+    in reduce (+) (R.i32 0) (intrinsics.opaque a)
 }
 
 module type objective = {
@@ -78,12 +78,12 @@ module least_squares (real: real)
     in (rand.join_rng rngs', xs)
 
   let fixed_value (v: real): optimization_variable real =
-    (true, v, {lower_bound=real.from_i32 0,
-               upper_bound=real.from_i32 0,
-               initial_value=real.from_i32 0})
+    (true, v, {lower_bound=real.i32 0,
+               upper_bound=real.i32 0,
+               initial_value=real.i32 0})
 
   let optimize_value (r: range real): optimization_variable real =
-    (false, real.from_i32 0, r)
+    (false, real.i32 0, r)
 
 
   -- Parameterisation of how the randomised search takes place.
@@ -127,7 +127,7 @@ module least_squares (real: real)
     let objective (x: [num_free_vars]real): real =
       P.distance quotes (P.objective objective_ctx (active_vars vars_to_free_vars variables x))
 
-    let bounds = (real.from_i32 0, real.from_i32 1)
+    let bounds = (real.i32 0, real.i32 1)
     let rng = rand.rng_from_seed [0x123]
     let rngs = rand.split_rng np rng
     let (rngs, rss) = unzip (map (\rng -> nrand bounds rng num_free_vars) rngs)
@@ -184,7 +184,7 @@ module least_squares (real: real)
       loop (rng, ncalls, num_it, (fx0, best_idx, fx, x)) =
            (rng, np, max_iterations, (fx0, best_idx, fx, x))
       while num_it i32.> 0 && max_global i32.> ncalls && fx0 > target do
-      (let (rng,differential_weight) = random_real.rand (real.from_fraction 1 2, real.from_i32 1) rng
+      (let (rng,differential_weight) = random_real.rand (real.from_fraction 1 2, real.i32 1) rng
        let rngs = rand.split_rng np rng
        let (rngs, v) = unzip (map (mutation differential_weight best_idx x) rngs (iota np) x)
        let rng = rngs[0]
@@ -214,7 +214,7 @@ module least_squares (real: real)
       unzip (map (\(_, _, {initial_value, lower_bound, upper_bound}) ->
                   (initial_value, lower_bound, upper_bound)) free_vars)
 
-    let rms_of_error (err: real) = real.sqrt(err * (real.from_i32 10000 / real.from_i32 num_quotes))
+    let rms_of_error (err: real) = real.sqrt(err * (real.i32 10000 / real.i32 num_quotes))
 
     let (x, num_feval) =
       if max_global i32.> 0
@@ -222,7 +222,7 @@ module least_squares (real: real)
                       {np = np, cr = real.from_fraction 9 10} lower_bounds upper_bounds
                       {max_iterations = 0x7FFFFFFF,
                        max_global = max_global,
-                       target = real.from_i32 0})
+                       target = real.i32 0})
            in (#x0 res, #num_feval res)
       else (x, 0)
 
