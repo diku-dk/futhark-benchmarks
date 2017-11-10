@@ -9,15 +9,15 @@
 
 -- Multiplicative inverse mod 0x10001.
 let inv(a: i16): i32 =
-  let a = i32(a)&0xFFFF
+  let a = i32.i16(a) & 0xFFFF
   let b = 0x10001
   let u = 0
   let v = 1
   let (_,_,u,_) = loop ((a,b,u,v)) while a > 0i32 do
-    let q = i32((i64(b)&0xFFFFFFFFi64) // (i64(a)&0xFFFFi64))
-    let r = i32((i64(b)&0xFFFFFFFFi64) %% (i64(a)&0xFFFFi64))
+    let q = i32.i64((i64.i32(b)&0xFFFFFFFFi64) // (i64.i32(a)&0xFFFFi64))
+    let r = i32.i64((i64.i32(b)&0xFFFFFFFFi64) %% (i64.i32(a)&0xFFFFi64))
 
-    let b = i32(a)
+    let b = a
     let a = r
 
     let t = v
@@ -56,22 +56,22 @@ let decryptionKey(z: [52]i16): [52]i16 =
   -- Key starts out blank.
   let dk = replicate 52 0i16
   let t1 = inv(z[0])
-  let t2 = i32(-z[1]) & 0xFFFF
-  let t3 = i32(-z[2]) & 0xFFFF
-  let dk[51] = i16(inv(z[3]))
-  let dk[50] = i16(t3)
-  let dk[49] = i16(t2)
-  let dk[48] = i16(t1)
+  let t2 = i32.i16(-z[1]) & 0xFFFF
+  let t3 = i32.i16(-z[2]) & 0xFFFF
+  let dk[51] = i16.i32(inv(z[3]))
+  let dk[50] = i16.i32(t3)
+  let dk[49] = i16.i32(t2)
+  let dk[48] = i16.i32(t1)
   let dk = loop (dk) for i < 7 do
     let kb = 4 + 6 * i
     let jb = 47 - 6 * i
     let t1 = z[kb+0]
     let dk[jb-0] = z[kb+1]
     let dk[jb-1] = t1
-    let t1 = i16(inv(z[kb+2]))
+    let t1 = i16.i32(inv(z[kb+2]))
     let t2 = -z[kb+3]
     let t3 = -z[kb+4]
-    let dk[jb-2] = i16(inv(z[kb+5]))
+    let dk[jb-2] = i16.i32(inv(z[kb+5]))
     let dk[jb-3] = t2
     let dk[jb-4] = t3
     let dk[jb-5] = t1
@@ -82,10 +82,10 @@ let decryptionKey(z: [52]i16): [52]i16 =
   let t1 = z[kb+0]
   let dk[jb-0] = z[kb+1]
   let dk[jb-1] = t1
-  let t1 = i16(inv(z[kb+2]))
+  let t1 = i16.i32(inv(z[kb+2]))
   let t2 = -z[kb+3]
   let t3 = -z[kb+4]
-  let dk[jb-2] = i16(inv(z[kb+5]))
+  let dk[jb-2] = i16.i32(inv(z[kb+5]))
   let dk[jb-3] = t3
   let dk[jb-4] = t2
   let dk[jb-5] = t1

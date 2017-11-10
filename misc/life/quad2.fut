@@ -9,7 +9,7 @@ import "/futlib/colour"
 module quad2_rules: rules_and_visuals = {
   type cell = i8
 
-  let value (c: cell) = i32 c
+  let value (c: cell) = i32.i8 c
 
   let weights = [[0,1,0],
                  [1,1,1],
@@ -33,7 +33,7 @@ module quad2_rules: rules_and_visuals = {
                    argb.green,
                    argb.red,
                    argb.yellow]
-    in unsafe colours[i32 c]
+    in unsafe colours[i32.i8 c]
 }
 
 module quad2 = gen_life_vis quad2_rules quad2_rules

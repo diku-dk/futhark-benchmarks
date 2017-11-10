@@ -8,7 +8,7 @@
 -- output @ crypt-data/medium.out
 
 let mk16b(upper: u8, lower: u8): u16 =
-  (u16(upper) & 0xFFu16) << 8u16 | (u16(lower) & 0xFFu16)
+  (u16.u8(upper) & 0xFFu16) << 8u16 | (u16.u8(lower) & 0xFFu16)
 
 let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
   let x1 = mk16b(block[1], block[0])
@@ -19,7 +19,7 @@ let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
     let ik = i * 6
     -- 1) Multiply (modulo 0x10001), 1st text sub-block with 1st key
     -- sub-block.
-    let x1 = u16(u32(x1) * u32(key[ik+0]) %% 0x10001u32)
+    let x1 = u16.u32(u32.u16(x1) * u32.u16(key[ik+0]) %% 0x10001u32)
     -- 2) Add (modulo 0x10000), 2nd text sub-block with 2nd key
     -- sub-block.
     let x2 = x2 + key[ik+1]
@@ -28,19 +28,19 @@ let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
     let x3 = x3 + key[ik+2]
     -- 4) Multiply (modulo 0x10001), 4th text sub-block
     -- with 4th key sub-block.
-    let x4 = u16(u32(x4) * u32(key[ik+3]) %% 0x10001u32)
+    let x4 = u16.u32(u32.u16(x4) * u32.u16(key[ik+3]) %% 0x10001u32)
     -- 5) XOR results from steps 1 and 3.
     let t2 = x1 ^ x3
     -- 6) XOR results from steps 2 and 4.  Included in step 8.
 
     -- 7) Multiply (modulo 0x10001), result of step 5 with 5th key
     -- sub-block.
-    let t2 = u16(u32(t2) * u32(key[ik+4]) %% 0x10001u32)
+    let t2 = u16.u32(u32.u16(t2) * u32.u16(key[ik+4]) %% 0x10001u32)
     -- 8) Add (modulo 0x10000), results of steps 6 and 7.
     let t1 = t2 + (x2 ^ x4)
     -- 9) Multiply (modulo 0x10001), result of step 8 with 6th key
     -- sub-block.
-    let t1 = u16(u32(t1) * u32(key[ik+5]) %% 0x10001u32)
+    let t1 = u16.u32(u32.u16(t1) * u32.u16(key[ik+5]) %% 0x10001u32)
     -- 10) Add (modulo 0x10000), results of steps 7 and 9.
     let t2 = t1 + t2
     -- 11) XOR results from steps 1 and 9.
@@ -58,7 +58,7 @@ let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
 
   -- 1) Multiply (modulo 0x10001), 1st text-block
   -- with 1st key sub-block.
-  let x1 = u16(u32(x1) * u32(key[ik+0]) %% 0x10001u32)
+  let x1 = u16.u32(u32.u16(x1) * u32.u16(key[ik+0]) %% 0x10001u32)
   -- 2) Add (modulo 0x10000), 2nd text sub-block
   -- with 2nd key sub-block. It says x3, but that is to undo swap
   -- of subblocks 2 and 3 in 8th processing round.
@@ -69,12 +69,12 @@ let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
   let x2 = x2 + key[ik+2]
   -- 4) Multiply (modulo 0x10001), 4th text-block with 4th key
   -- sub-block.
-  let x4 = u16(u32(x4) * u32(key[ik+3]) %% 0x10001u32)
+  let x4 = u16.u32(u32.u16(x4) * u32.u16(key[ik+3]) %% 0x10001u32)
   -- Repackage from 16-bit sub-blocks to 8-bit byte array text2.
-  in [ u8(x1), u8(x1>>>8u16)
-     , u8(x3), u8(x3>>>8u16)
-     , u8(x2), u8(x2>>>8u16)
-     , u8(x4), u8(x4>>>8u16)
+  in [ u8.u16(x1), u8.u16(x1>>>8u16)
+     , u8.u16(x3), u8.u16(x3>>>8u16)
+     , u8.u16(x2), u8.u16(x2>>>8u16)
+     , u8.u16(x4), u8.u16(x4>>>8u16)
      ]
 
 let cipher_idea [n] (key: [52]u16, text: [n]u8): [n]u8 =

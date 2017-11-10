@@ -110,7 +110,7 @@ let log2 (x: f32) = f32.log x / f32.log 2.0
 let escape_to_colour (limit: i32) (points: i32)
                      (z: complex, n: i32): argb.colour =
   if limit == n then argb.black
-  else let smooth = log2 (log2 (f32 (real.to_f64 (complex.mag z))))
+  else let smooth = log2 (log2 (f32.f64 (real.to_f64 (complex.mag z))))
        let scale = 256.0
        let shift = 1664.0
        let ix = i32 (f32.sqrt (f32 n + 1.0 - smooth) * scale + shift)

@@ -31,7 +31,7 @@ let r: f32 = 0.03
 let equal(x1: f32, x2: f32): bool =
     f32.abs(x1-x2) <= 1.0e-8
 
-let date_act_365(t1: date, t2: date): f32 = f32 (diff_dates t2 t1)
+let date_act_365(t1: date, t2: date): f32 = f32.f64 (diff_dates t2 t1)
 
 let add_years(date: date, nbyears: f32): date =
   add_months date (i32 (nbyears * 12.0))

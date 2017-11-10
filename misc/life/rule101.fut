@@ -14,7 +14,7 @@ import "/futlib/colour"
 module rule101_rules: rules_and_visuals_1d = {
   type cell = bool
 
-  let value (b: cell) = i32 b
+  let value (b: cell) = i32.bool b
 
   let weights = [1,2,2]
 
