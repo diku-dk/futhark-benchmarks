@@ -64,11 +64,11 @@ let point(scale: f32, x: f32, y: f32): (f32, f32) =
 let rampColour(v: f32): (f32, f32, f32) =
   (1.0, 0.4 + (v * 0.6), v) -- rgb
 
-let intPixel(t: f32): u8 =
-  u8(255.0 * t)
+let intPixel(t: f32): u32 =
+  u32.f32(255.0 * t)
 
 let intColour((r,g,b): (f32, f32, f32)): u32 =
-  u32(intPixel(r)) << 16u32 | u32(intPixel(g)) << 8u32 | u32(intPixel(b))
+  intPixel(r) << 16u32 | intPixel(g) << 8u32 | intPixel(b)
 
 let wrap(n: f32): f32 =
   let n' = n - f32(i32(n))

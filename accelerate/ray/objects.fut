@@ -58,8 +58,8 @@ module plane: object with object = plane = {
 let checkers ((x,_,z): position): argb.colour =
   let v1 = i32 (x/100.0) % 2
   let v2 = i32 (z/100.0) % 2
-  let v3 = i32 (x < 0.0)
-  let v4 = i32 (z < 0.0)
+  let v3 = i32.bool (x < 0.0)
+  let v4 = i32.bool (z < 0.0)
   in if v1 ^ v2 ^ v3 ^ v4 == 1
      then argb.from_rgba 1.0 1.0 1.0 1.0
      else argb.from_rgba 0.4 0.4 0.4 1.0

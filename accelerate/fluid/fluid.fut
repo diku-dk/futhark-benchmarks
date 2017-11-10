@@ -45,7 +45,7 @@ let clamp (x: f32): i8 =
   then 0i8
   else if x > 255.0
   then 255i8
-  else i8 x
+  else i8.f32 x
 
 let inside
   (i: i32)

@@ -111,7 +111,9 @@ entry render_frame [row][col] (temp: [row][col]f32): [row][col][3]i8 =
                            then coldest
                            else (if c > hottest then hottest else c))
                  let intensity = ((c' - coldest) / (hottest - coldest)) * 256f32
-                 in [i8(intensity), i8(intensity/2f32), i8(intensity/2f32)]) (
+                 in [i8.f32(intensity),
+                     i8.f32(intensity/2f32),
+                     i8.f32(intensity/2f32)]) (
                temp_r)) temp
 
 let main [row][col] (num_iterations: i32, temp: [row][col]f32, power: [row][col]f32): [][]f32 =

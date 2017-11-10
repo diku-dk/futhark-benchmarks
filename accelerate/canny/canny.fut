@@ -30,12 +30,12 @@ import "/futlib/math"
 default (f32)
 
 let luminanceOfRGBA32(p: i32): f32 =
-  let r = i8(p >> 24)
-  let g = i8(p >> 16)
-  let b = i8(p >> 8)
-  let r' = 0.3  * f32(r)
-  let g' = 0.59 * f32(g)
-  let b' = 0.11 * f32(b)
+  let r = i8.i32(p >> 24)
+  let g = i8.i32(p >> 16)
+  let b = i8.i32(p >> 8)
+  let r' = 0.3  * f32.i8(r)
+  let g' = 0.59 * f32.i8(g)
+  let b' = 0.11 * f32.i8(b)
   in (r' + g' + b') / 255.0
 
 let clamp(lower: i32, x: i32, upper: i32): i32 =

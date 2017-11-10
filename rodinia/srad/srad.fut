@@ -49,7 +49,7 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
   let image = map (\(row: []u8): [cols]f32  ->
                     map (\(pixel: u8): f32  ->
-                          f32.exp(f32(pixel)/255.0)) row) image
+                          f32.exp(f32.u8(pixel)/255.0)) row) image
   let image = loop (image) for _i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
     let sum = reduce (+) (0.0) (reshape (ne) image)

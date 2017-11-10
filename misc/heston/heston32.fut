@@ -20,4 +20,5 @@ let main [num_quotes]
          (quotes_maturity: [num_quotes]i32)
          (quotes_strike: [num_quotes]f64)
          (quotes_quote: [num_quotes]f64) =
-  heston32.heston max_global num_points np today quotes_maturity (map f32 quotes_strike) (map f32 quotes_quote)
+  heston32.heston max_global num_points np today quotes_maturity
+  (map f32.f64 quotes_strike) (map f32.f64 quotes_quote)
