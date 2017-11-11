@@ -20,7 +20,6 @@ type real = real.t
 module complex = complex real
 type complex = complex.complex
 
-let real (x: f32) = real.f32 x
 let int (x: i32) = real.i32 x
 
 let dot (c: complex): real =

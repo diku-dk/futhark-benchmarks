@@ -67,7 +67,6 @@ module least_squares (real: real)
                    -> calibration_result P.real
 } = {
   type real = real.t
-  open real
 
   module random_i32 = uniform_int_distribution i32 rand
   module random_real = uniform_real_distribution real rand
@@ -108,10 +107,10 @@ module least_squares (real: real)
         vars_to_free_vars variables
 
   let min_and_idx (a:real,a_i:i32) (b:real,b_i:i32) =
-    if      a < b         then (a,a_i)
-    else if b < a         then (b,b_i)
-    else if a_i i32.< b_i then (a, a_i)
-    else                       (b, b_i)
+    if      real.(a < b)    then (a,a_i)
+    else if real.(b < a)    then (b,b_i)
+    else if i32.(a_i < b_i) then (a, a_i)
+    else                         (b, b_i)
 
   let optimize [num_quotes] [num_vars] [num_free_vars]
                (objective_ctx: P.objective_ctx)
@@ -133,7 +132,7 @@ module least_squares (real: real)
     let (rngs, rss) = unzip (map (\rng -> nrand bounds rng num_free_vars) rngs)
     let rng = rngs[0]
     let x = (let init_j (lower_bound: real) (upper_bound: real) (r: real) =
-               lower_bound + (upper_bound-lower_bound) * r
+               real.(lower_bound + (upper_bound-lower_bound) * r)
              let init_i (rs: [num_free_vars]real) = map init_j lower_bounds upper_bounds rs
              in map init_i rss)
     let fx = map objective x
@@ -151,14 +150,14 @@ module least_squares (real: real)
        let (rng,b) = loop (rng,b) while b i32.== i || b i32.== a do random_i32.rand (0,np) rng
        let (rng,c) = loop (rng,c) while c i32.== i || c i32.== a || c i32.== b do random_i32.rand (0,np) rng
        let (rng,r) = random_real.rand bounds rng
-       let x_r1 = unsafe if r <= real.from_fraction 1 2 then x[best_idx] else x[a]
+       let x_r1 = unsafe real.(if r <= from_fraction 1 2 then x[best_idx] else x[a])
        let x_r2 = unsafe x[b]
        let x_r3 = unsafe x[c]
        let (rng,j0) = random_i32.rand (0,num_free_vars) rng
        let (rng,rs) = nrand bounds rng num_free_vars
-       let auxs = map (+) x_r1 (map (difw*) (map (-) x_r2 x_r3))
+       let auxs = real.(map (+) x_r1 (map (difw*) (map (-) x_r2 x_r3)))
        let v_i = map (\j r lower_bound upper_bound aux x_i_j ->
-                      if (j i32.== j0 || r <= cr) && lower_bound <= aux && aux <= upper_bound
+                      if i32.(j == j0) || real.(r <= cr && lower_bound <= aux && aux <= upper_bound)
                       then aux
                       else x_i_j)
                      (iota num_free_vars) rs lower_bounds upper_bounds auxs x_i
@@ -169,7 +168,7 @@ module least_squares (real: real)
                       (x: [np][num_free_vars]real) (v: [np][num_free_vars]real) =
       (let f_v = map objective v
        let fx' = map real.min f_v fx
-       let x' = map (\f fx_i x_i v_i -> if f < fx_i then v_i else x_i)
+       let x' = map (\f fx_i x_i v_i -> real.(if f < fx_i then v_i else x_i))
                     f_v fx x v
        let (fx0', best_idx') =
          reduce_comm min_and_idx
@@ -183,7 +182,7 @@ module least_squares (real: real)
     let (_,ncalls,num_it,(_,_,_,x)) =
       loop (rng, ncalls, num_it, (fx0, best_idx, fx, x)) =
            (rng, np, max_iterations, (fx0, best_idx, fx, x))
-      while num_it i32.> 0 && max_global i32.> ncalls && fx0 > target do
+      while i32.(num_it > 0) && i32.(max_global > ncalls) && real.(fx0 > target) do
       (let (rng,differential_weight) = random_real.rand (real.from_fraction 1 2, real.i32 1) rng
        let rngs = rand.split_rng np rng
        let (rngs, v) = unzip (map (mutation differential_weight best_idx x) rngs (iota np) x)
@@ -192,9 +191,9 @@ module least_squares (real: real)
        in (rng, ncalls i32.+ np, num_it i32.- 1,
            (fx0, best_idx, fx, x)))
     let x0 = x[best_idx]
-    let status = if      fx0 <= target           then target_reached
-                 else if max_global i32.< ncalls then max_global_reached
-                 else if num_it i32.== 0          then max_iterations_reached
+    let status = if      real.(fx0 <= target)      then target_reached
+                 else if i32.(max_global < ncalls) then max_global_reached
+                 else if i32.(num_it == 0)         then max_iterations_reached
                  else 1337 -- never reached
     in {x0=x0, f=fx0, num_feval=ncalls, status=status}
 
@@ -214,7 +213,7 @@ module least_squares (real: real)
       unzip (map (\(_, _, {initial_value, lower_bound, upper_bound}) ->
                   (initial_value, lower_bound, upper_bound)) free_vars)
 
-    let rms_of_error (err: real) = real.sqrt(err * (real.i32 10000 / real.i32 num_quotes))
+    let rms_of_error (err: real) = real.(sqrt err * (i32 10000 / i32 num_quotes))
 
     let (x, num_feval) =
       if max_global i32.> 0
@@ -223,7 +222,7 @@ module least_squares (real: real)
                       {max_iterations = 0x7FFFFFFF,
                        max_global = max_global,
                        target = real.i32 0})
-           in (#x0 res, #num_feval res)
+           in (res.x0, res.num_feval)
       else (x, 0)
 
     let prices = P.objective objective_ctx (active_vars vars_to_free_vars variables x)

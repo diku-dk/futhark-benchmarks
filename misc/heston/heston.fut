@@ -15,7 +15,6 @@ module heston (real: real)
 } = {
 
 type real = real.t
-let real (x: f64) = real.f64 x
 let int (x: i32) = real.i32 x
 
 let (x: real) +. (y: real) = x real.+ y
@@ -36,8 +35,6 @@ module price_european_calls_real = price_european_calls real
 module heston_least_squares = least_squares real rand {
   open (relative_distance real)
 
-  let real (x: f64) = real.f64 x
-
   type objective_ctx = {day_count_fractions: []real.t,
                         quotes: []{maturity: i32, strike: real.t, vega: real.t, weight: real.t},
                         gauss_laguerre_coefficients: ([]real.t, []real.t)
@@ -50,8 +47,8 @@ module heston_least_squares = least_squares real rand {
                  false (int 1) (int 1) (int 1)
                  heston_parameters
                  day_count_fractions
-                 (map (\q -> {maturity=#maturity q, strike=#strike q}) quotes)
-    in map (\q p -> #weight q *. p /. #vega q) quotes prices
+                 (map (\q -> {maturity=q.maturity, strike=q.strike}) quotes)
+    in map (\q p -> q.weight *. p /. q.vega) quotes prices
 }
 
 type calibration_input = { today: date
@@ -68,7 +65,7 @@ let distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
   let switched (x: date) (i: i32) =
     i == 0 || unsafe !(same_date x dates[i - 1])
   let switches = map switched dates (iota n)
-  in (#2 (unzip (filter (\x -> #1 x) (zip switches dates))),
+  in ((unzip (filter (\x -> x.1) (zip switches dates))).2,
       map (-1) (scan (+) 0 (map i32.bool switches)))
 
 let run_calibration({today,
@@ -82,18 +79,18 @@ let run_calibration({today,
                      variables}: calibration_input): calibration_result real =
   let price_and_vega_of_quote (strike: real) (maturity: date) (quote: real) =
     (let (price, vega) = price_european_calls_real.bs_call true today (int 1) strike maturity quote
-     in (price, real.max (real 1e-1) vega))
+     in (price, real.max (real.f64 1e-1) vega))
   let strike_weight (p: real) (x: real) = real.exp (p *. (real.log x +. int 1 -. x))
   let maturity_weight (x0: real) (gamma: real) (x: real) =
       (let k = int 1 /. (real.exp(gamma *. x0) -. int 1)
        in if x <=. x0 then k *. (real.exp(gamma *. x) -. int 1) else int 1)
   let weight (strike: real) (mat: date) =
-    maturity_weight maturity_weight_x0 maturity_weight_gamma (real (diff_dates today mat)) *.
+    maturity_weight maturity_weight_x0 maturity_weight_gamma (real.f64 (diff_dates today mat)) *.
     strike_weight strike_weight_bandwidth strike
 
 
   let (maturity_dates, quotes_to_maturities) =
-    distinct_maturities (map #maturity quotes)
+    distinct_maturities (map (\q -> q.maturity) quotes)
   let weights = map (\{maturity, strike, quote=_} -> weight strike maturity) quotes
   let prices_and_vegas = map (\{maturity, strike, quote} ->
                               price_and_vega_of_quote strike maturity quote) quotes
@@ -106,7 +103,7 @@ let run_calibration({today,
         quotes weights prices_and_vegas quotes_to_maturities
 
   let ctx = { day_count_fractions =
-                map real (map (diff_dates today) maturity_dates)
+                map real.f64 (map (diff_dates today) maturity_dates)
             , quotes =
                 quotes_for_ctx
             , gauss_laguerre_coefficients =
@@ -122,15 +119,15 @@ let date_of_int(x: i32) =
 
 let default_variables: []optimization_variable real =
   [heston_least_squares.optimize_value
-   {lower_bound =  real 1e-6, initial_value = real 4e-2, upper_bound = int 1},
+   {lower_bound =  real.f64 1e-6, initial_value = real.f64 4e-2, upper_bound = int 1},
    heston_least_squares.optimize_value
-   {lower_bound =  real 1e-6, initial_value = real 4e-2, upper_bound = int 1},
+   {lower_bound =  real.f64 1e-6, initial_value = real.f64 4e-2, upper_bound = int 1},
    heston_least_squares.optimize_value
-   {lower_bound =  int (-1), initial_value = real (-0.5), upper_bound = int 0},
+   {lower_bound =  int (-1), initial_value = real.f64 (-0.5), upper_bound = int 0},
    heston_least_squares.optimize_value
-   {lower_bound =  real 1e-4, initial_value = real 1e-2, upper_bound = int 4},
+   {lower_bound =  real.f64 1e-4, initial_value = real.f64 1e-2, upper_bound = int 4},
    heston_least_squares.optimize_value
-   {lower_bound =  real 1e-4, initial_value = real 0.4, upper_bound = int 2}
+   {lower_bound =  real.f64 1e-4, initial_value = real.f64 0.4, upper_bound = int 2}
   ]
 
 let heston [num_quotes]
@@ -157,9 +154,9 @@ let heston [num_quotes]
         long_term_variance,
         correlation,
         mean_reversion,
-        variance_volatility} = heston_parameters_from_vector (#parameters result)
-  in (#root_mean_squared_error result,
-      #num_feval result,
+        variance_volatility} = heston_parameters_from_vector result.parameters
+  in (result.root_mean_squared_error,
+      result.num_feval,
       initial_variance,
       long_term_variance,
       mean_reversion,

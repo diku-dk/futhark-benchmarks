@@ -234,8 +234,8 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
     (quotes: [num_quotes]{strike: real, maturity: i32})
   : [num_quotes]real =
        let {initial_variance = v0, long_term_variance = theta, mean_reversion = kappa, correlation = rho, variance_volatility = eta} = heston_parameters
-       let maturity_for_quote = map #maturity quotes
-       let strikes = map #strike quotes
+       let maturity_for_quote = map (\q -> q.maturity) quotes
+       let strikes = map (\q -> q.strike) quotes
        let f0 = spot * df_div / df
        let kappai = c64.mk_re kappa
        let etai = c64.mk_re eta
