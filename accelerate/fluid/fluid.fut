@@ -163,7 +163,7 @@ let diffuse [g]
   (time_step: f32):
   [g][g]f32 =
   let a = (time_step * diffusion_rate_or_viscosity
-           * f32 (g - 2) * f32 (g - 2))
+           * r32 (g - 2) * r32 (g - 2))
   in lin_solve n_solver_steps s b a (1.0 + 4.0 * a)
 
 
@@ -176,22 +176,22 @@ module edge_handling_advect = edge_handling({
     (g: i32)
     ((s0, u, v, time_step0): info):
     f32 =
-    let x = f32 i - time_step0 * unsafe u[i, j]
-    let y = f32 j - time_step0 * unsafe v[i, j]
+    let x = r32 i - time_step0 * unsafe u[i, j]
+    let y = r32 j - time_step0 * unsafe v[i, j]
 
     let x = if x < 0.5 then 0.5 else x
-    let x = if x > f32 (g - 2) + 0.5 then f32 (g - 2) + 0.5 else x
-    let i0 = i32 x
+    let x = if x > r32 (g - 2) + 0.5 then r32 (g - 2) + 0.5 else x
+    let i0 = t32 x
     let i1 = i0 + 1
 
     let y = if y < 0.5 then 0.5 else y
-    let y = if y > f32 (g - 2) + 0.5 then f32 (g - 2) + 0.5 else y
-    let j0 = i32 y
+    let y = if y > r32 (g - 2) + 0.5 then r32 (g - 2) + 0.5 else y
+    let j0 = t32 y
     let j1 = j0 + 1
 
-    let s1 = x - f32 i0
+    let s1 = x - r32 i0
     let s0' = 1.0 - s1
-    let t1 = y - f32 j0
+    let t1 = y - r32 j0
     let t0 = 1.0 - t1
 
     in unsafe (s0' * (t0 * s0[i0, j0] + t1 * s0[i0, j1])
@@ -206,7 +206,7 @@ let advect [g]
   (time_step: f32):
   *[g][g]f32 =
 
-  let time_step0 = time_step * f32 (g - 2)
+  let time_step0 = time_step * r32 (g - 2)
   in map (\i -> map (\j ->
                      edge_handling_advect.handle i j g b (s0, u, v, time_step0))
                     [0..<g])
@@ -225,7 +225,7 @@ module edge_handling_project_top = edge_handling({
     unsafe (-0.5 * (u0[i + 1, j]
                     - u0[i - 1, j]
                     + v0[i, j + 1]
-                    - v0[i, j - 1]) / f32 g)
+                    - v0[i, j - 1]) / r32 g)
 })
 
 module edge_handling_project_bottom = edge_handling({
@@ -237,7 +237,7 @@ module edge_handling_project_bottom = edge_handling({
     (g: i32)
     ((p0, s0, i0d, j0d, i1d, j1d): info):
     f32 =
-    unsafe (s0[i, j] - 0.5 * f32 (g - 2)
+    unsafe (s0[i, j] - 0.5 * r32 (g - 2)
             * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
 })
 

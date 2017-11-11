@@ -55,9 +55,9 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
     let sum = reduce (+) (0.0) (reshape (ne) image)
     let sum2 = reduce (+) (0.0) (map (**2.0) (reshape (ne) image))
     -- get mean (average) value of element in ROI
-    let meanROI = sum / f32(neROI)
+    let meanROI = sum / r32(neROI)
     -- gets variance of ROI
-    let varROI = (sum2 / f32(neROI)) - meanROI*meanROI
+    let varROI = (sum2 / r32(neROI)) - meanROI*meanROI
     -- gets standard deviation of ROI
     let q0sqr = varROI / (meanROI*meanROI)
 
@@ -115,5 +115,5 @@ let main [rows][cols] (image: [rows][cols]u8): [rows][cols]f32 =
 
 -- Entry point for interactive demo.  Here we can return an RGBA image.
 entry srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]i32 =
-  map (\row -> map (\p -> (i32(p) << 16) | (i32(p) << 8) | (i32(p))) row)
+  map (\row -> map (\p -> (t32(p) << 16) | (t32(p) << 8) | (t32(p))) row)
       (do_srad(niter, lambda, image))

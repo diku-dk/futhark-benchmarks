@@ -56,8 +56,8 @@ module plane: object with object = plane = {
 }
 
 let checkers ((x,_,z): position): argb.colour =
-  let v1 = i32 (x/100.0) % 2
-  let v2 = i32 (z/100.0) % 2
+  let v1 = t32 (x/100.0) % 2
+  let v2 = t32 (z/100.0) % 2
   let v3 = i32.bool (x < 0.0)
   let v4 = i32.bool (z < 0.0)
   in if v1 ^ v2 ^ v3 ^ v4 == 1

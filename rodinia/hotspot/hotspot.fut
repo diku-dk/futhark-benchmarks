@@ -88,8 +88,8 @@ let single_iteration [row][col]
 -- Returns a new 'temp' array.
 entry compute_tran_temp [row][col]
                        (num_iterations: i32, temp: [row][col]f32, power: [row][col]f32): [row][col]f32 =
-  let grid_height = chip_height() / f32(row)
-  let grid_width = chip_width() / f32(col)
+  let grid_height = chip_height() / r32(row)
+  let grid_width = chip_width() / r32(col)
   let cap = factor_chip() * spec_heat_si() * t_chip() * grid_width * grid_height
   let rx = grid_width / (2.0 * k_si() * t_chip() * grid_height)
   let ry = grid_height / (2.0 * k_si() * t_chip() * grid_width)

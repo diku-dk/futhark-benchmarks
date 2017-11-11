@@ -103,7 +103,7 @@ let lud_diagonal2 [b] (ain: [b][b]f32, m: i32): *[b][b]f32 =  -- CORRECT
                      loop a for i < b do
                         let a = loop a for j in [i..<b] do
                             let sum = loop sum=0.0f32 for k < i do
-                                sum + a[i,k]*a[k,j] + f32(q)
+                                sum + a[i,k]*a[k,j] + r32(q)
                             let a[i,j] = a[i,j] - sum
                             in a
                         let tmp = 1.0f32 / a[i,i] in

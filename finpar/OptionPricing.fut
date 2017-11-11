@@ -37,9 +37,9 @@ let sobolIndI [m][num_bits] (dir_vs: [m][num_bits]i32, n: i32): [m]i32 =
   map (xorInds n) dir_vs
 
 let sobolIndR [m][num_bits] (dir_vs: [m][num_bits]i32) (n: i32): [m]f32 =
-  let divisor = 2.0 ** f32(num_bits)
+  let divisor = 2.0 ** r32(num_bits)
   let arri    = sobolIndI( dir_vs, n )
-  in map (\x -> f32(x) / divisor) arri
+  in map (\x -> r32(x) / divisor) arri
 
 --------------------------------
 ---- STRENGTH-REDUCED FORMULA
@@ -63,7 +63,7 @@ let sobolRecMap [n] (sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i3
                             else recM(dir_vs,k+lb_inc))
                      (iota (ub_exc-lb_inc))
   let vct_ints = scan (\x y -> map (^) x y) (replicate n 0) contribs
-  in  map (\xs -> map (\x -> f32 x * sob_fact) xs) vct_ints
+  in  map (\xs -> map (\x -> r32 x * sob_fact) xs) vct_ints
 
 let sobolReci2 [n] (sob_dirs: [][]i32, prev: [n]i32, i: i32): [n]i32=
   let col = recM(sob_dirs, i)
@@ -71,14 +71,14 @@ let sobolReci2 [n] (sob_dirs: [][]i32, prev: [n]i32, i: i32): [n]i32=
 
 -- computes sobol numbers: n,..,n+chunk-1
 let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32, n: i32, chunk: i32): [chunk][len]f32 =
-  let sob_fact= 1.0 / f32(1 << num_bits)
+  let sob_fact= 1.0 / r32(1 << num_bits)
   let sob_beg = sobolIndI(dir_vs, n+1)
   let contrbs = map (\(k: i32): []i32  ->
                        if k==0 then sob_beg
                        else recM(dir_vs, k+n))
                     (iota chunk)
   let vct_ints= scan (\x y -> map (^) x y) (replicate len 0) contrbs
-  in map (\xs -> map (\x -> f32(x) * sob_fact) xs) vct_ints
+  in map (\xs -> map (\x -> r32(x) * sob_fact) xs) vct_ints
 
 ----------------------------------------
 --- Inverse Gaussian
@@ -359,4 +359,4 @@ let main [num_bits][num_models][num_und][num_dates]
 
   let payoff    = reduce (\x y -> map (+) x y)
                          (replicate num_models 0.0) payoffs
-  in  map (/f32 num_mc_it) payoff
+  in  map (/r32 num_mc_it) payoff

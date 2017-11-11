@@ -22,7 +22,7 @@ let bins_per_dec(): f64 = 5.0f64
 let numBins(): i32 = 20
 
 let iota32(num: i32): [num]f64 =
-    map f64 (iota(num))
+    map r64 (iota(num))
 
 let sumBins [numBins][numBinss] (bins: [numBinss][numBins]i32): *[numBins]i32 =
     map (\(binIndex: []i32): i32  -> reduce (+) 0i32 binIndex) (transpose(bins))

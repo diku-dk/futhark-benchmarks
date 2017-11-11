@@ -101,9 +101,9 @@ let main(boxes1d: i32): (f32,
                            let s3= sobolInd(dirVct, n+2)
                            let s4= sobolInd(dirVct, n+3)
                            let s5= sobolInd(dirVct, n+4)
-                           in (f32(s5%10 + 1) / 10.0, 
-                               ( f32(s1%10 + 1) / 10.0, f32(s2%10 + 1) / 10.0
-                               , f32(s3%10 + 1) / 10.0, f32(s4%10 + 1) / 10.0 )
+                           in (r32(s5%10 + 1) / 10.0, 
+                               ( r32(s1%10 + 1) / 10.0, r32(s2%10 + 1) / 10.0
+                               , r32(s3%10 + 1) / 10.0, r32(s4%10 + 1) / 10.0 )
                               )
                        ) (iota(par_per_box))
                 ) (iota(number_boxes) )

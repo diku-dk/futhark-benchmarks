@@ -115,7 +115,7 @@ let bpnn_train_kernel [n_in][n_out][n_inp1][n_hid][n_hidp1]
 
 let sobolIndR [num_bits] (dirVct: [num_bits]i32) (n: i32): f32 =
     -- placed norm_fact here to check that hoisting does its job!
-    let norm_fact = 1.0 / ( f32(1 << num_bits) + 1.0 )
+    let norm_fact = 1.0 / ( r32(1 << num_bits) + 1.0 )
     let n_gray = (n >> 1) ^ n
     let res = 0
     let res = loop (res) for i < num_bits do
@@ -123,7 +123,7 @@ let sobolIndR [num_bits] (dirVct: [num_bits]i32) (n: i32): f32 =
         in if (n_gray & t) == t
            then res ^ dirVct[i]
            else res
-    in f32(res) * norm_fact
+    in r32(res) * norm_fact
 
 let bpnn_randomize_weights(m: i32, n: i32, offset: i32, dirVct: []i32): ([m][n]f32,[m]f32) =
     --let linw = map(sobolIndR(dirVct), map(+offset, iota(m*n)))
