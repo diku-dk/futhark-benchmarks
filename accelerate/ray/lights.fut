@@ -13,12 +13,12 @@ type lights = {lights: []light}
 
 let apply_light ({spheres,planes}: objects) (point: position) (normal: direction)
                 (light: light): argb.colour =
-  let lp_p = #position light vec3.- point
+  let lp_p = light.position vec3.- point
   let dist = vec3.norm lp_p
   let dir = vec3.scale (1.0 / dist) lp_p
 
   let mag = vec3.dot normal dir / (dist * dist)
-  let (r,g,b,_) = argb.to_rgba (#colour light)
+  let (r,g,b,_) = argb.to_rgba light.colour
   let refl = argb.from_rgba (r*mag) (g*mag) (b*mag) 1.0
   in if check_ray_sphere.check_ray spheres point dir dist ||
         check_ray_plane.check_ray planes point dir dist

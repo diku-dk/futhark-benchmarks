@@ -112,21 +112,21 @@ let main(boxes1d: i32): (f32,
 
   in ( alpha,
 
-       #1(unzip(box_coefs)),
-       #2(unzip(box_coefs)),
-       #3(unzip(box_coefs)),
-       #4(unzip(box_coefs)),
+       (unzip(box_coefs)).1,
+       (unzip(box_coefs)).2,
+       (unzip(box_coefs)).3,
+       (unzip(box_coefs)).4,
 
-       #1(unzip(box_nnghs)),
-       #2(unzip(box_nnghs)),
-       #3(unzip(box_nnghs)),
-       #4(unzip(box_nnghs)),
+       (unzip(box_nnghs)).1,
+       (unzip(box_nnghs)).2,
+       (unzip(box_nnghs)).3,
+       (unzip(box_nnghs)).4,
 
        box_num_nghbs,
 
-       #1(unzip(rv)),
-       #2(unzip(rv)),
-       #3(unzip(rv)),
-       #4(unzip(rv)),
+       (unzip(rv)).1,
+       (unzip(rv)).2,
+       (unzip(rv)).3,
+       (unzip(rv)).4,
 
        qv)

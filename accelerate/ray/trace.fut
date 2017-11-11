@@ -34,16 +34,16 @@ let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
              : (position, direction, argb.colour, f32) =
   let point = orig vec3.+ vec3.scale dist dir
   let normal = sphere_normal sph point
-  let colour = #colour sph
-  let shine = #shine sph
+  let colour = sph.colour
+  let shine = sph.shine
   in (point, normal, colour, shine)
 
 let hit_plane (pln: plane) (dist: f32) (orig: position) (dir: direction)
             : (position, direction, argb.colour, f32) =
   let point = orig vec3.+ vec3.scale dist dir
-  let normal = #normal pln
+  let normal = pln.normal
   let colour = checkers point
-  let shine = #shine pln
+  let shine = pln.shine
   in (point, normal, colour, shine)
 
 -- Cast a single ray into the scene.  In the Accelerate formulation,

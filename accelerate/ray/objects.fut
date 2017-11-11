@@ -20,8 +20,8 @@ module sphere: object with object = sphere = {
   let distance_to (sphere: sphere)
                   (origin: position)
                   (direction: direction): (bool, f32) =
-    let pos = #position sphere
-    let radius = #radius sphere
+    let pos = sphere.position
+    let radius = sphere.radius
     let p = vec3.(origin + (scale (dot (pos - origin) direction) direction))
     let d_cp = vec3.(norm (p - pos))
     let sep = vec3.(p - origin)
@@ -32,7 +32,7 @@ module sphere: object with object = sphere = {
 }
 
 let sphere_normal (sphere: sphere) (point: position): direction =
-  vec3.normalise (point vec3.- #position sphere)
+  vec3.normalise (point vec3.- sphere.position)
 
 type plane = {position: position,
               normal: direction,
@@ -47,8 +47,8 @@ module plane: object with object = plane = {
   let distance_to (plane: plane)
                   (origin: position)
                   (direction: direction): (bool, f32) =
-    let pos = #position plane
-    let normal = #normal plane
+    let pos = plane.position
+    let normal = plane.normal
     let theta = vec3.dot direction normal
     in if theta >= 0.0
        then (false, f32.inf)
