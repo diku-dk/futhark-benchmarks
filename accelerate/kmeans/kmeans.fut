@@ -44,7 +44,7 @@ let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point 
   let cluster_centres =
     map (\count my_points  ->
            let (x,y) = reduce_comm add_points (0f32, 0f32) my_points
-           in (x / f32 count, y / f32 count))
+           in (x / r32 count, y / r32 count))
         (intrinsics.opaque cluster_sizes) cluster_points
   in cluster_centres
 

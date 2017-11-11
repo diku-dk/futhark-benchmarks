@@ -42,7 +42,7 @@ let centroids_of [n][d] (k: i32, points: [n][d]f32, membership: [n]i32): *[k][d]
                    (\(inp: []([d]f32,i32)) ->
                        loop acc = replicate k (replicate d 0f32) for (point,c) in inp do
                          unsafe let acc[c] =
-                                  add_centroids acc[c] (map (/(f32(points_in_clusters[c]))) point)
+                                  add_centroids acc[c] (map (/(r32(points_in_clusters[c]))) point)
                                 in acc)
                    (zip points membership)
   in cluster_sums

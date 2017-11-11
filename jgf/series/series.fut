@@ -22,7 +22,7 @@ let thefunction(x: f64, omegan: f64, select: i32): f64 =
 
 let TrapezoidIntegrate(x0: f64, x1: f64, nsteps: i32, omegan: f64, select: i32): f64 =
   let x = x0
-  let dx = (x1-x0) / f64 nsteps
+  let dx = (x1-x0) / r64 nsteps
   let rvalue = thefunction(x0, omegan, select) / 2.0
    -- already done one step
   let (x,rvalue) = loop ((x,rvalue)) for _i < nsteps-2 do
@@ -35,7 +35,7 @@ let main(array_rows: i32): ([array_rows]f64,[array_rows]f64) =
   let first = [(TrapezoidIntegrate (0.0, 2.0, 1000, 0.0, 0) / 2.0,
                 0.0) -- never set in reference implementation
               ]
-  let rest = map (\i -> (TrapezoidIntegrate (0.0, 2.0, 1000, omega * f64 i, 1),
-                           TrapezoidIntegrate (0.0, 2.0, 1000, omega * f64 i, 2)))
+  let rest = map (\i -> (TrapezoidIntegrate (0.0, 2.0, 1000, omega * r64 i, 1),
+                           TrapezoidIntegrate (0.0, 2.0, 1000, omega * r64 i, 2)))
                  (map (1+) (iota (array_rows-1)))
   in unzip (concat first rest)

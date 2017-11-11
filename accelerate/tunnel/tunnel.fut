@@ -27,7 +27,7 @@ let norm(x: v2): f32 =
 
 -- Fractional part of a number.
 let fract(x: f32): f32 =
-  x - f32(i32(x))
+  x - r32(t32(x))
 
 let clamp(lower: f32, x: f32, upper: f32): f32 =
   if x < lower then lower
@@ -53,7 +53,7 @@ let rand1(p: v2): f32 =
   in fract(f32.sin(dot(p,z)) * 833458.57832f32)
 
 let sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: i32, j: i32): v2 =
-  let samplePos = (f32(i), f32(j))
+  let samplePos = (r32(i), r32(j))
   let centre = (let u = rand2(v2Add(cell, samplePos))
                 in (#1 u * irregular, #2 u * irregular))
   let centreDist = norm(v2Add(v2Sub(samplePos, cellOffset), centre))
@@ -62,7 +62,7 @@ let sample(irregular: f32, cell: v2, cellOffset: v2, sharpness: f32, i: i32, j: 
   in (colour * det, det)
 
 let voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
-  let cell = (f32(i32(#1 xy)), f32(i32(#2 xy)))
+  let cell = (r32(t32(#1 xy)), r32(t32(#2 xy)))
   let cellOffset = (fract(#1 xy), fract(#2 xy))
   let sharpness = 1f32 + 63f32 * ((1f32-smoothness) ** 4f32)
   let samples = loop samples = (0f32,0f32) for i in [-2...2] do
@@ -71,15 +71,15 @@ let voronoise(xy: v2, irregular: f32, smoothness: f32): f32 =
   in #1 samples / #2 samples
 
 let mod'(n: f32, d: f32): f32 =
-  n - f32(i32(n/d)) * d
+  n - r32(t32(n/d)) * d
 
 let rgb(r: f32, g: f32, b: f32): i32 =
-  (i32(r*255f32)&0xFF) << 16 |
-  (i32(g*255f32)&0xFF) << 8 |
-  (i32(b*255f32)&0xFF)
+  (t32(r*255f32)&0xFF) << 16 |
+  (t32(g*255f32)&0xFF) << 8 |
+  (t32(b*255f32)&0xFF)
 
 let tunnel(time: f32) (x: i32) (y: i32): i32 =
-  let pt2 = (1.2f32 * f32(x), 1.2f32 * f32(y))
+  let pt2 = (1.2f32 * r32(x), 1.2f32 * r32(y))
   let rInv = 1.0f32 / norm(pt2)
   let pt3 = v2Sub((#1 pt2 * rInv, #2 pt2 * rInv),
                   (rInv + 2f32 * mod'(time, 6000f32), 0f32))

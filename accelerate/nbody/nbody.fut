@@ -135,11 +135,11 @@ let renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_
     let x' = (x-x_ul) / (x_br-x_ul)
     let y' = (y-y_ul) / (y_br-y_ul)
     -- Convert x',y' to screen coordinate space.
-    let x'' = i32(x' * f32(w))
-    let y'' = i32(y' * f32(h))
+    let x'' = t32(x' * r32(w))
+    let y'' = t32(y' * r32(h))
     let intensity = if m >= max_mass
                     then 255
-                    else 128 + i32((m / max_mass) * 128f32)
+                    else 128 + t32((m / max_mass) * 128f32)
     let colour = intensity * 0x10000 +
                  intensity * 0x100 +
                  0xFF

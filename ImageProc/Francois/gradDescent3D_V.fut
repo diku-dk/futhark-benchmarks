@@ -199,11 +199,11 @@ let main1 [m][n][p][q] ( v:  [m][n][p][q]f32
 
 let main(m: i32, n: i32, p: i32, q: i32, loop_count: i32): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q)
-    let v  = reshape (m,n,p,q) (map f32 (iota(mnpq)))
-    let g  = reshape (m,n,p,q) (map f32 (iota(mnpq)))
+    let v  = reshape (m,n,p,q) (map r32 (iota(mnpq)))
+    let g  = reshape (m,n,p,q) (map r32 (iota(mnpq)))
     let xi = reshape (m,n,p,q)
                     (map (\(t: i32): (f32,f32,f32)  ->
-                            let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
+                            let tf = 3.0f32 * r32(t) in (tf, tf+1.0f32, tf+2.0f32)
                         ) (iota(mnpq) ))
 
     let tp = 3.0f32

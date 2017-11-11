@@ -282,7 +282,7 @@ let time_step [nel]
               fluxes: [5][nel]f32  ): [5][nel]f32 =
   transpose(
     map (\(i: i32): [5]f32  ->
-            let factor = step_factors[i] / f32(rk+1-j)
+            let factor = step_factors[i] / r32(rk+1-j)
             in [ old_variables[var_density,    i] + factor*fluxes[var_density,    i]
                , old_variables[var_momentum+0, i] + factor*fluxes[var_momentum+0, i]
                , old_variables[var_momentum+1, i] + factor*fluxes[var_momentum+1, i]

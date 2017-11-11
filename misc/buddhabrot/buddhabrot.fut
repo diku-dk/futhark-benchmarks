@@ -40,8 +40,8 @@ let trajectories(depth: i32, xprec: i32, yprec: i32,
     unzip(map  (\(i: i32): ([depth](f32,f32),bool)  ->
                  let x = i % xprec
                  let y = i / yprec
-                 let c0 = (xmin + (f32(x) * sizex) / f32(xprec),
-                           ymin + (f32(y) * sizey) / f32(yprec))
+                 let c0 = (xmin + (r32(x) * sizex) / r32(xprec),
+                           ymin + (r32(y) * sizey) / r32(yprec))
                  in divergence(depth, c0)
               ) (iota(xprec*yprec)))
   in (reshape (yprec,xprec,depth) trajectories,
@@ -51,19 +51,19 @@ let toI(n: i32, view: (f32,f32,f32,f32), y: f32): i32 =
   let (xmin, ymin, xmax, ymax) = view
   let sizey = ymax - ymin
   let y' = y - ymin
-  in i32(y' / (sizey / f32(n)))
+  in t32(y' / (sizey / r32(n)))
 
 let toJ(m: i32, view: (f32,f32,f32,f32), x: f32): i32 =
   let (xmin, ymin, xmax, ymax) = view
   let sizex = xmax - xmin
   let x' = x - xmin
-  in i32(x' / (sizex / f32(m)))
+  in t32(x' / (sizex / r32(m)))
 
 let max(x: i32) (y: i32): i32 =
   if x < y then y else x
 
 let colourise(max_visits: i32) (visits: i32): i32 =
-  let c = 255-i32(f32.log(f32(visits)) / f32.log(f32(max_visits)) * 255.0)
+  let c = 255-t32(f32.log(r32(visits)) / f32.log(r32(max_visits)) * 255.0)
   in c << 16 | c << 8 | c
 
 let visualise [yprec][xprec][depth]

@@ -71,10 +71,10 @@ let intColour((r,g,b): (f32, f32, f32)): u32 =
   intPixel(r) << 16u32 | intPixel(g) << 8u32 | intPixel(b)
 
 let wrap(n: f32): f32 =
-  let n' = n - f32(i32(n))
-  let odd_in_int = i32(n) & 1
+  let n' = n - r32(t32(n))
+  let odd_in_int = t32(n) & 1
   let even_in_int = 1 - odd_in_int
-  in f32(odd_in_int) * (1.0 - n') + f32(even_in_int) * n'
+  in r32(odd_in_int) * (1.0 - n') + r32(even_in_int) * n'
 
 let wave(th: f32, x: f32, y: f32): f32 =
   let cth = f32.cos(th)
@@ -82,7 +82,7 @@ let wave(th: f32, x: f32, y: f32): f32 =
   in (f32.cos(cth * x + sth * y) + 1.0) / 2.0
 
 let waver(th: f32, x: f32, y: f32, n: i32): f32 =
-  reduce (+) (0.0) (map (\i  -> wave(f32(i) * th, x, y)) (iota n))
+  reduce (+) (0.0) (map (\i  -> wave(r32(i) * th, x, y)) (iota n))
 
 let waves(degree: i32, phi: f32, x: f32, y: f32): f32 =
   let th = pi() / phi
@@ -94,7 +94,7 @@ let quasicrystal(scale: f32, degree: i32, time: f32, x: f32, y: f32): u32 =
   in intColour(rampColour(waves(degree, phi, x', y')))
 
 let normalize_index(i: i32, field_size: i32): f32 =
-  f32(i) / f32(field_size)
+  r32(i) / r32(field_size)
 
 entry render_frame(field_size: i32, scale: f32, degree: i32, time: f32)
                   : [field_size][field_size]u32 =
@@ -110,6 +110,6 @@ entry render_frame(field_size: i32, scale: f32, degree: i32, time: f32)
 let main(field_size: i32, scale: f32, degree: i32,
          n_steps: i32, time_delta: f32): [n_steps][field_size][field_size]u32 =
   map (\step_i: [field_size][field_size]u32  ->
-         let time = f32(step_i) * time_delta
+         let time = r32(step_i) * time_delta
          in render_frame(field_size, scale, degree, time))
   (iota(n_steps))

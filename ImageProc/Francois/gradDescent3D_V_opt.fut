@@ -68,7 +68,7 @@ let add_descent_div3v [m][n][p][q] (v:  [m][n][p][q]f32
                     -- THE 6 FACES
                     else let one = 1 / one
                          let (i,j,k) = (i * one, j * one, k * one)
-                         let one = f32(one)
+                         let one = r32(one)
                          let (v_el, g_el,xi_0,xi_1,xi_2) = (v_el*one, g_el*one,xi_0*one,xi_1*one,xi_2*one)
                          let (xi_100_0, xi_010_1, xi_001_2) = (xi_100_0*one, xi_010_1*one, xi_001_2*one)
                         in
@@ -214,11 +214,11 @@ let main1 [m][n][p][q] ( v:  [m][n][p][q]f32
 
 let main(m: i32, n: i32, p: i32, q: i32, loop_count: i32): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q)
-    let v  = reshape (m,n,p,q) (map f32 (iota(mnpq)) )
-    let g  = reshape (m,n,p,q) (map f32 (iota(mnpq)) )
+    let v  = reshape (m,n,p,q) (map r32 (iota(mnpq)) )
+    let g  = reshape (m,n,p,q) (map r32 (iota(mnpq)) )
     let xi = reshape (m,n,p,q)
                     (map (\(t: i32): (f32,f32,f32)  ->
-                            let tf = 3.0f32 * f32(t) in (tf, tf+1.0f32, tf+2.0f32)
+                            let tf = 3.0f32 * r32(t) in (tf, tf+1.0f32, tf+2.0f32)
                         ) (iota(mnpq)))
 
     let tp = 3.0f32

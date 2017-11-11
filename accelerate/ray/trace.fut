@@ -8,21 +8,21 @@ import "lights"
 default (f32)
 
 let point_of_index (sizeX: i32) (sizeY: i32) ((x,y): (i32,i32)): (f32,f32) =
-  let fsizeX = f32 sizeX
-  let fsizeY = f32 sizeY
+  let fsizeX = r32 sizeX
+  let fsizeY = r32 sizeY
   let fsizeX2 = fsizeX / 2.0
   let fsizeY2 = fsizeY / 2.0
   let midX = sizeX / 2
   let midY = sizeY / 2
-  in (f32 (x-midX) / fsizeX2,
-      f32 (y-midY) / fsizeY2)
+  in (r32 (x-midX) / fsizeX2,
+      r32 (y-midY) / fsizeY2)
 
 let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_pos: position)
                  : [sizeX][sizeY]direction =
-  let sizeX' = f32 sizeX
-  let sizeY' = f32 sizeY
+  let sizeX' = r32 sizeX
+  let sizeY' = r32 sizeY
   let aspect = sizeX' / sizeY'
-  let fov' = f32 fov
+  let fov' = r32 fov
   let fovX = fov' * aspect
   let fovY = fov'
   let cast (x: i32) (y: i32) =

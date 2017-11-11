@@ -17,7 +17,7 @@ import "/futlib/math"
 let pow(x: f32, y: f32): f32 = x ** y
 let log10(x: f32): f32 = f32.log(x) / f32.log(10.0f32)
 
-let fmod(a: f32, b: f32): f32 = ( a - b * f32(i32(a / b)) )
+let fmod(a: f32, b: f32): f32 = ( a - b * r32(t32(a / b)) )
 
 let fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
@@ -1023,7 +1023,7 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
   let h_init = 1.0f32
   let h = h_init
   let xmin = 0
-  let tolerance = 10.0f32 / f32(xmax-xmin)
+  let tolerance = 10.0f32 / r32(xmax-xmin)
   let y_km1  = y0 in
 
   if xmax < xmin || h <= 0.0f32 then (false, y_km1)
@@ -1049,7 +1049,7 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
       let scale_min = max_scale_factor()
 
       -- EVALUATE ALL equations
-      let (y_k, err) = embedded_fehlberg_7_8( f32(km1), h, y_km1, params)
+      let (y_k, err) = embedded_fehlberg_7_8( r32(km1), h, y_km1, params)
       let (y_k, err) = (reshape equs y_k, reshape equs err)
 
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
@@ -1090,8 +1090,8 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
       let h = if (h >= 0.9f32) then 0.9f32 else h
 
       -- if instance+step exceeds range limit, limit to that range
-      let h = if ( f32(km1) + h > f32(xmax) ) then f32(xmax - km1)
-              else if ( f32(km1) + h + 0.5f32 * h > f32(xmax) )
+      let h = if ( r32(km1) + h > r32(xmax) ) then r32(xmax - km1)
+              else if ( r32(km1) + h + 0.5f32 * h > r32(xmax) )
                    then 0.5f32 * h else h
       in (j+1, h, y_k, breakLoop, scale_fina)
     in ( km1+1, !breakLoop, y_k )
@@ -1107,7 +1107,7 @@ let parameters(): i32 = 16
 let main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [16]f32): (bool, [workload][91]f32) =
   let (oks, y_res) = unzip (
     map  (\(i: i32): (bool,[91]f32)  ->
-            let add_fact = f32(i % repeat)*eps
+            let add_fact = r32(i % repeat)*eps
             let y_row = map (+add_fact) y0
           in solver(xmax, params, y_row)
         ) (iota workload))

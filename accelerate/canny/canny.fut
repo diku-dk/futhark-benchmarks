@@ -110,7 +110,7 @@ let gradiantMagDir [h][w] (low: f32, img: *[h][w]f32): [h][w](f32,i32) =
 
               let dir = if f32.abs(dx) <= low && f32.abs(dy) <= low
                         then 0
-                        else i32.min (64 * (1 + i32(norm) % 4)) 255
+                        else i32.min (64 * (1 + t32(norm) % 4)) 255
 
               in (mag, dir))
             (iota w))

@@ -34,7 +34,7 @@ let equal(x1: f32, x2: f32): bool =
 let date_act_365(t1: date, t2: date): f32 = f32.f64 (diff_dates t2 t1)
 
 let add_years(date: date, nbyears: f32): date =
-  add_months date (i32 (nbyears * 12.0))
+  add_months date (t32 (nbyears * 12.0))
 
 let max_date = date_of_triple (2229, 12, 31)
 
@@ -202,7 +202,7 @@ let rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
 
 let sobolInd [m] (dirVct:  [m]i32) (n: i32): f32 =
     -- placed norm_fact here to check that hoisting does its job!
-    let norm_fact = 1.0 / ( f32(1 << m) + 1.0 )
+    let norm_fact = 1.0 / ( r32(1 << m) + 1.0 )
     let n_gray = (n >> 1) ^ n
     let res = 0 in
     let res = loop (res) for i < m do
@@ -210,7 +210,7 @@ let sobolInd [m] (dirVct:  [m]i32) (n: i32): f32 =
         if (n_gray & t) == t
         then res ^ dirVct[i]
         else res
-    in  f32(res) * norm_fact
+    in  r32(res) * norm_fact
 
 ----------------------------------------------------
 --/ Prepares the output summary for each swaption
@@ -497,7 +497,7 @@ let evalGenomeOnSwap (genomea: []f32,
   let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4])
   let swap_freq  = swaption[1]
   let maturity   = add_years( today, swaption[0] )
-  let n_schedi   = i32(12.0 * swaption[2] / swap_freq)
+  let n_schedi   = t32(12.0 * swaption[2] / swap_freq)
 
   let tmat0      = date_act_365( maturity, today )
 
@@ -509,8 +509,8 @@ let evalGenomeOnSwap (genomea: []f32,
   --   and convergence loop ...
   ----------------------------------------
   let a12s = map  (\(i: i32): (f32,date,date) ->
-                     let a1 = add_months maturity (i32(swap_freq*f32(i)))
-                     let a2 = add_months a1 (i32 swap_freq) in
+                     let a1 = add_months maturity (t32(swap_freq*r32(i)))
+                     let a2 = add_months a1 (t32 swap_freq) in
                      ( zc(a2) * date_act_365(a2, a1), a1, a2 )
                  ) (iota(n_schedi) )
   let (lvl, t0, tn) = reduce (\((lvl,t0,tn): (f32,date,date))
@@ -541,8 +541,8 @@ let evalGenomeOnSwap (genomea: []f32,
   -- computing n_schedi-size temporary arrays
   let tmp_arrs =
           map (\(i: i32): (f32,f32,f32,f32,f32,f32,f32)  ->
-                 let beg_date = add_months maturity (i32 (swap_freq*f32(i) ))
-                 let end_date = add_months beg_date (i32 swap_freq)
+                 let beg_date = add_months maturity (t32 (swap_freq*r32(i) ))
+                 let end_date = add_months beg_date (t32 swap_freq)
                  let res      = date_act_365( end_date, beg_date ) * strike
                  let cii      = if i==(n_schedi-1) then 1.0 + res  else res
 
@@ -681,7 +681,7 @@ let interestCalibKernel(pop:  i32
         else
         if (move_type == 2) -- move_type == DIMS_ONE
         then let s1  = sobolInd sobDirVct sob_offs
-             let dim_j = i32( s1 * f32(5) )
+             let dim_j = t32( s1 * r32(5) )
              let sob_mat =
                  map (\(i: i32): []f32  ->
                         let k   = 5*i + sob_offs + 1
@@ -699,13 +699,13 @@ let interestCalibKernel(pop:  i32
                  map (\(i: i32): *[]f32  ->
                         let kk  = 8*i + sob_offs
                         let s1  = sobolInd sobDirVct kk
-                        let k = i32( s1 * f32(pop-1) )  -- random in [0,pop-1)
+                        let k = t32( s1 * r32(pop-1) )  -- random in [0,pop-1)
                         let (k,cand_UB) = if k == i
                                           then (pop-1, pop-2)
                                           else (k,     pop-1)
 
                         let s2  = sobolInd sobDirVct (kk+1)
-                        let l = i32( s2*f32(cand_UB) ) -- random in [0,cand_UB -1)
+                        let l = t32( s2*r32(cand_UB) ) -- random in [0,cand_UB -1)
                         let l = if (l == i) || (l == k)
                                 then cand_UB
                                 else l
@@ -772,11 +772,11 @@ let interestCalibKernel(pop:  i32
 let extended_swaption_of_swaption(swaption: (f32,f32,f32)): (date,[](date,date),(f32,f32))  =  -- swaption = (sw_mat, freq, sw_ty)
     let (sw_mat, freq, sw_ty) = swaption
     let maturity   = add_years( today, sw_mat )
-    let nschedule  = i32(12.0 * sw_ty / freq)
+    let nschedule  = t32(12.0 * sw_ty / freq)
 
     let a12s = map  (\(i: i32): (f32,date,date)  ->
-                     let a1 = add_months maturity (i32 (freq*f32 i))
-                     let a2 = add_months a1 (i32 freq)
+                     let a1 = add_months maturity (t32 (freq*r32 i))
+                     let a2 = add_months a1 (t32 freq)
                      in ( zc(a2) * date_act_365(a2, a1), a1, a2 )
                  ) (iota(nschedule) )
 

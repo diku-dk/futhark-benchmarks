@@ -17,13 +17,13 @@ default(f32)
 let initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: i32, numY: i32, numT: i32)
   : (i32, i32, [numX]f32, [numY]f32, [numT]f32) =
   let logAlpha = f32.log alpha
-  let myTimeline = map (\i: f32  -> t * f32 i / (f32 numT - 1.0)) (iota numT)
+  let myTimeline = map (\i: f32  -> t * r32 i / (r32 numT - 1.0)) (iota numT)
   let (stdX, stdY) = (20.0 * alpha * s0 * f32.sqrt(t),
                       10.0 * nu         * f32.sqrt(t))
-  let (dx, dy) = (stdX / f32 numX, stdY / f32 numY)
-  let (myXindex, myYindex) = (i32(s0 / dx), numY / 2)
-  let myX = map (\i: f32 -> f32(i) * dx - f32 myXindex * dx + s0) (iota numX)
-  let myY = map (\i: f32 -> f32(i) * dy - f32 myYindex * dy + logAlpha) (iota numY)
+  let (dx, dy) = (stdX / r32 numX, stdY / r32 numY)
+  let (myXindex, myYindex) = (t32(s0 / dx), numY / 2)
+  let myX = map (\i: f32 -> r32(i) * dx - r32 myXindex * dx + s0) (iota numX)
+  let myY = map (\i: f32 -> r32(i) * dy - r32 myYindex * dy + logAlpha) (iota numY)
   in (myXindex, myYindex, myX, myY, myTimeline)
 
 -- make the innermost dimension of the result of size 4 instead of 3?
@@ -234,6 +234,6 @@ let value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: 
 
 let main (outer_loop_count: i32, numX: i32, numY: i32, numT: i32,
           s0: f32, _strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): []f32 =
-  let strikes = map (\i -> 0.001*f32 i) (iota outer_loop_count)
+  let strikes = map (\i -> 0.001*r32 i) (iota outer_loop_count)
   let res = map (\x -> value(numX, numY, numT, s0, x, t, alpha, nu, beta)) strikes
   in res
