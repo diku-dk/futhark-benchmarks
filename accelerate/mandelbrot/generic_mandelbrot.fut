@@ -24,7 +24,7 @@ let int (x: i32) = real.i32 x
 
 let divergence (limit: i32) (radius: real) (c0: complex): (complex,i32) =
   loop (c, i) = (c0, 0) while i < limit && complex.mag c real.< radius do
-    (c0 complex.+ c complex.* c,
+    (complex.(c0 + c * c),
      i + 1)
 
 let mandelbrot (screenX: i32) (screenY: i32) (limit: i32) (radius: real)
