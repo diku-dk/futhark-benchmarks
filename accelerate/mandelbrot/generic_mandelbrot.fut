@@ -22,12 +22,8 @@ type complex = complex.complex
 
 let int (x: i32) = real.i32 x
 
-let dot (c: complex): real =
-  let (r, i) = (complex.re c, complex.im c)
-  in real.(r * r + i * i)
-
 let divergence (limit: i32) (radius: real) (c0: complex): (complex,i32) =
-  loop (c, i) = (c0, 0) while i < limit && dot c real.< radius do
+  loop (c, i) = (c0, 0) while i < limit && complex.mag c real.< radius do
     (c0 complex.+ c complex.* c,
      i + 1)
 
