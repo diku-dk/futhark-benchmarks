@@ -7,7 +7,7 @@ import "/futlib/random"
 import "/futlib/math"
 import "heston"
 
-module heston64 = heston f64 minstd_rand
+module heston64 = heston f64 pcg32
 
 let main [num_quotes]
          (max_global: i32)
