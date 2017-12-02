@@ -7,7 +7,7 @@ import "/futlib/random"
 import "/futlib/math"
 import "heston"
 
-module heston32 = heston f32 minstd_rand
+module heston32 = heston f32 pcg32
 
 -- We still read the data sets as double precision, and initially
 -- convert them to single.  This is included in measurements, but
