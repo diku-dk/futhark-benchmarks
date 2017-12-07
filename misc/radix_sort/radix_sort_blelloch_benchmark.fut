@@ -6,6 +6,6 @@
 -- input @ data/radix_sort_100K.in
 -- input @ data/radix_sort_1M.in
 
-import "radix_sort_blelloch"
+module R = import "radix_sort_blelloch"
 
-let f(): i32 = 0 -- 
+let main [n] (xs: [n]u32) = R.split_radix_sort(xs, 32)

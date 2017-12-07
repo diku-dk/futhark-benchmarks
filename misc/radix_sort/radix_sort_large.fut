@@ -6,6 +6,6 @@
 -- input @ data/radix_sort_100K.in
 -- input @ data/radix_sort_1M.in
 
-import "radix_sort"
+module R = import "radix_sort"
 
-let f(): i32 = 0 -- hack
+let main (xs: []u32) = R.radix_sort xs
