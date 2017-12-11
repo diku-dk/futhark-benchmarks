@@ -27,7 +27,7 @@ let initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: i32, numY: i32, numT: i
   in (myXindex, myYindex, myX, myY, myTimeline)
 
 -- make the innermost dimension of the result of size 4 instead of 3?
-let initOperator [n] (x: [n]f32): ([n][]f32,[n][]f32) =
+let initOperator [n] (x: [n]f32): ([n][3]f32,[n][3]f32) =
   let dxu     = x[1] - x[0]
   let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]]
   let dxx_low = [[0.0, 0.0, 0.0]]
@@ -56,7 +56,7 @@ let setPayoff [numX][numY] (strike: f32, myX: [numX]f32, _myY: [numY]f32): *[num
 let updateParams [numX][numY]
                 (myX:  [numX]f32, myY: [numY]f32,
                  tnow: f32, _alpha: f32, beta: f32, nu: f32)
-  : ([][]f32, [][]f32, [][]f32, [][]f32) =
+  : ([numY][numX]f32, [numY][numX]f32, [numX][numY]f32, [numX][numY]f32) =
   let myMuY  = replicate numX (replicate numY 0.0)
   let myVarY = replicate numX (replicate numY (nu*nu))
   let myMuX  = replicate numY (replicate numX 0.0)
@@ -93,19 +93,15 @@ let tridagPar [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
                      then (b[i], 0.0-a[i]*c[i-1], 1.0, 0.0)
                      else (1.0,  0.0,             0.0, 1.0))
                   (iota n)
-  let scmt = scan (\(a:  (f32,f32,f32,f32))
-                   (b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  ->
-                     let (a0,a1,a2,a3) = a
-                     let (b0,b1,b2,b3) = b
+  let scmt = scan (\(a0,a1,a2,a3) (b0,b1,b2,b3) ->
                      let value = 1.0/(a0*b0)
                      in ( (b0*a0 + b1*a2)*value,
                           (b0*a1 + b1*a3)*value,
                           (b2*a0 + b3*a2)*value,
                           (b2*a1 + b3*a3)*value))
                   (1.0,  0.0, 0.0, 1.0) mats
-  let b    = map (\(tup: (f32,f32,f32,f32)): f32  ->
-                    let (t0,t1,t2,t3) = tup
-                    in (t0*b0 + t1) / (t2*b0 + t3))
+  let b    = map (\(t0,t1,t2,t3) ->
+                    (t0*b0 + t1) / (t2*b0 + t3))
                  scmt
   ------------------------------------------------------
   -- Recurrence 2: y[i] = y[i] - (a[i]/b[i-1])*y[i-1] --
@@ -173,7 +169,7 @@ let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
                            u:   *[n][m]f32,  dtInv: f32)
                   : *[n][m]f32 =
   map (\mu_row var_row (u_row: *[]f32): *[m]f32  ->
-         let abc = map (\mu var d dd: (f32,f32,f32) ->
+         let abc = map (\mu var d dd ->
                         ( 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
                         , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
                         , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])))
@@ -187,8 +183,8 @@ let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
 let rollback
   [numX][numY]
   (tnow: f32, tnext: f32, myResult: [numY][numX]f32,
-   myMuX: [][]f32, myDx: [numX][]f32, myDxx: [][]f32, myVarX: [][]f32,
-   myMuY: [][]f32, myDy: [numY][]f32, myDyy: [][]f32, myVarY: [][]f32)
+   myMuX: [numY][numX]f32, myDx: [numX][3]f32, myDxx: [numX][3]f32, myVarX: [numY][numX]f32,
+   myMuY: [numX][numY]f32, myDy: [numY][3]f32, myDyy: [numY][3]f32, myVarY: [numX][numY]f32)
   : *[numY][numX]f32 =
 
   let dtInv = 1.0/(tnext-tnow)
