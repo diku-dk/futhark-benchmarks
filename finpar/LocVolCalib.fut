@@ -68,8 +68,8 @@ let updateParams [numX][numY]
   in  ( myMuX, myVarX, myMuY, myVarY )
 
 let tridagSeq [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
+  unsafe
   let (y,b) = loop ((y, b)) for i in [1..<n] do
-      unsafe
       let beta = a[i] / b[i-1]
       let b[i] = b[i] - beta*c[i-1]
       let y[i] = y[i] - beta*y[i-1]
@@ -77,7 +77,6 @@ let tridagSeq [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
 
   let y[n-1] = y[n-1]/b[n-1]
   in loop (y) for i in [n-2..n-3...0] do
-       unsafe
        let y[i] = (y[i] - c[i]*y[i+1]) / b[i]
        in  y
 
