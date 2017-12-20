@@ -27,7 +27,7 @@ let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_pos: position)
   let fovY = fov'
   let cast (x: i32) (y: i32) =
     (let (x',y') = point_of_index sizeX sizeY (x,y)
-     in vec3.normalise ((x'*fovX, y'*fovY, 0.0) vec3.- eye_pos))
+     in vec3.normalise vec3.({x=x'*fovX, y=y'*fovY, z=0.0} - eye_pos))
   in map (\x -> map (cast x) (iota sizeY)) (iota sizeX)
 
 let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
@@ -55,14 +55,14 @@ let hit_plane (pln: plane) (dist: f32) (orig: position) (dir: direction)
 -- early, in case a ray fails to collide with anyting.
 let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
               (ambient: argb.colour) (orig_point: position) (orig_dir: direction) =
-  let dummy_sphere = {position=(0.0, 0.0, 0.0),
+  let dummy_sphere = {position={x=0.0, y=0.0, z=0.0},
                       colour=argb.black,
                       shine=0.0,
-                      radius=0.0}
-  let dummy_plane = {position=(0.0, 0.0, 0.0),
-                     normal=(0.0, 0.0, 0.0),
+                      radius=0.0}: sphere
+  let dummy_plane = {position={x=0.0, y=0.0, z=0.0},
+                     normal={x=0.0, y=0.0, z=0.0},
                      colour=argb.black,
-                     shine=0.0}
+                     shine=0.0}: plane
   let (_,refl_colour,_,_,_) =
     loop (bounces,refl_colour,point,dir,visibility) =
          (0,argb.black,orig_point,orig_dir,1.0) while bounces < limit do
@@ -96,41 +96,41 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
   in refl_colour
 
 let make_objects (time: f32): objects =
-  {spheres = [{position=(40.0 * f32.sin time, 80.0, 0.0),
+  {spheres = [{position={x= 40.0 * f32.sin time, y=80.0, z=0.0},
                radius=20.0,
                colour=argb.from_rgba 1.0 0.3 1.0 1.0,
                shine=0.4},
 
-              {position=(200.0 * f32.sin time,
-                         -40.0 * f32.sin (time + f32.pi/2.0),
-                         200.0 * f32.cos time),
+              {position={x= 200.0 * f32.sin time,
+                         y= -40.0 * f32.sin (time + f32.pi/2.0),
+                         z= 200.0 * f32.cos time},
                radius=100.0,
                colour=argb.from_rgba 0.4 0.4 1.0 1.0,
                shine=0.8},
 
-              {position=(-200.0 * f32.sin time,
-                         -40.0 * f32.sin (time - f32.pi/2.0),
-                         -200.0 * f32.cos time),
+              {position={x= -200.0 * f32.sin time,
+                         y= -40.0 * f32.sin (time - f32.pi/2.0),
+                         z= -200.0 * f32.cos time},
                radius=100.0,
                colour=argb.from_rgba 0.4 0.4 1.0 1.0,
                shine=0.5},
 
-              {position=(0.0, -150.0, -100.0),
+              {position={x=0.0, y= -150.0, z= -100.0},
                radius=50.0,
                colour=argb.from_rgba 1.0 1.0 1.0 1.0,
                shine=0.8}],
 
-   planes = [{position=(0.0, 100.0, 0.0),
-              normal=(0.0, -0.9805807, -0.19611613),
+   planes = [{position={x=0.0, y=100.0, z=0.0},
+              normal={x= 0.0, y= -0.9805807, z= -0.19611613},
               colour=argb.white,
               shine=0.2}]}
 
 entry render (sizeX: i32) (sizeY: i32) (fov: i32) (eyeX: f32) (eyeY: f32) (eyeZ: f32) (limit: i32) (time: f32) =
- let lights: lights = {lights=[{position= (300.0, -300.0, -100.0),
+ let lights: lights = {lights=[{position={x= 300.0, y= -300.0, z= -100.0},
                                 colour=argb.red}]}
 
  let objects: objects = make_objects time
  let ambient = argb.from_rgba 0.3 0.3 0.3 1.0
- let eye_pos = (eyeX, eyeY, eyeZ)
+ let eye_pos = {x=eyeX, y=eyeY, z=eyeZ}
  let eye_rays = cast_view_rays sizeX sizeY fov eye_pos
  in map (\rays -> map (trace_ray limit objects lights ambient eye_pos) rays) eye_rays
