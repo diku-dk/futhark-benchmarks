@@ -75,7 +75,7 @@ let unwrap_body (b: body): (f32, f32, f32, f32, f32, f32, f32, f32, f32, f32) =
   (b.position.x, b.position.y, b.position.z,
    b.mass,
    b.velocity.x, b.velocity.y, b.velocity.z,
-   b.acceleration.z, b.acceleration.y, b.acceleration.z)
+   b.acceleration.x, b.acceleration.y, b.acceleration.z)
 
 let main [n]
         (n_steps: i32,
