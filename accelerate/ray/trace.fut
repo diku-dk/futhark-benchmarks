@@ -63,12 +63,12 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
                      normal={x=0.0, y=0.0, z=0.0},
                      colour=argb.black,
                      shine=0.0}: plane
-  let (_,refl_colour,_,_,_) =
-    loop (bounces,refl_colour,point,dir,visibility) =
-         (0,argb.black,orig_point,orig_dir,1.0) while bounces < limit do
+  let (_, refl_colour,_,_,_) =
+    loop (i, refl_colour, point, dir, visibility) =
+         (0, argb.black, orig_point, orig_dir, 1.0) while i < limit do
     let (hit_s, dist_s, s) = cast_ray_sphere.cast_ray spheres dummy_sphere point dir
     let (hit_p, dist_p, p) = cast_ray_plane.cast_ray planes dummy_plane point dir
-    in if !(hit_s || hit_p) then (limit,refl_colour,point,dir,visibility) else
+    in if !(hit_s || hit_p) then (limit, refl_colour, point, dir, visibility) else
     -- Ray hit an object.
     let next_s = hit_sphere s dist_s point dir
     let next_p = hit_plane p dist_p point dir
@@ -86,10 +86,12 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
     -- Total lighting is direct plus ambient
     let lighting = argb.add direct ambient
 
-    let light_in = argb.scale (argb.scale lighting visibility) (1.0-shine)
+    let light_in = argb.scale (argb.mult lighting colour) (1.0-shine)
 
-    in (bounces+1,
-        argb.mix 1.0 refl_colour 1.0 (argb.mult light_in colour),
+    let light_out = argb.mix (1.0-visibility) refl_colour visibility light_in
+
+    in (i+1,
+        light_out,
         point,
         newdir,
         visibility * shine)
