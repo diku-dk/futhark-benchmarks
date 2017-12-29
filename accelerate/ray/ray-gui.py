@@ -32,9 +32,9 @@ def render(eye_pos):
     global rtime
     rtime += 0.01
     start = time.time()
-    frame = raytracer.render(width,height,fov,
-                             eye_pos[0], eye_pos[1], eye_pos[2],
-                             bouncelimit,rtime).get()
+    frame = raytracer.main(width,height,fov,
+                           eye_pos[0], eye_pos[1], eye_pos[2],
+                           bouncelimit,rtime).get()
     end = time.time()
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))

@@ -1,3 +1,16 @@
+-- ==
+-- input {
+--   800 600
+--
+--   100
+--
+--   50.0 -100.0 -700.0
+--
+--   4
+--
+--   0.0
+-- }
+
 import "/futlib/math"
 import "/futlib/colour"
 import "types"
@@ -127,12 +140,12 @@ let make_objects (time: f32): objects =
               colour=argb.white,
               shine=0.2}]}
 
-entry render (sizeX: i32) (sizeY: i32) (fov: i32) (eyeX: f32) (eyeY: f32) (eyeZ: f32) (limit: i32) (time: f32) =
- let lights: lights = {lights=[{position={x= 300.0, y= -300.0, z= -100.0},
-                                colour=argb.red}]}
+let main (sizeX: i32) (sizeY: i32) (fov: i32) (eyeX: f32) (eyeY: f32) (eyeZ: f32) (limit: i32) (time: f32) =
+  let lights: lights = {lights=[{position={x= 300.0, y= -300.0, z= -100.0},
+                                 colour=argb.red}]}
 
- let objects: objects = make_objects time
- let ambient = argb.from_rgba 0.3 0.3 0.3 1.0
- let eye_pos = {x=eyeX, y=eyeY, z=eyeZ}
- let eye_rays = cast_view_rays sizeX sizeY fov eye_pos
- in map (\rays -> map (trace_ray limit objects lights ambient eye_pos) rays) eye_rays
+  let objects: objects = make_objects time
+  let ambient = argb.from_rgba 0.3 0.3 0.3 1.0
+  let eye_pos = {x=eyeX, y=eyeY, z=eyeZ}
+  let eye_rays = cast_view_rays sizeX sizeY fov eye_pos
+  in map (\rays -> map (trace_ray limit objects lights ambient eye_pos) rays) eye_rays
