@@ -45,6 +45,7 @@ def render(eye_pos):
     pygame.display.flip()
 
 (eye_x,eye_y,eye_z) = orig_eye_pos
+changed_bounce_limit = False
 while True:
     render((eye_x,eye_y,eye_z))
     for event in pygame.event.get():
@@ -65,8 +66,12 @@ while True:
                 eye_z += 1
             if event.key == pygame.K_HOME:
                 (eye_x,eye_y,eye_z) = orig_eye_pos
-            if event.unicode == 'q':
+            if event.unicode == 'q' and not changed_bounce_limit:
                 bouncelimit = max(bouncelimit-1,1)
-            if event.unicode == 'w':
+                changed_bounce_limit = True
+            if event.unicode == 'w' and not changed_bounce_limit:
                 bouncelimit += 1
-
+                changed_bounce_limit = True
+        elif event.type == pygame.KEYUP:
+            if event.key in [pygame.K_q, pygame.K_w]:
+                changed_bounce_limit = False
