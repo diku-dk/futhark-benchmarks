@@ -77,5 +77,5 @@ let tunnel(time: f32) (x: i32) (y: i32): argb.colour =
 
 let main(time: f32, w: i32, h: i32): [w][h]argb.colour =
   map (\(x: i32): [h]i32  ->
-        map (tunnel time x) (map (-(h/2)) (iota(h)))) (
-      map (-(w/2)) (iota(w)))
+        map (tunnel time x) (map (\x -> x-(h/2)) (iota(h)))) (
+      map (\x -> x-(w/2)) (iota(w)))
