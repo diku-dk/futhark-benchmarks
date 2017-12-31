@@ -23,7 +23,7 @@ let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
   let ps1_clean = map (+ps0_offset) ps1
   let ps1_clean' = map (*) bits ps1_clean
   let ps = map (+) ps0_clean ps1_clean'
-  let ps_actual = map (-1) ps
+  let ps_actual = map (\x -> x-1) ps
   in scatter (copy xs) ps_actual xs
 
 let radix_sort [n] (xs: [n]u32): [n]u32 =
