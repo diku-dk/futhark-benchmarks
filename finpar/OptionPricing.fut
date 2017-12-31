@@ -230,7 +230,6 @@ let brownianBridge [num_dates]
 ---------------------------------
 --- Black-Scholes
 ---------------------------------
-let take(n: i32, a: []f32): [n]f32 = let (first, _) = split (n) a in first
 
 let correlateDeltas [num_und][num_dates]
                    (md_c:  [num_und][num_und]f32,
@@ -238,7 +237,7 @@ let correlateDeltas [num_und][num_dates]
                    : [num_dates][num_und]f32 =
   map (\zi: [num_und]f32  ->
          map (\(j: i32): f32  ->
-                let x = map (*) (take(j+1,zi)) (take(j+1,md_c[j]) )
+                let x = map (*) (take (j+1) zi) (take (j+1) md_c[j])
                 in  reduce (+) (0.0) x)
              (iota num_und))
       zds
