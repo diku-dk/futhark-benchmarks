@@ -62,35 +62,6 @@ let in_outside_corner
   bool =
   (i == 0 || i == g - 1) && (j == 0 || j == g - 1)
 
-let corner_index_neighbors
-  (i: i32)
-  (j: i32)
-  (g: i32):
-  (i32, i32, i32, i32) =
-  if i == 0 && j == 0
-  then (1, 0, 0, 1)
-  else if i == 0 && j == g - 1
-  then (1, g - 1, 0, g - 2)
-  else if i == g - 1 && j == 0
-  then (g - 2, 0, g - 1, 1)
-  else (g - 2, g - 1, g - 1, g - 2)
-
-let outermost_inner_index
-  (i: i32)
-  (j: i32)
-  (g: i32)
-  (b: i32):
-  (i32, i32, f32) =
-  if i == 0
-  then (1, j, if b == 1 then -1.0 else 1.0)
-  else if i == g - 1
-  then (g - 2, j, if b == 1 then -1.0 else 1.0)
-  else if j == 0
-  then (i, 1, if b == 2 then -1.0 else 1.0)
-  else if j == g - 1
-  then (i, g - 2, if b == 2 then -1.0 else 1.0)
-  else (0, 0, 0.0) -- This is not supposed to happen.
-
 module type edge_handling_mapper = {
   type info
 
@@ -98,23 +69,41 @@ module type edge_handling_mapper = {
 }
 
 module edge_handling (mapper: edge_handling_mapper) = {
+  let corner_index_neighbors
+    (i: i32) (j: i32) (g: i32): (i32, i32, i32, i32) =
+    if i == 0 && j == 0
+    then (1, 0, 0, 1)
+    else if i == 0 && j == g - 1
+    then (1, g - 1, 0, g - 2)
+    else if i == g - 1 && j == 0
+    then (g - 2, 0, g - 1, 1)
+    else (g - 2, g - 1, g - 1, g - 2)
+
+  let outermost_inner_index
+    (i: i32) (j: i32) (g: i32) (b: i32): (i32, i32, f32) =
+    if i == 0
+    then (1, j, if b == 1 then -1.0 else 1.0)
+    else if i == g - 1
+    then (g - 2, j, if b == 1 then -1.0 else 1.0)
+    else if j == 0
+    then (i, 1, if b == 2 then -1.0 else 1.0)
+    else if j == g - 1
+    then (i, g - 2, if b == 2 then -1.0 else 1.0)
+    else (0, 0, 0.0) -- This is not supposed to happen.
+
   let handle
     (i: i32) (j: i32) (g: i32) (b: i32)
     (info: mapper.info): f32 =
+    if inside i j g
+    then mapper.inner i j g info
+    else let base (i': i32) (j': i32): f32 =
+           let (i1, j1, f) = outermost_inner_index i' j' g b
+           in f * mapper.inner i1 j1 g info
 
-    let outer =
-      let base (i': i32) (j': i32): f32 =
-        let (i1, j1, f) = outermost_inner_index i' j' g b
-        in f * mapper.inner i1 j1 g info
-
-      in if in_outside_corner i j g
-         then let (i1, j1, i2, j2) = corner_index_neighbors i j g
-              in 0.5 * (base i1 j1 + base i2 j2)
-         else base i j
-
-    in if inside i j g
-       then mapper.inner i j g info
-       else outer
+         in if in_outside_corner i j g
+            then let (i1, j1, i2, j2) = corner_index_neighbors i j g
+                 in 0.5 * (base i1 j1 + base i2 j2)
+            else base i j
 }
 
 
@@ -133,7 +122,7 @@ module edge_handling_lin_solve = edge_handling({
     f32 =
     -- A stencil.
     unsafe ((s0[i, j] + a *
-             (s1[(i - 1), j]
+             (  s1[(i - 1), j]
               + s1[(i + 1), j]
               + s1[i, (j - 1)]
               + s1[i, (j + 1)])) / c)
@@ -222,7 +211,7 @@ module edge_handling_project_top = edge_handling({
     (g: i32)
     ((u0, v0): info):
     f32 =
-    unsafe (-0.5 * (u0[i + 1, j]
+    unsafe (-0.5 * (  u0[i + 1, j]
                     - u0[i - 1, j]
                     + v0[i, j + 1]
                     - v0[i, j - 1]) / r32 g)
