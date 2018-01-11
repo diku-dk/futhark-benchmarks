@@ -4,18 +4,6 @@
 --
 -- [1] G. E. Blelloch. "Prefix sums and their applications." Technical Report
 --     CMU-CS-90-190. Carnegie Mellon University. 1990.
---
--- ==
---
--- input {
---   [83u32, 1u32, 4u32, 99u32, 33u32, 0u32, 6u32, 5u32]
--- }
--- output {
---   [0u32, 1u32, 4u32, 5u32, 6u32, 33u32, 83u32, 99u32]
--- }
---
--- input @ data/radix_sort_100.in
--- output @ data/radix_sort_100.out
 
 import "/futlib/array"
 
@@ -47,6 +35,3 @@ let split_radix_sort [n] (a: [n]u32, number_of_bits: i32): [n]u32 =
   loop (a) for i < number_of_bits do
     let ai = map (\a -> (i32.u32 a >>> i) & 1) a
     in split_blelloch(a, ai)
-
-let main [n] (xs: [n]u32): [n]u32 =
-  split_radix_sort(xs, 32)
