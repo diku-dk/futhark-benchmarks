@@ -69,14 +69,14 @@ let updateParams [numX][numY]
 
 let tridagSeq [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
   unsafe
-  let (y,b) = loop ((y, b)) for i in [1..<n] do
+  let (y,b) = loop ((y, b)) for i in 1..<n do
       let beta = a[i] / b[i-1]
       let b[i] = b[i] - beta*c[i-1]
       let y[i] = y[i] - beta*y[i-1]
       in  (y, b)
 
   let y[n-1] = y[n-1]/b[n-1]
-  in loop (y) for i in [n-2..n-3...0] do
+  in loop (y) for i in n-2..n-3...0 do
        let y[i] = (y[i] - c[i]*y[i+1]) / b[i]
        in  y
 
@@ -173,7 +173,7 @@ let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
                                    , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
                                    , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])))
                               mu_row var_row myD myDD)
-         in if 1==1
+         in if n*m>=255*255
             then tridagSeq( a, b, c, u_row )
             else tridagPar( a, b, c, u_row ))
       myMu myVar u
