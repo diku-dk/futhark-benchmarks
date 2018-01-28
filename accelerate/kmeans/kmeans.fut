@@ -26,7 +26,7 @@ let closest_point(p1: (i32, f32)) (p2: (i32, f32)): (i32, f32) =
 
 let find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
   let (i, _) = reduce_comm closest_point (0, euclid_dist_2 pt pts[0])
-                           (zip [0..<k] (map (euclid_dist_2 pt) pts))
+                           (zip (0..<k) (map (euclid_dist_2 pt) pts))
   in i
 
 let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point =
@@ -37,7 +37,7 @@ let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point 
                         then (1, point)
                         else (0, (0.0f32, 0.0f32)))
                      membership points)
-              [0..<k])
+              (0..<k))
   let cluster_sizes =
     map (\counts -> reduce (+) 0 (intrinsics.opaque counts))
         cluster_counts

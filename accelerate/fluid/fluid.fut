@@ -140,8 +140,8 @@ let lin_solve [g]
     map (\i ->
          map (\j ->
               edge_handling_lin_solve.handle i j g b (s0, s1, a, c))
-             [0..<g])
-        [0..<g]
+             (0..<g))
+        (0..<g)
 
 
 let diffuse [g]
@@ -198,8 +198,8 @@ let advect [g]
   let time_step0 = time_step * r32 (g - 2)
   in map (\i -> map (\j ->
                      edge_handling_advect.handle i j g b (s0, u, v, time_step0))
-                    [0..<g])
-         [0..<g]
+                    (0..<g))
+         (0..<g)
 
 
 module edge_handling_project_top = edge_handling({
@@ -239,8 +239,8 @@ let project [g]
   let project_top: [g][g]f32 =
     map (\i -> map (\j ->
                      edge_handling_project_top.handle i j g 0 (u0, v0))
-                   [0..<g])
-        [0..<g]
+                   (0..<g))
+        (0..<g)
 
   let project_bottom
     (p0: [g][g]f32)
@@ -254,8 +254,8 @@ let project [g]
     map (\i -> map (\j ->
                     edge_handling_project_bottom.handle i j g b
                       (p0, s0, i0d, j0d, i1d, j1d))
-                   [0..<g])
-        [0..<g]
+                   (0..<g))
+        (0..<g)
 
   let div0 = project_top
   let p0 = lin_solve n_solver_steps div0 0 1.0 4.0
@@ -305,7 +305,7 @@ let draw_densities [g]
   (ds: [g][g]f32)
   (g_minus_two: i32):
   [g_minus_two][g_minus_two][3]i8 =
-  let ks = [1...g_minus_two]
+  let ks = 1...g_minus_two
   in map (\(i: i32): [g_minus_two][3]i8  ->
             map (\(j: i32): [3]i8  ->
                    let value = clamp (255.0 * unsafe ds[i, j])
