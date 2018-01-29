@@ -28,7 +28,7 @@ module relative_distance(R: real): distance with real = R.t = {
       (let dif = price - quote
        in dif * dif)
     let a = map norm quotes prices
-    in reduce (+) (R.i32 0) a
+    in reduce (+) (R.i32 0) (intrinsics.opaque a)
 }
 
 module type objective = {
@@ -137,7 +137,7 @@ module least_squares (real: real)
              in map init_i rss)
     let fx = map objective x
     let (fx0, best_idx) =
-      reduce_comm min_and_idx (real.inf, 0) (zip fx (iota np))
+      reduce_comm min_and_idx (real.inf, 0) (zip (intrinsics.opaque fx) (iota np))
 
     let mutation (difw: real) (best_idx: i32) (x: [np][num_free_vars]real)
                  (rng: rand.rng) (i :i32) (x_i: [num_free_vars]real) =
@@ -173,7 +173,7 @@ module least_squares (real: real)
        let (fx0', best_idx') =
          reduce_comm min_and_idx
                     (fx0, best_idx)
-                    (zip f_v (iota np))
+                    (zip (intrinsics.opaque f_v) (iota np))
        in (fx0', best_idx', fx', x'))
 
     -- We are not counting the numer of invocations of the objective

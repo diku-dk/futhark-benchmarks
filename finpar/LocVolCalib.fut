@@ -173,7 +173,7 @@ let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
                                    , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
                                    , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])))
                               mu_row var_row myD myDD)
-         in if n*m>=255*255
+         in if true
             then tridagSeq( a, b, c, u_row )
             else tridagPar( a, b, c, u_row ))
       myMu myVar u
