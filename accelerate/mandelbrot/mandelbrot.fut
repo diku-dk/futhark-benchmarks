@@ -15,6 +15,5 @@ module mandelbrot = mandelbrot f32
 
 let main (screenX: i32) (screenY: i32)
          (xcentre: f32) (ycentre: f32) (width: f32)
-         (depth: i32) (radius: f32)
-         : [screenX][screenY]i32 =
+         (depth: i32) (radius: f32) =
   mandelbrot.render_mandelbrot screenX screenY xcentre ycentre width depth radius
