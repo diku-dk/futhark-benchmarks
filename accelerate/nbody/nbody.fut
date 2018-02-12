@@ -21,6 +21,7 @@
 import "/futlib/math"
 import "/futlib/array"
 import "/futlib/vec3"
+import "/futlib/colour"
 
 module vec3 = mk_vec3 f32
 
@@ -156,10 +157,10 @@ entry render [n]
             (w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
              xps: [n]f32, yps: [n]f32, zps: [n]f32, ms: [n]f32,
              x_rotation: f32, y_rotation: f32,
-             max_mass: f32, invert: bool): [w][h]i32 =
-  let background = if invert then 0x00FFFFFF else 0
+             max_mass: f32, invert: bool): [w][h][3]u8 =
+  let background = if invert then argb.white else argb.black
   let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
                        (rotatePoints (map (\(x,y,z) -> {x,y,z}) (zip xps yps zps))
                                      x_rotation y_rotation) ms)
   let vs' = map (\x -> if invert then ~x else x) vs
-  in reshape (w,h) (scatter (replicate (w*h) background) is vs')
+  in argb.to_screen (reshape (w,h) (scatter (replicate (w*h) background) is vs'))
