@@ -19,5 +19,5 @@ fft = fft.fft()
 
 input = np.array(imageio.imread(args.input_image))[:,:,0:3]
 
-output = fft.main(args.cutoff, input).get()
+output = fft.highpass_filter(args.cutoff, input).get()
 imageio.imwrite(args.output_image, output)
