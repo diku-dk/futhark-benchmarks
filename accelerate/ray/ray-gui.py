@@ -20,7 +20,7 @@ raytracer = trace.trace(interactive=True)
 pygame.init()
 pygame.display.set_caption('Raytracer!')
 screen = pygame.display.set_mode(size)
-surface = pygame.Surface(size)
+surface = pygame.Surface(size, depth=32)
 font = pygame.font.Font(None, 36)
 pygame.key.set_repeat(1, 0)
 

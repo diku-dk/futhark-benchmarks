@@ -14,7 +14,7 @@ module mandelbrot(real: real): {
     (screenX: i32) -> (screenY: i32) ->
     (xcentre: real.t) -> (ycentre: real.t) -> (width: real.t) ->
     (limit: i32) -> (radius: real.t) ->
-    [screenX][screenY][3]u8
+    [screenX][screenY]i32
 } = {
 type real = real.t
 module complex = complex real
@@ -114,7 +114,7 @@ let escape_to_colour (limit: i32) (points: i32)
 let render_mandelbrot (screenX: i32) (screenY: i32)
                       (xcentre: real) (ycentre: real) (width: real)
                       (limit: i32) (radius: real)
-                      : [screenX][screenY][3]u8 =
+                      : [screenX][screenY]i32 =
   let aspect_ratio = real.(int screenX / int screenY)
   let (xmin,ymin) = (real.(xcentre - width/int 2),
                      real.(ycentre - (int 1/aspect_ratio)*width/int 2))
@@ -122,5 +122,5 @@ let render_mandelbrot (screenX: i32) (screenY: i32)
                      real.(ycentre + (int 1/aspect_ratio)*width/int 2))
   let escapes = mandelbrot screenX screenY limit radius (xmin, ymin, xmax, ymax)
   let points = 2048
-  in argb.to_screen (map (\row -> map (escape_to_colour limit points) row) escapes)
+  in map (\row -> map (escape_to_colour limit points) row) escapes
 }

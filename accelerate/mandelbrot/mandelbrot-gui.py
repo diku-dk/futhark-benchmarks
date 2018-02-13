@@ -89,7 +89,7 @@ def moveYPixels(pixels):
 pygame.init()
 pygame.display.set_caption('Mandelbrot Explorer!')
 screen = pygame.display.set_mode(size)
-surface = pygame.Surface(size)
+surface = pygame.Surface(size, depth=32)
 font = pygame.font.Font(None, 36)
 pygame.key.set_repeat(1, 1)
 

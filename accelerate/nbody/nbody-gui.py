@@ -17,6 +17,7 @@ pygame.display.set_caption('N-body')
 screen = pygame.display.set_mode((800,600))
 width = screen.get_width()
 height = screen.get_height()
+surface = pygame.Surface((width, height), depth=32)
 size = (width, height)
 
 x_rotation=0.0
@@ -118,7 +119,8 @@ def render(time_step,invert):
     end = time.time()
     futhark_time = (end-start)*1000
     start = time.time()
-    pygame.surfarray.blit_array(screen, frame)
+    pygame.surfarray.blit_array(surface, frame)
+    screen.blit(surface, (0, 0))
     end = time.time()
     blit_time = (end-start)*1000
 
