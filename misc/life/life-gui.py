@@ -36,9 +36,10 @@ size=(args.width,args.height)
 
 
 screen = pygame.display.set_mode(size)
+surface = pygame.Surface(size, depth=32)
 initworld = numpy.random.choice([True, False], size=size)
 
-life = life.life()
+life = life.life(interactive=True)
 
 ruleset = args.variant
 life_init, life_steps, life_render, life_uninit = get_ruleset(life, ruleset)
@@ -50,7 +51,8 @@ def render():
     # We get back a PyOpenCL array.  It is mostly compatible with
     # Numpy, but Pygame really wants a proper Numpy array, so we use
     # the get() method to obtain that.
-    pygame.surfarray.blit_array(screen, frame.get())
+    pygame.surfarray.blit_array(surface, frame.get())
+    screen.blit(surface, (0, 0))
     pygame.display.flip()
 
 def switch_rules(d):
