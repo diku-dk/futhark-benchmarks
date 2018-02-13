@@ -75,7 +75,7 @@ let tunnel(time: f32) (x: i32) (y: i32): argb.colour =
   let x = voronoise({x=5.0*pt3.x, y=5.0*pt3.y}, 1.0, 1.0) + 0.240*rInv
   in argb.from_rgba (c1.1 * x) (c1.2 * x) (c1.3 * x) 1.0
 
-let main(time: f32, w: i32, h: i32): [w][h][3]u8 =
-  argb.to_screen (map (\(x: i32): [h]i32  ->
-                       map (tunnel time x) (map (\x -> x-(h/2)) (iota(h)))) (
-                      map (\x -> x-(w/2)) (iota(w))))
+let main(time: f32, w: i32, h: i32): [w][h]i32 =
+  map (\(x: i32): [h]i32  ->
+       map (tunnel time x) (map (\x -> x-(h/2)) (iota(h)))) (
+      map (\x -> x-(w/2)) (iota(w)))

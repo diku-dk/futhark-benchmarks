@@ -17,7 +17,7 @@ crystal_frame = crystal(interactive=1).render_frame
 pygame.init()
 pygame.display.set_caption('Crystal')
 screen = pygame.display.set_mode(size)
-surface = pygame.Surface(size)
+surface = pygame.Surface(size, depth=32)
 font = pygame.font.Font(None, 36)
 
 def showText(what, where):
