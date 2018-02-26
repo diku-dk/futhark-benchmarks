@@ -3,10 +3,10 @@
 --
 -- ==
 --
--- input @ data/fvcorr.domn.097K.toa
+-- compiled input @ data/fvcorr.domn.097K.toa
 -- output @ data/fvcorr.domn.097K.out
 --
--- input @ data/fvcorr.domn.193K.toa
+-- compiled input @ data/fvcorr.domn.193K.toa
 -- output @ data/fvcorr.domn.193K.out
 
 import "/futlib/math"
