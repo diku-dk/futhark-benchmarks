@@ -11,10 +11,10 @@ import "/futlib/math"
 let emptyRecord: (i32, f32) = (0, 0.0f32)
 
 let main [numRecords]
-         (resultsCount: i32,
-         lat: f32, lng: f32,
-         locations_lat: [numRecords]f32,
-          locations_lng: [numRecords]f32)
+         (resultsCount: i32)
+         (lat: f32) (lng: f32)
+         (locations_lat: [numRecords]f32)
+         (locations_lng: [numRecords]f32)
         : ([resultsCount]i32, [resultsCount]f32) =
   let locations = zip locations_lat locations_lng
   let distance (lat_i: f32, lng_i: f32) =
