@@ -52,10 +52,10 @@ let lud_diagonal0 [b] (a: [b][b]f32) (x: i32): *[b][b]f32 =
                         in  (a_rc[i,j+b]-sum) / aii
                ) (iota(b2) )
         in
-        --let a_rc_flat  = reshape (b*b2) a_rc
-        --let a_rc_flat' = scatter a_rc_flat (map (\j->i*b2+j) (iota b2)) (intrinsics.opaque row_col)
-        --let a_rc = reshape (b,b2) a_rc_flat'
-        let a_rc[i] = row_col
+        let a_rc_flat  = reshape (b*b2) a_rc
+        let a_rc_flat' = scatter a_rc_flat (map (\j->i*b2+j) (iota b2)) (intrinsics.opaque row_col)
+        let a_rc = reshape (b,b2) a_rc_flat'
+        --let a_rc[i] = row_col
         in  a_rc
     in map (\ (i: i32): [b]f32  ->
             map (\ (j: i32): f32  ->
