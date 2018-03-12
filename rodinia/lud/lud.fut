@@ -1,6 +1,8 @@
 -- Parallel blocked LU-decomposition.
 --
 -- ==
+-- compiled input @ data/2048.in
+-- output @ data/2048.out
 -- input @ data/16by16.in
 -- output @ data/16by16.out
 -- compiled input @ data/64.in
@@ -9,8 +11,6 @@
 -- output @ data/256.out
 -- compiled input @ data/512.in
 -- output @ data/512.out
--- compiled input @ data/2048.in
--- output @ data/2048.out
 
 import "/futlib/array"
 
@@ -22,110 +22,16 @@ import "/futlib/array"
 ---- parallelize in the manner of rodinia-cuda
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
-
-let lud_diagonal0 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
-    let a_cols = copy(transpose(a)) in
-    let a_rows = copy(a) in
-    let (a_rows,a_cols) = loop (a_rows,a_cols) for i < b do
-        let it_row = map (\ (j: i32): f32  ->
-                            if j < i then 0.0f32 else
-                            let sum = 0.0f32 in
-                            let sum = loop sum for k < i do
-                                sum + a_cols[k,i]*a_rows[k,j]
-                            in  a_rows[i,j]-sum
-                        ) (iota(b) )
-        in
-        let it_col = map (\ (j: i32): f32  ->
-                            if j < (i+1) then 0.0f32 else
-                            let sum = 0.0f32 in
-                            let sum = loop sum for k < i do
-                                sum + a_cols[k,j]*a_rows[k,i]
-                            in  (a_cols[i,j]-sum) / it_row[i]
-                        ) (iota(b) )
-        in
-        let a_rows[i] = it_row in
-        let a_cols[i] = it_col in
-        (a_rows,a_cols)
-    in map (\ a_rows_r a_cols_r (i: i32): [b]f32  ->
-                    map (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
-                                if (i <= j) then row_el else col_el
-                           ) (a_rows_r) (a_cols_r) (iota(b) )
-              ) (a_rows) (transpose(a_cols)) (iota(b) )
-
-let lud_diagonal1 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal0 [b] (a: [b][b]f32) (x: i32): *[b][b]f32 =
     let a_cols = copy(transpose(a)) in
     let b2 = 2*b in
     let a_rc = map (\ (i: i32): [b2]f32  ->
                         map (\ (j: i32): f32  ->
                                 if j < b
-                                then unsafe a[i,j  ]
+                                then unsafe a[i,j]
                                 else unsafe a_cols[i,j-b]
                            ) (iota(b2) )
-                  ) (iota(b) )
-    let a_rc = loop a_rc for i < (b-1) do
-        let it_rc  = map (\ (j: i32): f32  ->
-                            if (j < b) -- row case
-                            then let i = i + 1 in
-                                 if j < i then 0.0f32 else
-                                 --let sum = a[0,j]*a_rc[k,b+i+1] in
-                                 let sum = loop sum=0.0f32 for k < i do
-                                    sum + a_rc[k,b+i-1]*(if k==0 then a[0,j] else a_rc[k-1,j])
-                                 in  a_rc[i,j]-sum
-                            else let j = j - b in -- column case
-                                 if j < (i+1) then 0.0f32 else
-                                 let sum = loop sum=0.0f32 for k < i do
-                                    sum + a_rc[k,b+j] * (if k==0 then a[0,i] else a_rc[k-1,i])
-                                 in  (a_rc[i,b+j]-sum) / (if i==0 then a[i,i] else a_rc[i-1,i]) --it_row[i]
-                        ) (iota(b2) )
-        in
-        let a_rc[i] = it_rc in
-        a_rc
-    in
-    let (a_rows0, a_cols0) = unzip(
-            map (\ (ind: i32): (f32,f32)  ->
-                    let i = ind / b in let j = ind % b in unsafe
-                    let r_el = if i == 0 then a[i,j] else a_rc[i-1,j] in
-                    (r_el, a_rc[i,j+b])
-               ) (iota(b*b) )
-        ) in
-    let (a_rows, a_cols) = ( reshape (b,b) a_rows0, reshape (b,b) a_cols0 )
-    in map (\ (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: i32): [b]f32  ->
-                    map (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
-                                if (i <= j) then row_el else col_el
-                           ) (a_rows_r) (a_cols_r) (iota(b) )
-              ) (a_rows) (transpose a_cols) (iota b)
-
-
-let lud_diagonal2 [b] (ain: [b][b]f32, m: i32): *[b][b]f32 =  -- CORRECT
-    let one = (m*m+2*m+1)/(m+1) - m in
-    let ains= copy(replicate one ain) in
-    let ress= map (\ (a: *[b][b]f32, q: i32): *[b][b]f32  -> unsafe
-                     loop a for i < b do
-                        let a = loop a for j in i..<b do
-                            let sum = loop sum=0.0f32 for k < i do
-                                sum + a[i,k]*a[k,j] + r32(q)
-                            let a[i,j] = a[i,j] - sum
-                            in a
-                        let tmp = 1.0f32 / a[i,i] in
-                        loop a for j in i+1..<b do
-                            let sum = loop sum=0.0f32 for k < i do
-                                sum + a[j,k] * a[k,i]
-                            let a[j,i] = (a[j,i] - sum) * tmp
-                            in a
-                 ) (zip ains (iota(one)) )
-    in reshape (b,b) ress
-
-
-let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
-    let a_cols = copy(transpose(a)) in
-    let b2 = 2*b in
-    let a_rc = map (\ (i: i32): [b2]f32  ->
-                        map (\ (j: i32): f32  ->
-                                if j < b
-                                then unsafe a[i,j  ]
-                                else unsafe a_cols[i,j-b]
-                           ) (iota(b2) )
-                  ) (iota(b) )
+                  ) (map (+x) (iota b) )
     let a_rc = loop a_rc for i < b do
         let row_col =
             map (\ (j: i32): f32  ->
@@ -146,13 +52,23 @@ let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
                         in  (a_rc[i,j+b]-sum) / aii
                ) (iota(b2) )
         in
-        let a_rc[i] = row_col in
-        a_rc
+        --let a_rc_flat  = reshape (b*b2) a_rc
+        --let a_rc_flat' = scatter a_rc_flat (map (\j->i*b2+j) (iota b2)) (intrinsics.opaque row_col)
+        --let a_rc = reshape (b,b2) a_rc_flat'
+        let a_rc[i] = row_col
+        in  a_rc
     in map (\ (i: i32): [b]f32  ->
             map (\ (j: i32): f32  ->
                     if (i <= j) then a_rc[i,j] else a_rc[j,i+b]
                ) (iota(b) )
           ) (iota(b) )
+
+let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
+--    lud_diagonal0 a 0
+    let res = map (lud_diagonal0 a)
+                  (iota (intrinsics.opaque 1))
+    in  res[intrinsics.opaque 0]
+
 ------------------------------
 ------------------------------
 ---- LUD Perimeter Upper -----
@@ -255,7 +171,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
         -----------------------------------------------
         ---- 1. compute the current diagonal block ----
         -----------------------------------------------
-        let diag = lud_diagonal(matb[0,0]) in
+        let diag = lud_diagonal (matb[0,0])
         --let upper[step,step] = diag in
         ----------------------------------------
         ---- 2. compute the top  perimeter  ----
@@ -303,7 +219,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
     in
     let last_step = (n / b) - 1 in
     let upper[last_step,last_step] =
-      lud_diagonal( reshape (b,b) matb ) in
+      lud_diagonal ( reshape (b,b) matb ) in
     let ret_padded = map (\(i_ind: i32): [n]f32  ->
                           map  (\ (j_ind: i32): f32  ->
                                 let (ii, jj) = (i_ind/b, j_ind/b) in
@@ -314,3 +230,11 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
                                ) (iota n)
                          ) (iota n)
     in take m (map (take m) ret_padded)
+
+-- To run multiversioning just set: 
+-- FUTHARK_INCREMENTAL_FLATTENING=1 futhark-opencl ...
+--
+-- tools/futhark-autotune foo.fut --only threshold --stop-after 600
+-- 
+-- FUTHARK_INCREMENTAL_FLATTENING=1 ../../../futhark/tools/futhark-autotune lud.fut --only threshold --stop-after 600
+-- futhark --gpu
