@@ -32,7 +32,7 @@ let find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
 let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point =
   let (cluster_counts, cluster_points) =
     unzip (map (\cluster  ->
-                 map (\point_cluster point ->
+                 map2 (\point_cluster point ->
                         if cluster == point_cluster
                         then (1, point)
                         else (0, (0.0f32, 0.0f32)))
@@ -42,14 +42,14 @@ let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point 
     map (\counts -> reduce (+) 0 (intrinsics.opaque counts))
         cluster_counts
   let cluster_centres =
-    map (\count my_points  ->
+    map2 (\count my_points  ->
            let (x,y) = reduce_comm add_points (0f32, 0f32) my_points
            in (x / r32 count, y / r32 count))
         (intrinsics.opaque cluster_sizes) cluster_points
   in cluster_centres
 
 let continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
-  reduce (||) false (map (\(x1,y1) (x2,y2) ->
+  reduce (||) false (map2 (\(x1,y1) (x2,y2) ->
                           f32.abs (x1-x2) > 0.01f32 || f32.abs(y1-y2) > 0.01f32)
                      old_centres (intrinsics.opaque cur_centres))
 

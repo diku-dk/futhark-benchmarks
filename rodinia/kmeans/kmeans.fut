@@ -15,7 +15,7 @@
 -- output @ data/kdd_cup.out
 
 let euclid_dist_2 [d] (pt1: [d]f32) (pt2: [d]f32): f32 =
-  reduce (+) 0.0f32 (map (**2.0f32) (map (-) pt1 pt2))
+  reduce (+) 0.0f32 (map (**2.0f32) (map2 (-) pt1 pt2))
 
 let closest_point (p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
   if p1.2 < p2.2 then p1 else p2
@@ -26,19 +26,19 @@ let find_nearest_point [k][d] (pts: [k][d]f32) (pt: [d]f32): i32 =
   in i
 
 let add_centroids [d] (x: [d]f32) (y: [d]f32): *[d]f32 =
-  map (+) x y
+  map2 (+) x y
 
-let centroids_of [n][d] (k: i32, points: [n][d]f32, membership: [n]i32): *[k][d]f32 =
+let centroids_of [n][d] (k: i32, points: [n][d]f32, membership: [n]i32): [k][d]f32 =
   let points_in_clusters =
      stream_red_per (\(acc: [k]i32) (x: [k]i32) ->
-                     map (+) acc x)
+                     map2 (+) acc x)
                     (\(inp: []i32) ->
                      loop acc = (replicate k 0) for c in inp do
                        unsafe let acc[c] = acc[c] + 1 in acc)
                     membership
   let cluster_sums =
     stream_red_per (\(acc: [k][d]f32) (elem: [k][d]f32) ->
-                    map add_centroids acc elem)
+                    map2 add_centroids acc elem)
                    (\(inp: []([d]f32,i32)) ->
                        loop acc = replicate k (replicate d 0f32) for (point,c) in inp do
                          unsafe let acc[c] =
@@ -67,6 +67,6 @@ let main [n][d]
       let new_centres = centroids_of(k, points, new_membership)
       let delta = reduce (+) 0 (map (\(b: bool): i32  ->
                                        if b then 0 else 1)
-                                (map (==) membership new_membership))
+                                (map2 (==) membership new_membership))
       in (new_membership, new_centres, delta, i+1)
   in (cluster_centres, i)

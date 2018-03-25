@@ -49,11 +49,11 @@ let calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *
   let get_rank (i: i32) = unsafe if sizes[i] == 0 then 0f32
                                  else ranks[i] / f32.i32 sizes[i]
   let contributions = map get_rank froms
-  let page_flags = map (!=) tos (rotate (-1) tos)
+  let page_flags = map2 (!=) tos (rotate (-1) tos)
   let scanned_contributions = segmented_sum_f32.segmented_scan page_flags contributions
   let (page_tos, page_contributions) =
-    unzip (map (\to c flag -> if flag then (to, c) else (-1, c))
-               tos scanned_contributions (rotate 1 page_flags))
+    unzip (map3 (\to c flag -> if flag then (to, c) else (-1, c))
+                tos scanned_contributions (rotate 1 page_flags))
   in scatter (replicate n 0f32) page_tos page_contributions
 
 let calculate_ranks [n] (links:[]link) (ranks_in: *[n]f32)
@@ -86,9 +86,9 @@ module segmented_sum_i32 = segmented_scan {
 let compute_sizes [m] (n: i32) (links: [m]link) =
   let links = sort_by_from.radix_sort links
   let froms = map (\x -> x.from) links
-  let flags = map (!=) froms (rotate (-1) froms)
+  let flags = map2 (!=) froms (rotate (-1) froms)
   let sizes = segmented_sum_i32.segmented_scan flags (replicate m 1)
-  let (sizes, ids, _) = unzip (filter (\x -> x.3) (zip sizes froms (rotate 1 flags)))
+  let (sizes, ids, _) = unzip (filter (\(_,_,x) -> x) (zip sizes froms (rotate 1 flags)))
   in scatter (replicate n 0) ids sizes
 
 entry preprocess_graph [m] (links_array: [m][2]i32): ([m]i32, [m]i32, []i32) =

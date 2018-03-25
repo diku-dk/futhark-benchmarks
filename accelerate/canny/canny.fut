@@ -147,11 +147,11 @@ let selectStrong [h][w] (img: *[h][w]f32): []i32 =
   let len = len'[0]
   let zeros = replicate len 0
   let (indices', values) =
-    unzip(map (\i target_i strong_x ->
-                if strong_x == 0
-                then (-1, 0)
-                else (target_i, i+1))
-              (iota(w*h-1)) targetIdx strong[1:])
+    unzip(map3 (\i target_i strong_x ->
+                 if strong_x == 0
+                 then (-1, 0)
+                 else (target_i, i+1))
+               (iota(w*h-1)) targetIdx strong[1:])
   in scatter zeros indices' values
 
 let main [h][w] (low: f32, high: f32, img: *[h][w]i32): []i32 =

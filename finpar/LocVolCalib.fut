@@ -80,7 +80,7 @@ let tridagSeq [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
        let y[i] = (y[i] - c[i]*y[i+1]) / b[i]
        in  y
 
-let tridagPar [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
+let tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   unsafe
   ----------------------------------------------------
   -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --
@@ -149,8 +149,8 @@ let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
                            result: [n][m]f32)
                   : *[n][m]f32 =
   -- 0 <= i < m AND 0 <= j < n
-  map (\mu_row var_row result_row: [m]f32  ->
-         map (\dx dxx mu var j: f32 ->
+  map (\(mu_row, var_row, result_row)  ->
+         map5 (\dx dxx mu var j: f32 ->
                 let c1 = if 0 < j
                          then ( mu*dx[0] + 0.5*var*dxx[0] ) * unsafe result_row[j-1]
                          else 0.0
@@ -160,23 +160,23 @@ let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
                 let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * unsafe result_row[j  ]
                 in  c1 + c2 + c3)
              myD myDD mu_row var_row (iota m))
-      myMu myVar result
+      (zip myMu myVar result)
 
 -- for implicitY: should be called with transpose(u) instead of u
 let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
                            myMu: [n][m]f32,  myVar: [n][m]f32,
                            u:   *[n][m]f32,  dtInv: f32)
                   : *[n][m]f32 =
-  map (\mu_row var_row (u_row: *[]f32): *[m]f32  ->
-         let (a,b,c) = unzip (map (\mu var d dd ->
+  map (\(mu_row, var_row, u_row)  ->
+         let (a,b,c) = unzip (map4 (\mu var d dd ->
                                    ( 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
                                    , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
                                    , 0.0   - 0.5*(mu*d[2] + 0.5*var*dd[2])))
                               mu_row var_row myD myDD)
          in if true
-            then tridagSeq( a, b, c, u_row )
+            then tridagSeq( a, b, c, copy u_row )
             else tridagPar( a, b, c, u_row ))
-      myMu myVar u
+      (zip myMu myVar u)
 
 let rollback
   [numX][numY]
@@ -189,20 +189,20 @@ let rollback
 
   -- explicitX
   let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult )
-  let u = map (\u_row res_row: []f32  ->
-                 map (\u_el res_el  -> dtInv*res_el + 0.5*u_el)
+  let u = map2 (\u_row res_row: []f32  ->
+                 map2 (\u_el res_el  -> dtInv*res_el + 0.5*u_el)
                      u_row res_row)
               u myResult
 
   -- explicitY
   let myResultTR = transpose(myResult)
   let v = explicitMethod( myDy, myDyy, myMuY, myVarY, myResultTR )
-  let u = map (\us vs: *[]f32 -> map (+) us vs) u (transpose v)
+  let u = map2 (\us vs: *[]f32 -> map2 (+) us vs) u (transpose v)
   -- implicitX
   let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv )
   -- implicitY
-  let y = map (\u_row v_row: []f32 ->
-                 map (\u_el v_el -> dtInv*u_el - 0.5*v_el) u_row v_row)
+  let y = map2 (\u_row v_row: []f32 ->
+                 map2 (\u_el v_el -> dtInv*u_el - 0.5*v_el) u_row v_row)
               (transpose u) v
 
   let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )

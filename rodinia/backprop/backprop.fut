@@ -32,7 +32,7 @@ let bpnn_output_error [n] (target: [n]f32, output: [n]f32): (f32, [n]f32) =
 let bpnn_hidden_error [no][nh] (delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32, [nh]f32) =
     let (errs, delta_h) = unzip (
         map ( \(hidden_el: f32, who_row: []f32): (f32,f32)  ->
-                let prods  = map (*) delta_o who_row
+                let prods  = map2 (*) delta_o who_row
                 let sumrow = reduce (+) 0.0 prods
                 let new_el = hidden_el * (1.0-hidden_el) * sumrow
                 in ( fabs(new_el), new_el ))
@@ -55,7 +55,7 @@ let bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32
 let bpnn_layerforward_GOOD [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
   let res_tmp   = map ( \(conn_tr_row: [n1]f32): f32  ->
-                            let prods = map (*) conn_tr_row l1
+                            let prods = map2 (*) conn_tr_row l1
                             in reduce (+) 0.0 prods)
                       connT
   in map (\(pr: f32, conn0: f32): f32  -> squash(pr+conn0))
@@ -65,7 +65,7 @@ let bpnn_layerforward_GOOD [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow
 let bpnn_layerforward [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
   let res_map   = map ( \(conn_tr_row: [n1]f32): [n1]f32  ->
-                        map (*) conn_tr_row l1)
+                        map2 (*) conn_tr_row l1)
                       connT
 
   -- FIXME: nasty hack to avoid fusion, which presently causes the

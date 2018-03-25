@@ -29,9 +29,9 @@ module type game_of_life = {
 module gen_life(R: rules): game_of_life with cell = R.cell = {
   type cell = R.cell
 
-  let sum_of_neighbours (nw: cell) (n: cell) (ne: cell)
-                        (w:  cell) (c: cell) (e:  cell)
-                        (sw: cell) (s: cell) (se: cell): i32 =
+  let sum_of_neighbours (nw: cell, n: cell, ne: cell,
+                         w:  cell, c: cell, e:  cell,
+                         sw: cell, s: cell, se: cell): i32 =
     (R.value nw * R.weights[0,0] +
      R.value n  * R.weights[0,1] +
      R.value ne * R.weights[0,2]) +
@@ -54,14 +54,14 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
     let nes = rotate@1  (-1) es
     let sws = rotate@1    1  ws
     let ses = rotate@1    1  es
-    in map (\nws_r ns_r nes_r ws_r world_r es_r sws_r ss_r ses_r ->
+    in map (\(nws_r, ns_r, nes_r, ws_r, world_r, es_r, sws_r, ss_r, ses_r) ->
             map sum_of_neighbours
-            nws_r ns_r nes_r ws_r world_r es_r sws_r ss_r ses_r)
-           nws ns nes ws world es sws ss ses
+            (zip nws_r ns_r nes_r ws_r world_r es_r sws_r ss_r ses_r))
+           (zip nws ns nes ws world es sws ss ses)
 
   let step [n][m] (world: [n][m]cell): [n][m]cell =
     let all_sums = all_neighbour_sums world
-    in map (\world_r all_sums_r -> map R.step world_r all_sums_r) world all_sums
+    in map2 (\world_r all_sums_r -> map2 R.step world_r all_sums_r) world all_sums
 }
 
 module type visuals = {

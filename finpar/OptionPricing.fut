@@ -29,8 +29,8 @@ let testBit(n: i32, ind: i32): bool =
 ----    not allow fusing the filter with reduce -> redomap,
 -----------------------------------------------------------------
 let xorInds [num_bits] (n: i32) (dir_vs: [num_bits]i32): i32 =
-  let reldv_vals = map (\dv i -> if testBit(grayCode n,i) then dv else 0)
-                       dir_vs (iota num_bits)
+  let reldv_vals = map2 (\dv i -> if testBit(grayCode n,i) then dv else 0)
+                        dir_vs (iota num_bits)
   in reduce (^) 0 reldv_vals
 
 let sobolIndI [m][num_bits] (dir_vs: [m][num_bits]i32, n: i32): [m]i32 =
@@ -49,7 +49,7 @@ let index_of_least_significant_0(x: i32): i32 =
 
 let sobolRecI [num_bits][n] (sob_dir_vs: [][num_bits]i32, prev: [n]i32, x: i32): [n]i32 =
   let bit = index_of_least_significant_0 x
-  in map (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
+  in map2 (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
 
 let recM [n][num_bits] (sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
   let bit = index_of_least_significant_0 i
@@ -62,12 +62,12 @@ let sobolRecMap [n] (sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i3
                             then sobolIndI(dir_vs,lb_inc+1)
                             else recM(dir_vs,k+lb_inc))
                      (iota (ub_exc-lb_inc))
-  let vct_ints = scan (\x y -> map (^) x y) (replicate n 0) contribs
+  let vct_ints = scan (\x y -> map2 (^) x y) (replicate n 0) contribs
   in  map (\xs -> map (\x -> r32 x * sob_fact) xs) vct_ints
 
 let sobolReci2 [n] (sob_dirs: [][]i32, prev: [n]i32, i: i32): [n]i32=
   let col = recM(sob_dirs, i)
-  in map (^) prev col
+  in map2 (^) prev col
 
 -- computes sobol numbers: n,..,n+chunk-1
 let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32, n: i32, chunk: i32): [chunk][len]f32 =
@@ -77,7 +77,7 @@ let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32, n: i32, chunk: i32):
                        if k==0 then sob_beg
                        else recM(dir_vs, k+n))
                     (iota chunk)
-  let vct_ints= scan (\x y -> map (^) x y) (replicate len 0) contrbs
+  let vct_ints= scan (\x y -> map2 (^) x y) (replicate len 0) contrbs
   in map (\xs -> map (\x -> r32(x) * sob_fact) xs) vct_ints
 
 ----------------------------------------
@@ -237,7 +237,7 @@ let correlateDeltas [num_und][num_dates]
                    : [num_dates][num_und]f32 =
   map (\zi: [num_und]f32  ->
          map (\(j: i32): f32  ->
-                let x = map (*) (unsafe take (j+1) zi) (unsafe take (j+1) md_c[j])
+                let x = map2 (*) (unsafe take (j+1) zi) (unsafe take (j+1) md_c[j])
                 in  reduce (+) (0.0) x)
              (iota num_und))
       zds
@@ -246,7 +246,7 @@ let combineVs [num_und]
              (n_row:   [num_und]f32)
              (vol_row: [num_und]f32)
              (dr_row:  [num_und]f32): [num_und]f32 =
-  map (+) dr_row (map (*) n_row vol_row)
+  map2 (+) dr_row (map2 (*) n_row vol_row)
 
 let mkPrices [num_und][num_dates]
             (md_starts:    [num_und]f32,
@@ -254,11 +254,11 @@ let mkPrices [num_und][num_dates]
              md_drifts: [num_dates][num_und]f32,
              noises: [num_dates][num_und]f32)
             : [num_dates][num_und]f32 =
-  let c_rows = map combineVs noises md_vols md_drifts
+  let c_rows = map3 combineVs noises md_vols md_drifts
   let e_rows = map (\x: [num_und]f32 -> map f32.exp x) c_rows
   in  map (\(x: []f32): [num_und]f32  ->
-             map (*) (md_starts) x)
-          (scan (\x y -> map (*) x y)
+             map2 (*) (md_starts) x)
+          (scan (\x y -> map2 (*) x y)
                 (replicate num_und 1.0) e_rows)
 
 let blackScholes [num_dates][num_und]
@@ -352,10 +352,10 @@ let main [num_bits][num_models][num_und][num_dates]
   let bb_mat    = map (brownianBridge(num_und, bb_inds, bb_data)) gauss_mat
 
   let payoffs   = map (\bb_row: [num_models]f32  ->
-                         let bd_row = map (blackScholes bb_row) md_cs md_vols md_drifts md_sts
-                         in map (genericPayoff contract_number) md_discts md_detvals bd_row)
+                         let bd_row = map4 (blackScholes bb_row) md_cs md_vols md_drifts md_sts
+                         in map3 (genericPayoff contract_number) md_discts md_detvals bd_row)
                       bb_mat
 
-  let payoff    = reduce (\x y -> map (+) x y)
+  let payoff    = reduce (\x y -> map2 (+) x y)
                          (replicate num_models 0.0) payoffs
   in  map (/r32 num_mc_it) payoff

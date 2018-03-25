@@ -48,7 +48,7 @@ module heston_least_squares = least_squares real rand {
                  heston_parameters
                  day_count_fractions
                  (map (\q -> {maturity=q.maturity, strike=q.strike}) quotes)
-    in map (\q p -> q.weight *. p /. q.vega) quotes prices
+    in map (\(q, p) -> q.weight *. p /. q.vega) (zip quotes prices)
 }
 
 type calibration_input = { today: date
@@ -64,8 +64,8 @@ type calibration_input = { today: date
 let distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
   let switched (x: date) (i: i32) =
     i == 0 || unsafe !(same_date x dates[i - 1])
-  let switches = map switched dates (iota n)
-  in ((unzip (filter (\x -> x.1) (zip switches dates))).2,
+  let switches = map2 switched dates (iota n)
+  in ((unzip (filter (\(x,_) -> x) (zip switches dates))).2,
       map (\x -> x-1) (scan (+) 0 (map i32.bool switches)))
 
 let run_calibration({today,
@@ -94,12 +94,12 @@ let run_calibration({today,
   let weights = map (\{maturity, strike, quote=_} -> weight strike maturity) quotes
   let prices_and_vegas = map (\{maturity, strike, quote} ->
                               price_and_vega_of_quote strike maturity quote) quotes
-  let quotes_for_optimization = map (\(p,v) w -> w *. p /. v) prices_and_vegas weights
+  let quotes_for_optimization = map2 (\(p,v) w -> w *. p /. v) prices_and_vegas weights
   let quotes_for_ctx =
-    map (\{maturity=_, strike, quote=_} w (_,v) i -> { maturity = i
-                                                     , strike = strike
-                                                     , weight = w
-                                                     , vega = v})
+    map4 (\{maturity=_, strike, quote=_} w (_,v) i -> { maturity = i
+                                                      , strike = strike
+                                                      , weight = w
+                                                      , vega = v})
         quotes weights prices_and_vegas quotes_to_maturities
 
   let ctx = { day_count_fractions =
@@ -140,7 +140,7 @@ let heston [num_quotes]
            (quotes_quote: [num_quotes]real) =
   let result =
     run_calibration { today = date_of_int today
-                    , quotes = map (\m k q -> {maturity = date_of_int m, strike = k, quote = q})
+                    , quotes = map3 (\m k q -> {maturity = date_of_int m, strike = k, quote = q})
                       quotes_maturity quotes_strike quotes_quote
                     , max_global = max_global
                     , np = np

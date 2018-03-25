@@ -56,7 +56,7 @@ let advance_body (time_step: f32) (body: body) (acc: acceleration): body =
 
 let advance_bodies [n] (epsilon: f32) (time_step: f32) (bodies: [n]body): [n]body =
   let accels = calc_accels epsilon bodies
-  in map (advance_body time_step) bodies accels
+  in map2 (advance_body time_step) bodies accels
 
 let advance_bodies_steps [n] (n_steps: i32) (epsilon: f32) (time_step: f32)
                              (bodies: [n]body): [n]body =
@@ -117,7 +117,7 @@ let rotateYMatrix (angle: f32): [3][3]f32 =
 
 let matmult [n][m][p] (x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
   map (\xr ->
-        map (\yc -> reduce (+) 0f32 (map (*) xr yc))
+        map (\yc -> reduce (+) 0f32 (map2 (*) xr yc))
             (transpose y))
       x
 
@@ -159,7 +159,7 @@ entry render [n]
              x_rotation: f32, y_rotation: f32,
              max_mass: f32, invert: bool): [w][h]i32 =
   let background = if invert then argb.white else argb.black
-  let (is, vs) = unzip(map (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
+  let (is, vs) = unzip(map2 (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
                        (rotatePoints (map (\(x,y,z) -> {x,y,z}) (zip xps yps zps))
                                      x_rotation y_rotation) ms)
   let vs' = map (\x -> if invert then ~x else x) vs

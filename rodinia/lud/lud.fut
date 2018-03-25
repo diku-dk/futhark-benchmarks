@@ -46,8 +46,8 @@ let lud_diagonal0 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
         let a_rows[i] = it_row in
         let a_cols[i] = it_col in
         (a_rows,a_cols)
-    in map (\ a_rows_r a_cols_r (i: i32): [b]f32  ->
-                    map (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
+    in map3 (\ a_rows_r a_cols_r (i: i32): [b]f32  ->
+                    map3 (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
                                 if (i <= j) then row_el else col_el
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose(a_cols)) (iota(b) )
@@ -89,8 +89,8 @@ let lud_diagonal1 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
                ) (iota(b*b) )
         ) in
     let (a_rows, a_cols) = ( reshape (b,b) a_rows0, reshape (b,b) a_cols0 )
-    in map (\ (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: i32): [b]f32  ->
-                    map (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
+    in map3 (\ (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: i32): [b]f32  ->
+                    map3 (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
                                 if (i <= j) then row_el else col_el
                            ) (a_rows_r) (a_cols_r) (iota(b) )
               ) (a_rows) (transpose a_cols) (iota b)
@@ -207,7 +207,7 @@ let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat
         map (\ (mat_blk: [b][b]f32, top: [b][b]f32): [b][b]f32  ->
                 map  (\ (mat_row: [b]f32, lft_row: [b]f32): [b]f32  ->
                         map  (\(mat_el, top_row)  ->
-                                let prods = map (*) (lft_row) (top_row) in
+                                let prods = map2 (*) (lft_row) (top_row) in
                                 let sum   = reduce (+) (0.0f32) prods     in
                                 mat_el - sum
                              ) (zip (mat_row) top)
