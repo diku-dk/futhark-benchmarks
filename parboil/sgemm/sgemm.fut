@@ -13,12 +13,12 @@ import "/futlib/array"
 let mult [n][m][p] (xss: [n][m]f32, yss: [m][p]f32): [n][p]f32 =
   map (\(xs: []f32): [p]f32  ->
         map (\(ys: []f32): f32  ->
-              reduce (+) 0f32 (map (*) xs ys)) (
+              reduce (+) 0f32 (map2 (*) xs ys)) (
             transpose(yss))) xss
 
 let add [n][m] (xss: [n][m]f32, yss: [n][m]f32): [n][m]f32 =
-  map (\(xs: []f32) (ys: []f32): [m]f32  ->
-            map (+) xs ys) xss yss
+  map2 (\(xs: []f32) (ys: []f32): [m]f32  ->
+            map2 (+) xs ys) xss yss
 
 let scale [n][m] (xss: [n][m]f32, a: f32): [n][m]f32 =
   map (\(xs: []f32): [m]f32  ->

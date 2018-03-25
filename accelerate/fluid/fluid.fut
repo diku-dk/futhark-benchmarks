@@ -278,7 +278,7 @@ let step [g]
   (viscosity: f32):
   (*[g][g]f32, *[g][g]f32, *[g][g]f32) =
 
-  let vel_step =
+  let (u1, v1) =
     let u1 = diffuse u0 1 n_solver_steps viscosity time_step
     let v1 = diffuse v0 2 n_solver_steps viscosity time_step
     let (u2, v2) = project n_solver_steps u1 v1
@@ -292,7 +292,6 @@ let step [g]
     let d2 = advect d1 u0 v0 0 time_step
     in d2
 
-  let (u1, v1) = vel_step
   let d1 = dens_step
   in (u1, v1, d1)
 

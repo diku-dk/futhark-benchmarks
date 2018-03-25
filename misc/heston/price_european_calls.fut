@@ -281,17 +281,17 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
                        (psi_bs day_count_fraction x_minus_i -! psi_h day_count_fraction x_minus_i) /!
                        (x *! x_minus_i))))
           let (ws, coeff_ks) = unzip (map mk_w_and_coeff_k day_count_fractions)
-          in map (\minus_ikk m ->
-                  let w = unsafe ws[m]
-                  let coeff_k = unsafe coeff_ks[m]
-                  in w * c64.re (coeff_k *! c64.exp (x *! minus_ikk)))
-                 minus_ik maturity_for_quote)
+          in map2 (\minus_ikk m ->
+                   let w = unsafe ws[m]
+                   let coeff_k = unsafe coeff_ks[m]
+                   in w * c64.re (coeff_k *! c64.exp (x *! minus_ikk)))
+                  minus_ik maturity_for_quote)
 
        -- write reduction as loop to avoid pointless segmented
        -- reduction (the inner parallelism is not needed).
        let res = map (\x -> loop v = int 0 for i < num_points do v + x[i])
-                     (transpose (map iter x w))
-       in map (\moneyness resk m ->
+                     (transpose (map2 iter x w))
+       in map3 (\moneyness resk m ->
                let day_count_fraction = unsafe day_count_fractions[m]
                let sigma_sqrtt = R.sqrt (sigma2 day_count_fraction * day_count_fraction)
                let bs = bs_control moneyness sigma_sqrtt

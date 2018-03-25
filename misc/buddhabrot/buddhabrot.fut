@@ -77,9 +77,7 @@ let visualise [yprec][xprec][depth]
   let escapes' = reshape (xprec*yprec) escapes
   let visits_per_pixel =
     reshape (n*m)
-            (stream_red_per (\ass bss: [n][m]i32  ->
-                           map (\as bs: [m]i32  ->
-                                  map (+) as bs) ass bss) (
+            (stream_red_per (\ass bss: [n][m]i32  -> map2 (\as bs: [m]i32 -> map2 (+) as bs) ass bss) (
                          \[chunk] (inp: [chunk]([depth](f32,f32),bool)): [n][m]i32  ->
                              loop acc = replicate n (replicate m 0) for i < chunk do
                                (let (trajectory, escaped) = inp[i]
