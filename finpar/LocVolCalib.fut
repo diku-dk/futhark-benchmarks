@@ -149,7 +149,7 @@ let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
                            result: [n][m]f32)
                   : *[n][m]f32 =
   -- 0 <= i < m AND 0 <= j < n
-  map (\(mu_row, var_row, result_row)  ->
+  map3 (\mu_row var_row result_row  ->
          map5 (\dx dxx mu var j: f32 ->
                 let c1 = if 0 < j
                          then ( mu*dx[0] + 0.5*var*dxx[0] ) * unsafe result_row[j-1]
@@ -160,14 +160,14 @@ let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
                 let c2 =      ( mu*dx[1] + 0.5*var*dxx[1] ) * unsafe result_row[j  ]
                 in  c1 + c2 + c3)
              myD myDD mu_row var_row (iota m))
-      (zip myMu myVar result)
+      myMu myVar result
 
 -- for implicitY: should be called with transpose(u) instead of u
 let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
                            myMu: [n][m]f32,  myVar: [n][m]f32,
                            u:   *[n][m]f32,  dtInv: f32)
                   : *[n][m]f32 =
-  map (\(mu_row, var_row, u_row)  ->
+  map3 (\mu_row var_row u_row  ->
          let (a,b,c) = unzip (map4 (\mu var d dd ->
                                    ( 0.0   - 0.5*(mu*d[0] + 0.5*var*dd[0])
                                    , dtInv - 0.5*(mu*d[1] + 0.5*var*dd[1])
@@ -176,7 +176,7 @@ let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
          in if true
             then tridagSeq( a, b, c, copy u_row )
             else tridagPar( a, b, c, u_row ))
-      (zip myMu myVar u)
+      myMu myVar u
 
 let rollback
   [numX][numY]
