@@ -24,13 +24,15 @@ import "/futlib/fft"
 
 module fft = mk_fft f32
 
+let tabmap f xs = map2 f (iota (length xs)) xs
+
 let centre_2d [n][m] (arr: [n][m]c32): [n][m]c32 =
   let f (i: i32) (j: i32) (x: c32) =
         c32.mk_re (f32.i32 ((-1) ** (i+j))) c32.* x
-  in map (\(i,r) -> map (\(j,x) -> f i j x) (zip (iota m) r)) (zip (iota n) arr)
+  in tabmap (tabmap <<| f) arr
 
 let transform [n][m] (cutoff: i32) (arr: [n][m]u8) =
-  let arr_complex = map (\r -> map c32.mk_re (map f32.u8 r)) arr
+  let arr_complex = map1 (map1 (c32.mk_re <<| f32.u8)) arr
   let arr_centered = centre_2d arr_complex
   let arr_freq = fft.fft2 arr_centered
   let centre_i = n / 2
@@ -39,10 +41,9 @@ let transform [n][m] (cutoff: i32) (arr: [n][m]u8) =
         if i > centre_i - cutoff && i < centre_i + cutoff &&
            j > centre_j - cutoff && j < centre_j + cutoff
         then c32.mk_re 0f32 else x
-  let arr_filt = map (\(i,r) -> map (\(j,x) -> zap i j x) (zip (iota m) r))
-                     (zip (iota n) arr_freq)
+  let arr_filt = tabmap (tabmap <<| zap) arr_freq
   let arr_inv = fft.ifft2 arr_filt
-  in map (\r -> map c32.mag r) arr_inv
+  in map1 (map1 c32.mag) arr_inv
 
 -- We have two entry points, for testing and the actual high-pass
 -- filtering application.  The reason is that rounding the f32 values
@@ -55,15 +56,15 @@ let unpack_rgb (x: [3]u8): (u8, u8, u8) =
   (x[0], x[1], x[2])
 
 let main [n][m] (cutoff: i32) (img: [n][m][3]u8): [n][m][3]f32 =
-  let (r, g, b) = unzip (map (\r -> map unpack_rgb r) img)
+  let (r, g, b) = unzip (map1 (map1 unpack_rgb) img)
   let r' = transform cutoff r
   let g' = transform cutoff g
   let b' = transform cutoff b
-  in map (\x -> map (\(r,g,b) -> [r, g, b]) x) (zip@1 r' g' b')
+  in map1 (map1 (\(r,g,b) -> [r, g, b])) (zip@1 r' g' b')
 
 let pack_rgb ((r,g,b): (f32, f32, f32)): [3]u8 =
   [u8.f32 r, u8.f32 g, u8.f32 b]
 
 entry highpass_filter [n][m] (cutoff: i32) (img: [n][m][3]u8): [n][m][3]u8 =
   let csss = main cutoff img
-  in map (\css -> map (\cs -> map u8.f32 cs) css) csss
+  in map1 (map1 (map1 u8.f32)) csss
