@@ -53,7 +53,7 @@ module BFS = BFSLIB({
     -- We calculate the maximum number of edges for a node.  This is necessary,
     -- since the number of edges are irregular, and since we want to construct a
     -- nested array.
-    let e_max = reduce_comm max 0 (nodes_n_edges)
+    let e_max = i32.maximum nodes_n_edges
 
     let changes = map (\(i: i32): ([e_max]i32, [e_max]i32)  ->
                        node_work(i, e_max, cost, nodes_start_index,

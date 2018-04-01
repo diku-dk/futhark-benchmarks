@@ -75,7 +75,7 @@ let wave(th: f32, x: f32, y: f32): f32 =
   in (f32.cos(cth * x + sth * y) + 1.0) / 2.0
 
 let waver(th: f32, x: f32, y: f32, n: i32): f32 =
-  reduce (+) (0.0) (map (\i  -> wave(r32(i) * th, x, y)) (iota n))
+  f32.sum (map (\i  -> wave(r32(i) * th, x, y)) (iota n))
 
 let waves(degree: i32, phi: f32, x: f32, y: f32): f32 =
   let th = f32.pi / phi

@@ -37,7 +37,7 @@ module segmented_sum_f32 = segmented_scan {
 let calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
   let zipped = zip sizes ranks
   let weights = map (\(size, rank) -> if size == 0 then rank else 0f32) zipped
-  let total = reduce (+) 0f32 weights / f32.i32 n
+  let total = f32.sum weights / f32.i32 n
   in map (+total) ranks
 
 -- Calculate ranks from all pages
@@ -94,8 +94,7 @@ let compute_sizes [m] (n: i32) (links: [m]link) =
 entry preprocess_graph [m] (links_array: [m][2]i32): ([m]i32, [m]i32, []i32) =
   let links_by_to =
         sort_by_to.radix_sort (map (\l -> {from=l[0], to=l[1]}) links_array)
-  let max_to = reduce i32.max 0 (map (\x -> 1 + x.to) links_by_to)
-  let n = reduce i32.max max_to (map (\x -> 1 + x.from) links_by_to)
+  let n = i32.maximum (map (\x -> 1 + x.from) links_by_to)
   in (map (\x -> x.from) links_by_to,
       map (\x -> x.to) links_by_to,
       compute_sizes n links_by_to)

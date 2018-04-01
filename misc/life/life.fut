@@ -79,4 +79,4 @@ let main [n][m] (base_pattern: [n][m]i32) (_repeats: i32) (k: i32) =
                       base_pattern))
   let world =
     loop world = conway.init pattern for _i < k do conway.step world
-  in reduce (+) 0 (map i32.bool (reshape (k*n*k*m) world))
+  in i32.sum (map i32.bool (reshape (k*n*k*m) world))

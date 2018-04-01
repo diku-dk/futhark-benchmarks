@@ -34,12 +34,12 @@ import "/futlib/array"
     -- We calculate the maximum number of edges for a node.  This is necessary,
     -- since the number of edges are irregular, and since we want to construct a
     -- nested array.
-    let e_max = reduce_comm max 0 (nodes_n_edges)
+    let e_max = i32.maximum nodes_n_edges
 
     -- let start_indices = map (\tid -> unsafe nodes_start_index[tid]) active_indices
     -- let act_num_edges = map (\tid -> unsafe nodes_n_edges[tid]    ) active_indices
     -- let active_costs  = map (\tid -> unsafe cost[tid]+1           ) active_indices
-    -- let e_max = reduce_comm max 0 act_num_edges
+    -- let e_max = i32.maximum act_num_edges
 
     let flat_len = e_max * n_indices
     let changes = map (\ii -> let row = ii / e_max

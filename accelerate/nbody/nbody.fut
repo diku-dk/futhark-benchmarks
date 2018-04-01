@@ -117,7 +117,7 @@ let rotateYMatrix (angle: f32): [3][3]f32 =
 
 let matmult [n][m][p] (x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
   map (\xr ->
-        map (\yc -> reduce (+) 0f32 (map2 (*) xr yc))
+        map (\yc -> f32.sum (map2 (*) xr yc))
             (transpose y))
       x
 

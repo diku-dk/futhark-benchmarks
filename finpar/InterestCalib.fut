@@ -113,7 +113,7 @@ let to_solve(fid: i32, scalesbbi: [](f32,f32), yhat: f32): f32 =
                             let (scales, bbi) = scalesbbi in
                                 scales * f32.exp(-bbi*yhat)
                         ) scalesbbi
-            in reduce (+) (0.0) tmps - 1.0
+            in f32.sum tmps - 1.0
 
 --------------------------------------------------------/
 ---- the function-parameter to rootFinding_Brent
@@ -284,7 +284,7 @@ let mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
                        zip (replicate n amplitude) (sob_row) orig muta (gene_bds) )
   let (tmp_genome, fb_rats) = unzip(gene_rats)
   let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
-  let fb_rat    = reduce (*) (1.0) (fb_rats)
+  let fb_rat    = f32.product (fb_rats)
   in  (copy(new_genome), fb_rat)
 
 let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
@@ -297,7 +297,7 @@ let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
   let gene_rats = map mutateHelper (zip amplitudes (sob_row) orig muta (gene_bds) )
   let (tmp_genome, fb_rats) = unzip(gene_rats)
   let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
-  let fb_rat    = reduce (*) (1.0) (fb_rats)
+  let fb_rat    = f32.product (fb_rats)
   in  (copy(new_genome), fb_rat)
 
 
@@ -434,8 +434,6 @@ let exactYhat(n_schedi:  i32,
                                let (a2, b2) = y in
                                (a1 + a2, f32.max b1 b2 )
                            ) (0.0, -f32.inf) uplos
---    let up = reduce((+), 0.0, ups)           in
---    let lo = reduce(max, -infinity(), los)    in
 
     let (bai, bbi, aici, log_aici) = unzip(babaicis) in
 
@@ -587,13 +585,13 @@ let evalGenomeOnSwap (genomea: []f32,
                                            in  fact_aici * expo_part
                                        ) (zip bbs scales cs (t1_cs )
                                        )
-                      let accum1 = reduce (+) (0.0) accum1s
+                      let accum1 = f32.sum accum1s
                       let tmp    = f32.sqrt(2.0) * x_quad
                       let t1     = f32.exp( - 0.5 * tmp * tmp )     in
                       w_quad * t1 * ( uGaussian_P(-h1) - accum1 )
                   ) hermdata
 
-  let accum = reduce (+) (0.0) accums
+  let accum = f32.sum accums
   let new_price = zc_mat * ( accum / f32.sqrt( f32.pi ) ) in
   (new_quote, new_price)
 
@@ -645,7 +643,7 @@ let interestCalibKernel(pop:  i32
                         let qtprs = map  (evalGenomeOnSwap(genome,hermdata)
                                         ) swaptions
                         let terms = map  logLikelihood qtprs in
-                                  reduce (+) (0.0) terms
+                                  f32.sum terms
                     ) genomes
 --  logLiks
 --  genomes[pop/2]
@@ -715,7 +713,7 @@ let interestCalibKernel(pop:  i32
                     let qtprs = map  (evalGenomeOnSwap(genome,hermdata)
                                     ) swaptions
                     let terms = map  logLikelihood qtprs in
-                    reduce (+) (0.0) terms
+                    f32.sum terms
               ) proposals
       let res_gene_liks =
           map (\(tup: ([]f32,f32,[]f32,f32,f32,i32)): (*[]f32,f32)  ->
@@ -915,7 +913,7 @@ let pricer_of_swaption(today:  date,
                                                 t1_csti * f32.exp(scalei*x) * uGaussian_P(-h2)
                                         ) (zip bbi (t1_cst) scale
                                      )
-                        let accum = reduce (+) (0.0) tmps
+                        let accum = f32.sum tmps
                         let integrand_res = t1 * ( uGaussian_P(-h1) - accum )
                         ------------------------------------------/
                         -- END   function integrand(x) inlined
@@ -925,7 +923,7 @@ let pricer_of_swaption(today:  date,
 
                   ) (zip (x_quads) (w_quads)
                   )
-    let sum = reduce (+) (0.0) tmps      in
+    let sum = f32.sum tmps      in
             zc_mat * ( sum / f32.sqrt( f32.pi ) )
 
 

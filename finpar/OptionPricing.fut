@@ -238,7 +238,7 @@ let correlateDeltas [num_und][num_dates]
   map (\zi: [num_und]f32  ->
          map (\(j: i32): f32  ->
                 let x = map2 (*) (unsafe take (j+1) zi) (unsafe take (j+1) md_c[j])
-                in  reduce (+) (0.0) x)
+                in  f32.sum x)
              (iota num_und))
       zds
 
@@ -309,7 +309,7 @@ let payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
                       x[1] <= 8288.0             ||
                       x[2] <=  840.0)
                    xss
-  let cond  = reduce (||) false conds
+  let cond  = or conds
   let price1= trajInner(100.0,  0, md_disct)
   let goto40= cond && ( xss[366,0] < 3758.05 ||
                         xss[366,1] < 11840.0 ||
@@ -356,6 +356,5 @@ let main [num_bits][num_models][num_und][num_dates]
                          in map3 (genericPayoff contract_number) md_discts md_detvals bd_row)
                       bb_mat
 
-  let payoff    = reduce (\x y -> map2 (+) x y)
-                         (replicate num_models 0.0) payoffs
+  let payoff    = reduce (map2 (+)) (replicate num_models 0.0) payoffs
   in  map (/r32 num_mc_it) payoff

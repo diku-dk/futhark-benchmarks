@@ -26,7 +26,7 @@ let step [n][tot_num_edges]
          graph_visited: [n]bool,
          graph_mask: *[n]bool,
          updating_graph_mask : *[n]bool) : (*[n]i32, *[n]bool, *[n]bool) =
-  let e_max_per_node = reduce_comm max 0 nodes_n_edges
+  let e_max_per_node = i32.maximum nodes_n_edges
   let flat_size = n*e_max_per_node
   let graph_mask_copy = copy graph_mask
   let cost_copy       = copy cost

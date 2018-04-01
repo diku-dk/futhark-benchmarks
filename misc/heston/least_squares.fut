@@ -15,7 +15,7 @@ module absolute_distance(R: real): distance with real = R.t = {
     let norm (price: real) (quote: real) =
       (let rel = (price - quote) / quote
        in rel * rel)
-    in reduce (+) (R.i32 0) (map2 norm quotes prices)
+    in R.sum (map2 norm quotes prices)
 }
 
 module relative_distance(R: real): distance with real = R.t = {
@@ -28,7 +28,7 @@ module relative_distance(R: real): distance with real = R.t = {
       (let dif = price - quote
        in dif * dif)
     let a = map2 norm quotes prices
-    in reduce (+) (R.i32 0) (intrinsics.opaque a)
+    in R.sum (intrinsics.opaque a)
 }
 
 module type objective = {

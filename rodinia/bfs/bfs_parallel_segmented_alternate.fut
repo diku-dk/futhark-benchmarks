@@ -93,7 +93,7 @@ let main [n][e] (nodes_start_index: [n]i32,
 
       let tmp_arr = map (\(ind: i32): i32  ->
                           if ind == -1 then 0 else 1) (updating_indices)
-      let n_indices' = reduce (+) 0 (tmp_arr)
+      let n_indices' = i32.sum tmp_arr
 
       let continue' = n_indices' > 0
       in (cost', graph_mask'', graph_visited', continue')

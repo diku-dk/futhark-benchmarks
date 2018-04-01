@@ -39,7 +39,7 @@ let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point 
                      membership points)
               (0..<k))
   let cluster_sizes =
-    map (\counts -> reduce (+) 0 (intrinsics.opaque counts))
+    map (\counts -> i32.sum (intrinsics.opaque counts))
         cluster_counts
   let cluster_centres =
     map2 (\count my_points  ->
@@ -49,9 +49,9 @@ let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point 
   in cluster_centres
 
 let continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
-  reduce (||) false (map2 (\(x1,y1) (x2,y2) ->
-                          f32.abs (x1-x2) > 0.01f32 || f32.abs(y1-y2) > 0.01f32)
-                     old_centres (intrinsics.opaque cur_centres))
+  let changed ((x1,y1), (x2,y2)) =
+    f32.abs (x1-x2) > 0.01f32 || f32.abs(y1-y2) > 0.01f32
+  in any changed (zip old_centres (intrinsics.opaque cur_centres))
 
 let main [n] (k: i32,
               points_in: [n][2]f32): ([][2]f32, i32) =

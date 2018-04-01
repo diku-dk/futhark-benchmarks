@@ -33,7 +33,7 @@ let get_updating_indices_alt1 [n] (updating_graph_mask: [n]bool): (*[n]i32, i32)
   let zero_ones = map (\(i: i32): i32  ->
                         if updating_graph_mask[i] then 1 else 0) (
                       iota(n))
-  let n_indices = reduce (+) 0 (zero_ones)
+  let n_indices = i32.sum zero_ones
   in (updating_indices, n_indices)
 
 -- Get the updating indices.

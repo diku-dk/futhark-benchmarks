@@ -207,9 +207,9 @@ let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat
         map (\ (mat_blk: [b][b]f32, top: [b][b]f32): [b][b]f32  ->
                 map  (\ (mat_row: [b]f32, lft_row: [b]f32): [b]f32  ->
                         map  (\(mat_el, top_row)  ->
-                                let prods = map2 (*) (lft_row) (top_row) in
-                                let sum   = reduce (+) (0.0f32) prods     in
-                                mat_el - sum
+                                let prods = map2 (*) lft_row top_row
+                                let sum   = f32.sum prods
+                                in mat_el - sum
                              ) (zip (mat_row) top)
                     ) (zip (mat_blk) lft )
            ) (zip (mat_arr) (top_slice) )

@@ -25,7 +25,7 @@ let bpnn_output_error [n] (target: [n]f32, output: [n]f32): (f32, [n]f32) =
                 let d = o * (1.0 - o) * (t - o)
                 in ( if d < 0.0 then 0.0-d else d, d ))
             (zip target output ))
-    let err = reduce (+) 0.0 errs
+    let err = f32.sum errs
     in  ( err, delta )
 
 
@@ -33,11 +33,11 @@ let bpnn_hidden_error [no][nh] (delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]
     let (errs, delta_h) = unzip (
         map ( \(hidden_el: f32, who_row: []f32): (f32,f32)  ->
                 let prods  = map2 (*) delta_o who_row
-                let sumrow = reduce (+) 0.0 prods
+                let sumrow = f32.sum prods
                 let new_el = hidden_el * (1.0-hidden_el) * sumrow
                 in ( fabs(new_el), new_el ))
             (zip hidden who))
-    let err = reduce (+) 0.0 errs
+    let err = f32.sum errs
     in  ( err, delta_h )
 
 let bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
@@ -56,7 +56,7 @@ let bpnn_layerforward_GOOD [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow
   let connT     = transpose(conn)
   let res_tmp   = map ( \(conn_tr_row: [n1]f32): f32  ->
                             let prods = map2 (*) conn_tr_row l1
-                            in reduce (+) 0.0 prods)
+                            in f32.sum prods)
                       connT
   in map (\(pr: f32, conn0: f32): f32  -> squash(pr+conn0))
   (zip (res_tmp) (conn_fstrow))
@@ -74,9 +74,7 @@ let bpnn_layerforward [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2
   let res_map[0,0] = res_map[0,1]
   let res_map[0,0] = x
 
-  let res_tmp   = map ( \(res_map_row: [n1]f32): f32  ->
-                            reduce (+) 0.0 res_map_row)
-                      res_map
+  let res_tmp   = map f32.sum res_map
 
   in map ( \(pr: f32, conn0: f32): f32  -> squash(pr+conn0))
   (zip (res_tmp) (conn_fstrow))
