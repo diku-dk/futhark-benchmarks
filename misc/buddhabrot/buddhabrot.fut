@@ -48,13 +48,13 @@ let trajectories(depth: i32, xprec: i32, yprec: i32,
       reshape (xprec,yprec) escapes)
 
 let toI(n: i32, view: (f32,f32,f32,f32), y: f32): i32 =
-  let (xmin, ymin, xmax, ymax) = view
+  let (_, ymin, _, ymax) = view
   let sizey = ymax - ymin
   let y' = y - ymin
   in t32(y' / (sizey / r32(n)))
 
 let toJ(m: i32, view: (f32,f32,f32,f32), x: f32): i32 =
-  let (xmin, ymin, xmax, ymax) = view
+  let (xmin, _, xmax, _) = view
   let sizex = xmax - xmin
   let x' = x - xmin
   in t32(x' / (sizex / r32(m)))
@@ -70,9 +70,6 @@ let visualise [yprec][xprec][depth]
               (n: i32, m: i32, view: (f32,f32,f32,f32),
                trajectories: [yprec][xprec][depth](f32,f32),
                escapes: [yprec][xprec]bool): [n][m]i32 =
-  let (xmin, ymin, xmax, ymax) = view
-  let sizex = xmax - xmin
-  let sizey = ymax - ymin
   let trajectories' = reshape (xprec*yprec,depth) trajectories
   let escapes' = reshape (xprec*yprec) escapes
   let visits_per_pixel =

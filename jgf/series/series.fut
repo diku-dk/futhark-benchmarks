@@ -25,7 +25,7 @@ let TrapezoidIntegrate(x0: f64, x1: f64, nsteps: i32, omegan: f64, select: i32):
   let dx = (x1-x0) / r64 nsteps
   let rvalue = thefunction(x0, omegan, select) / 2.0
    -- already done one step
-  let (x,rvalue) = loop ((x,rvalue)) for _i < nsteps-2 do
+  let (_,rvalue) = loop ((x,rvalue)) for _i < nsteps-2 do
     (let x = x + dx
      in (x, rvalue + thefunction(x,omegan,select)))
   in (rvalue + thefunction(x1,omegan,select) / 2.0) * dx

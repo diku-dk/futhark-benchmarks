@@ -31,7 +31,6 @@ module BFSLIB(S: STEP_FUN) = {
                           nodes_n_edges: [n]i32,
                           edges_dest: [e]i32): [n]i32 =
     let graph_mask = replicate n false
-    let updating_graph_mask = replicate n false
     let graph_visited = replicate n false
     let source = 0
     let graph_mask[source] = true

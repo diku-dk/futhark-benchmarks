@@ -222,5 +222,5 @@ let main(m: i32, n: i32, p: i32, q: i32, loop_count: i32): [m][n][p][q]f32 =
                         ) (iota(mnpq)))
 
     let tp = 3.0f32
-    in loop(v) for i < loop_count do add_descent_div3v(v, xi, g, tp)
+    in loop(v) for _i < loop_count do add_descent_div3v(v, xi, g, tp)
 
