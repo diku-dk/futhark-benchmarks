@@ -44,6 +44,6 @@ let main [numK][numX]
                                         kx_e * x_e + ky_e * y_e + kz_e * z_e)
                                     kx ky kz))
                      x y z
-  let qr = map1 (reduce (+) 0.0f32 <<| map2 (*) phiMag <<| map1 f32.cos) expArgs
-  let qi = map1 (reduce (+) 0.0f32 <<| map2 (*) phiMag <<| map1 f32.sin) expArgs
+  let qr = map1 (f32.sum <<| map2 (*) phiMag <<| map1 f32.cos) expArgs
+  let qi = map1 (f32.sum <<| map2 (*) phiMag <<| map1 f32.sin) expArgs
   in (qr, qi)

@@ -1015,9 +1015,6 @@ let min_scale_factor(): f32 = 0.125f32
 let max_scale_factor(): f32 = 4.0f32
 let attempts(): i32         = 12
 
-let max(x: f32) (y: f32): f32 = if ( x < y ) then y else x
-let min(x: f32) (y: f32): f32 = if ( x < y ) then x else y
-
 let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
   let err_exponent  = 1.0f32 / 7.0f32
   let h_init = 1.0f32
@@ -1054,7 +1051,7 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
 
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
       let errs = map (\(e: f32): bool  -> if e > 0.0f32 then true else false) err
-      let error= reduce (||) false errs
+      let error= or errs
 
       in
       if (!error)
@@ -1070,15 +1067,15 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
                           in 0.8f32 * pow( tolerance * yyi / erri , err_exponent )
                       ) (zip yy err )
 
-      let scale_min = reduce min (scale_min) scale
-      let scale_fina = min(max scale_min (min_scale_factor())) (max_scale_factor())
+      let scale_min = f32.minimum scale
+      let scale_fina = f32.min(f32.max scale_min (min_scale_factor())) (max_scale_factor())
 
       -- iF WiTHiN TOLERANCE, FiNiSH attempts...
       let tmps =map  (\(err_yyi: (f32,f32)): bool  ->
                         let (erri, yyi) = err_yyi
                         in erri <= ( tolerance * yyi )
                     ) (zip err yy )
-      let breakLoop = reduce  (&&) true tmps
+      let breakLoop = and tmps
 
       -- ...OTHERWiSE, ADJUST STEP FOR NEXT ATTEMPT
       -- scale next step in a default way

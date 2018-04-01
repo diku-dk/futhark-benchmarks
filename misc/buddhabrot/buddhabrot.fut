@@ -88,7 +88,7 @@ let visualise [yprec][xprec][depth]
                                                                in acc
                                                           else acc))
                                               else acc)) (zip (trajectories') (escapes')))
-  let max_visits = reduce max 0 (reshape (n*m) visits_per_pixel)
+  let max_visits = i32.maximum visits_per_pixel
   let coloured = map (colourise(max_visits)) (visits_per_pixel)
   in reshape (n,m) coloured
 

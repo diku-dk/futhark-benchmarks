@@ -15,7 +15,7 @@
 -- output @ data/kdd_cup.out
 
 let euclid_dist_2 [d] (pt1: [d]f32) (pt2: [d]f32): f32 =
-  reduce (+) 0.0f32 (map (**2.0f32) (map2 (-) pt1 pt2))
+  f32.sum (map (**2.0f32) (map2 (-) pt1 pt2))
 
 let closest_point (p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
   if p1.2 < p2.2 then p1 else p2
@@ -65,8 +65,7 @@ let main [n][d]
       let new_membership = map (find_nearest_point cluster_centres) points
       -- Then, find the new centres of the clusters.
       let new_centres = centroids_of(k, points, new_membership)
-      let delta = reduce (+) 0 (map (\(b: bool): i32  ->
-                                       if b then 0 else 1)
-                                (map2 (==) membership new_membership))
+      let delta = i32.sum (map (\b -> if b then 0 else 1)
+                               (map2 (==) membership new_membership))
       in (new_membership, new_centres, delta, i+1)
   in (cluster_centres, i)
