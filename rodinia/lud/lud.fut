@@ -227,8 +227,8 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
     -- Maybe pad the input to be a multiple of the block size.
     let padding = n - m
     let mat = if padding != 0
-              then concat (map (\r -> concat r (replicate padding 0f32)) mat)
-                          (replicate padding (replicate n 0f32))
+              then map (++replicate padding 0f32) mat ++
+                   replicate padding (replicate n 0f32)
               else mat
     -------------------------------------------------
     ---- transform matrix in [n/b,n/b,b,b] block ----

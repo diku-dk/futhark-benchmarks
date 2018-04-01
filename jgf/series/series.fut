@@ -38,4 +38,4 @@ let main(array_rows: i32): ([array_rows]f64,[array_rows]f64) =
   let rest = map (\i -> (TrapezoidIntegrate (0.0, 2.0, 1000, omega * r64 i, 1),
                            TrapezoidIntegrate (0.0, 2.0, 1000, omega * r64 i, 2)))
                  (map (1+) (iota (array_rows-1)))
-  in unzip (concat first rest)
+  in unzip (first++rest)

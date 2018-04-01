@@ -42,8 +42,8 @@ let initOperator [n] (x: [n]f32): ([n][3]f32,[n][3]f32) =
   let dxl      = x[n-1] - x[n-2]
   let dx_high  = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]]
   let dxx_high = [[0.0, 0.0, 0.0 ]]
-  let dx     = concat (concat dx_low dx_mid) dx_high
-  let dxx    = concat (concat dxx_low dxx_mid) dxx_high
+  let dx     = dx_low ++ dx_mid ++ dx_high
+  let dxx    = dxx_low ++ dxx_mid ++ dxx_high
   in  (dx, dxx)
 
 let max(x: f32, y: f32): f32 = if y < x then x else y
