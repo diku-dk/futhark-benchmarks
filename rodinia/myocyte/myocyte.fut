@@ -500,7 +500,7 @@ let ecc [equs][pars] (timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
 ----- Cam MODULE -----
 ----------------------
 
-let cam [equs][pars] (timeinst:  f32, initvalu: [equs]f32,
+let cam [equs][pars] (_timeinst:  f32, initvalu: [equs]f32,
                       initvalu_offset: i32,
                       parameter: [pars]f32, parameter_offset: i32,
                       finavalu: *[equs]f32, ca: f32 ): (f32, *[equs]f32) =

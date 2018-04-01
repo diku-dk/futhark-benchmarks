@@ -45,10 +45,10 @@ let bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32
                         if k < 1 then 1.0 else unsafe ly[k-1])
                  (iota nly)
   in unzip (map ( \(w_row: []f32, oldw_row: []f32, lyk: f32): ([]f32,[]f32)  ->
-                    unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32, j: i32): (f32,f32)  ->
+                    unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32): (f32,f32)  ->
                                    let new_dw = eta()*delta_el*lyk + momentum()*oldw_el
                                    in ( w_el+new_dw, new_dw ))
-                           (zip (w_row) (oldw_row) delta (iota(ndelta)))))
+                           (zip (w_row) (oldw_row) delta)))
             (zip w oldw lyext))
 
 
@@ -150,8 +150,7 @@ let bpnn_constant_row(m: i32, value: f32): [m]f32 =
     replicate m value
 
 let bpnn_zero_weights(m: i32, n: i32): [m][n]f32 =
-    map (\(i: i32): [n]f32  -> replicate n 0.0)
-        (iota m)
+    replicate m (replicate n 0.0)
 
 ----------------------------------------------------/
 
@@ -192,12 +191,11 @@ let bpnn_create(n_in: i32, n_inp1: i32, n_hid: i32, n_hidp1: i32, n_out: i32, of
        input_prev_weights, hidden_prev_weights)
 
 let consColumn [m][n] (mat: [m][n]f32, col: [m]f32): [m][]f32 =
-    let np1 = n+1
-    in map ( \(matrow: []f32, colelm: f32): []f32  ->
-               map ( \(k: i32): f32  ->
-                       if k < 1 then colelm else unsafe matrow[k-1])
-             (iota(n+1)))
-             (zip mat col)
+    map ( \(matrow: []f32, colelm: f32): []f32  ->
+            map ( \(k: i32): f32  ->
+                    if k < 1 then colelm else unsafe matrow[k-1])
+          (iota(n+1)))
+          (zip mat col)
 
 let main [num_bits] (n_in: i32, dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
     let (n_inp1, n_hid, n_hidp1, n_out) = (n_in+1, 16, 16+1, 1)

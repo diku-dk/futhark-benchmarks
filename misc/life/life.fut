@@ -72,7 +72,7 @@ entry rule101_uninit [n][m] (world: [n][m]rule101.cell) =
  rule101.uninit world
 
 -- Just a simple test to force the program to be compiled.
-let main [n][m] (base_pattern: [n][m]i32) (repeats: i32) (k: i32) =
+let main [n][m] (base_pattern: [n][m]i32) (_repeats: i32) (k: i32) =
   let pattern = reshape (n*k,m*k)
                 (replicate k
                  (map (\row -> reshape (k*m) (replicate k (map bool.i32 row)))

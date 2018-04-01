@@ -183,13 +183,6 @@ let rootFinding_Brent(fid: i32, scalesbbi: [](f32,f32), lb: f32, ub: f32, tol: f
                                   then (b,a,fb,fa) -- swap args
                                   else (a,b,fa,fb)
 
-                -- reporting non-convergence!
-                let dummy =
-                    if(i == iter_max-1)
-                    then -- # ERROR: Brent method not converged
-                         0
-                    else 0
-
                 in (a,b,c,d,fa,fb,fc,mflag,i)
 
     -- Finally, the result of function rootFinding_Brent is:

@@ -16,9 +16,9 @@ import "lib/bfs_lib"
 
 
 let step [n][e] (cost: *[n]i32,
-                 nodes_start_index: [n]i32,
-                 nodes_n_edges: [n]i32,
-                 edges_dest: [e]i32,
+                 _nodes_start_index: [n]i32,
+                 _nodes_n_edges: [n]i32,
+                 _edges_dest: [e]i32,
                  graph_visited: [n]bool,
                  graph_mask: *[n]bool,
                  node_ids: [e]i32,
@@ -46,7 +46,6 @@ let main [n][e] (nodes_start_index: [n]i32,
                  nodes_n_edges: [n]i32,
                  edges_dest: [e]i32): [n]i32 =
   let graph_mask = replicate n false
-  let updating_graph_mask = replicate n false
   let graph_visited = replicate n false
   let source = 0
   let graph_mask[source] = true

@@ -7,7 +7,7 @@ let i32_excl_scan_from_incl_scan [k] (scanned: [k]i32) (ne: i32): [k]i32 =
 
 -- Like scanSegm((+), 0, array, mask).
 let i32_plus_scan_segm [k] (array: [k]i32, mask: [k]bool): [k]i32 =
-  let (arrayScanned, maskScanned) =
+  let (arrayScanned, _) =
     unzip(scan (\(arg0: (i32, bool)) (arg1: (i32, bool)): (i32, bool)  ->
                  let (a0, m0) = arg0
                  let (a1, m1) = arg1

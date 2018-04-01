@@ -47,7 +47,6 @@ let main [number_boxes][par_per_box]
   let rv = zip@1 rv_0 rv_1 rv_2 rv_3
   let a2 = 2.0*alpha*alpha in
   unzip(map (\(l: i32): [par_per_box](f32,f32,f32,f32)  ->
-        let ( bl_x, bl_y, bl_bz, bl_number ) = box_coefs[l]
         let rA = rv[l]
         in
         map  (\(rA_el:  (f32,f32,f32,f32) ): (f32,f32,f32,f32)  -> --(i32 i) ->

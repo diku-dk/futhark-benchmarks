@@ -47,7 +47,7 @@ let initialize_variables(nelr: i32, ff_variable: [5]f32): [5][nelr]f32 = --[#nva
     map (\(x: f32): [nelr]f32  -> replicate nelr x) (ff_variable)
 
 --
-let compute_flux_contribution(density:  f32,  momentum: (f32,f32,f32), density_energy: f32,
+let compute_flux_contribution(_density:  f32,  momentum: (f32,f32,f32), density_energy: f32,
                               pressure: f32, velocity: (f32,f32,f32) ): ((f32,f32,f32),(f32,f32,f32),(f32,f32,f32),(f32,f32,f32)) =
     let (momentum_x, momentum_y, momentum_z) = momentum
     let (velocity_x, velocity_y, velocity_z) = velocity
