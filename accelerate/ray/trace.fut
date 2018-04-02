@@ -79,8 +79,8 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
   let (_, refl_colour,_,_,_) =
     loop (i, refl_colour, point, dir, visibility) =
          (0, argb.black, orig_point, orig_dir, 1.0) while i < limit do
-    let (hit_s, dist_s, s) = cast_ray_sphere.cast_ray spheres dummy_sphere point dir
-    let (hit_p, dist_p, p) = cast_ray_plane.cast_ray planes dummy_plane point dir
+    let (hit_s, dist_s, s) = cast_ray_sphere spheres dummy_sphere point dir
+    let (hit_p, dist_p, p) = cast_ray_plane planes dummy_plane point dir
     in if !(hit_s || hit_p) then (limit, refl_colour, point, dir, visibility) else
     -- Ray hit an object.
     let next_s = hit_sphere s dist_s point dir
