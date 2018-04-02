@@ -13,3 +13,8 @@
 # Ignore Emacs gunk
 *~
 .#*
+
+*
+!.gitignore
+!/**/
+!*.fut
