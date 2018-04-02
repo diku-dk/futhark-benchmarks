@@ -1108,4 +1108,4 @@ let main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [
           in solver(xmax, params, y_row)
         ) (iota workload))
 
-  in ( reduce (&&) true oks, y_res )
+  in ( and oks, y_res )
