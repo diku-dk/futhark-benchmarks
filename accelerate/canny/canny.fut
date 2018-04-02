@@ -139,7 +139,7 @@ let nonMaximumSuppression [h][w] (low: f32, high: f32, magdir: [h][w](f32,i32)):
 let selectStrong [h][w] (img: *[h][w]f32): []i32 =
   let strong = map (\(x: f32): i32  ->
                      if x == edgeStrong then 1 else 0)
-                   (reshape (w*h) img)
+                   (flatten img)
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
   let targetIdxAndLen = scan (+) 0 strong

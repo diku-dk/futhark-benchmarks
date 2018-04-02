@@ -124,9 +124,6 @@ let sobolIndR [num_bits] (dirVct: [num_bits]i32) (n: i32): f32 =
     in r32(res) * norm_fact
 
 let bpnn_randomize_weights(m: i32, n: i32, offset: i32, dirVct: []i32): ([m][n]f32,[m]f32) =
-    --let linw = map(sobolIndR(dirVct), map(+offset, iota(m*n)))
-    --in  reshape((m,n), linw)
-    -- OR with better structure:
     let mat =
       map( \(i: i32): [n]f32  ->
              map( \(j: i32): f32  ->

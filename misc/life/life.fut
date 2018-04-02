@@ -73,10 +73,10 @@ entry rule101_uninit [n][m] (world: [n][m]rule101.cell) =
 
 -- Just a simple test to force the program to be compiled.
 let main [n][m] (base_pattern: [n][m]i32) (_repeats: i32) (k: i32) =
-  let pattern = reshape (n*k,m*k)
-                (replicate k
-                 (map (\row -> reshape (k*m) (replicate k (map bool.i32 row)))
-                      base_pattern))
+  let pattern = unflatten (n*k) (m*k)
+                (flatten_3d (replicate k
+                             (map (\row -> flatten (replicate k (map bool.i32 row)))
+                              base_pattern)))
   let world =
     loop world = conway.init pattern for _i < k do conway.step world
-  in i32.sum (map i32.bool (reshape (k*n*k*m) world))
+  in i32.sum (map i32.bool (flatten world))

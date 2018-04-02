@@ -88,7 +88,7 @@ let lud_diagonal1 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
                     (r_el, a_rc[i,j+b])
                ) (iota(b*b) )
         ) in
-    let (a_rows, a_cols) = ( reshape (b,b) a_rows0, reshape (b,b) a_cols0 )
+    let (a_rows, a_cols) = ( unflatten b b a_rows0, unflatten b b a_cols0 )
     in map3 (\ (a_rows_r: [b]f32) (a_cols_r: [b]f32) (i: i32): [b]f32  ->
                     map3 (\ (row_el: f32) (col_el: f32) (j: i32): f32  ->
                                 if (i <= j) then row_el else col_el
@@ -113,7 +113,7 @@ let lud_diagonal2 [b] (ain: [b][b]f32, m: i32): *[b][b]f32 =  -- CORRECT
                             let a[j,i] = (a[j,i] - sum) * tmp
                             in a
                  ) (zip ains (iota(one)) )
-    in reshape (b,b) ress
+    in unflatten b b (flatten_3d ress)
 
 
 let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
@@ -273,7 +273,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
                          then unsafe diag[i,j]
                          else unsafe top_per_irreg[jj-step,i,j]
                 ) (iota(num_blocks*b*b) ) in
-        let upper[step] = reshape (num_blocks,b,b) top_per_all
+        let upper[step] = unflatten_3d num_blocks b b top_per_all
         in
         ----------------------------------------
         ---- 3. compute the left perimeter  ----
@@ -290,7 +290,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
                     then unsafe lower[step,ii,i,j]
                     else unsafe lft_per_irreg[ii-step,i,j]
                 ) (iota(num_blocks*b*b) ) in
-        let lower[step] = reshape (num_blocks,b,b) lft_per_all
+        let lower[step] = unflatten_3d num_blocks b b lft_per_all
         in
         ----------------------------------------
         ---- 4. compute the internal blocks ----
@@ -303,7 +303,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
     in
     let last_step = (n / b) - 1 in
     let upper[last_step,last_step] =
-      lud_diagonal( reshape (b,b) matb ) in
+      lud_diagonal( unflatten b b (flatten_4d matb) ) in
     let ret_padded = map (\(i_ind: i32): [n]f32  ->
                           map  (\ (j_ind: i32): f32  ->
                                 let (ii, jj) = (i_ind/b, j_ind/b) in

@@ -44,8 +44,8 @@ let trajectories(depth: i32, xprec: i32, yprec: i32,
                            ymin + (r32(y) * sizey) / r32(yprec))
                  in divergence(depth, c0)
               ) (iota(xprec*yprec)))
-  in (reshape (yprec,xprec,depth) trajectories,
-      reshape (xprec,yprec) escapes)
+  in (unflatten yprec xprec trajectories,
+      unflatten xprec yprec escapes)
 
 let toI(n: i32, view: (f32,f32,f32,f32), y: f32): i32 =
   let (_, ymin, _, ymax) = view
@@ -70,11 +70,10 @@ let visualise [yprec][xprec][depth]
               (n: i32, m: i32, view: (f32,f32,f32,f32),
                trajectories: [yprec][xprec][depth](f32,f32),
                escapes: [yprec][xprec]bool): [n][m]i32 =
-  let trajectories' = reshape (xprec*yprec,depth) trajectories
-  let escapes' = reshape (xprec*yprec) escapes
+  let trajectories' = flatten trajectories
+  let escapes' = flatten escapes
   let visits_per_pixel =
-    reshape (n*m)
-            (stream_red_per (\ass bss: [n][m]i32  -> map2 (\as bs: [m]i32 -> map2 (+) as bs) ass bss) (
+    flatten (stream_red_per (\ass bss: [n][m]i32  -> map2 (\as bs: [m]i32 -> map2 (+) as bs) ass bss) (
                          \[chunk] (inp: [chunk]([depth](f32,f32),bool)): [n][m]i32  ->
                              loop acc = replicate n (replicate m 0) for i < chunk do
                                (let (trajectory, escaped) = inp[i]
@@ -90,7 +89,7 @@ let visualise [yprec][xprec][depth]
                                               else acc)) (zip (trajectories') (escapes')))
   let max_visits = i32.maximum visits_per_pixel
   let coloured = map (colourise(max_visits)) (visits_per_pixel)
-  in reshape (n,m) coloured
+  in unflatten n m coloured
 
 let main(n: i32, m: i32, v_xmin: f32, v_ymin: f32, v_xmax: f32, v_ymax: f32,
                      depth: i32,

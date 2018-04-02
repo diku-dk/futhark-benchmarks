@@ -98,7 +98,7 @@ let mk_block (bs: []u8) ((i,k): (i32,i32)): [16]u32 =
   let block[0:k] = bs[i:i+k]
   let block[k:k+4] = one_bit
   let block[64-8:64-4] = bytes (u32.i32(k*8))
-  in map unbytes (reshape (16,4) block)
+  in map unbytes (unflatten 16 4 block)
 
 let md5_blocks [n][k] (bs: [k]u8) (offsets: [n]i32): [n][16]u32 =
   let lengths = map (\(i, j) -> if i > j then k-i else j-i)

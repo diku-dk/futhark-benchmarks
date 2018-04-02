@@ -163,4 +163,4 @@ entry render [n]
                        (rotatePoints (map (\(x,y,z) -> {x,y,z}) (zip xps yps zps))
                                      x_rotation y_rotation) ms)
   let vs' = map (\x -> if invert then ~x else x) vs
-  in reshape (w,h) (scatter (replicate (w*h) background) is vs')
+  in unflatten w h (scatter (replicate (w*h) background) is vs')
