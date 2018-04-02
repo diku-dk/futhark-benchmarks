@@ -32,13 +32,10 @@ let mandelbrot (screenX: i32) (screenY: i32) (limit: i32) (radius: real)
     : [screenX][screenY](complex,i32) =
   let sizex = real.(xmax - xmin)
   let sizey = real.(ymax - ymin)
-  in map (\x  ->
-           map (\y  ->
-                  let c0 = complex.mk real.(xmin + (int x * sizex) / int screenX)
-                                      real.(ymin + (int y * sizey) / int screenY)
-                  in divergence limit radius c0)
-               (iota screenY))
-         (iota screenX)
+  in tabulate_2d screenX screenY <| \x y ->
+       let c0 = complex.mk real.(xmin + (int x * sizex) / int screenX)
+                           real.(ymin + (int y * sizey) / int screenY)
+       in divergence limit radius c0
 
 -- Remaining code is about how to turn a divergence into a pretty
 -- colour.  That is, the most important part!
@@ -122,5 +119,5 @@ let render_mandelbrot (screenX: i32) (screenY: i32)
                      real.(ycentre + (int 1/aspect_ratio)*width/int 2))
   let escapes = mandelbrot screenX screenY limit radius (xmin, ymin, xmax, ymax)
   let points = 2048
-  in map (\row -> map (escape_to_colour limit points) row) escapes
+  in map (map1 (escape_to_colour limit points)) escapes
 }
