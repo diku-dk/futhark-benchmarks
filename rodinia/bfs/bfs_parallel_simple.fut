@@ -64,8 +64,8 @@ module BFS = BFSLIB({
       unzip(changes)
 
     let full_length = e_max * n_indices
-    let node_ids = reshape (full_length) changes_node_ids
-    let costs = reshape (full_length) changes_costs
+    let node_ids = flatten changes_node_ids
+    let costs = flatten changes_costs
 
     let cost' = scatter cost node_ids costs
 

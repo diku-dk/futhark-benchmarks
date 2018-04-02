@@ -100,7 +100,7 @@ entry compute_tran_temp [row][col]
     single_iteration(temp, power, cap, rx, ry, rz, step)
 
 entry ambient_temps(row: i32, col: i32): [row][col]f32 =
-  reshape (row,col) (replicate (row*col) (amb_temp ()))
+  unflatten row col (replicate (row*col) (amb_temp ()))
 
 entry render_frame [row][col] (temp: [row][col]f32): [row][col][3]i8 =
   let hottest = 400f32

@@ -41,7 +41,7 @@ let main(cols: i32, rows: i32): [cols]i32 =
                 sobolInd(dirVct, i+1) % 10
            ) (iota(rows*cols) )
 
-    let wall   = reshape (rows,cols) wall_flat
+    let wall   = unflatten rows cols wall_flat
     let result = copy(wall[0])
     
     ---------------

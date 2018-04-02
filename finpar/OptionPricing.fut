@@ -222,7 +222,7 @@ let brownianBridge [num_dates]
                     bb_data: [3][num_dates]f32)
                    (gaussian_arr: []f32)
                    : [num_dates][num_und]f32 =
-  let gauss2d  = reshape (num_dates,num_und) gaussian_arr
+  let gauss2d  = unflatten num_dates num_und gaussian_arr
   let gauss2dT = transpose gauss2d
   in transpose (map (brownianBridgeDates bb_inds bb_data) gauss2dT)
 
@@ -331,7 +331,7 @@ let genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]
 let main [num_bits][num_models][num_und][num_dates]
         (contract_number: i32,
          num_mc_it: i32,
-         dir_vs_nosz: [][num_bits]i32,
+         dir_vs: [][num_bits]i32,
          md_cs: [num_models][num_und][num_und]f32,
          md_vols: [num_models][num_dates][num_und]f32,
          md_drifts: [num_models][num_dates][num_und]f32,
@@ -342,7 +342,6 @@ let main [num_bits][num_models][num_und][num_dates]
          bb_data: [3][num_dates]f32)
          : []f32 =
   let sobvctsz  = num_dates*num_und
-  let dir_vs    = reshape (sobvctsz,num_bits) dir_vs_nosz
   let sobol_mat = stream_map (\[chunk] (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
                                sobolChunk(dir_vs, unsafe ns[0], chunk))
                             (iota num_mc_it)
