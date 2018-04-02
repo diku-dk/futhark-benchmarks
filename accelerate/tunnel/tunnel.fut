@@ -76,6 +76,4 @@ let tunnel(time: f32) (x: i32) (y: i32): argb.colour =
   in argb.from_rgba (c1.1 * x) (c1.2 * x) (c1.3 * x) 1.0
 
 let main(time: f32, w: i32, h: i32): [w][h]i32 =
-  map (\(x: i32): [h]i32  ->
-       map (tunnel time x) (map (\x -> x-(h/2)) (iota(h)))) (
-      map (\x -> x-(w/2)) (iota(w)))
+  tabulate_2d w h <| \x y -> tunnel time (x-w/2) (y-h/2)
