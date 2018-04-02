@@ -20,8 +20,6 @@
 -- compiled input @ data/image.in
 -- output @ data/image.out
 
-import "/futlib/math"
-
 default(f32)
 
 let indexN(_rows: i32, i: i32): i32 =
@@ -47,47 +45,43 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
   let neROI = (r2-r1+1)*(c2-c1+1)
 
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
-  let image = map (\(row: []u8): [cols]f32  ->
-                    map (\(pixel: u8): f32  ->
-                          f32.exp(f32.u8(pixel)/255.0)) row) image
-  let image = loop (image) for _i < niter do
+  let image = map (map1 (\pixel -> f32.exp(f32.u8(pixel)/255.0))) image
+  let image = loop image for _i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
     let sum = f32.sum (flatten image)
     let sum2 = f32.sum (map (**2.0) (flatten image))
     -- get mean (average) value of element in ROI
-    let meanROI = sum / r32(neROI)
+    let meanROI = sum / r32 neROI
     -- gets variance of ROI
-    let varROI = (sum2 / r32(neROI)) - meanROI*meanROI
+    let varROI = (sum2 / r32 neROI) - meanROI*meanROI
     -- gets standard deviation of ROI
     let q0sqr = varROI / (meanROI*meanROI)
 
     let (dN, dS, dW, dE, c) =
-      unzip(
-        map2 (\(i: i32) (row: []f32): [cols](f32,f32,f32,f32,f32)
-                   ->
-                    map2 (\(j: i32) (jc: f32): (f32,f32,f32,f32,f32)  ->
-                              let dN_k = unsafe image[indexN(rows,i),j] - jc
-                              let dS_k = unsafe image[indexS(rows,i),j] - jc
-                              let dW_k = unsafe image[i, indexW(cols,j)] - jc
-                              let dE_k = unsafe image[i, indexE(cols,j)] - jc
-                              let g2 = (dN_k*dN_k + dS_k*dS_k +
-                                        dW_k*dW_k + dE_k*dE_k) / (jc*jc)
-                              let l = (dN_k + dS_k + dW_k + dE_k) / jc
-                              let num = (0.5*g2) - ((1.0/16.0)*(l*l))
-                              let den = 1.0 + 0.25*l
-                              let qsqr = num / (den*den)
-                              let den = (qsqr-q0sqr) / (q0sqr * (1.0+q0sqr))
-                              let c_k = 1.0 / (1.0+den)
-                              let c_k = if c_k < 0.0
-                                        then 0.0
-                                        else if c_k > 1.0
-                                             then 1.0 else c_k
-                              in (dN_k, dS_k, dW_k, dE_k, c_k)
-                           ) (iota(cols)) row
-               ) (iota(rows)) image)
+      unzip (map2 (\i row ->
+                map2 (\j jc ->
+                        let dN_k = unsafe image[indexN(rows,i),j] - jc
+                        let dS_k = unsafe image[indexS(rows,i),j] - jc
+                        let dW_k = unsafe image[i, indexW(cols,j)] - jc
+                        let dE_k = unsafe image[i, indexE(cols,j)] - jc
+                        let g2 = (dN_k*dN_k + dS_k*dS_k +
+                                  dW_k*dW_k + dE_k*dE_k) / (jc*jc)
+                        let l = (dN_k + dS_k + dW_k + dE_k) / jc
+                        let num = (0.5*g2) - ((1.0/16.0)*(l*l))
+                        let den = 1.0 + 0.25*l
+                        let qsqr = num / (den*den)
+                        let den = (qsqr-q0sqr) / (q0sqr * (1.0+q0sqr))
+                        let c_k = 1.0 / (1.0+den)
+                        let c_k = if c_k < 0.0
+                                  then 0.0
+                                  else if c_k > 1.0
+                                       then 1.0 else c_k
+                        in (dN_k, dS_k, dW_k, dE_k, c_k))
+                      (iota cols) row)
+             (iota rows) image)
 
     let image =
-      map (\(i, image_row, c_row, dN_row, dS_row, dW_row, dE_row): [cols]f32 ->
+      map (\(i, image_row, c_row, dN_row, dS_row, dW_row, dE_row) ->
                 map (\(j, pixel, c_k, dN_k, dS_k, dW_k, dE_k)  ->
                           let cN = c_k
                           let cS = unsafe c[indexS(rows, i), j]
@@ -100,12 +94,11 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
     in image
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
-  let image = map (\(row: []f32): [cols]f32  ->
-                    map (\(pixel: f32): f32  ->
-                          -- take logarithm of image (log compress).
+  let image = map (map1 (\pixel  ->
+                          -- Take logarithm of image (log compress).
                           -- This is where the original implementation
                           -- would round to i32.
-                           f32.log(pixel)*255.0) row) image
+                         f32.log(pixel)*255.0)) image
   in image
 
 let main [rows][cols] (image: [rows][cols]u8): [rows][cols]f32 =
@@ -114,6 +107,6 @@ let main [rows][cols] (image: [rows][cols]u8): [rows][cols]f32 =
   in do_srad(niter, lambda, image)
 
 -- Entry point for interactive demo.  Here we can return an RGBA image.
-entry srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]i32 =
-  map (\row -> map (\p -> (t32(p) << 16) | (t32(p) << 8) | (t32(p))) row)
+entry srad [rows][cols] (niter: i32) (lambda: f32) (image: [rows][cols]u8): [rows][cols]i32 =
+  map (map1 (\p -> (t32(p) << 16) | (t32(p) << 8) | (t32(p))))
       (do_srad(niter, lambda, image))
