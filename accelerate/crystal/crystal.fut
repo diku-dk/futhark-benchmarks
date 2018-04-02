@@ -75,7 +75,7 @@ let wave(th: f32, x: f32, y: f32): f32 =
   in (f32.cos(cth * x + sth * y) + 1.0) / 2.0
 
 let waver(th: f32, x: f32, y: f32, n: i32): f32 =
-  f32.sum (map (\i  -> wave(r32(i) * th, x, y)) (iota n))
+  f32.sum (tabulate n (\i -> wave(r32(i) * th, x, y)))
 
 let waves(degree: i32, phi: f32, x: f32, y: f32): f32 =
   let th = f32.pi / phi
@@ -91,17 +91,13 @@ let normalize_index(i: i32, field_size: i32): f32 =
 
 entry render_frame(field_size: i32, scale: f32, degree: i32, time: f32)
                   : [field_size][field_size]argb.colour =
-  map (\y ->
-         map (\x ->
-                quasicrystal(scale, degree, time,
-                             normalize_index(x, field_size),
-                             normalize_index(y, field_size)))
-              (iota field_size))
-      (iota field_size)
+  tabulate_2d field_size field_size
+  (\y x -> quasicrystal(scale, degree, time,
+                        normalize_index(x, field_size),
+                        normalize_index(y, field_size)))
 
 let main(field_size: i32, scale: f32, degree: i32,
          n_steps: i32, time_delta: f32): [n_steps][field_size][field_size]argb.colour =
-  map (\step_i ->
-         let time = r32(step_i) * time_delta
-         in render_frame(field_size, scale, degree, time))
-      (iota n_steps)
+  tabulate n_steps (\step_i ->
+                      let time = r32(step_i) * time_delta
+                      in render_frame(field_size, scale, degree, time))
