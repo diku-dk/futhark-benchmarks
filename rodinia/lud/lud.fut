@@ -96,7 +96,7 @@ let lud_diagonal1 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
               ) (a_rows) (transpose a_cols) (iota b)
 
 
-let lud_diagonal2 [b] (ain: [b][b]f32, m: i32): *[b][b]f32 =  -- CORRECT
+let lud_diagonal2 [b] (ain: [b][b]f32, m: i32): [b][b]f32 =  -- CORRECT
     let one = (m*m+2*m+1)/(m+1) - m in
     let ains= copy(replicate one ain) in
     let ress= map (\ (a: *[b][b]f32, q: i32): *[b][b]f32  -> unsafe

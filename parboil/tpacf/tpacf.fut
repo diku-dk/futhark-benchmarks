@@ -34,7 +34,7 @@ let doCompute [num1][num2][numBBins]
                numBins: i32,
                numBins2: i32,
                binb: [numBBins]f64)
-             : *[numBins2]i32 =
+             : [numBins2]i32 =
   let one_value (xOuter, yOuter, zOuter) =
     loop dBins = replicate numBins2 0i32 for i < num2 do
       let (xInner, yInner, zInner) = data2[i]
@@ -60,7 +60,7 @@ let doComputeSelf [numD][numBBins]
                    numBins: i32,
                    numBins2: i32,
                    binb: [numBBins]f64)
-                 : *[numBins2]i32 =
+                 : [numBins2]i32 =
   let one_value (xOuter, yOuter, zOuter) index =
     loop dBins = replicate numBins2 0i32 for j in index+1..<numD do
       let (xInner, yInner, zInner) = unsafe data[j]
