@@ -14,7 +14,7 @@ import time
 import sys
 
 images = images()
-(width, height, _) = images.test_image_render()
+(width, height, _) = images.test_image_render(0.0)
 
 size=(width, height)
 pygame.init()
@@ -28,9 +28,11 @@ def showText(what, where):
     text = font.render(what, 1, (255, 255, 255))
     screen.blit(text, where)
 
+t0 = time.time()
+
 def render():
     futhark_start = time.time()
-    (_, _, frame) = images.test_image_render()
+    (_, _, frame) = images.test_image_render(np.float32(futhark_start-t0))
     frame = frame.get()
     futhark_end = time.time()
     pygame.surfarray.blit_array(surface, frame)
