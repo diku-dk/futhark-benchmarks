@@ -99,8 +99,8 @@ let lud_diagonal1 [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
 let lud_diagonal2 [b] (ain: [b][b]f32, m: i32): [b][b]f32 =  -- CORRECT
     let one = (m*m+2*m+1)/(m+1) - m in
     let ains= copy(replicate one ain) in
-    let ress= map (\ (a: *[b][b]f32, q: i32): *[b][b]f32  -> unsafe
-                     loop a for i < b do
+    let ress= map (\ (a: [b][b]f32, q: i32): [b][b]f32  -> unsafe
+                     loop a = copy a for i < b do
                         let a = loop a for j in i..<b do
                             let sum = loop sum=0.0f32 for k < i do
                                 sum + a[i,k]*a[k,j] + r32(q)
