@@ -44,8 +44,8 @@ let calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
 -- A rank is counted as the contribution of a page / the outbound edges from that page
 -- A contribution is defined as the rank of the page / the inbound edges
 let calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *[]f32 =
-  let froms = map (\x -> x.from) links
-  let tos = map (\x -> x.to) links
+  let froms = map (\(x: link) -> x.from) links
+  let tos = map (\(x: link) -> x.to) links
   let get_rank (i: i32) = unsafe if sizes[i] == 0 then 0f32
                                  else ranks[i] / f32.i32 sizes[i]
   let contributions = map get_rank froms
@@ -85,7 +85,7 @@ module segmented_sum_i32 = segmented_scan {
 -- Compute the number of outbound links for each page.
 let compute_sizes [m] (n: i32) (links: [m]link) =
   let links = sort_by_from.radix_sort links
-  let froms = map (\x -> x.from) links
+  let froms = map (\(x: link) -> x.from) links
   let flags = map2 (!=) froms (rotate (-1) froms)
   let sizes = segmented_sum_i32.segmented_scan flags (replicate m 1)
   let (sizes, ids, _) = unzip (filter (\(_,_,x) -> x) (zip sizes froms (rotate 1 flags)))
@@ -94,9 +94,9 @@ let compute_sizes [m] (n: i32) (links: [m]link) =
 entry preprocess_graph [m] (links_array: [m][2]i32): ([m]i32, [m]i32, []i32) =
   let links_by_to =
         sort_by_to.radix_sort (map (\l -> {from=l[0], to=l[1]}) links_array)
-  let n = i32.maximum (map (\x -> 1 + x.from) links_by_to)
-  in (map (\x -> x.from) links_by_to,
-      map (\x -> x.to) links_by_to,
+  let n = i32.maximum (map (\(x: link) -> 1 + x.from) links_by_to)
+  in (map (\(x: link) -> x.from) links_by_to,
+      map (\(x: link) -> x.to) links_by_to,
       compute_sizes n links_by_to)
 
 let initial_ranks (n: i32): *[n]f32 =
