@@ -15,17 +15,15 @@ let vstrip : region =
 
 let even x = x % 2i32 == 0i32
 
-let floori x = t32(f32.floor x)
+let floori = i32.f32
 
 let checker : region =
-  \ (x,y) -> even(floori x + floori y)
+  \(x,y) -> even(floori x + floori y)
 
 let distO (x,y) = f32.sqrt(x*x+y*y)
 
-let (<<) f g = \x -> f (g x)
-
 let altRings : region =
-  even << floori << distO
+  even <<| floori <<| distO
 
 type polar_point = (f32, f32)
 
@@ -35,7 +33,7 @@ let toPolar (x,y) = (distO (x,y), f32.atan2 y x)
 
 let polarChecker n : region =
   let sc (r,t) = (r, t * r32 n / pi)
-  in checker << sc << toPolar
+  in checker <<| sc <<| toPolar
 
 let wavDist : img frac =
  \ p -> (1f32 + f32.cos (pi * distO p)) / 2f32
@@ -48,7 +46,7 @@ let fracToFColor (f:frac) = (f,f,f,1f32)
 
 let fcolorToColour (r,g,b,a) = argb.from_rgba r g b a
 
-let boolToColour = fcolorToColour << boolToFColor
+let boolToColour = fcolorToColour <<| boolToFColor
 
 let lerpC w ((a1,r1,g1,b1):fcolor) ((a2,r2,g2,b2):fcolor) : fcolor =
   let h x1 x2 = w * x1 + (1f32-w)*x2
@@ -76,30 +74,28 @@ let cond 'a : region -> img a -> img a -> img a =
 let lerpI : img frac -> cimage -> cimage -> cimage =
   \ x y z -> lift3 lerpC x y z
 
-let constant a p = a
-
-let blueI = constant (0f32,0f32,1f32,1f32)
-let redI = constant (1f32,0f32,0f32,1f32)
-let greenI = constant (0f32,1f32,0f32,1f32)
-let yellowI = constant (0f32,1f32,1f32,1f32)
+let blueI = const (0f32,0f32,1f32,1f32)
+let redI = const (1f32,0f32,0f32,1f32)
+let greenI = const (0f32,1f32,0f32,1f32)
+let yellowI = const (0f32,1f32,1f32,1f32)
 
 let rbRings = lerpI wavDist redI blueI
 
 let mystique : cimage =
-  lerpI (constant 0.2f32) (boolToFColor << checker) rbRings
+  lerpI (const 0.2f32) (boolToFColor <<| checker) rbRings
 
-let (<<>>) : f32 -> f32 -> bool = \ (x:f32) y -> f32.abs(x-y) < 0.05f32
+let (<<|>>) : f32 -> f32 -> bool = \ (x:f32) y -> f32.abs(x-y) < 0.05f32
 
-let f : region = \ (x,y) -> y <<>> (x*x*x - 2f32*x*x + 1.5f32)
+let f : region = \ (x,y) -> y <<|>> (x*x*x - 2f32*x*x + 1.5f32)
 
 let (<||>) : region -> region -> region =
   \ r1 r2 p -> r1 p || r2 p
 
 let coord : region =
-  \ (x,y) -> x <<>> 0f32 || y <<>> 0f32
+  \ (x,y) -> x <<|>> 0f32 || y <<|>> 0f32
 
 let circ : region =                          -- $1 = x^2 + y^2$
-  \ (x,y) -> 1f32 <<>> (x*x + y*y)
+  \ (x,y) -> 1f32 <<|>> (x*x + y*y)
 
 let invY 'a (f : img a) : img a =
   \ (x,y) -> f (x,-y)
@@ -119,10 +115,10 @@ let toAnim (f:f32) (g:cimage) : image =
   let w = 200i32
   let h = 200i32
   in { width = w, height = h,
-       pixel = \ t -> (fcolorToColour << g
-                       << (\ (x,y) -> (scale (f*t) * r32 x/r32 w,
+       pixel = \ t -> (fcolorToColour <<| g
+                       <<| (\ (x,y) -> (scale (f*t) * r32 x/r32 w,
                                        scale (f*t) * r32 y/r32 h))
-                       << transl (100i32,100i32))
+                       <<| transl (100i32,100i32))
      }
 
 type colour_at_time = f32 -> argb.colour
@@ -175,10 +171,10 @@ let test_image =
               circle 80f32 (cycle 1f32 argb.black argb.red) (always argb.black)
   in stack `beside` speedup 10f32 (invert stack) `above` (toAnim 1f32 mystique)
      `beside` (toAnim 0.2f32 rbRings)
-     `beside` (toAnim 0.1f32 (boolToFColor << polarChecker 5))
-     `above` ((toAnim 0.3f32 (boolToFColor << (coord <||> circ)))
-              `beside` (toAnim 0.3f32 (invY(boolToFColor << f)))
-              `beside` (toAnim 0.2f32 (boolToFColor << checker)))
+     `beside` (toAnim 0.1f32 (boolToFColor <<| polarChecker 5))
+     `above` ((toAnim 0.3f32 (boolToFColor <<| (coord <||> circ)))
+              `beside` (toAnim 0.3f32 (invY(boolToFColor <<| f)))
+              `beside` (toAnim 0.2f32 (boolToFColor <<| checker)))
 
 entry test_image_render (t: f32) =
   let {width, height, pixel} = test_image
