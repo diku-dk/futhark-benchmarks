@@ -167,8 +167,8 @@ let speedup (f: f32) ({width, height, pixel=orig_pixel}: image): image =
   in {width, height, pixel}
 
 let test_image =
-  let stack = circle 100f32 (always argb.black) (cycle 1f32 argb.black argb.red) `above`
-              circle 80f32 (cycle 1f32 argb.black argb.red) (always argb.black)
+  let stack = circle 100f32 (always argb.white) (cycle 1f32 argb.black argb.red) `above`
+              circle 80f32 (cycle 1f32 argb.black argb.red) (always argb.white)
   in stack `beside` speedup 10f32 (invert stack) `above` (toAnim 1f32 mystique)
      `beside` (toAnim 0.2f32 rbRings)
      `beside` (toAnim 0.1f32 (boolToFColor <<| polarChecker 5))
