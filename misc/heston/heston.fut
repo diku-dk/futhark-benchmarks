@@ -35,8 +35,10 @@ module price_european_calls_real = price_european_calls real
 module heston_least_squares = least_squares real rand {
   open (relative_distance real)
 
+  type quote = {maturity: i32, strike: real.t, vega: real.t, weight: real.t}
+
   type objective_ctx = {day_count_fractions: []real.t,
-                        quotes: []{maturity: i32, strike: real.t, vega: real.t, weight: real.t},
+                        quotes: []quote,
                         gauss_laguerre_coefficients: ([]real.t, []real.t)
                         }
 
@@ -47,9 +49,11 @@ module heston_least_squares = least_squares real rand {
                  false (int 1) (int 1) (int 1)
                  heston_parameters
                  day_count_fractions
-                 (map (\q -> {maturity=q.maturity, strike=q.strike}) quotes)
-    in map (\(q, p) -> q.weight *. p /. q.vega) (zip quotes prices)
+                 (map (\(q: quote) -> {maturity=q.maturity, strike=q.strike}) quotes)
+    in map2 (\(q: quote) p -> q.weight *. p /. q.vega) quotes prices
 }
+
+type quote = {maturity: date, strike: real, quote: real}
 
 type calibration_input = { today: date
                          , quotes: []{maturity: date, strike: real, quote: real}
@@ -90,7 +94,7 @@ let run_calibration({today,
 
 
   let (maturity_dates, quotes_to_maturities) =
-    distinct_maturities (map (\q -> q.maturity) quotes)
+    distinct_maturities (map (\(q: quote) -> q.maturity) quotes)
   let weights = map (\{maturity, strike, quote=_} -> weight strike maturity) quotes
   let prices_and_vegas = map (\{maturity, strike, quote} ->
                               price_and_vega_of_quote strike maturity quote) quotes

@@ -223,6 +223,8 @@ let bs_control (moneyness: real) (sigma_sqrtt: real) =
   let d1 = negate (R.log moneyness) / sigma_sqrtt + real 0.5 * sigma_sqrtt
   in pnorm d1 - moneyness * pnorm (d1 - sigma_sqrtt)
 
+type quote = {strike: real, maturity: i32}
+
 let price_european_calls [num_points] [num_maturities] [num_quotes]
     (x: [num_points]real, w: [num_points]real)
     (ap1: bool)
@@ -234,8 +236,8 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
     (quotes: [num_quotes]{strike: real, maturity: i32})
   : [num_quotes]real =
        let {initial_variance = v0, long_term_variance = theta, mean_reversion = kappa, correlation = rho, variance_volatility = eta} = heston_parameters
-       let maturity_for_quote = map (\q -> q.maturity) quotes
-       let strikes = map (\q -> q.strike) quotes
+       let maturity_for_quote = map (\(q: quote) -> q.maturity) quotes
+       let strikes = map (\(q: quote) -> q.strike) quotes
        let f0 = spot * df_div / df
        let kappai = c64.mk_re kappa
        let etai = c64.mk_re eta
