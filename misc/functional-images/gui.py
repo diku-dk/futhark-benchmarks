@@ -7,7 +7,7 @@ import pygame
 import time
 import sys
 
-images = images()
+images = images(interactive=True)
 (width, height, _) = images.test_image_render(0.0)
 
 size=(width, height)
