@@ -1,10 +1,4 @@
 #!/usr/bin/env python
-#
-# Simple frontend for the Ising model, that uses Pygame for
-# visualisation.  If your Python is healthy, 'pip install pygame' (and
-# maybe 'pip install numpy') should be all you need.  Maybe these
-# packages are also available in your package system (they are pretty
-# common).
 
 from images import images
 
