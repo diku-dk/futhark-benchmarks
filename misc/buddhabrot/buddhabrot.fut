@@ -1,6 +1,4 @@
 -- Buddhabrot fractal: https://en.wikipedia.org/wiki/Buddhabrot
--- ==
--- tags { disable }
 
 import "/futlib/math"
 
