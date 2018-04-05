@@ -7,6 +7,8 @@ import argparse
 import pyopencl as cl
 import sys
 
+life = life.life(interactive=True)
+
 rulesets = [ 'conway', 'conway_fading', 'quad', 'quad_fading', 'quad2', 'rule101' ]
 
 def get_ruleset(l, s):
@@ -38,8 +40,6 @@ size=(args.width,args.height)
 screen = pygame.display.set_mode(size)
 surface = pygame.Surface(size, depth=32)
 initworld = numpy.random.choice([True, False], size=size)
-
-life = life.life(interactive=True)
 
 ruleset = args.variant
 life_init, life_steps, life_render, life_uninit = get_ruleset(life, ruleset)
