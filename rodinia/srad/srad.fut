@@ -39,7 +39,6 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
   let r2 = rows - 1
   let c1 = 0
   let c2 = cols - 1
-  let ne = rows * cols
 
   -- ROI image size
   let neROI = (r2-r1+1)*(c2-c1+1)
