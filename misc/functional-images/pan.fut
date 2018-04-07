@@ -121,6 +121,9 @@ let rotateP (theta: f32): transform =
   \(x,y) -> (x * f32.cos(theta) - y * f32.sin(theta),
              y * f32.cos(theta) + x * f32.sin(theta))
 
+let udisk: region =
+  \p -> distO p < 1f32
+
 type filter 'a = img a -> img a
 
 let translate 'a ((dx, dy): point): filter a =
@@ -134,3 +137,34 @@ let uscale 'a (s: f32): filter a =
 
 let rotate' 'a (theta: f32): filter a =
   \im -> im <<| rotateP (-theta)
+
+let swirlP (r: f32): transform =
+  \p -> rotateP (distO p * 2f32 * f32.pi / r) p
+
+let swirl 'a (r: f32): filter a =
+  \im -> im <<| swirlP (-r)
+
+type filterC = filter fcolor
+
+type time = f32
+type anim 'a = time -> img a
+
+let universeR: region = const true
+let emptyR: region = const false
+let compR: region -> region = lift1 (!)
+let intersectR: region -> region -> region = lift2 (&&)
+let unionR: region -> region -> region = lift2 (||)
+let xorR: region -> region -> region = lift2 (\x y -> bool.i32 (i32.bool x ^ i32.bool y))
+let subtractR: region -> region -> region = \r r' -> r `intersectR` compR r'
+
+let annulus (inner: frac): region = udisk `subtractR` uscale inner udisk
+
+let radReg n: region =
+  let test (_, theta) = even (i32.f32 (theta * r32 n / f32.pi))
+  in test <<| toPolar
+
+let wedgeAnnulus inner n: region = annulus inner `intersectR` radReg n
+
+let shiftXor r: filter bool =
+  \reg -> let reg' d = translate (d,0f32) reg
+          in reg' r `xorR` reg' (-r)
