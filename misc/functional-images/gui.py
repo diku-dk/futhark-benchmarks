@@ -8,7 +8,8 @@ import time
 import sys
 
 images = images(interactive=True)
-(width, height, _) = images.test_image_render(0.0)
+height = 800
+(width, _) = images.test_image_render(height, 0.0)
 
 size=(width, height)
 pygame.init()
@@ -26,7 +27,7 @@ t0 = time.time()
 
 def render():
     futhark_start = time.time()
-    (_, _, frame) = images.test_image_render(np.float32(futhark_start-t0))
+    (_, frame) = images.test_image_render(height, np.float32(futhark_start-t0))
     frame = frame.get()
     futhark_end = time.time()
     pygame.surfarray.blit_array(surface, frame)
