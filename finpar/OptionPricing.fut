@@ -256,10 +256,7 @@ let mkPrices [num_und][num_dates]
             : [num_dates][num_und]f32 =
   let c_rows = map3 combineVs noises md_vols md_drifts
   let e_rows = map (\x: [num_und]f32 -> map f32.exp x) c_rows
-  in  map (\(x: []f32): [num_und]f32  ->
-             map2 (*) (md_starts) x)
-          (scan (\x y -> map2 (*) x y)
-                (replicate num_und 1.0) e_rows)
+  in  map (map2 (*) md_starts) (scan (map2 (*)) (replicate num_und 1.0) e_rows)
 
 let blackScholes [num_dates][num_und]
                 (bb_arr: [num_dates][num_und]f32)
@@ -277,7 +274,7 @@ let blackScholes [num_dates][num_und]
 
 let fminPayoff(xs: []f32): f32 =
   --    MIN( map(/, xss, {3758.05, 11840.0, 1200.0}) )
-  let (a,b,c) = ( xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0)
+  let (a,b,c) = (xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0)
   in if a < b
      then if a < c then a else c
      else if b < c then b else c
@@ -292,10 +289,10 @@ let payoff1(md_disct: []f32, md_detval: []f32, xss: [1][1]f32): f32 =
 
 let payoff2 (md_disc: []f32, xss: [5][3]f32): f32 =
   let (date, amount) =
-    if      (1.0 <= fminPayoff(xss[0])) then (0, 1150.0)
-    else if (1.0 <= fminPayoff(xss[1])) then (1, 1300.0)
-    else if (1.0 <= fminPayoff(xss[2])) then (2, 1450.0)
-    else if (1.0 <= fminPayoff(xss[3])) then (3, 1600.0)
+    if      1.0 <= fminPayoff(xss[0]) then (0, 1150.0)
+    else if 1.0 <= fminPayoff(xss[1]) then (1, 1300.0)
+    else if 1.0 <= fminPayoff(xss[2]) then (2, 1450.0)
+    else if 1.0 <= fminPayoff(xss[3]) then (3, 1600.0)
     else let x50  = fminPayoff(xss[4])
          let value  = if      1.0 <= x50 then 1750.0
                       else if 0.75 < x50 then 1000.0
@@ -344,7 +341,7 @@ let main [num_bits][num_models][num_und][num_dates]
   let sobvctsz  = num_dates*num_und
   let sobol_mat = stream_map (\[chunk] (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
                                sobolChunk(dir_vs, unsafe ns[0], chunk))
-                            (iota num_mc_it)
+                             (iota num_mc_it)
 
   let gauss_mat = map ugaussian sobol_mat
 
