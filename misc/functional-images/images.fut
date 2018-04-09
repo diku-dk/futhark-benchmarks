@@ -12,10 +12,17 @@ let boolToColour = fcolorToColour <<| boolToFColor
 -- main changes are due to the fact that Futhark is not lazy.
 let fairlyClose ((u,v): point) = (u*u + v*v) < 100f32
 
+let mandelbrotNext (u,v) (x,y) = (x*x - y*y + u, 2f32*x*y + v)
+
 let mandelbrotEscapes (n: i32): img i32 =
-  \(u,v) -> let continue (p, i) = i < n && fairlyClose p
-            let next ((x, y), i) = ((x*x - y*y + u, 2f32*x*y + v), i+1)
-            in (iterate_while continue next ((u,v), 0)).2
+  \p1 -> let continue (p, i) = i < n && fairlyClose p
+         let next (p1', i) = (mandelbrotNext p1 p1', i+1)
+         in (iterate_while continue next (p1, 0)).2
+
+let juliaEscapes (p0: point) (n: i32): img i32 =
+  \p1 -> let continue (p, i) = i < n && fairlyClose p
+         let next (p1, i) = (mandelbrotNext p0 p1, i+1)
+         in (iterate_while continue next (p1, 0)).2
 
 let mandelbrotSet (n: i32): region =
   (==n) <<| mandelbrotEscapes n
@@ -27,12 +34,17 @@ let mandelbrotGreyscale (n: i32): cimage =
   mandelbrotImage n <| \i -> let i' = r32 i / r32 n
                              in (i', i', i', 1f32)
 
+let juliaGreyscale (p0: point) (n: i32): cimage =
+  juliaEscapes p0 n |>> \i -> let i' = r32 i / r32 n
+                              in (i', i', i', 1f32)
+
 entry test_pan_image (screen_width: i32) (screen_height: i32)
                      (width: f32) (height: f32)
                      (xcentre: f32) (ycentre: f32)
+                     (xuser: f32) (yuser: f32)
                      (t: f32): [screen_width][screen_height]argb.colour =
   let aspect_ratio = width / height
-  let img = fcolorToColour <<| (uscale 100f32 <| swirl (t/10f32) <| mandelbrotGreyscale 100)
+  let img = fcolorToColour <<| juliaGreyscale (xuser, yuser) 100
   -- Project physical pixel coordinate to position in plane.
   let (xmin,ymin) = ((xcentre - width/2f32),
                      (ycentre - (1f32/aspect_ratio)*width/2f32))
