@@ -8,10 +8,10 @@ import time
 import sys
 
 images = images(interactive=True)
-width = 800
+width = 10.0
 
-screen_width = width
-screen_height = width
+screen_width = 800
+screen_height = 800
 size=(screen_width, screen_height)
 aspect_ratio = float(screen_width)/float(screen_height)
 pygame.init()
@@ -27,12 +27,14 @@ def showText(what, where):
 
 t0 = time.time()
 (xcentre, ycentre) = (0, 0)
+(xuser, yuser) = (0, 0)
 
 def render():
     futhark_start = time.time()
     frame = images.test_pan_image(screen_width, screen_height,
                                   width, width,
                                   xcentre, ycentre,
+                                  xuser, yuser,
                                   np.float32(futhark_start-t0))
     frame = frame.get()
     futhark_end = time.time()
@@ -40,6 +42,10 @@ def render():
     screen.blit(surface, (0, 0))
     speedmsg = "Futhark calls took %.2fms" % ((futhark_end-futhark_start)*1000)
     showText(speedmsg, (10, 10))
+    posmsg = "Centre position: (%.4f, %.4f)" % (xcentre, ycentre)
+    showText(posmsg, (10, 30))
+    usermsg = "Right-click position: (%.4f, %.4f)" % (xuser, yuser)
+    showText(usermsg, (10, 50))
     pygame.display.flip()
 
 pygame.key.set_repeat(500, 50)
@@ -54,6 +60,11 @@ def moveYPixels(pixels):
     height = width*(1/aspect_ratio)
     unit_per_pixel = height/screen_height
     ycentre += unit_per_pixel * pixels
+
+def rightClick(pos):
+    global xuser, yuser
+    xuser = event.pos[0]/float(screen_width)
+    yuser = event.pos[1]/float(screen_height)
 
 while True:
     render()
@@ -80,9 +91,14 @@ while True:
                 width *= 0.99
             elif event.button == 5:
                 width *= 1.01
+            elif event.button == 3:
+                rightClick(event.pos)
 
         elif event.type == pygame.MOUSEMOTION:
             if event.buttons[0] == 1:
                 (xd,yd) = event.rel
                 moveXPixels(-xd)
                 moveYPixels(-yd)
+            # Handle right click
+            if event.buttons[2] == 1:
+                rightClick(event.pos)
