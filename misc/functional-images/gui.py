@@ -62,13 +62,13 @@ while True:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
-                centre_x += width*0.01
+                xcentre += width*0.01
             if event.key == pygame.K_LEFT:
-                centre_x -= width*0.01
+                xcentre -= width*0.01
             if event.key == pygame.K_UP:
-                centre_y -= width*0.01
+                ycentre -= width*0.01
             if event.key == pygame.K_DOWN:
-                centre_y += width*0.01
+                ycentre += width*0.01
             if event.key == pygame.K_w:
                 width *= 0.99
             if event.key == pygame.K_s:
