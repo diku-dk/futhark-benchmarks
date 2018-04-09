@@ -44,7 +44,7 @@ entry test_pan_image (screen_width: i32) (screen_height: i32)
                      (xuser: f32) (yuser: f32)
                      (t: f32): [screen_width][screen_height]argb.colour =
   let aspect_ratio = width / height
-  let img = fcolorToColour <<| juliaGreyscale (xuser, yuser) 100
+  let img = fcolorToColour <<| (rotate' t <| juliaGreyscale (xuser, yuser) 100)
   -- Project physical pixel coordinate to position in plane.
   let (xmin,ymin) = ((xcentre - width/2f32),
                      (ycentre - (1f32/aspect_ratio)*width/2f32))
