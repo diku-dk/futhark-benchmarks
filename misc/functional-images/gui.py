@@ -27,7 +27,7 @@ def showText(what, where):
 
 t0 = time.time()
 (xcentre, ycentre) = (0, 0)
-(xuser, yuser) = (0, 0)
+(xuser, yuser) = (0.5, 0.5)
 
 def render():
     futhark_start = time.time()
