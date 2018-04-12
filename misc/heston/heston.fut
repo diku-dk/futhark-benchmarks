@@ -49,8 +49,8 @@ module heston_least_squares = least_squares real rand {
                  false (int 1) (int 1) (int 1)
                  heston_parameters
                  day_count_fractions
-                 (map (\(q: quote) -> {maturity=q.maturity, strike=q.strike}) quotes)
-    in map2 (\(q: quote) p -> q.weight *. p /. q.vega) quotes prices
+                 (map (\q -> {maturity=q.maturity, strike=q.strike}) quotes)
+    in map2 (\q p -> q.weight *. p /. q.vega) quotes prices
 }
 
 type quote = {maturity: date, strike: real, quote: real}
@@ -94,7 +94,7 @@ let run_calibration({today,
 
 
   let (maturity_dates, quotes_to_maturities) =
-    distinct_maturities (map (\(q: quote) -> q.maturity) quotes)
+    distinct_maturities (map (\q -> q.maturity) quotes)
   let weights = map (\{maturity, strike, quote=_} -> weight strike maturity) quotes
   let prices_and_vegas = map (\{maturity, strike, quote} ->
                               price_and_vega_of_quote strike maturity quote) quotes
