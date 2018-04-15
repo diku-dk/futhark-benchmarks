@@ -58,21 +58,13 @@ let calculate_ranks [n] (links:[]link) (ranks_in: *[n]f32)
 
 import "/futlib/radix_sort"
 
-module sort_by_to = mk_radix_sort {
-  type t = link
-  let num_bits = i32.num_bits
-  let get_bit (i: i32) (x: link) = i32.get_bit i x.to
-}
+let sort_by_to = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i link.to)
 
-module sort_by_from = mk_radix_sort {
-  type t = link
-  let num_bits = i32.num_bits
-  let get_bit (i: i32) (x: link) = i32.get_bit i x.from
-}
+let sort_by_from = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i link.from)
 
 -- Compute the number of outbound links for each page.
 let compute_sizes [m] (n: i32) (links: [m]link) =
-  let links = sort_by_from.radix_sort links
+  let links = sort_by_from links
   let froms = map (\(x: link) -> x.from) links
   let flags = map2 (!=) froms (rotate (-1) froms)
   let sizes = segmented_scan (+) 0 flags (replicate m 1)
@@ -80,8 +72,7 @@ let compute_sizes [m] (n: i32) (links: [m]link) =
   in scatter (replicate n 0) ids sizes
 
 entry preprocess_graph [m] (links_array: [m][2]i32): ([m]i32, [m]i32, []i32) =
-  let links_by_to =
-        sort_by_to.radix_sort (map (\l -> {from=l[0], to=l[1]}) links_array)
+  let links_by_to = sort_by_to (map (\l -> {from=l[0], to=l[1]}) links_array)
   let n = i32.maximum (map (\(x: link) -> 1 + x.from) links_by_to)
   in (map (\(x: link) -> x.from) links_by_to,
       map (\(x: link) -> x.to) links_by_to,
