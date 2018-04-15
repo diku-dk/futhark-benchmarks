@@ -26,12 +26,6 @@ type link = {from: i32, to: i32}
 
 import "/futlib/segmented"
 
-module segmented_sum_f32 = segmented_scan {
-  type t = f32
-  let ne = 0f32
-  let op (x: f32) (y: f32) = x + y
-}
-
 -- Calculate ranks from pages without any outbound edges
 -- This defaults to the page contribution / number of pages
 let calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
@@ -50,7 +44,7 @@ let calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *
                                  else ranks[i] / f32.i32 sizes[i]
   let contributions = map get_rank froms
   let page_flags = map2 (!=) tos (rotate (-1) tos)
-  let scanned_contributions = segmented_sum_f32.segmented_scan page_flags contributions
+  let scanned_contributions = segmented_scan (+) 0f32 page_flags contributions
   let (page_tos, page_contributions) =
     unzip (map3 (\to c flag -> if flag then (to, c) else (-1, c))
                 tos scanned_contributions (rotate 1 page_flags))
@@ -76,18 +70,12 @@ module sort_by_from = mk_radix_sort {
   let get_bit (i: i32) (x: link) = i32.get_bit i x.from
 }
 
-module segmented_sum_i32 = segmented_scan {
-  type t = i32
-  let ne = 0
-  let op (x: i32) (y: i32) = x + y
-}
-
 -- Compute the number of outbound links for each page.
 let compute_sizes [m] (n: i32) (links: [m]link) =
   let links = sort_by_from.radix_sort links
   let froms = map (\(x: link) -> x.from) links
   let flags = map2 (!=) froms (rotate (-1) froms)
-  let sizes = segmented_sum_i32.segmented_scan flags (replicate m 1)
+  let sizes = segmented_scan (+) 0 flags (replicate m 1)
   let (sizes, ids, _) = unzip (filter (\(_,_,x) -> x) (zip sizes froms (rotate 1 flags)))
   in scatter (replicate n 0) ids sizes
 
