@@ -29,13 +29,19 @@ t0 = time.time()
 (xcentre, ycentre) = (0, 0)
 (xuser, yuser) = (0.5, 0.5)
 
+images = { '1': images.mandelbrot_greyscale,
+           '2': images.julia_greyscale,
+           '3': images.mandelbrot_colour,
+           '4': images.julia_colour }
+image = images['1']
+
 def render():
     futhark_start = time.time()
-    frame = images.test_pan_image(screen_width, screen_height,
-                                  width, width,
-                                  xcentre, ycentre,
-                                  xuser, yuser,
-                                  np.float32(futhark_start-t0))
+    frame = image(xuser, yuser,
+                  np.float32(futhark_start-t0),
+                  screen_width, screen_height,
+                  width, width,
+                  xcentre, ycentre)
     frame = frame.get()
     futhark_end = time.time()
     pygame.surfarray.blit_array(surface, frame)
@@ -84,6 +90,8 @@ while True:
                 width *= 0.99
             if event.key == pygame.K_s:
                 width *= 1.01
+            if event.unicode in images:
+                image = images[event.unicode]
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # Handle scroll wheel.
