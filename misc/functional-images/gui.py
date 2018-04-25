@@ -36,7 +36,8 @@ images = { '1': images.mandelbrot_greyscale,
            '2': images.julia_greyscale,
            '3': images.mandelbrot_colour,
            '4': images.julia_colour,
-           '5': images.figure_7_15 }
+           '5': images.figure_7_15,
+           '6': images.fancy}
 image = images['1']
 
 def render():
