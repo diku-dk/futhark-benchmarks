@@ -25,9 +25,12 @@ def showText(what, where):
     text = font.render(what, 1, (255, 255, 255))
     screen.blit(text, where)
 
-t0 = time.time()
+tcur = 0.0
+tlast = time.time()
 (xcentre, ycentre) = (0, 0)
 (xuser, yuser) = (0.5, 0.5)
+paused = False
+direction = 1
 
 images = { '1': images.mandelbrot_greyscale,
            '2': images.julia_greyscale,
@@ -37,9 +40,13 @@ images = { '1': images.mandelbrot_greyscale,
 image = images['1']
 
 def render():
+    global tlast, tcur
     futhark_start = time.time()
+    tdelta = futhark_start - tlast if not paused else 0
+    tcur += tdelta * direction
+    tlast = futhark_start
     frame = image(xuser, yuser,
-                  np.float32(futhark_start-t0),
+                  np.float32(tcur),
                   screen_width, screen_height,
                   width, width,
                   xcentre, ycentre)
@@ -93,6 +100,10 @@ while True:
                 width *= 1.01
             if event.unicode in images:
                 image = images[event.unicode]
+            if event.unicode == '-':
+                direction *= -1
+            if event.key == pygame.K_SPACE:
+                paused = not paused
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # Handle scroll wheel.
