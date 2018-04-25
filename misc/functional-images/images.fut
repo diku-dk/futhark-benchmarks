@@ -8,11 +8,13 @@ import "pan"
 
 let fcolorToColour (r,g,b,a) = argb.from_rgba r g b a
 
-let boolToColour = fcolorToColour <<| boolToFColor
+let boolToColour: bool -> argb.colour = fcolorToColour <<| boolToFColor
 
 type argb_image = img argb.colour
 
 let cimage_to_argb: cimage -> argb_image = (|>> fcolorToColour)
+
+let region_to_argb: region -> argb_image = (|>> boolToColour)
 
 -- Fractal definition from "Composing Fractals" by Mark P. Jones.  The
 -- main changes are due to the fact that Futhark is not lazy.
@@ -153,4 +155,9 @@ entry julia_colour (user_x: f32) (user_y: f32) t =
 entry figure_7_15 (_: f32) (_: f32) t =
   altRings |> shiftXor t |> uscale 0.1f32
   |>> boolToColour
+  |> visualise_argb_image
+
+entry fancy (_: f32) (_: f32) t =
+  cond altRings ((altRings |> shiftXor t |> uscale 0.1f32 |> region_to_argb) : argb_image)
+                ((mandelbrotGreyscale 100 |> rotate' t |> cimage_to_argb): argb_image)
   |> visualise_argb_image
