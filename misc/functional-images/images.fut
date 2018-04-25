@@ -63,15 +63,9 @@ let visualise_argb_image (img: argb_image)
 
 let visualise_cimage (img: cimage) = visualise_argb_image (cimage_to_argb img)
 
-entry mandelbrot_greyscale (_: f32) (_: f32) t =
-  mandelbrotGreyscale 100 |> rotate' t |> visualise_cimage
-
 let juliaGreyscale (p0: point) (n: i32): cimage =
   juliaEscapes p0 n |>> \(_, i) -> let i' = r32 i / r32 n
                                    in (i', i', i', 1f32)
-
-entry julia_greyscale (xuser: f32) (yuser: f32) t =
-  juliaGreyscale (xuser, yuser) 100 |> rotate' t |> visualise_cimage
 
 -- | Cubic interpolation.
 let cubic (x0:f32,x1:f32) (y0:f32,y1:f32) (m0:f32,m1:f32) (x:f32) =
@@ -141,6 +135,12 @@ let escape_to_colour (limit: i32) (points: i32)
        let ix = t32 (f32.sqrt (r32 n + 1.0 - smooth) * scale + shift)
        in mk_palette points (ix %% points)
 
+entry mandelbrot_greyscale (_: f32) (_: f32) t =
+  mandelbrotGreyscale 100 |> rotate' t |> visualise_cimage
+
+entry julia_greyscale (xuser: f32) (yuser: f32) t =
+  juliaGreyscale (xuser, yuser) 100 |> rotate' t |> visualise_cimage
+
 entry mandelbrot_colour (_: f32) (_: f32) t =
   mandelbrotImage 100 (escape_to_colour 100 2048) |>
   rotate' t |> visualise_argb_image
@@ -148,4 +148,9 @@ entry mandelbrot_colour (_: f32) (_: f32) t =
 entry julia_colour (user_x: f32) (user_y: f32) t =
   juliaEscapes (user_x, user_y) 100
   |> rotate' t |>> escape_to_colour 100 2048
+  |> visualise_argb_image
+
+entry figure_7_15 (_: f32) (_: f32) t =
+  altRings |> shiftXor t |> uscale 0.1f32
+  |>> boolToColour
   |> visualise_argb_image
