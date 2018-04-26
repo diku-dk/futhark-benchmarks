@@ -1,8 +1,6 @@
 -- A wrapper around the Pan library that provides actual screen
 -- frames.
 
-default (f32)
-
 import "/futlib/colour"
 import "pan"
 

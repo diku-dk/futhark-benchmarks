@@ -16,8 +16,6 @@ import "/futlib/array"
 import "/futlib/vec2"
 import "/futlib/colour"
 
-default (f32)
-
 module vec2 = mk_vec2 f32
 
 type v2 = (f32,f32)

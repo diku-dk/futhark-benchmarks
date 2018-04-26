@@ -12,8 +12,6 @@
 import "/futlib/math"
 import "/futlib/array"
 
-default(f32)
-
 let gamma: f32 = 1.4
 let iterations: i32 = 2000
 

@@ -8,8 +8,6 @@
 import "/futlib/math"
 import "/futlib/array"
 
-default(f32)
-
 let eta(): f32       = 0.3
 let momentum(): f32  = 0.3
 let init_zero(): bool = false
