@@ -14,8 +14,6 @@ import "/futlib/math"
 import "/futlib/date"
 import "/futlib/array"
 
-default(f32)
-
 --------------------------------------------------/
 --/ Constants and Utility Functions
 --------------------------------------------------/

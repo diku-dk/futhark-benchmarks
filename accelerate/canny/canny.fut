@@ -27,8 +27,6 @@
 
 import "/futlib/math"
 
-default (f32)
-
 let luminanceOfRGBA32(p: i32): f32 =
   let r = i8.i32(p >> 24)
   let g = i8.i32(p >> 16)

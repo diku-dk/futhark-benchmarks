@@ -4,8 +4,6 @@ import "types"
 import "objects"
 import "intersection"
 
-default (f32)
-
 type light = {position: position,
               colour: argb.colour}
 

@@ -7,8 +7,6 @@ import "/futlib/math"
 import "/futlib/complex"
 import "/futlib/colour"
 
-default (f32)
-
 module mandelbrot(real: real): {
   val render_mandelbrot:
     (screenX: i32) -> (screenY: i32) ->

@@ -9,8 +9,6 @@
 
 import "/futlib/math"
 
-default(f32)
-
 let num_neighbors(): i32      = 27
 let number_par_per_box(): i32 = 100 
 
