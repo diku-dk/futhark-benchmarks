@@ -151,11 +151,12 @@ entry julia_colour (user_x: f32) (user_y: f32) t =
   |> visualise_argb_image
 
 entry figure_7_15 (_: f32) (_: f32) t =
-  altRings |> shiftXor t |> uscale 0.1f32
+  altRings |> shiftXor t |> uscale 0.05f32
   |>> boolToColour
   |> visualise_argb_image
 
 entry fancy (_: f32) (_: f32) t =
-  cond altRings ((altRings |> shiftXor t |> uscale 0.1f32 |> region_to_argb) : argb_image)
-                ((mandelbrotGreyscale 100 |> rotate' t |> cimage_to_argb): argb_image)
+  cond (altRings |> shiftXor t |> uscale 0.05f32)
+       (mandelbrotImage 100 (escape_to_colour 100 2048) |> rotate' t)
+       (mandelbrotGreyscale 100 |> rotate' t |> cimage_to_argb)
   |> visualise_argb_image
