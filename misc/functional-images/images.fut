@@ -6,13 +6,13 @@ import "pan"
 
 let fcolorToColour (r,g,b,a) = argb.from_rgba r g b a
 
-let boolToColour: bool -> argb.colour = fcolorToColour <<| boolToFColor
+let boolToColour: bool -> argb.colour = boolToFColor >-> fcolorToColour
 
 type argb_image = img argb.colour
 
-let cimage_to_argb: cimage -> argb_image = (|>> fcolorToColour)
+let cimage_to_argb: cimage -> argb_image = (>-> fcolorToColour)
 
-let region_to_argb: region -> argb_image = (|>> boolToColour)
+let region_to_argb: region -> argb_image = (>-> boolToColour)
 
 -- Fractal definition from "Composing Fractals" by Mark P. Jones.  The
 -- main changes are due to the fact that Futhark is not lazy.
@@ -36,10 +36,10 @@ let juliaEscapes (p0: point) (n: i32): img (complex, i32) =
          in iterate_while continue next (p1, 0)
 
 let mandelbrotSet (n: i32): region =
-  (\(_, i) -> i==n) <<| mandelbrotEscapes n
+  mandelbrotEscapes n >-> (\(_, i) -> i==n)
 
 let mandelbrotImage 'color (n: i32) (colourise: (complex, i32) -> color): img color =
-  colourise <<| mandelbrotEscapes n
+  mandelbrotEscapes n >-> colourise
 
 let mandelbrotGreyscale (n: i32): cimage =
   mandelbrotImage n <| \(_, i) -> let i' = r32 i / r32 n
@@ -59,12 +59,12 @@ let visualise_argb_image (img: argb_image)
   let sizey = ymax - ymin
   let p (x,y) = (xmin + (r32 x * sizex) / r32 screen_width,
                  ymin + (r32 y * sizey) / r32 screen_height)
-  in tabulate_2d screen_width screen_height (curry (p |>> img))
+  in tabulate_2d screen_width screen_height (curry (p >-> img))
 
 let visualise_cimage (img: cimage) = visualise_argb_image (cimage_to_argb img)
 
 let juliaGreyscale (p0: point) (n: i32): cimage =
-  juliaEscapes p0 n |>> \(_, i) -> let i' = r32 i / r32 n
+  juliaEscapes p0 n >-> \(_, i) -> let i' = r32 i / r32 n
                                    in (i', i', i', 1f32)
 
 -- | Cubic interpolation.
@@ -146,14 +146,12 @@ entry mandelbrot_colour (_: f32) (_: f32) t =
   rotate' t |> visualise_argb_image
 
 entry julia_colour (user_x: f32) (user_y: f32) t =
-  juliaEscapes (user_x, user_y) 100
-  |> rotate' t |>> escape_to_colour 100 2048
-  |> visualise_argb_image
+  juliaEscapes (user_x, user_y) 100 |> rotate' t
+  |> (>-> escape_to_colour 100 2048) |> visualise_argb_image
 
 entry figure_7_15 (_: f32) (_: f32) t =
   altRings |> shiftXor t |> uscale 0.05f32
-  |>> boolToColour
-  |> visualise_argb_image
+  |> (>-> boolToColour) |> visualise_argb_image
 
 entry fancy (_: f32) (_: f32) t =
   cond (altRings |> shiftXor t |> uscale 0.05f32)

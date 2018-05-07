@@ -38,7 +38,7 @@ let checker : region =
 let distO (x,y) = f32.sqrt(x*x+y*y)
 
 let altRings : region =
-  even <<| floori <<| distO
+  distO >-> floori >-> even
 
 let pi = f32.pi
 let fromPolar (r,t) = (r*f32.cos t, r*f32.sin t)
@@ -46,7 +46,7 @@ let toPolar (x,y) = (distO (x,y), f32.atan2 y x)
 
 let polarChecker n : region =
   let sc (r,t) = (r, t * r32 n / pi)
-  in checker <<| sc <<| toPolar
+  in toPolar >-> sc >-> checker
 
 let wavDist : img frac =
  \ p -> (1f32 + f32.cos (pi * distO p)) / 2f32
@@ -91,7 +91,7 @@ let yellowI = const (0f32,1f32,1f32,1f32)
 let rbRings = lerpI wavDist redI blueI
 
 let mystique : cimage =
-  lerpI (const 0.2f32) (boolToFColor <<| checker) rbRings
+  lerpI (const 0.2f32) (checker >-> boolToFColor) rbRings
 
 let (<<|>>) : f32 -> f32 -> bool = \(x:f32) y -> f32.abs(x-y) < 0.05f32
 
@@ -127,22 +127,22 @@ let udisk: region =
 type filter 'a = img a -> img a
 
 let translate 'a ((dx, dy): point): filter a =
-  \im -> im <<| translateP (-dx, -dy)
+  (translateP (-dx, -dy) >->)
 
 let scale 'a ((sx, sy): point): filter a =
-  \im -> im <<| scaleP (1f32/sx, 1f32/sy)
+  (scaleP (1f32/sx, 1f32/sy) >->)
 
 let uscale 'a (s: f32): filter a =
-  \im -> im <<| uscaleP (1f32/s)
+  (uscaleP (1f32/s) >->)
 
 let rotate' 'a (theta: f32): filter a =
-  \im -> im <<| rotateP (-theta)
+  (rotateP (-theta) >->)
 
 let swirlP (r: f32): transform =
   \p -> rotateP (distO p * 2f32 * f32.pi / r) p
 
 let swirl 'a (r: f32): filter a =
-  \im -> im <<| swirlP (-r)
+  (swirlP (-r) >->)
 
 type filterC = filter fcolor
 
@@ -161,7 +161,7 @@ let annulus (inner: frac): region = udisk `subtractR` uscale inner udisk
 
 let radReg n: region =
   let test (_, theta) = even (i32.f32 (theta * r32 n / f32.pi))
-  in test <<| toPolar
+  in toPolar >-> test
 
 let wedgeAnnulus inner n: region = annulus inner `intersectR` radReg n
 
