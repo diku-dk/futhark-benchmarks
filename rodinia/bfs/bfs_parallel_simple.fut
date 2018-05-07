@@ -63,8 +63,7 @@ module BFS = BFSLIB({
     let (changes_node_ids, changes_costs) =
       unzip(changes)
 
-    let full_length = e_max * n_indices
-    let node_ids = reshape full_length changes_node_ids
+    let node_ids = flatten changes_node_ids
     let costs = flatten changes_costs
 
     let cost' = scatter cost node_ids costs
@@ -72,7 +71,7 @@ module BFS = BFSLIB({
     let graph_mask' =
       scatter graph_mask active_indices (replicate n_indices false)
 
-    in (cost', graph_mask', node_ids)
+    in (cost', graph_mask', copy node_ids)
 })
 
 let main [n][e] (nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =

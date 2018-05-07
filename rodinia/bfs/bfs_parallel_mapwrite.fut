@@ -49,14 +49,14 @@ module BFS = BFSLIB({
                  in (ind_mask, zip (ind_val_upd) (replicate e_max new_cost)))
             (iota n))
 
-    let (inds_upd, vals_cost) = unzip(reshape (n*e_max) ind_vals_upd0)
+    let (inds_upd, vals_cost) = unzip(flatten ind_vals_upd0)
     let vals_mask = replicate n false
 
     -- Finally, the write phase.
     let graph_mask' = scatter graph_mask inds_mask vals_mask
     let cost'       = scatter cost inds_upd  vals_cost
 
-    in (cost', graph_mask', inds_upd)
+    in (cost', graph_mask', copy inds_upd)
 })
 
 let main [n][e] (nodes_start_index: [n]i32, nodes_n_edges: [n]i32, edges_dest: [e]i32): [n]i32 =
