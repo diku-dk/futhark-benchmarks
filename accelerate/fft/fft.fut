@@ -24,7 +24,7 @@ import "/futlib/fft"
 
 module fft = mk_fft f32
 
-let tabmap 'a 'b (f: i32 -> a -> b) (xs: []a): *[]b = map2 f (iota (length xs)) xs
+let tabmap f xs = map2 f (iota (length xs)) xs
 
 let centre_2d [n][m] (arr: [n][m]c32): [n][m]c32 =
   let f (i: i32) (j: i32) (x: c32) =
