@@ -1,6 +1,7 @@
 import "/futlib/math"
 import "/futlib/date"
 import "/futlib/random"
+import "distance"
 import "least_squares"
 import "price_european_calls"
 
@@ -17,12 +18,6 @@ module heston (real: real)
 type real = real.t
 let int (x: i32) = real.i32 x
 
-let (x: real) +. (y: real) = x real.+ y
-let (x: real) *. (y: real) = x real.* y
-let (x: real) -. (y: real) = x real.- y
-let (x: real) /. (y: real) = x real.- y
-let (x: real) <=. (y: real) = x real.<= y
-
 let heston_parameters_from_vector (x: [5]real) =
   { initial_variance = x[0]
   , long_term_variance = x[1]
@@ -37,8 +32,7 @@ type objective_ctx = {day_count_fractions: []real,
                       gauss_laguerre_coefficients: ([]real, []real)
                      }
 
-
-module real_least_squares = least_squares real rand
+module real_least_squares = mk_least_squares real rand
 module real_distance = relative_distance real
 
 type quote = {maturity: date, strike: real, quote: real}
@@ -51,7 +45,7 @@ type calibration_input = { today: date
                          , maturity_weight_x0: real
                          , maturity_weight_gamma: real
                          , integral_iterations: num_points
-                         , variables: []optimization_variable real }
+                         , variables: []real_least_squares.optimization_variable }
 
 let distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
   let switched (x: date) (i: i32) =
@@ -68,25 +62,24 @@ let run_calibration({today,
                      maturity_weight_x0,
                      maturity_weight_gamma,
                      integral_iterations,
-                     variables}: calibration_input): calibration_result real =
+                     variables}) =
   let price_and_vega_of_quote (strike: real) (maturity: date) (quote: real) =
     (let (price, vega) = price_european_calls_real.bs_call true today (int 1) strike maturity quote
      in (price, real.max (real.f64 1e-1) vega))
-  let strike_weight (p: real) (x: real) = real.exp (p *. (real.log x +. int 1 -. x))
+  let strike_weight (p: real) (x: real) = real.(exp (p * (log x + int 1 - x)))
   let maturity_weight (x0: real) (gamma: real) (x: real) =
-      (let k = int 1 /. (real.exp(gamma *. x0) -. int 1)
-       in if x <=. x0 then k *. (real.exp(gamma *. x) -. int 1) else int 1)
+      (let k = real.(int 1 / (exp(gamma * x0) - int 1))
+       in real.(if x <= x0 then k * (exp(gamma * x) - int 1) else int 1))
   let weight (strike: real) (mat: date) =
-    maturity_weight maturity_weight_x0 maturity_weight_gamma (real.f64 (diff_dates today mat)) *.
-    strike_weight strike_weight_bandwidth strike
+    real.(maturity_weight maturity_weight_x0 maturity_weight_gamma (f64 (diff_dates today mat)) *
+          strike_weight strike_weight_bandwidth strike)
 
 
   let (maturity_dates, quotes_to_maturities) =
-    distinct_maturities (map (\q -> q.maturity) quotes)
+    distinct_maturities (map (.maturity) quotes)
   let weights = map (\{maturity, strike, quote=_} -> weight strike maturity) quotes
   let prices_and_vegas = map (\{maturity, strike, quote} ->
                               price_and_vega_of_quote strike maturity quote) quotes
-  let quotes_for_optimization = map2 (\(p,v) w -> w *. p /. v) prices_and_vegas weights
 
   let day_count_fractions =
     map real.f64 (map (diff_dates today) maturity_dates)
@@ -102,11 +95,10 @@ let run_calibration({today,
                    day_count_fractions
                    (map2 (\i q -> {maturity=i, strike=q.strike}) quotes_to_maturities quotes)
     in real_distance.distance
-         (map2 (\(p,v) w -> w *. p /. v) prices_and_vegas weights)
-         (map3 (\w (_, v) p -> w *. p /. v) weights prices_and_vegas x_prices)
+         (map2 (\(p,v) w -> real.(w * p / v)) prices_and_vegas weights)
+         (map3 (\w (_, v) p -> real.(w * p / v)) weights prices_and_vegas x_prices)
 
-  in real_least_squares.least_squares
-     objective max_global np variables quotes_for_optimization
+  in real_least_squares.least_squares objective max_global np variables (length quotes)
 
 let date_of_int(x: i32) =
   let d = x%100
@@ -114,7 +106,7 @@ let date_of_int(x: i32) =
   let y = x/10000
   in date_of_triple (y, m, d)
 
-let default_variables: []optimization_variable real =
+let default_variables: []real_least_squares.optimization_variable =
   [real_least_squares.optimize_value
    {lower_bound =  real.f64 1e-6, initial_value = real.f64 4e-2, upper_bound = int 1},
    real_least_squares.optimize_value
@@ -146,7 +138,7 @@ let heston [num_quotes]
                     , maturity_weight_gamma = int 1
                     , integral_iterations = if num_points == 10 then ten else twenty
                     , variables = default_variables
-                      }
+                    }
   let { initial_variance,
         long_term_variance,
         correlation,
