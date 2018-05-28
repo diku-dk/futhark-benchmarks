@@ -93,18 +93,20 @@ let run_calibration({today,
   let gauss_laguerre_coefficients =
     price_european_calls_real.gauss_laguerre_coefficients integral_iterations
 
-  let objective (x: []real): []real =
+  let objective (x: []real): real =
     let heston_parameters = heston_parameters_from_vector x
-    let prices = price_european_calls_real.price_european_calls
-                 gauss_laguerre_coefficients
-                 false (int 1) (int 1) (int 1)
-                 heston_parameters
-                 day_count_fractions
-                 (map2 (\i q -> {maturity=i, strike=q.strike}) quotes_to_maturities quotes)
-    in map3 (\w (_, vega) p -> w *. p /. vega) weights prices_and_vegas prices
+    let x_prices = price_european_calls_real.price_european_calls
+                   gauss_laguerre_coefficients
+                   false (int 1) (int 1) (int 1)
+                   heston_parameters
+                   day_count_fractions
+                   (map2 (\i q -> {maturity=i, strike=q.strike}) quotes_to_maturities quotes)
+    in real_distance.distance
+         (map2 (\(p,v) w -> w *. p /. v) prices_and_vegas weights)
+         (map3 (\w (_, v) p -> w *. p /. v) weights prices_and_vegas x_prices)
 
   in real_least_squares.least_squares
-      objective real_distance.distance max_global np variables quotes_for_optimization
+     objective max_global np variables quotes_for_optimization
 
 let date_of_int(x: i32) =
   let d = x%100
