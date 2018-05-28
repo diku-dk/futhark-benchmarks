@@ -216,7 +216,7 @@ module least_squares (real: real)
       unzip (map (\(_, _, {initial_value, lower_bound, upper_bound}) ->
                   (initial_value, lower_bound, upper_bound)) free_vars)
 
-    let rms_of_error (err: real) = real.(sqrt err * (i32 10000 / i32 num_quotes))
+    let rms_of_error (err: real) = real.(sqrt (err * (i32 10000 / i32 num_quotes)))
 
     let (x, num_feval) =
       if max_global i32.> 0
