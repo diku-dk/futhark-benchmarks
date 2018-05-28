@@ -32,26 +32,14 @@ let heston_parameters_from_vector (x: [5]real) =
 
 module price_european_calls_real = price_european_calls real
 
-module heston_least_squares = least_squares real rand {
-  open (relative_distance real)
+type objective_ctx = {day_count_fractions: []real,
+                      quotes: []{maturity: i32, strike: real, vega: real, weight: real},
+                      gauss_laguerre_coefficients: ([]real, []real)
+                     }
 
-  type quote = {maturity: i32, strike: real.t, vega: real.t, weight: real.t}
 
-  type objective_ctx = {day_count_fractions: []real.t,
-                        quotes: []quote,
-                        gauss_laguerre_coefficients: ([]real.t, []real.t)
-                        }
-
-  let objective ({day_count_fractions, quotes, gauss_laguerre_coefficients}: objective_ctx) (x: []real): []real =
-    let heston_parameters = heston_parameters_from_vector x
-    let prices = price_european_calls_real.price_european_calls
-                 gauss_laguerre_coefficients
-                 false (int 1) (int 1) (int 1)
-                 heston_parameters
-                 day_count_fractions
-                 (map (\q -> {maturity=q.maturity, strike=q.strike}) quotes)
-    in map2 (\q p -> q.weight *. p /. q.vega) quotes prices
-}
+module real_least_squares = least_squares real rand
+module real_distance = relative_distance real
 
 type quote = {maturity: date, strike: real, quote: real}
 
@@ -99,21 +87,24 @@ let run_calibration({today,
   let prices_and_vegas = map (\{maturity, strike, quote} ->
                               price_and_vega_of_quote strike maturity quote) quotes
   let quotes_for_optimization = map2 (\(p,v) w -> w *. p /. v) prices_and_vegas weights
-  let quotes_for_ctx =
-    map4 (\{maturity=_, strike, quote=_} w (_,v) i -> { maturity = i
-                                                      , strike = strike
-                                                      , weight = w
-                                                      , vega = v})
-        quotes weights prices_and_vegas quotes_to_maturities
 
-  let ctx = { day_count_fractions =
-                map real.f64 (map (diff_dates today) maturity_dates)
-            , quotes =
-                quotes_for_ctx
-            , gauss_laguerre_coefficients =
-                price_european_calls_real.gauss_laguerre_coefficients integral_iterations }
+  let day_count_fractions =
+    map real.f64 (map (diff_dates today) maturity_dates)
+  let gauss_laguerre_coefficients =
+    price_european_calls_real.gauss_laguerre_coefficients integral_iterations
 
-  in heston_least_squares.least_squares ctx max_global np variables quotes_for_optimization
+  let objective (x: []real): []real =
+    let heston_parameters = heston_parameters_from_vector x
+    let prices = price_european_calls_real.price_european_calls
+                 gauss_laguerre_coefficients
+                 false (int 1) (int 1) (int 1)
+                 heston_parameters
+                 day_count_fractions
+                 (map2 (\i q -> {maturity=i, strike=q.strike}) quotes_to_maturities quotes)
+    in map3 (\w (_, vega) p -> w *. p /. vega) weights prices_and_vegas prices
+
+  in real_least_squares.least_squares
+      objective real_distance.distance max_global np variables quotes_for_optimization
 
 let date_of_int(x: i32) =
   let d = x%100
@@ -122,15 +113,15 @@ let date_of_int(x: i32) =
   in date_of_triple (y, m, d)
 
 let default_variables: []optimization_variable real =
-  [heston_least_squares.optimize_value
+  [real_least_squares.optimize_value
    {lower_bound =  real.f64 1e-6, initial_value = real.f64 4e-2, upper_bound = int 1},
-   heston_least_squares.optimize_value
+   real_least_squares.optimize_value
    {lower_bound =  real.f64 1e-6, initial_value = real.f64 4e-2, upper_bound = int 1},
-   heston_least_squares.optimize_value
+   real_least_squares.optimize_value
    {lower_bound =  int (-1), initial_value = real.f64 (-0.5), upper_bound = int 0},
-   heston_least_squares.optimize_value
+   real_least_squares.optimize_value
    {lower_bound =  real.f64 1e-4, initial_value = real.f64 1e-2, upper_bound = int 4},
-   heston_least_squares.optimize_value
+   real_least_squares.optimize_value
    {lower_bound =  real.f64 1e-4, initial_value = real.f64 0.4, upper_bound = int 2}
   ]
 
