@@ -56,15 +56,16 @@ type calibration_result 'real = { parameters: []real,
                                   num_feval: i32 }
 
 module least_squares (real: real)
-                     (rand: rng_engine)
-                     (P: objective with real = real.t) : {
-  val fixed_value: P.real -> optimization_variable P.real
-  val optimize_value: range P.real -> optimization_variable P.real
+                     (rand: rng_engine) : {
+  val fixed_value: real.t -> optimization_variable real.t
+  val optimize_value: range real.t -> optimization_variable real.t
 
-  val least_squares: P.objective_ctx -> i32 -> i32
-                   -> []optimization_variable P.real
-                   -> []P.real
-                   -> calibration_result P.real
+  val least_squares:  (objective: []real.t -> []real.t)
+                   -> (distance: []real.t -> []real.t -> real.t)
+                   -> (max_global: i32) -> (np: i32)
+                   -> []optimization_variable real.t
+                   -> []real.t
+                   -> calibration_result real.t
 } = {
   type real = real.t
 
@@ -113,7 +114,8 @@ module least_squares (real: real)
     else                         (b, b_i)
 
   let optimize [num_quotes] [num_vars] [num_free_vars]
-               (objective_ctx: P.objective_ctx)
+               (objective: []real.t -> []real.t)
+               (distance: []real.t -> []real.t -> real.t)
                (quotes: [num_quotes]real)
                (vars_to_free_vars: [num_vars]i32)
                (variables: [num_vars]optimization_variable real)
@@ -123,8 +125,8 @@ module least_squares (real: real)
                ({max_iterations,max_global,target}: termination): result =
     -- The objective function.  This could be factored out into a
     -- function argument (as a parametric module).
-    let objective (x: [num_free_vars]real): real =
-      P.distance quotes (P.objective objective_ctx (active_vars vars_to_free_vars variables x))
+    let objective' (x: [num_free_vars]real): real =
+      distance quotes (objective (active_vars vars_to_free_vars variables x))
 
     let bounds = (real.i32 0, real.i32 1)
     let rng = rand.rng_from_seed [0x123]
@@ -135,7 +137,7 @@ module least_squares (real: real)
                real.(lower_bound + (upper_bound-lower_bound) * r)
              let init_i (rs: [num_free_vars]real) = map3 init_j lower_bounds upper_bounds rs
              in map init_i rss)
-    let fx = map objective x
+    let fx = map objective' x
     let (fx0, best_idx) =
       reduce_comm min_and_idx (real.inf, 0) (zip (intrinsics.opaque fx) (iota np))
 
@@ -166,7 +168,7 @@ module least_squares (real: real)
 
     let recombination (fx0: real) (best_idx: i32) (fx: [np]real)
                       (x: [np][num_free_vars]real) (v: [np][num_free_vars]real) =
-      (let f_v = map objective v
+      (let f_v = map objective' v
        let fx' = map2 real.min f_v fx
        let x' = map4 (\f fx_i x_i v_i -> real.(if f < fx_i then v_i else x_i))
                      f_v fx x v
@@ -198,7 +200,8 @@ module least_squares (real: real)
     in {x0=x0, f=fx0, num_feval=ncalls, status=status}
 
   let least_squares [num_vars] [num_quotes]
-      (objective_ctx: P.objective_ctx)
+      (objective: []real.t -> []real.t)
+      (distance: []real.t -> []real.t -> real.t)
       (max_global: i32)
       (np: i32)
       (variables: [num_vars]optimization_variable real)
@@ -217,7 +220,7 @@ module least_squares (real: real)
 
     let (x, num_feval) =
       if max_global i32.> 0
-      then let res = (optimize objective_ctx quotes vars_to_free_vars variables
+      then let res = (optimize objective distance quotes vars_to_free_vars variables
                       {np = np, cr = real.from_fraction 9 10} lower_bounds upper_bounds
                       {max_iterations = 0x7FFFFFFF,
                        max_global = max_global,
@@ -225,10 +228,10 @@ module least_squares (real: real)
            in (res.x0, res.num_feval)
       else (x, 0)
 
-    let prices = P.objective objective_ctx (active_vars vars_to_free_vars variables x)
+    let prices = objective (active_vars vars_to_free_vars variables x)
 
     in {parameters = active_vars vars_to_free_vars variables x,
-        root_mean_squared_error = rms_of_error (P.distance quotes prices),
+        root_mean_squared_error = rms_of_error (distance quotes prices),
         quoted_prices = quotes,
         calibrated_prices = prices,
         num_feval = num_feval}
