@@ -1,4 +1,5 @@
-import "/futlib/math"
+-- | Heston calibration based on a generic least-squares solver.
+
 import "/futlib/date"
 import "/futlib/random"
 import "distance"
@@ -25,7 +26,7 @@ let heston_parameters_from_vector (x: [5]real) =
   , mean_reversion = x[3]
   , variance_volatility = x[4] }
 
-module price_european_calls_real = price_european_calls real
+module pricer = price_european_calls real
 
 type objective_ctx = {day_count_fractions: []real,
                       quotes: []{maturity: i32, strike: real, vega: real, weight: real},
@@ -44,7 +45,7 @@ type calibration_input = { today: date
                          , strike_weight_bandwidth: real
                          , maturity_weight_x0: real
                          , maturity_weight_gamma: real
-                         , integral_iterations: num_points
+                         , integral_iterations: pricer.num_points
                          , variables: []real_least_squares.optimization_variable }
 
 let distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
@@ -64,7 +65,7 @@ let run_calibration({today,
                      integral_iterations,
                      variables}) =
   let price_and_vega_of_quote (strike: real) (maturity: date) (quote: real) =
-    (let (price, vega) = price_european_calls_real.bs_call true today (int 1) strike maturity quote
+    (let (price, vega) = pricer.bs_call true today (int 1) strike maturity quote
      in (price, real.max (real.f64 1e-1) vega))
   let strike_weight (p: real) (x: real) = real.(exp (p * (log x + int 1 - x)))
   let maturity_weight (x0: real) (gamma: real) (x: real) =
@@ -84,11 +85,11 @@ let run_calibration({today,
   let day_count_fractions =
     map real.f64 (map (diff_dates today) maturity_dates)
   let gauss_laguerre_coefficients =
-    price_european_calls_real.gauss_laguerre_coefficients integral_iterations
+    pricer.gauss_laguerre_coefficients integral_iterations
 
   let objective (x: []real): real =
     let heston_parameters = heston_parameters_from_vector x
-    let x_prices = price_european_calls_real.price_european_calls
+    let x_prices = pricer.price_european_calls
                    gauss_laguerre_coefficients
                    false (int 1) (int 1) (int 1)
                    heston_parameters
@@ -136,7 +137,7 @@ let heston [num_quotes]
                     , strike_weight_bandwidth = int 0
                     , maturity_weight_x0 = int 0
                     , maturity_weight_gamma = int 1
-                    , integral_iterations = if num_points == 10 then ten else twenty
+                    , integral_iterations = if num_points == 10 then pricer.ten else pricer.twenty
                     , variables = default_variables
                     }
   let { initial_variance,

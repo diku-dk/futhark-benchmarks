@@ -1,3 +1,5 @@
+-- | Heston calibration with single-precision floats.
+--
 -- ==
 -- compiled input @ data/1062_quotes.in
 -- compiled input @ data/10000_quotes.in
