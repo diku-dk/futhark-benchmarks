@@ -13,16 +13,14 @@
 
 type point = (f32,f32)
 
-let add_points((x1,y1): point) ((x2,y2): point): point =
+let add_points ((x1,y1): point) ((x2,y2): point): point =
   (x1+x2, y1+y2)
 
-let euclid_dist_2((x1,y1): point) ((x2,y2): point): f32 =
+let euclid_dist_2 ((x1,y1): point) ((x2,y2): point): f32 =
   (x2-x1)**2.0f32 + (y2-y1)**2.0f32
 
-let closest_point(p1: (i32, f32)) (p2: (i32, f32)): (i32, f32) =
-  let (_,d1) = p1
-  let (_,d2) = p2
-  in if d1 < d2 then p1 else p2
+let closest_point (p1: (i32, f32)) (p2: (i32, f32)): (i32, f32) =
+  if p1.2 < p2.2 then p1 else p2
 
 let find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
   let (i, _) = reduce_comm closest_point (0, euclid_dist_2 pt pts[0])
@@ -31,26 +29,25 @@ let find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
 
 let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point =
   let (cluster_counts, cluster_points) =
-    unzip (map (\cluster  ->
+    unzip (map (\cluster ->
                  map2 (\point_cluster point ->
                         if cluster == point_cluster
                         then (1, point)
-                        else (0, (0.0f32, 0.0f32)))
+                        else (0, (0, 0)))
                      membership points)
-              (0..<k))
+               (0..<k))
   let cluster_sizes =
-    map (\counts -> i32.sum (intrinsics.opaque counts))
-        cluster_counts
+    map (intrinsics.opaque >-> i32.sum) cluster_counts
+  let new_centre count my_points =
+    let (x,y) = reduce_comm add_points (0, 0) my_points
+    in (x / r32 count, y / r32 count)
   let cluster_centres =
-    map2 (\count my_points  ->
-           let (x,y) = reduce_comm add_points (0f32, 0f32) my_points
-           in (x / r32 count, y / r32 count))
-        (intrinsics.opaque cluster_sizes) cluster_points
+    map2 new_centre (intrinsics.opaque cluster_sizes) cluster_points
   in cluster_centres
 
 let continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
   let changed ((x1,y1), (x2,y2)) =
-    f32.abs (x1-x2) > 0.01f32 || f32.abs(y1-y2) > 0.01f32
+    f32.abs (x1-x2) > 0.01 || f32.abs(y1-y2) > 0.01
   in any changed (zip old_centres (intrinsics.opaque cur_centres))
 
 let main [n] (k: i32,
