@@ -2,15 +2,15 @@
 -- https://github.com/kkushagra/rodinia/blob/master/openmp/lavaMD/main.c
 --
 -- ==
--- nobench input @ data/3_boxes.in
+-- nobench compiled input @ data/3_boxes.in
 -- output @ data/3_boxes.out
--- input @ data/10_boxes.in
+-- compiled input @ data/10_boxes.in
 -- output @ data/10_boxes.out
 
 import "/futlib/math"
 
 let num_neighbors(): i32      = 27
-let number_par_per_box(): i32 = 100 
+let number_par_per_box(): i32 = 100
 
 let dot(a: (f32,f32,f32), b: (f32,f32,f32)): f32 =
   let (ax,ay,az) = a
@@ -62,26 +62,25 @@ let main [number_boxes][par_per_box]
                           -- Important note: rB and qB are invariant to the      --
                           -- second map on rA -> can be blocked in shared memory --
                           ---------------------------------------------------------
-                          let pres = 
-                            map (\(tup:  ( (f32,f32,f32,f32), f32 )): (f32,f32,f32,f32)  ->
-                                      let ( (rbj_v,rbj_x,rbj_y,rbj_z), qbj ) = tup
-                                      let r2   = rai_v + rbj_v - dot((rai_x,rai_y,rai_z), (rbj_x,rbj_y,rbj_z))
-                                      let u2   = a2*r2
-                                      let vij  = f32.exp(-u2)
-                                      let fs   = 2.0 * vij
-                                      let d_x  = rai_x  - rbj_x
-                                      let d_y  = rai_y  - rbj_y
-                                      let d_z  = rai_z  - rbj_z
-                                      let fxij = fs * d_x
-                                      let fyij = fs * d_y
-                                      let fzij = fs * d_z
-                                      in (qbj*vij, qbj*fxij, qbj*fyij, qbj*fzij)
-                               ) (zip rB qB )
+                          let pres =
+                            map2 (\(rbj_v,rbj_x,rbj_y,rbj_z) qbj ->
+                                   let r2   = rai_v + rbj_v - dot((rai_x,rai_y,rai_z), (rbj_x,rbj_y,rbj_z))
+                                   let u2   = a2*r2
+                                   let vij  = f32.exp(-u2)
+                                   let fs   = 2.0 * vij
+                                   let d_x  = rai_x  - rbj_x
+                                   let d_y  = rai_y  - rbj_y
+                                   let d_z  = rai_z  - rbj_z
+                                   let fxij = fs * d_x
+                                   let fyij = fs * d_y
+                                   let fzij = fs * d_z
+                                   in (qbj*vij, qbj*fxij, qbj*fyij, qbj*fzij))
+                                 rB qB
 
-                          let (r1, r2, r3, r4) = 
-                            reduce (\(a: (f32,f32,f32,f32)) (b: (f32,f32,f32,f32)): (f32,f32,f32,f32)  ->
-                                        let (a1,a2,a3,a4) = a in let (b1,b2,b3,b4) = b in (a1+b1, a2+b2, a3+b3, a4+b4)
-                                  ) (0.0,0.0,0.0,0.0) pres
+                          let (r1, r2, r3, r4) =
+                            reduce (\(a1,a2,a3,a4) (b1,b2,b3,b4) ->
+                                    (a1+b1, a2+b2, a3+b3, a4+b4))
+                                   (0,0,0,0) pres
                           let (a1, a2, a3, a4) = acc
                           in  (a1+r1, a2+r2, a3+r3, a4+r4)
             ) rA
