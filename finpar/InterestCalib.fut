@@ -230,7 +230,7 @@ let genomeBounds(): [](f32,f32,f32) =
 
 let initGenome (rand_nums: []f32): []f32 =
   map  (\(tup: (f32, (f32,f32,f32))): f32  ->
-                    let (r01, (g_min, g_max, g_ini)) = tup
+                    let (r01, (g_min, g_max, _g_ini)) = tup
                     in  r01*(g_max - g_min) + g_min
 
                ) (zip (rand_nums) (genomeBounds())
@@ -246,7 +246,7 @@ let selectMoveType(r01: f32): i32 =
 let moves_unif_ampl_ratio(): f32 = 0.005
 
 let mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32,f32)): (f32,f32) =
-  let (g_min, g_max, g_ini) = gmm
+  let (g_min, g_max, _g_ini) = gmm
   let amplitude     = f32.abs( (g_max - g_min) * ampl_ratio )
   let semiamplitude = amplitude / 2.0
 
@@ -264,7 +264,7 @@ let mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32
   in (gene + amplitude * r01 - semiamplitude, bf_fact)
 
 let constrainDim(gene:  f32, tup: (f32,f32,f32) ): f32 =
-  let (g_min, g_max, g_ini) = tup
+  let (g_min, g_max, _g_ini) = tup
   in  f32.max g_min (f32.min g_max gene)
 
 let perturbation(gamma1:  f32, ampl_rat : f32)
@@ -304,9 +304,7 @@ let mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f3
   let gamma_avg = 2.38 / f32.sqrt(2.0*5.0)
   let ampl_ratio= 0.1 * moves_unif_ampl_ratio()
   let gamma1    = gamma_avg - 0.5 + r01
-  let mm_diffs  = map (\(tup: (f32,f32,f32)): f32  ->
-                           let (g_min, g_max, uu) = tup
-                           in  g_max - g_min
+  let mm_diffs  = map (\(g_min, g_max, _) -> g_max - g_min
                      ) (gene_bds )
 
   let tmp_genome = map (perturbation(gamma1,ampl_ratio))
@@ -433,7 +431,7 @@ let exactYhat(n_schedi:  i32,
                                (a1 + a2, f32.max b1 b2 )
                            ) (0.0, -f32.inf) uplos
 
-    let (bai, bbi, aici, log_aici) = unzip(babaicis) in
+    let (_bai, bbi, _aici, _log_aici) = unzip(babaicis) in
 
     if(n_schedi < 2) -- == 1
     then lo
@@ -469,7 +467,7 @@ let exactYhat(n_schedi:  i32,
               let scales  = ups
               let root_lb = f32.max yl y0
               let root_ub = f32.min yu y1
-              let (root, iteration, error) =
+              let (root, _iteration, error) =
                     rootFinding_Brent(1, zip scales bbi, root_lb, root_ub, 1.0e-4, 1000) in
 
               if      ( error == -f32.inf ) then y0 - 1.0
@@ -512,7 +510,7 @@ let evalGenomeOnSwap (genomea: []f32,
   let new_quote  = lvl * strike * ( uGaussian_P(d1) - uGaussian_P(-d1) )
 
   -- starting new price compuation
-  let (v0_mat, dummy1, dummy2) = bigv( (a,b,rho,nu,sigma), tmat0 )
+  let (v0_mat, _dummy1, _dummy2) = bigv( (a,b,rho,nu,sigma), tmat0 )
   let mux = 0.0 - bigmx( (a,b,rho,nu,sigma), today, maturity, today, maturity )
   let muy = 0.0 - bigmy( (a,b,rho,nu,sigma), today, maturity, today, maturity )
   let zc_mat = zc(maturity)
@@ -536,7 +534,7 @@ let evalGenomeOnSwap (genomea: []f32,
                  let cii      = if i==(n_schedi-1) then 1.0 + res  else res
 
                  let date_tod1= date_act_365(end_date, today)
-                 let (v0_end,dummy1,dummy2) = bigv( (a,b,rho,nu,sigma), date_tod1 )
+                 let (v0_end,_dummy1,_dummy2) = bigv( (a,b,rho,nu,sigma), date_tod1 )
 
                  let date_tod2= date_act_365(end_date, maturity)
                  let (vt_end, baii, bbii  ) = bigv( (a,b,rho,nu,sigma), date_tod2 )
@@ -647,9 +645,9 @@ let interestCalibKernel(pop:  i32
 --  genomes[pop/2]
   let proposals = copy(genomes)
   let sob_offs = 5*pop+1        in
-  let (genomes,proposals,logLiks,sob_offs) =
+  let (genomes,_proposals,logLiks,_sob_offs) =
     loop ((genomes,proposals,logLiks,sob_offs))
-    for j < mcmc_conv do
+    for _j < mcmc_conv do
       let rand01   = sobolInd sobDirVct sob_offs
       let move_type= selectMoveType(rand01)
       let sob_offs = sob_offs + 1
@@ -774,7 +772,7 @@ let extended_swaption_of_swaption(swaption: (f32,f32,f32)): (date,[](date,date),
                                 ( lvl + a12, earliest t0 a1, latest tn a2 )
                             ) (0.0, max_date, min_date) a12s
 
-    let (lvls, a1s, a2s) = unzip( a12s )
+    let (_lvls, a1s, a2s) = unzip( a12s )
     let swap_sched       = zip   a1s a2s
     let strike     = (zc(t0) - zc(tn)) / lvl
 
@@ -789,7 +787,7 @@ let extended_swaption_of_swaption(swaption: (f32,f32,f32)): (date,[](date,date),
 ------------------------------------------------------------------/
 
 let black_price(today: date, swaption: (f32,f32,f32), vol: f32 ): f32 =
-    let (maturity, swap_sched, (strike,lvl)) =
+    let (maturity, _swap_sched, (strike,lvl)) =
                         extended_swaption_of_swaption( swaption )
 
     let sqrtt = date_act_365(maturity, today)
@@ -821,7 +819,7 @@ let pricer_of_swaption(today:  date,
                        w_quads: []f32
                       ): f32 =
     let swaption = extended_swaption_of_swaption(swaption)
-    let (maturity, schedulei, (strike,unused)) = swaption
+    let (maturity, schedulei, (strike,_)) = swaption
 
     let n_schedi = length schedulei
     let ci = map (\(i: i32): f32  ->
@@ -834,7 +832,7 @@ let pricer_of_swaption(today:  date,
                 )
 --
     let tmat0    = date_act_365 (maturity, today)
-    let (v0_mat, dummyA, dummyB) = bigv( genome, tmat0)
+    let (v0_mat, _, _) = bigv( genome, tmat0)
     let zc_mat   = zc(maturity)
 --
     let (a,b,rho,nu,sigma) = genome
@@ -852,12 +850,12 @@ let pricer_of_swaption(today:  date,
     let mux    = -bigmx( genome, today, maturity, today, maturity )
     let muy    = -bigmy( genome, today, maturity, today, maturity )
 --
-    let (scheduleix, scheduleiy) = unzip(schedulei)
+    let (_scheduleix, scheduleiy) = unzip(schedulei)
 --
     let (bai, bbi, aici, log_aici, t1_cst, scale) = unzip (
             map (\((end_date, ci): (date,f32)): (f32,f32,f32,f32,f32,f32)  ->
                   -- Begin Brigo and Mercurio: defined top p. 148
-                    let (v0_end, dummyA, dummyB) =
+                    let (v0_end, _dummyA, _dummyB) =
                             bigv( genome, date_act_365(end_date, today   ) )
 
                     let (vt_end, bai, bbi) =
@@ -928,10 +926,10 @@ let pricer_of_swaption(today:  date,
 --------------------------------------------------/
 --/ ENTRY POINT
 --------------------------------------------------/
-let main(pop:  i32, mcmc_conv: i32, l: i32
-        , swaptions: [][]f32,     ll: i32
+let main(pop:  i32, mcmc_conv: i32, _l: i32
+        , swaptions: [][]f32,     _ll: i32
         , hermCoefs: []f32
-        , hermWeights: []f32,   lll: i32
+        , hermWeights: []f32,   _lll: i32
         , sobDirVct: []i32
         ): (f32,f32,f32,f32,f32,f32,[][]f32) =
   let hermData  = zip hermCoefs hermWeights in
