@@ -2,6 +2,21 @@
 -- sequential one.
 -- ==
 --
+-- input @ data/64kn_8e-var-1-128-skew.in
+-- output @ data/64kn_8e-var-1-128-skew.out
+
+-- input @ data/6kn_2ke-ct.in
+-- output @ data/6kn_2ke-ct.out
+-- input @ data/6kn_2ke-var.in
+-- output @ data/6kn_2ke-var.out
+-- input @ data/400kn_30e-ct.in
+-- output @ data/400kn_30e-ct.out
+-- input @ data/20kn_600e-var.in
+-- output @ data/20kn_600e-var.out
+-- input @ data/graph1MW_6.in
+-- output @ data/graph1MW_6.out
+
+
 -- tags { }
 -- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
@@ -27,6 +42,7 @@ import "/futlib/array"
            updating_graph_mask: *[n]bool) : (*[n]i32, *[n]bool, *[n]bool) =
     let active_indices =
       filter (\i -> graph_mask[i]) (iota n)
+
     let n_indices = length active_indices
     let graph_mask' =
       scatter graph_mask active_indices (replicate n_indices false)
@@ -35,6 +51,7 @@ import "/futlib/array"
     -- since the number of edges are irregular, and since we want to construct a
     -- nested array.
     let e_max = i32.maximum nodes_n_edges
+    let active_costs = map (\tid -> unsafe cost[tid]) active_indices
 
     -- let start_indices = map (\tid -> unsafe nodes_start_index[tid]) active_indices
     -- let act_num_edges = map (\tid -> unsafe nodes_n_edges[tid]    ) active_indices
@@ -54,8 +71,8 @@ import "/futlib/array"
                                        let edge_index  = col+start_index
                                        let node_id = unsafe edges_dest[edge_index]
                                        in  if !(unsafe graph_visited[node_id])
-                                           -- then (node_id, active_costs[row])
-                                           then (node_id, unsafe cost[tid] + 1)
+                                           then (node_id, active_costs[row]+1)
+                                           -- then (node_id, unsafe cost[tid] + 1)
                                            else (-1, -1)
                                   else (-1, -1)
                       ) (iota flat_len)
@@ -63,7 +80,7 @@ import "/futlib/array"
     let (changes_node_ids, changes_costs) = unzip(changes)
 
     let cost' = 
-        scatter (copy cost) changes_node_ids changes_costs
+        scatter cost changes_node_ids changes_costs
     
     let updating_graph_mask' = 
         scatter updating_graph_mask changes_node_ids (replicate flat_len true)
