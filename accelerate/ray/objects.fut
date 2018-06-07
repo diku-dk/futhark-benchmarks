@@ -2,8 +2,6 @@ import "/futlib/colour"
 import "/futlib/math"
 import "types"
 
-default (f32)
-
 module type object = {
   type object
   val distance_to: object -> position -> direction -> (bool, f32)

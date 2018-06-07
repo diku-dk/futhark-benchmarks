@@ -18,8 +18,6 @@ import "objects"
 import "intersection"
 import "lights"
 
-default (f32)
-
 let point_of_index (sizeX: i32) (sizeY: i32) ((x,y): (i32,i32)): (f32,f32) =
   let fsizeX = r32 sizeX
   let fsizeY = r32 sizeY

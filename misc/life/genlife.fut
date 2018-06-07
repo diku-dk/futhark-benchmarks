@@ -46,14 +46,14 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
 
   -- Note that the world is stored column-major.
   let all_neighbour_sums [n][m] (world: [n][m]cell): [n][m]i32 =
-    let ns  = rotate@1  (-1) world
-    let ss  = rotate@1    1  world
-    let ws  = rotate    (-1) world
-    let es  = rotate      1  world
-    let nws = rotate@1  (-1) ws
-    let nes = rotate@1  (-1) es
-    let sws = rotate@1    1  ws
-    let ses = rotate@1    1  es
+    let ns  = map (rotate (-1)) world
+    let ss  = map (rotate   1)  world
+    let ws  = rotate      (-1)  world
+    let es  = rotate        1   world
+    let nws = map (rotate (-1)) ws
+    let nes = map (rotate (-1)) es
+    let sws = map (rotate   1)  ws
+    let ses = map (rotate   1)  es
     in map (\(nws_r, ns_r, nes_r, ws_r, world_r, es_r, sws_r, ss_r, ses_r) ->
             map sum_of_neighbours
             (zip nws_r ns_r nes_r ws_r world_r es_r sws_r ss_r ses_r))

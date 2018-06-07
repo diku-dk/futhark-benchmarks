@@ -29,10 +29,10 @@ let tabmap f xs = map2 f (iota (length xs)) xs
 let centre_2d [n][m] (arr: [n][m]c32): [n][m]c32 =
   let f (i: i32) (j: i32) (x: c32) =
         c32.mk_re (f32.i32 ((-1) ** (i+j))) c32.* x
-  in tabmap (tabmap <<| f) arr
+  in tabmap (f >-> tabmap) arr
 
 let transform [n][m] (cutoff: i32) (arr: [n][m]u8) =
-  let arr_complex = map1 (map1 (c32.mk_re <<| f32.u8)) arr
+  let arr_complex = map1 (map1 (f32.u8 >-> c32.mk_re)) arr
   let arr_centered = centre_2d arr_complex
   let arr_freq = fft.fft2 arr_centered
   let centre_i = n / 2
@@ -41,7 +41,7 @@ let transform [n][m] (cutoff: i32) (arr: [n][m]u8) =
         if i > centre_i - cutoff && i < centre_i + cutoff &&
            j > centre_j - cutoff && j < centre_j + cutoff
         then c32.mk_re 0f32 else x
-  let arr_filt = tabmap (tabmap <<| zap) arr_freq
+  let arr_filt = tabmap (zap >-> tabmap) arr_freq
   let arr_inv = fft.ifft2 arr_filt
   in map1 (map1 c32.mag) arr_inv
 

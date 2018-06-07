@@ -12,8 +12,6 @@
 -- input @ data/1024.in
 -- output @ data/1024.out
 
-default(f32)
-
 -- Maximum power density possible (say 300W for a 10mm x 10mm chip)
 let max_pd(): f32 = 3.0e6
 

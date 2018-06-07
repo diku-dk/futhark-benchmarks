@@ -53,8 +53,6 @@
 import "/futlib/math"
 import "/futlib/colour"
 
-default (f32)
-
 let odd(n: i32): bool = (n & 1) == 1
 
 let point(scale: f32, x: f32, y: f32): (f32, f32) =

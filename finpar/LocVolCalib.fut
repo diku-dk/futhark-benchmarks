@@ -12,8 +12,6 @@
 import "/futlib/math"
 import "/futlib/array"
 
-default(f32)
-
 let initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: i32, numY: i32, numT: i32)
   : (i32, i32, [numX]f32, [numY]f32, [numT]f32) =
   let logAlpha = f32.log alpha
