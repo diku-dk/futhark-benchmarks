@@ -23,7 +23,7 @@
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
 
-import "futlib/segmented"
+import "/futlib/segmented"
 
 import "/futlib/array"
 
