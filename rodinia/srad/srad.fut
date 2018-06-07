@@ -20,8 +20,6 @@
 -- compiled input @ data/image.in
 -- output @ data/image.out
 
-default(f32)
-
 let indexN(_rows: i32, i: i32): i32 =
   if i == 0 then i else i - 1
 

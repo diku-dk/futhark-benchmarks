@@ -1,72 +1,59 @@
-import "/futlib/math"
+-- | Parameter calibration based on genetic least-squares optimisation.
+
 import "/futlib/random"
 
-module type distance = {
+module type least_squares = {
+  -- | The representation of real numbers.
   type real
-  val distance [n]: [n]real -> [n]real -> real
+
+  -- | A range for an optimizable varible.  Inclusive lower and upper
+  -- bounds, as well as an initial value.
+  type range = {lower_bound: real,
+                upper_bound: real,
+                initial_value: real}
+
+  type calibration_result [num_vars] = { parameters: [num_vars]real,
+                                         root_mean_squared_error: real,
+                                         num_feval: i32 }
+
+  -- | An input variable to the objective function.  It can be either
+  -- fixed or subject to optimization.
+  type optimization_variable
+
+  val fixed_value: real -> optimization_variable
+  val optimize_value: range -> optimization_variable
+
+  -- | Run least-squares optimisation.  `objective` is the objective
+  -- function, `max_global` is the maximum number of calls to the
+  -- objective function before termination.  `np` is the number of
+  -- mutations to attempt per iteration.  `num_observed` is the size
+  -- of the number of observations (used for computing the error).
+  --
+  val least_squares [num_vars]
+                   :  (objective: [num_vars]real -> real)
+                   -> (max_global: i32) -> (np: i32)
+                   -> [num_vars]optimization_variable
+                   -> (num_observed: i32)
+                   -> calibration_result [num_vars]
 }
 
-module absolute_distance(R: real): distance with real = R.t = {
-  type real = R.t
-
-  open R
-
-  let distance [num_quotes] (quotes: [num_quotes]real) (prices: [num_quotes]real): real =
-    let norm (price: real) (quote: real) =
-      (let rel = (price - quote) / quote
-       in rel * rel)
-    in R.sum (map2 norm quotes prices)
-}
-
-module relative_distance(R: real): distance with real = R.t = {
-  type real = R.t
-
-  open R
-
-  let distance [num_quotes] (quotes: [num_quotes]real) (prices: [num_quotes]real): real =
-    let norm (price: real) (quote: real) =
-      (let dif = price - quote
-       in dif * dif)
-    let a = map2 norm quotes prices
-    in R.sum (intrinsics.opaque a)
-}
-
-module type objective = {
-  type objective_ctx
-  type real
-  val objective [n]: objective_ctx -> [n]real -> [n]real
-
-  include distance with real = real
-}
-
-type range 'real = {lower_bound: real,
-                    upper_bound: real,
-                    initial_value: real}
-
--- Pretend this is a sum type with two constructors.
-type optimization_variable 'real = ( bool -- fixed?
-                                   , real -- value if fixed
-                                   , range real -- range if not fixed
-                                   )
-
-type calibration_result 'real = { parameters: []real,
-                                  root_mean_squared_error: real,
-                                  quoted_prices: []real,
-                                  calibrated_prices: []real,
-                                  num_feval: i32 }
-
-module least_squares (real: real)
-                     (rand: rng_engine)
-                     (P: objective with real = real.t) : {
-  val fixed_value: P.real -> optimization_variable P.real
-  val optimize_value: range P.real -> optimization_variable P.real
-
-  val least_squares: P.objective_ctx -> i32 -> i32
-                   -> []optimization_variable P.real
-                   -> []P.real
-                   -> calibration_result P.real
-} = {
+module mk_least_squares (real: real) (rand: rng_engine)
+                      : least_squares with real = real.t = {
   type real = real.t
+
+  type range = {lower_bound: real,
+                upper_bound: real,
+                initial_value: real}
+
+  type calibration_result [num_vars] = { parameters: [num_vars]real,
+                                         root_mean_squared_error: real,
+                                         num_feval: i32 }
+
+  -- Pretend this is a sum type with two constructors.
+  type optimization_variable = ( bool -- fixed?
+                               , real -- value if fixed
+                               , range -- range if not fixed
+                               )
 
   module random_i32 = uniform_int_distribution i32 rand
   module random_real = uniform_real_distribution real rand
@@ -76,14 +63,13 @@ module least_squares (real: real)
     let (rngs', xs) = unzip (map (\rng -> random_real.rand d rng) rngs)
     in (rand.join_rng rngs', xs)
 
-  let fixed_value (v: real): optimization_variable real =
+  let fixed_value (v: real) =
     (true, v, {lower_bound=real.i32 0,
                upper_bound=real.i32 0,
                initial_value=real.i32 0})
 
-  let optimize_value (r: range real): optimization_variable real =
+  let optimize_value (r: range) =
     (false, real.i32 0, r)
-
 
   -- Parameterisation of how the randomised search takes place.
   type mutation = {np: i32, -- Population size
@@ -101,7 +87,7 @@ module least_squares (real: real)
 
   let active_vars [num_vars] [num_active]
                   (vars_to_free_vars: [num_vars]i32)
-                  (variables: [num_vars]optimization_variable real)
+                  (variables: [num_vars]optimization_variable)
                   (xs: [num_active]real) =
     map2 (\fv (fixed,x,_) -> if fixed then x else unsafe xs[fv])
          vars_to_free_vars variables
@@ -112,19 +98,16 @@ module least_squares (real: real)
     else if i32.(a_i < b_i) then (a, a_i)
     else                         (b, b_i)
 
-  let optimize [num_quotes] [num_vars] [num_free_vars]
-               (objective_ctx: P.objective_ctx)
-               (quotes: [num_quotes]real)
+  let optimize [num_vars] [num_free_vars]
+               (objective: []real -> real)
                (vars_to_free_vars: [num_vars]i32)
-               (variables: [num_vars]optimization_variable real)
+               (variables: [num_vars]optimization_variable)
                ({np, cr}: mutation)
                (lower_bounds: [num_free_vars]real)
                (upper_bounds: [num_free_vars]real)
                ({max_iterations,max_global,target}: termination): result =
-    -- The objective function.  This could be factored out into a
-    -- function argument (as a parametric module).
-    let objective (x: [num_free_vars]real): real =
-      P.distance quotes (P.objective objective_ctx (active_vars vars_to_free_vars variables x))
+    -- The objective function called only with free variables.
+    let objective' x = objective (active_vars vars_to_free_vars variables x)
 
     let bounds = (real.i32 0, real.i32 1)
     let rng = rand.rng_from_seed [0x123]
@@ -135,7 +118,7 @@ module least_squares (real: real)
                real.(lower_bound + (upper_bound-lower_bound) * r)
              let init_i (rs: [num_free_vars]real) = map3 init_j lower_bounds upper_bounds rs
              in map init_i rss)
-    let fx = map objective x
+    let fx = map objective' x
     let (fx0, best_idx) =
       reduce_comm min_and_idx (real.inf, 0) (zip (intrinsics.opaque fx) (iota np))
 
@@ -166,7 +149,7 @@ module least_squares (real: real)
 
     let recombination (fx0: real) (best_idx: i32) (fx: [np]real)
                       (x: [np][num_free_vars]real) (v: [np][num_free_vars]real) =
-      (let f_v = map objective v
+      (let f_v = map objective' v
        let fx' = map2 real.min f_v fx
        let x' = map4 (\f fx_i x_i v_i -> real.(if f < fx_i then v_i else x_i))
                      f_v fx x v
@@ -197,13 +180,13 @@ module least_squares (real: real)
                  else 1337 -- never reached
     in {x0=x0, f=fx0, num_feval=ncalls, status=status}
 
-  let least_squares [num_vars] [num_quotes]
-      (objective_ctx: P.objective_ctx)
+  let least_squares [num_vars]
+      (objective: []real -> real)
       (max_global: i32)
       (np: i32)
-      (variables: [num_vars]optimization_variable real)
-      (quotes: [num_quotes]real)
-      : calibration_result real =
+      (variables: [num_vars]optimization_variable)
+      (num_observed: i32)
+      : calibration_result [num_vars] =
     let (free_vars_to_vars, free_vars) =
       unzip (filter (\(_, (fixed, _, _)) -> !fixed) (zip (iota num_vars) variables))
     let num_free_vars = length free_vars
@@ -213,23 +196,21 @@ module least_squares (real: real)
       unzip (map (\(_, _, {initial_value, lower_bound, upper_bound}) ->
                   (initial_value, lower_bound, upper_bound)) free_vars)
 
-    let rms_of_error (err: real) = real.(sqrt err * (i32 10000 / i32 num_quotes))
+    let rms_of_error (err: real) = real.(sqrt (err * (i32 10000 / i32 num_observed)))
 
     let (x, num_feval) =
       if max_global i32.> 0
-      then let res = (optimize objective_ctx quotes vars_to_free_vars variables
+      then let res = (optimize objective vars_to_free_vars variables
                       {np = np, cr = real.from_fraction 9 10} lower_bounds upper_bounds
-                      {max_iterations = 0x7FFFFFFF,
+                      {max_iterations = i32.largest,
                        max_global = max_global,
                        target = real.i32 0})
            in (res.x0, res.num_feval)
       else (x, 0)
 
-    let prices = P.objective objective_ctx (active_vars vars_to_free_vars variables x)
+    let err = objective (active_vars vars_to_free_vars variables x)
 
     in {parameters = active_vars vars_to_free_vars variables x,
-        root_mean_squared_error = rms_of_error (P.distance quotes prices),
-        quoted_prices = quotes,
-        calibrated_prices = prices,
+        root_mean_squared_error = rms_of_error err,
         num_feval = num_feval}
 }

@@ -1,20 +1,23 @@
-import "/futlib/math"
-import "/futlib/array"
+-- | Pricing of [European
+-- call-options](https://en.wikipedia.org/wiki/Option_style#American_and_European_options)
+-- in the [Heston model](https://en.wikipedia.org/wiki/Heston_model).
 import "/futlib/complex"
 import "/futlib/date"
 
-type num_points = bool -- Pretend it's opaque.
-let ten: num_points = true
-let twenty: num_points = false
-
+-- | Parameters for the Heston model.
 type heston_parameters 'real = { initial_variance: real
                                , long_term_variance: real
                                , mean_reversion: real
                                , variance_volatility: real
                                , correlation: real }
 
+-- | Pricing parameterised over the real number representation to use.
 module price_european_calls(R: real) : {
   type real = R.t
+  type num_points
+  val ten: num_points
+  val twenty: num_points
+
   val gauss_laguerre_coefficients: num_points -> ([]real, []real)
   val bs_call: bool -> date -> real -> real -> date -> real -> (real,real)
   val price_european_calls: ([]real, []real) ->
@@ -31,6 +34,12 @@ module price_european_calls(R: real) : {
 type real = R.t
 let real (x: f64) = R.f64 x
 let int (x: i32) = R.i32 x
+
+-- We simulate a sum type with an opaque type.
+type num_points = bool
+let ten: num_points = true
+let twenty: num_points = false
+
 open R
 
 module c64 = complex(R)

@@ -200,7 +200,7 @@ let lud_perimeter_lower [b][m] (diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][
 
 let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
   let top_slice0= top_per[1:mp1] in
-  let top_slice = rearrange (0,2,1) top_slice0 in
+  let top_slice = map transpose top_slice0 in
   let lft_slice = lft_per[1:mp1] in
   let mat_slice = mat[1:mp1,1:mp1] in
   map (\[m] (mat_arr: [m][b][b]f32, lft: [b][b]f32): [m][b][b]f32  ->
@@ -247,7 +247,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
             ) (iota(num_blocks) )
     in
     let upper = copy(matb) in
-    let lower = copy(rearrange (1,0,2,3) matb) in
+    let lower = copy(transpose matb) in
     --------------------------------------
     ---- sequential tiled loop driver ----
     --------------------------------------

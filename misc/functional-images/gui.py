@@ -25,17 +25,32 @@ def showText(what, where):
     text = font.render(what, 1, (255, 255, 255))
     screen.blit(text, where)
 
-t0 = time.time()
+tcur = 0.0
+tlast = time.time()
 (xcentre, ycentre) = (0, 0)
 (xuser, yuser) = (0.5, 0.5)
+paused = False
+direction = 1
+
+images = { '1': images.mandelbrot_greyscale,
+           '2': images.julia_greyscale,
+           '3': images.mandelbrot_colour,
+           '4': images.julia_colour,
+           '5': images.figure_7_15,
+           '6': images.fancy}
+image = images['1']
 
 def render():
+    global tlast, tcur
     futhark_start = time.time()
-    frame = images.test_pan_image(screen_width, screen_height,
-                                  width, width,
-                                  xcentre, ycentre,
-                                  xuser, yuser,
-                                  np.float32(futhark_start-t0))
+    tdelta = futhark_start - tlast if not paused else 0
+    tcur += tdelta * direction
+    tlast = futhark_start
+    frame = image(xuser, yuser,
+                  np.float32(tcur),
+                  screen_width, screen_height,
+                  width, width,
+                  xcentre, ycentre)
     frame = frame.get()
     futhark_end = time.time()
     pygame.surfarray.blit_array(surface, frame)
@@ -84,6 +99,12 @@ while True:
                 width *= 0.99
             if event.key == pygame.K_s:
                 width *= 1.01
+            if event.unicode in images:
+                image = images[event.unicode]
+            if event.unicode == '-':
+                direction *= -1
+            if event.key == pygame.K_SPACE:
+                paused = not paused
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # Handle scroll wheel.

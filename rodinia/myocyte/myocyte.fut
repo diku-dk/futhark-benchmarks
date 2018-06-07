@@ -1041,10 +1041,8 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
     let breakLoop  = false
     let j = 0
     let (_,_,y_k,breakLoop,_) =
-      loop((j,h,y_k,breakLoop,scale_fina)) while ( (!breakLoop) && (j < attempts()) ) do
-      -- REiNiTiALiZE ALL VAriABLES
-      let scale_min = max_scale_factor()
-
+      loop (j,h,_,breakLoop,_) =
+           (j,h,y_k,breakLoop,scale_fina) while ( (!breakLoop) && (j < attempts()) ) do
       -- EVALUATE ALL equations
       let (y_k: [equs]f32, err: [equs]f32) = embedded_fehlberg_7_8( r32(km1), h, y_km1, params)
 

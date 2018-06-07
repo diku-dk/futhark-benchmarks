@@ -12,8 +12,6 @@
 import "/futlib/math"
 import "/futlib/array"
 
-default(f32)
-
 let grayCode(x: i32): i32 = (x >> 1) ^ x
 
 ----------------------------------------
