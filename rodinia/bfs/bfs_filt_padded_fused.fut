@@ -2,6 +2,13 @@
 -- sequential one.
 -- ==
 --
+-- tags { }
+-- input @ data/4096nodes.in
+-- output @ data/4096nodes.out
+-- input @ data/512nodes_high_edge_variance.in
+-- output @ data/512nodes_high_edge_variance.out
+-- input @ data/graph1MW_6.in
+-- output @ data/graph1MW_6.out
 -- input @ data/64kn_8e-var-1-128-skew.in
 -- output @ data/64kn_8e-var-1-128-skew.out
 
@@ -15,17 +22,6 @@
 -- output @ data/20kn_600e-var.out
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
-
-
--- tags { }
--- input @ data/4096nodes.in
--- output @ data/4096nodes.out
--- input @ data/512nodes_high_edge_variance.in
--- output @ data/512nodes_high_edge_variance.out
--- input @ data/graph1MW_6.in
--- output @ data/graph1MW_6.out
-
---import "lib/bfs_lib"
 
 import "/futlib/array"
 

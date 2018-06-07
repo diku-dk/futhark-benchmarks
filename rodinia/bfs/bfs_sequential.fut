@@ -9,6 +9,8 @@
 -- output @ data/512nodes_high_edge_variance.out
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
+-- input @ data/64kn_8e-var-1-128-skew.in
+-- output @ data/64kn_8e-var-1-128-skew.out
 
 import "/futlib/array"
 

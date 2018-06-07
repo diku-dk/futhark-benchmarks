@@ -50,7 +50,12 @@ def gen_dataset(n_nodes, n_edges_min, n_edges_max, name):
 
 
 def gen_all_datasets():
-    gen_dataset(512, 5, 200, '512nodes_high_edge_variance')
+    gen_dataset(6000, 2000, 2000, '6kn_2ke-ct')
+    gen_dataset(6000, 10,   3990, '6kn_2ke-var')
+    gen_dataset(400000, 30,   30, '400kn_30e-ct')
+    gen_dataset(20000,  10,   1190, '20kn_600e-var')
+
+#    gen_dataset(512, 5, 200, '512nodes_high_edge_variance')
 
 if __name__ == '__main__':
     gen_all_datasets()
