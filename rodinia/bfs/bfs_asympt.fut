@@ -27,7 +27,7 @@
 -- output @ data/64kn_32e-var-1-256-skew.out
 
 
-import "futlib/segmented"
+import "/futlib/segmented"
 
 import "/futlib/array"
 
