@@ -1,5 +1,5 @@
--- A basic, parallel version of BFS.  It's a bit more roundabout that the
--- sequential one.
+-- A "flattened" version that respects both the work and depth asymptotic
+-- but it is very slow indeed.
 -- ==
 --
 -- tags { }
@@ -9,19 +9,23 @@
 -- output @ data/512nodes_high_edge_variance.out
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
--- input @ data/64kn_8e-var-1-128-skew.in
--- output @ data/64kn_8e-var-1-128-skew.out
+-- input @ data/64kn_32e-var-1-256-skew.in
+-- output @ data/64kn_32e-var-1-256-skew.out
 
--- input @ data/6kn_2ke-ct.in
--- output @ data/6kn_2ke-ct.out
--- input @ data/6kn_2ke-var.in
--- output @ data/6kn_2ke-var.out
--- input @ data/400kn_30e-ct.in
--- output @ data/400kn_30e-ct.out
--- input @ data/20kn_600e-var.in
--- output @ data/20kn_600e-var.out
+-- Paper's tests!
+-- input @ data/bin-6kn_2ke-ct.in
+-- output @ data/bin-6kn_2ke-ct.out
+-- input @ data/bin-6kn_2ke-var.in
+-- output @ data/bin-6kn_2ke-var.out
+-- input @ data/bin-400kn_30e-ct.in
+-- output @ data/bin-400kn_30e-ct.out
+-- input @ data/bin-20kn_600e-var.in
+-- output @ data/bin-20kn_600e-var.out
 -- input @ data/graph1MW_6.in
 -- output @ data/graph1MW_6.out
+-- input @ data/64kn_32e-var-1-256-skew.in
+-- output @ data/64kn_32e-var-1-256-skew.out
+
 
 import "futlib/segmented"
 
