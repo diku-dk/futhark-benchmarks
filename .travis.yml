@@ -1,6 +1,6 @@
 language: c
 
-sudo: true
+sudo: false
 
 addons:
   apt:
@@ -17,4 +17,4 @@ before_install:
  - (cd futhark-nightly-linux-x86_64/ && PREFIX=$HOME/.local make install)
 
 script:
-  - futhark-test -C .
+  - futhark-test --nobuffer -C .
