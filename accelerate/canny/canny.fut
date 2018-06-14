@@ -49,10 +49,10 @@ let edgeNone: f32 = 0.0
 let edgeWeak: f32 = 0.5
 let edgeStrong: f32 = 1.0
 
-let toGreyscale [h][w] (img: *[h][w]i32): *[h][w]f32 =
+let toGreyscale [h][w] (img: [h][w]i32): [h][w]f32 =
   map (\row -> map (255.0*) (map luminanceOfRGBA32 row)) img
 
-let gaussianX [h][w] (img: *[h][w]f32): *[h][w]f32 =
+let gaussianX [h][w] (img: [h][w]f32): [h][w]f32 =
   unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
@@ -65,7 +65,7 @@ let gaussianX [h][w] (img: *[h][w]f32): *[h][w]f32 =
             (iota w))
       (iota h)
 
-let gaussianY [h][w] (img: *[h][w]f32): *[h][w]f32 =
+let gaussianY [h][w] (img: [h][w]f32): [h][w]f32 =
   unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
@@ -79,7 +79,7 @@ let gaussianY [h][w] (img: *[h][w]f32): *[h][w]f32 =
        (iota w))
      (iota h)
 
-let gradiantMagDir [h][w] (low: f32, img: *[h][w]f32): [h][w](f32,i32) =
+let gradiantMagDir [h][w] (low: f32) (img: [h][w]f32): [h][w](f32,i32) =
   unsafe
   map (\(x: i32): [w](f32,i32)  ->
         map (\(y: i32): (f32,i32)  ->
@@ -114,7 +114,7 @@ let gradiantMagDir [h][w] (low: f32, img: *[h][w]f32): [h][w](f32,i32) =
             (iota w))
       (iota h)
 
-let nonMaximumSuppression [h][w] (low: f32, high: f32, magdir: [h][w](f32,i32)): *[h][w]f32 =
+let nonMaximumSuppression [h][w] (low: f32) (high: f32) (magdir: [h][w](f32,i32)): [h][w]f32 =
   unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
@@ -134,7 +134,7 @@ let nonMaximumSuppression [h][w] (low: f32, high: f32, magdir: [h][w](f32,i32)):
             (iota w))
       (iota h)
 
-let selectStrong [h][w] (img: *[h][w]f32): []i32 =
+let selectStrong [h][w] (img: [h][w]f32): []i32 =
   let strong = map (\(x: f32): i32  ->
                      if x == edgeStrong then 1 else 0)
                    (flatten img)
@@ -152,10 +152,11 @@ let selectStrong [h][w] (img: *[h][w]f32): []i32 =
                (iota(w*h-1)) targetIdx strong[1:])
   in scatter zeros indices' values
 
-let main [h][w] (low: f32, high: f32, img: *[h][w]i32): []i32 =
-  selectStrong
-  (nonMaximumSuppression
-   (low, high, gradiantMagDir
-    (low, gaussianY
-     (gaussianX
-      (toGreyscale(img))))))
+let main [h][w] (low: f32) (high: f32) (img: [h][w]i32): []i32 =
+  img
+  |> toGreyscale
+  |> gaussianX
+  |> gaussianY
+  |> gradiantMagDir low
+  |> nonMaximumSuppression low high
+  |> selectStrong
