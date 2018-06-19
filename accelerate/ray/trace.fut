@@ -67,7 +67,7 @@ let hit_plane (pln: plane) (dist: f32) (orig: position) (dir: direction)
             : (position, direction, argb.colour, f32) =
   let point = orig vec3.+ vec3.scale dist dir
   let normal = pln.normal
-  let colour = checkers point
+  let colour = checkers pln.colour point
   let shine = pln.shine
   in (point, normal, colour, shine)
 

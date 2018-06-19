@@ -53,13 +53,13 @@ module plane: object with object = plane = {
        else (true, vec3.(dot (pos - origin) normal) / theta)
 }
 
-let checkers ({x,y=_,z}: position): argb.colour =
+let checkers (c: argb.colour) ({x,y=_,z}: position): argb.colour =
   let v1 = t32 (x/100.0) % 2
   let v2 = t32 (z/100.0) % 2
   let v3 = i32.bool (x < 0.0)
   let v4 = i32.bool (z < 0.0)
   in if v1 ^ v2 ^ v3 ^ v4 == 1
-     then argb.from_rgba 1.0 1.0 1.0 1.0
-     else argb.from_rgba 0.4 0.4 0.4 1.0
+     then c
+     else c |> argb.dim |> argb.dim |> argb.dim
 
 type objects = {spheres: []sphere, planes: []plane}
