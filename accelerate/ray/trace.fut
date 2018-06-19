@@ -18,6 +18,10 @@ import "objects"
 import "intersection"
 import "lights"
 
+let cross ({x=ax,y=ay,z=az}: vec3.vec)
+          ({x=bx,y=by,z=bz}: vec3.vec): vec3.vec =
+  {x=ay*bz-az*by, y=az*bx-ax*bz, z=ax*by-ay*bx}
+
 let point_of_index (sizeX: i32) (sizeY: i32) ((x,y): (i32,i32)): (f32,f32) =
   let fsizeX = r32 sizeX
   let fsizeY = r32 sizeY
@@ -28,17 +32,27 @@ let point_of_index (sizeX: i32) (sizeY: i32) ((x,y): (i32,i32)): (f32,f32) =
   in (r32 (x-midX) / fsizeX2,
       r32 (y-midY) / fsizeY2)
 
-let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_pos: position)
+let tan x = f32.sin x / f32.cos x
+
+let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32)
+                   (eye_pos: position) (eye_dir: position)
                  : [sizeX][sizeY]direction =
-  let sizeX' = r32 sizeX
-  let sizeY' = r32 sizeY
-  let aspect = sizeX' / sizeY'
-  let fov' = r32 fov
-  let fovX = fov' * aspect
-  let fovY = fov'
+  let eye_vector = vec3.(normalise (eye_dir - eye_pos))
+  let vp_right = vec3.normalise (cross eye_vector {x=0,y=1,z=0})
+  let vp_up = vec3.normalise (cross vp_right eye_vector)
+  let fov_radians = f32.pi * (r32 fov / 2) / 180
+  let height_width_ratio = r32 sizeY / r32 sizeX
+  let half_width = tan fov_radians
+  let half_height = height_width_ratio * half_width
+  let camera_width = half_width * 2
+  let camera_height = half_height * 2
+  let pixel_width = camera_width / (r32 sizeX - 1)
+  let pixel_height = camera_height / (r32 sizeY - 1)
+
   let cast (x: i32) (y: i32) =
-    (let (x',y') = point_of_index sizeX sizeY (x,y)
-     in vec3.normalise vec3.({x=x'*fovX, y=y'*fovY, z= -eye_pos.z}))
+    let xcomp = vec3.scale ((r32 x * pixel_width) - half_width) vp_right
+    let ycomp = vec3.scale ((r32 y * pixel_height) - half_height) vp_up
+    in vec3.(normalise (eye_vector + xcomp + ycomp))
   in map (\x -> map (cast x) (iota sizeY)) (iota sizeX)
 
 let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
@@ -138,12 +152,16 @@ let make_objects (time: f32): objects =
               colour=argb.white,
               shine=0.2}]}
 
-let main (sizeX: i32) (sizeY: i32) (fov: i32) (eyeX: f32) (eyeY: f32) (eyeZ: f32) (limit: i32) (time: f32) =
+let main (sizeX: i32) (sizeY: i32) (fov: i32)
+         (eye_pos_X: f32) (eye_pos_Y: f32) (eye_pos_Z: f32)
+         (eye_dir_X: f32) (eye_dir_Y: f32) (eye_dir_Z: f32)
+         (limit: i32) (time: f32) =
   let lights: lights = {lights=[{position={x= 300.0, y= -300.0, z= -100.0},
                                  colour=argb.red}]}
 
   let objects: objects = make_objects time
   let ambient = argb.from_rgba 0.3 0.3 0.3 1.0
-  let eye_pos = {x=eyeX, y=eyeY, z=eyeZ}
-  let eye_rays = cast_view_rays sizeX sizeY fov eye_pos
+  let eye_pos = {x=eye_pos_X, y=eye_pos_Y, z=eye_pos_Z}
+  let eye_dir = {x=eye_dir_X, y=eye_dir_Y, z=eye_dir_Z}
+  let eye_rays = cast_view_rays sizeX sizeY fov eye_pos eye_dir
   in map (\rays -> map (trace_ray limit objects lights ambient eye_pos) rays) eye_rays

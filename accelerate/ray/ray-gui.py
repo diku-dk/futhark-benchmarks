@@ -13,8 +13,8 @@ fov=100
 bouncelimit=4
 rtime=0.0
 size=(width,height)
-orig_eye_pos = (50,-100,-700)
-
+orig_eye = { 'point': {'x': 50, 'y': -100, 'z': -700},
+             'vector': {'x': 0, 'y': 0, 'z': 0} }
 raytracer = trace.trace(interactive=True)
 
 pygame.init()
@@ -28,12 +28,13 @@ def showText(what, where):
     text = font.render(what, 1, (255, 255, 255))
     screen.blit(text, where)
 
-def render(eye_pos):
+def render(eye):
     global rtime
     rtime += 0.01
     start = time.time()
     frame = raytracer.main(width,height,fov,
-                           eye_pos[0], eye_pos[1], eye_pos[2],
+                           eye['point']['x'], eye['point']['y'], eye['point']['z'],
+                           eye['vector']['x'], eye['vector']['y'], eye['vector']['z'],
                            bouncelimit,rtime).get()
     end = time.time()
     pygame.surfarray.blit_array(surface, frame)
@@ -44,28 +45,28 @@ def render(eye_pos):
 
     pygame.display.flip()
 
-(eye_x,eye_y,eye_z) = orig_eye_pos
+eye = orig_eye
 changed_bounce_limit = False
 while True:
-    render((eye_x,eye_y,eye_z))
+    render(eye)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
-                eye_x += 1
+                eye['point']['x'] += 1
             if event.key == pygame.K_LEFT:
-                eye_x -= 1
+                eye['point']['x'] -= 1
             if event.key == pygame.K_UP:
-                eye_y -= 1
+                eye['point']['y'] -= 1
             if event.key == pygame.K_DOWN:
-                eye_y += 1
+                eye['point']['y'] += 1
             if event.key == pygame.K_PAGEDOWN:
-                eye_z -= 1
+                eye['point']['z'] -= 1
             if event.key == pygame.K_PAGEUP:
-                eye_z += 1
+                eye['point']['z'] += 1
             if event.key == pygame.K_HOME:
-                (eye_x,eye_y,eye_z) = orig_eye_pos
+                eye = orig_eye
             if event.unicode == 'q' and not changed_bounce_limit:
                 bouncelimit = max(bouncelimit-1,1)
                 changed_bounce_limit = True
