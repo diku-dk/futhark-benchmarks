@@ -53,9 +53,9 @@ while True:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
-                eye_x -= 1
-            if event.key == pygame.K_LEFT:
                 eye_x += 1
+            if event.key == pygame.K_LEFT:
+                eye_x -= 1
             if event.key == pygame.K_UP:
                 eye_y -= 1
             if event.key == pygame.K_DOWN:

@@ -38,7 +38,7 @@ let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_pos: position)
   let fovY = fov'
   let cast (x: i32) (y: i32) =
     (let (x',y') = point_of_index sizeX sizeY (x,y)
-     in vec3.normalise vec3.({x=x'*fovX, y=y'*fovY, z=0.0} - eye_pos))
+     in vec3.normalise vec3.({x=x'*fovX, y=y'*fovY, z= -eye_pos.z}))
   in map (\x -> map (cast x) (iota sizeY)) (iota sizeX)
 
 let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
