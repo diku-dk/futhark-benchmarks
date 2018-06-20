@@ -14,7 +14,7 @@ bouncelimit=4
 rtime=0.0
 size=(width,height)
 orig_eye = { 'point': {'x': 50, 'y': -100, 'z': -700},
-             'vector': {'x': 0, 'y': 0, 'z': 0} }
+             'vector': {'x': 0, 'y': 0, 'z': 1} }
 raytracer = trace.trace(interactive=True)
 
 pygame.init()
@@ -42,6 +42,10 @@ def render(eye):
 
     speedmessage = "Futhark call took %.2fms (%d bounces)" % ((end-start)*1000, bouncelimit)
     showText(speedmessage, (10, 10))
+    locmessage = ("Position: (%.2f, %.2f, %.2f) Orientation: (%.2f, %.2f, %.2f)" %
+                  (eye['point']['x'], eye['point']['y'], eye['point']['z'],
+                   eye['vector']['x'], eye['vector']['y'], eye['vector']['z']))
+    showText(locmessage, (10, 40))
 
     pygame.display.flip()
 

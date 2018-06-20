@@ -6,6 +6,8 @@
 --
 --   50f32 -100f32 -700f32
 --
+--   0f32 0f32 1f32
+--
 --   4
 --
 --   0f32
@@ -34,10 +36,9 @@ let point_of_index (sizeX: i32) (sizeY: i32) ((x,y): (i32,i32)): (f32,f32) =
 
 let tan x = f32.sin x / f32.cos x
 
-let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32)
-                   (eye_pos: position) (eye_dir: position)
+let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_dir: position)
                  : [sizeX][sizeY]direction =
-  let eye_vector = vec3.(normalise (eye_dir - eye_pos))
+  let eye_vector = vec3.(normalise eye_dir)
   let vp_right = vec3.normalise (cross eye_vector {x=0,y=1,z=0})
   let vp_up = vec3.normalise (cross vp_right eye_vector)
   let fov_radians = f32.pi * (r32 fov / 2) / 180
@@ -163,5 +164,5 @@ let main (sizeX: i32) (sizeY: i32) (fov: i32)
   let ambient = argb.from_rgba 0.3 0.3 0.3 1.0
   let eye_pos = {x=eye_pos_X, y=eye_pos_Y, z=eye_pos_Z}
   let eye_dir = {x=eye_dir_X, y=eye_dir_Y, z=eye_dir_Z}
-  let eye_rays = cast_view_rays sizeX sizeY fov eye_pos eye_dir
+  let eye_rays = cast_view_rays sizeX sizeY fov eye_dir
   in map (\rays -> map (trace_ray limit objects lights ambient eye_pos) rays) eye_rays
