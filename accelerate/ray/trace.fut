@@ -24,16 +24,6 @@ let cross ({x=ax,y=ay,z=az}: vec3.vec)
           ({x=bx,y=by,z=bz}: vec3.vec): vec3.vec =
   {x=ay*bz-az*by, y=az*bx-ax*bz, z=ax*by-ay*bx}
 
-let point_of_index (sizeX: i32) (sizeY: i32) ((x,y): (i32,i32)): (f32,f32) =
-  let fsizeX = r32 sizeX
-  let fsizeY = r32 sizeY
-  let fsizeX2 = fsizeX / 2.0
-  let fsizeY2 = fsizeY / 2.0
-  let midX = sizeX / 2
-  let midY = sizeY / 2
-  in (r32 (x-midX) / fsizeX2,
-      r32 (y-midY) / fsizeY2)
-
 let tan x = f32.sin x / f32.cos x
 
 let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_dir: position)
@@ -54,7 +44,7 @@ let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_dir: position)
     let xcomp = vec3.scale ((r32 x * pixel_width) - half_width) vp_right
     let ycomp = vec3.scale ((r32 y * pixel_height) - half_height) vp_up
     in vec3.(normalise (eye_vector + xcomp + ycomp))
-  in map (\x -> map (cast x) (iota sizeY)) (iota sizeX)
+  in map (\x -> map (cast x) (reverse (iota sizeY))) (iota sizeX)
 
 let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
              : (position, direction, argb.colour, f32) =
@@ -124,32 +114,32 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
   in refl_colour
 
 let make_objects (time: f32): objects =
-  {spheres = [{position={x= 40.0 * f32.sin time, y=80.0, z=0.0},
+  {spheres = [{position={x= 40.0 * f32.sin time, y= -80.0, z=0.0},
                radius=20.0,
                colour=argb.from_rgba 1.0 0.3 1.0 1.0,
                shine=0.4},
 
               {position={x= 200.0 * f32.sin time,
-                         y= -40.0 * f32.sin (time + f32.pi/2.0),
+                         y= 40.0 * f32.sin (time + f32.pi/2.0),
                          z= 200.0 * f32.cos time},
                radius=100.0,
                colour=argb.from_rgba 0.4 0.4 1.0 1.0,
                shine=0.8},
 
               {position={x= -200.0 * f32.sin time,
-                         y= -40.0 * f32.sin (time - f32.pi/2.0),
+                         y= 40.0 * f32.sin (time - f32.pi/2.0),
                          z= -200.0 * f32.cos time},
                radius=100.0,
                colour=argb.from_rgba 0.4 0.4 1.0 1.0,
                shine=0.5},
 
-              {position={x=0.0, y= -150.0, z= -100.0},
+              {position={x=0.0, y= 150.0, z= -100.0},
                radius=50.0,
                colour=argb.from_rgba 1.0 1.0 1.0 1.0,
                shine=0.8}],
 
-   planes = [{position={x=0.0, y=100.0, z=0.0},
-              normal={x= 0.0, y= -0.9805807, z= -0.19611613},
+   planes = [{position={x=0.0, y= -100.0, z=0.0},
+              normal={x= 0.0, y= 0.9805807, z= -0.19611613},
               colour=argb.white,
               shine=0.2}]}
 

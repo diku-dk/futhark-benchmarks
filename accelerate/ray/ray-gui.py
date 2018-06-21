@@ -66,17 +66,17 @@ while True:
             if event.key == pygame.K_SPACE:
                 paused = not paused
             if event.key == pygame.K_RIGHT:
-                eye['point']['x'] += 1
-            if event.key == pygame.K_LEFT:
                 eye['point']['x'] -= 1
-            if event.key == pygame.K_PAGEUP:
-                eye['point']['y'] -= 1
+            if event.key == pygame.K_LEFT:
+                eye['point']['x'] += 1
             if event.key == pygame.K_PAGEDOWN:
+                eye['point']['y'] -= 1
+            if event.key == pygame.K_PAGEUP:
                 eye['point']['y'] += 1
-            if event.key == pygame.K_DOWN:
-                eye['point']['z'] -= 1
             if event.key == pygame.K_UP:
                 eye['point']['z'] += 1
+            if event.key == pygame.K_DOWN:
+                eye['point']['z'] -= 1
             if event.key == pygame.K_HOME:
                 eye = orig_eye
             if event.unicode == 'q' and not changed_bounce_limit:
