@@ -23,7 +23,7 @@ pygame.display.set_caption('Raytracer!')
 screen = pygame.display.set_mode(size)
 surface = pygame.Surface(size, depth=32)
 font = pygame.font.Font(None, 36)
-pygame.key.set_repeat(1, 0)
+pygame.key.set_repeat(500, 50)
 
 def showText(what, where):
     text = font.render(what, 1, (255, 255, 255))
@@ -60,7 +60,6 @@ eye = orig_eye
 
 def forwards(amount):
     global eye
-    amount *= 10
     a = eye['dir']['a']
     b = eye['dir']['b']
     eye['point']['x'] += amount * math.cos(a) * math.cos(b)
@@ -69,16 +68,43 @@ def forwards(amount):
 
 def sideways(amount):
     global eye
-    amount *= 10
     a = eye['dir']['a'] + math.pi/2
-    b = eye['dir']['b']
+    b = 0
     eye['point']['x'] += amount * math.cos(a) * math.cos(b)
     eye['point']['y'] += amount * math.sin(b)
     eye['point']['z'] += amount * math.sin(a) * math.cos(b)
 
-changed_bounce_limit = False
+movspeed = 1000
+rotspeed = math.pi
+pygame.event.set_grab(True)
+pygame.mouse.set_visible(False)
 while True:
+    delta = time.time()-tlast
     render(eye)
+    delta_x, delta_y = pygame.mouse.get_rel()
+    eye['dir']['a'] += float(delta_x)/width
+    eye['dir']['b'] += float(delta_y)/height
+    eye['dir']['a'] = eye['dir']['a'] % (math.pi*2)
+    eye['dir']['b'] = min(max(eye['dir']['b'], -math.pi/2+0.001), math.pi/2-0.001)
+
+    pressed = pygame.key.get_pressed()
+    if pressed[pygame.K_a]:
+        sideways(-movspeed*delta)
+    elif pressed[pygame.K_d]:
+        sideways(movspeed*delta)
+    elif pressed[pygame.K_PAGEDOWN]:
+        eye['point']['y'] -= 1
+    elif pressed[pygame.K_PAGEUP]:
+        eye['point']['y'] += 1
+    elif pressed[pygame.K_w] or pressed[pygame.K_UP]:
+        forwards(movspeed*delta)
+    elif pressed[pygame.K_s] or pressed[pygame.K_DOWN]:
+        forwards(-movspeed*delta)
+    elif pressed[pygame.K_RIGHT]:
+        eye['dir']['a'] = (eye['dir']['a'] + rotspeed*delta) % (math.pi*2)
+    elif pressed[pygame.K_LEFT]:
+        eye['dir']['a'] = (eye['dir']['a'] - rotspeed*delta) % (math.pi*2)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -87,30 +113,9 @@ while True:
                 paused = not paused
             if event.key == pygame.K_ESCAPE:
                 sys.exit()
-            if event.key == pygame.K_a:
-                sideways(-1)
-            if event.key == pygame.K_d:
-                sideways(1)
-            if event.key == pygame.K_PAGEDOWN:
-                eye['point']['y'] -= 1
-            if event.key == pygame.K_PAGEUP:
-                eye['point']['y'] += 1
-            if event.key in [pygame.K_w, pygame.K_UP]:
-                forwards(1)
-            if event.key in [pygame.K_s, pygame.K_DOWN]:
-                forwards(-1)
-            if event.key == pygame.K_RIGHT:
-                eye['dir']['a'] = (eye['dir']['a'] + 0.1) % (math.pi*2)
-            if event.key == pygame.K_LEFT:
-                eye['dir']['a'] = (eye['dir']['a'] - 0.1) % (math.pi*2)
             if event.key == pygame.K_HOME:
                 eye = orig_eye
-            if event.unicode == 'q' and not changed_bounce_limit:
+            if event.unicode == 'z':
                 bouncelimit = max(bouncelimit-1,1)
-                changed_bounce_limit = True
-            if event.unicode == 'w' and not changed_bounce_limit:
+            if event.unicode == 'x':
                 bouncelimit += 1
-                changed_bounce_limit = True
-        elif event.type == pygame.KEYUP:
-            if event.key in [pygame.K_q, pygame.K_w]:
-                changed_bounce_limit = False
