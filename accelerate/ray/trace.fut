@@ -6,7 +6,7 @@
 --
 --   50f32 -100f32 -700f32
 --
---   0f32 0f32 1f32
+--   1.5707f32 0f32
 --
 --   4
 --
@@ -145,7 +145,7 @@ let make_objects (time: f32): objects =
 
 let main (sizeX: i32) (sizeY: i32) (fov: i32)
          (eye_pos_X: f32) (eye_pos_Y: f32) (eye_pos_Z: f32)
-         (eye_dir_X: f32) (eye_dir_Y: f32) (eye_dir_Z: f32)
+         (eye_dir_A: f32) (eye_dir_B: f32)
          (limit: i32) (time: f32) =
   let lights: lights = {lights=[{position={x= 300.0, y= -300.0, z= -100.0},
                                  colour=argb.red}]}
@@ -153,6 +153,8 @@ let main (sizeX: i32) (sizeY: i32) (fov: i32)
   let objects: objects = make_objects time
   let ambient = argb.from_rgba 0.3 0.3 0.3 1.0
   let eye_pos = {x=eye_pos_X, y=eye_pos_Y, z=eye_pos_Z}
-  let eye_dir = {x=eye_dir_X, y=eye_dir_Y, z=eye_dir_Z}
+  let eye_dir = {x=f32.cos eye_dir_A * f32.cos eye_dir_B,
+                 y=f32.sin eye_dir_B,
+                 z=f32.sin eye_dir_A * f32.cos eye_dir_B}
   let eye_rays = cast_view_rays sizeX sizeY fov eye_dir
-  in map (\rays -> map (trace_ray limit objects lights ambient eye_pos) rays) eye_rays
+  in map (map (trace_ray limit objects lights ambient eye_pos)) eye_rays
