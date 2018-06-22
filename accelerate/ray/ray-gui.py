@@ -60,24 +60,24 @@ eye = orig_eye
 changed_bounce_limit = False
 while True:
     render(eye)
-    eye['dir']['a'] = (eye['dir']['a'] + 0.01) % (math.pi*2)
+#    eye['dir']['a'] = (eye['dir']['a'] + 0.01) % (math.pi*2)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 paused = not paused
-            if event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_a:
                 eye['point']['x'] -= 1
-            if event.key == pygame.K_LEFT:
+            if event.key == pygame.K_d:
                 eye['point']['x'] += 1
             if event.key == pygame.K_PAGEDOWN:
                 eye['point']['y'] -= 1
             if event.key == pygame.K_PAGEUP:
                 eye['point']['y'] += 1
-            if event.key == pygame.K_UP:
+            if event.key == pygame.K_w:
                 eye['point']['z'] += 1
-            if event.key == pygame.K_DOWN:
+            if event.key == pygame.K_s:
                 eye['point']['z'] -= 1
             if event.key == pygame.K_HOME:
                 eye = orig_eye
