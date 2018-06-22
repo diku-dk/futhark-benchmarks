@@ -57,28 +57,52 @@ def render(eye):
     pygame.display.flip()
 
 eye = orig_eye
+
+def forwards(amount):
+    global eye
+    amount *= 10
+    a = eye['dir']['a']
+    b = eye['dir']['b']
+    eye['point']['x'] += amount * math.cos(a) * math.cos(b)
+    eye['point']['y'] += amount * math.sin(b)
+    eye['point']['z'] += amount * math.sin(a) * math.cos(b)
+
+def sideways(amount):
+    global eye
+    amount *= 10
+    a = eye['dir']['a'] + math.pi/2
+    b = eye['dir']['b']
+    eye['point']['x'] += amount * math.cos(a) * math.cos(b)
+    eye['point']['y'] += amount * math.sin(b)
+    eye['point']['z'] += amount * math.sin(a) * math.cos(b)
+
 changed_bounce_limit = False
 while True:
     render(eye)
-#    eye['dir']['a'] = (eye['dir']['a'] + 0.01) % (math.pi*2)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 paused = not paused
+            if event.key == pygame.K_ESCAPE:
+                sys.exit()
             if event.key == pygame.K_a:
-                eye['point']['x'] -= 1
+                sideways(-1)
             if event.key == pygame.K_d:
-                eye['point']['x'] += 1
+                sideways(1)
             if event.key == pygame.K_PAGEDOWN:
                 eye['point']['y'] -= 1
             if event.key == pygame.K_PAGEUP:
                 eye['point']['y'] += 1
-            if event.key == pygame.K_w:
-                eye['point']['z'] += 1
-            if event.key == pygame.K_s:
-                eye['point']['z'] -= 1
+            if event.key in [pygame.K_w, pygame.K_UP]:
+                forwards(1)
+            if event.key in [pygame.K_s, pygame.K_DOWN]:
+                forwards(-1)
+            if event.key == pygame.K_RIGHT:
+                eye['dir']['a'] = (eye['dir']['a'] + 0.1) % (math.pi*2)
+            if event.key == pygame.K_LEFT:
+                eye['dir']['a'] = (eye['dir']['a'] - 0.1) % (math.pi*2)
             if event.key == pygame.K_HOME:
                 eye = orig_eye
             if event.unicode == 'q' and not changed_bounce_limit:
