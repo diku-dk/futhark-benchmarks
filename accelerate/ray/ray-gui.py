@@ -69,10 +69,8 @@ def forwards(amount):
 def sideways(amount):
     global eye
     a = eye['dir']['a'] + math.pi/2
-    b = 0
-    eye['point']['x'] += amount * math.cos(a) * math.cos(b)
-    eye['point']['y'] += amount * math.sin(b)
-    eye['point']['z'] += amount * math.sin(a) * math.cos(b)
+    eye['point']['x'] += amount * math.cos(a)
+    eye['point']['z'] += amount * math.sin(a)
 
 movspeed = 1000
 rotspeed = math.pi
