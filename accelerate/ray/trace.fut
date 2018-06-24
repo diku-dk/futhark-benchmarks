@@ -24,8 +24,6 @@ let cross ({x=ax,y=ay,z=az}: vec3.vec)
           ({x=bx,y=by,z=bz}: vec3.vec): vec3.vec =
   {x=ay*bz-az*by, y=az*bx-ax*bz, z=ax*by-ay*bx}
 
-let tan x = f32.sin x / f32.cos x
-
 let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_dir: position)
                  : [sizeX][sizeY]direction =
   let eye_vector = vec3.(normalise eye_dir)
@@ -33,7 +31,7 @@ let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_dir: position)
   let vp_up = vec3.normalise (cross vp_right eye_vector)
   let fov_radians = f32.pi * (r32 fov / 2) / 180
   let height_width_ratio = r32 sizeY / r32 sizeX
-  let half_width = tan fov_radians
+  let half_width = f32.tan fov_radians
   let half_height = height_width_ratio * half_width
   let camera_width = half_width * 2
   let camera_height = half_height * 2
