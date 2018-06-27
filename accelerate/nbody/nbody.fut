@@ -20,7 +20,7 @@
 
 import "/futlib/math"
 import "/futlib/array"
-import "/futlib/vec3"
+import "/futlib/vector"
 import "/futlib/colour"
 
 module vec3 = mk_vec3 f32

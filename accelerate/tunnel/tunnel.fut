@@ -13,7 +13,7 @@
 
 import "/futlib/math"
 import "/futlib/array"
-import "/futlib/vec2"
+import "/futlib/vector"
 import "/futlib/colour"
 
 module vec2 = mk_vec2 f32

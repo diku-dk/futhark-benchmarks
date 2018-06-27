@@ -13,22 +13,18 @@
 --   0f32
 -- }
 
-import "/futlib/math"
 import "/futlib/colour"
+
 import "types"
 import "objects"
 import "intersection"
 import "lights"
 
-let cross ({x=ax,y=ay,z=az}: vec3.vec)
-          ({x=bx,y=by,z=bz}: vec3.vec): vec3.vec =
-  {x=ay*bz-az*by, y=az*bx-ax*bz, z=ax*by-ay*bx}
-
 let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_dir: position)
                  : [sizeX][sizeY]direction =
   let eye_vector = vec3.(normalise eye_dir)
-  let vp_right = vec3.normalise (cross eye_vector {x=0,y=1,z=0})
-  let vp_up = vec3.normalise (cross vp_right eye_vector)
+  let vp_right = vec3.normalise (vec3.cross eye_vector {x=0,y=1,z=0})
+  let vp_up = vec3.normalise (vec3.cross vp_right eye_vector)
   let fov_radians = f32.pi * (r32 fov / 2) / 180
   let height_width_ratio = r32 sizeY / r32 sizeX
   let half_width = f32.tan fov_radians
@@ -98,7 +94,7 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
     let direct = apply_lights {spheres=spheres,planes=planes} lights point normal
 
     -- Total lighting is direct plus ambient
-    let lighting = argb.add direct ambient
+    let lighting = argb.add_linear direct ambient
 
     let light_in = argb.scale (argb.mult lighting colour) (1.0-shine)
 
@@ -145,7 +141,7 @@ let main (sizeX: i32) (sizeY: i32) (fov: i32)
          (eye_pos_X: f32) (eye_pos_Y: f32) (eye_pos_Z: f32)
          (eye_dir_A: f32) (eye_dir_B: f32)
          (limit: i32) (time: f32) =
-  let lights: lights = {lights=[{position={x= 300.0, y= -300.0, z= -100.0},
+  let lights: lights = {lights=[{position={x= 250.0, y= 350.0, z= 200.0},
                                  colour=argb.red}]}
 
   let objects: objects = make_objects time
