@@ -18,7 +18,7 @@ let apply_light ({spheres,planes}: objects) (point: position) (normal: direction
   in if check_ray_sphere spheres point dir dist ||
         check_ray_plane planes point dir dist
      then argb.black
-     else let mag = vec3.dot normal dir / (dist * dist)
+     else let mag = vec3.dot normal dir
           let (r,g,b,_) = argb.to_rgba light.colour
           let refl = argb.from_rgba (r*mag) (g*mag) (b*mag) 1.0
           in refl

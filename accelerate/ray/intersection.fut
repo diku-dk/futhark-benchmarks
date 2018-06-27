@@ -18,17 +18,19 @@ let cast_ray [n] 'object
 let cast_ray_sphere = cast_ray sphere.distance_to
 let cast_ray_plane = cast_ray plane.distance_to
 
--- Look for an object closer than a given minimum distance; stopping
--- as soon as we find an intersection.
+-- Look for an object closer than a given minimum distance.  Ideally,
+-- we'd stop as soon as we find an intersection, but AMDs OpenCL
+-- kernel compiler seems to miscompile the resulting while-loop (that
+-- was a fun one to debug).
 let check_ray [n] 'object
               (distance_to: object -> position -> direction -> (bool, f32))
               (objects: [n]object) (orig: position) (dir: direction) (dist: f32)
             : bool =
-  let (hit, _) =
-    loop (hit,i) = (false,0) while !hit && i < n do
+  loop hit = false for i < n do
+    if !hit then
       let (new_hit,dist') = distance_to (unsafe objects[i]) orig dir
-      in if new_hit && dist' < dist then (true, i) else (false, i+1)
-  in hit
+      in if new_hit && dist' < dist then true else hit
+    else hit
 
 let check_ray_sphere = check_ray sphere.distance_to
 let check_ray_plane = check_ray plane.distance_to
