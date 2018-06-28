@@ -7,29 +7,22 @@
 -- compiled input @ data/10_boxes.in
 -- output @ data/10_boxes.out
 
-import "/futlib/math"
-
-let num_neighbors(): i32      = 27
-let number_par_per_box(): i32 = 100
-
-let dot(a: (f32,f32,f32), b: (f32,f32,f32)): f32 =
-  let (ax,ay,az) = a
-  let (bx,by,bz) = b
-  in ax*bx + ay*by + az*bz
+let dot ((ax,ay,az), (bx,by,bz)): f32 =
+  ax*bx + ay*by + az*bz
 
 -----------------------------------------
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
-let main [number_boxes][par_per_box]
+let main [num_neighbors][number_boxes][par_per_box]
              (alpha:  f32
             , box_coefs_0: [number_boxes]i32
             , box_coefs_1: [number_boxes]i32
             , box_coefs_2: [number_boxes]i32
             , box_coefs_3: [number_boxes]i32
-            , box_nnghs_0 : [][number_boxes]i32  -- outer dim should be num_neighbors
-            , box_nnghs_1 : [][number_boxes]i32  -- outer dim should be num_neighbors
-            , box_nnghs_2 : [][number_boxes]i32  -- outer dim should be num_neighbors
-            , box_nnghs_3 : [][number_boxes]i32  -- outer dim should be num_neighbors
+            , box_nnghs_0 : [num_neighbors][number_boxes]i32
+            , box_nnghs_1 : [num_neighbors][number_boxes]i32
+            , box_nnghs_2 : [num_neighbors][number_boxes]i32
+            , box_nnghs_3 : [num_neighbors][number_boxes]i32
             , box_num_nghbs: [number_boxes]i32
             , rv_0: [number_boxes][par_per_box]f32
             , rv_1: [number_boxes][par_per_box]f32
