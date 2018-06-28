@@ -1,8 +1,3 @@
-import "/futlib/array"
-
-let num_neighbors(): i32      = 27
-let number_par_per_box(): i32 = 100
-
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
@@ -22,7 +17,8 @@ let sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
 
 -----------------------
 -----------------------
-let main(boxes1d: i32): (f32,
+let main (boxes1d: i32) (num_nn: i32) (par_per_box: i32):
+                        (f32,
                          []i32,
                          []i32,
                          []i32,
@@ -43,8 +39,6 @@ let main(boxes1d: i32): (f32,
                          [][]f32) =
   let number_boxes = boxes1d * boxes1d * boxes1d
   let alpha        = 0.5
-  let num_nn       = num_neighbors()
-  let par_per_box  = number_par_per_box()
   let dirVct       = sobolDirVcts()
 
   ----------------------------------------
