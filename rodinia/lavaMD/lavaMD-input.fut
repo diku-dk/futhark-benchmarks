@@ -56,23 +56,22 @@ let main (boxes1d: i32) (num_nn: i32) (par_per_box: i32):
           -- initialize neighbor boxes
           let box_nngh_cur_nn = (replicate num_nn (0,0,0,0), 0)
           let (box_nngh_cur_nn) = loop (box_nngh_cur_nn) for nn < num_nn do
-              let (box_nngh, cur_nn) = box_nngh_cur_nn
-              let n = (nn % 3) - 1
-              let nr= nn / 3
-              let m = (nr % 3) - 1
-              let l = (nr / 3) - 1
-              let (cur_elem, next_cur_nn) = 
-                -- check if (this neighbor exists) and (it is not the same as home box)
-                if( (( 0<=(i+l) && 0<=(j+m) && 0<=(k+n))               &&
-                     ((i+l)<boxes1d && (j+m)<boxes1d && (k+n)<boxes1d)) &&
-                   (!(l==0 && m==0 && n==0))                             )
-                then  let (x, y, z) = (k+n, j+m, i+l)
-                      let number = (z * boxes1d * boxes1d) + (y * boxes1d) + x
-                      in ( (x, y, z, number), cur_nn+1)
-                else  ( (0, 0, 0, 0     ), cur_nn  ) 
-          in unsafe
-          let box_nngh[cur_nn] = cur_elem
-         in (box_nngh, next_cur_nn)
+            let (box_nngh, cur_nn) = box_nngh_cur_nn
+            let n = (nn % 3) - 1
+            let nr= nn / 3
+            let m = (nr % 3) - 1
+            let l = (nr / 3) - 1
+            let (cur_elem, next_cur_nn) =
+              -- check if (this neighbor exists) and (it is not the same as home box)
+              if((( 0<=(i+l) && 0<=(j+m) && 0<=(k+n)) &&
+                  ((i+l)<boxes1d && (j+m)<boxes1d && (k+n)<boxes1d)) &&
+                 (!(l==0 && m==0 && n==0)))
+              then  let (x, y, z) = (k+n, j+m, i+l)
+                    let number = (z * boxes1d * boxes1d) + (y * boxes1d) + x
+                    in ( (x, y, z, number), cur_nn+1)
+              else  ( (0, 0, 0, 0     ), cur_nn  )
+            in unsafe let box_nngh[cur_nn] = cur_elem
+               in (box_nngh, next_cur_nn)
 
           let (box_nngh, cur_nn) = box_nngh_cur_nn
           in  ( box_coef, box_nngh, cur_nn )
