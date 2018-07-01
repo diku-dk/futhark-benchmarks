@@ -5,8 +5,8 @@
 -- output @ data/tiny.out
 -- compiled input @ data/small.in
 -- output @ data/small.out
--- compiled input @ data/medium.in
--- output @ data/medium.out
+-- compiled input @ data/medium.in.gz
+-- output @ data/medium.out.gz
 
 import "/futlib/array"
 

@@ -3,11 +3,11 @@
 --
 -- ==
 --
--- compiled input @ data/fvcorr.domn.097K.toa
--- output @ data/fvcorr.domn.097K.out
+-- compiled input @ data/fvcorr.domn.097K.toa.gz
+-- output @ data/fvcorr.domn.097K.out.gz
 --
--- compiled input @ data/fvcorr.domn.193K.toa
--- output @ data/fvcorr.domn.193K.out
+-- compiled input @ data/fvcorr.domn.193K.toa.gz
+-- output @ data/fvcorr.domn.193K.out.gz
 
 import "/futlib/math"
 import "/futlib/array"

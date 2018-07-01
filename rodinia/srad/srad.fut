@@ -17,8 +17,8 @@
 -- to (0,255).
 --
 -- ==
--- compiled input @ data/image.in
--- output @ data/image.out
+-- compiled input @ data/image.in.gz
+-- output @ data/image.out.gz
 
 let indexN(_rows: i32, i: i32): i32 =
   if i == 0 then i else i - 1
