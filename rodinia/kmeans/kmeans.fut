@@ -9,9 +9,9 @@
 -- output @ data/trivial.out
 -- compiled input @ data/100.in
 -- output @ data/100.out
--- input @ data/204800.in
+-- input @ data/204800.in.gz
 -- output @ data/204800.out
--- input @ data/kdd_cup.in
+-- input @ data/kdd_cup.in.gz
 -- output @ data/kdd_cup.out
 
 let euclid_dist_2 [d] (pt1: [d]f32) (pt2: [d]f32): f32 =

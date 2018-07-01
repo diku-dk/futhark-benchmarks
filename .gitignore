@@ -18,3 +18,4 @@
 !.gitignore
 !/**/
 !*.fut
+!**/data/*.gz

@@ -1,11 +1,11 @@
 -- An implementation of the tpacf benchmark from the parboil benchmark suite
 --
 -- ==
--- compiled input @ data/small.in
+-- compiled input @ data/small.in.gz
 -- output @ data/small.out
--- compiled input @ data/medium.in
+-- compiled input @ data/medium.in.gz
 -- output @ data/medium.out
--- compiled input @ data/large.in
+-- compiled input @ data/large.in.gz
 -- output @ data/large.out
 
 import "/futlib/math"

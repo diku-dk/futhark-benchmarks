@@ -4,8 +4,8 @@
 -- ==
 -- input @ data/3_boxes.in
 -- output @ data/3_boxes.out
--- compiled input @ data/10_boxes.in
--- output @ data/10_boxes.out
+-- compiled input @ data/10_boxes.in.gz
+-- output @ data/10_boxes.out.gz
 
 let dot ((ax,ay,az), (bx,by,bz)): f32 =
   ax*bx + ay*by + az*bz

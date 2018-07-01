@@ -7,10 +7,10 @@
 -- output @ data/64.out
 -- compiled input @ data/256.in
 -- output @ data/256.out
--- compiled input @ data/512.in
--- output @ data/512.out
--- compiled input @ data/2048.in
--- output @ data/2048.out
+-- compiled input @ data/512.in.gz
+-- output @ data/512.out.gz
+-- compiled input @ data/2048.in.gz
+-- output @ data/2048.out.gz
 
 import "/futlib/array"
 

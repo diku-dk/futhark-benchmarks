@@ -5,11 +5,11 @@
 -- tags { }
 -- input @ data/4096nodes.in
 -- output @ data/4096nodes.out
--- input @ data/512nodes_high_edge_variance.in
+-- input @ data/512nodes_high_edge_variance.in.gz
 -- output @ data/512nodes_high_edge_variance.out
--- input @ data/graph1MW_6.in
--- output @ data/graph1MW_6.out
--- input @ data/64kn_32e-var-1-256-skew.in
+-- input @ data/graph1MW_6.in.gz
+-- output @ data/graph1MW_6.out.gz
+-- input @ data/64kn_32e-var-1-256-skew.in.gz
 -- output @ data/64kn_32e-var-1-256-skew.out
 
 -- Paper's tests!
@@ -21,9 +21,9 @@
 -- output @ data/bin-400kn_30e-ct.out
 -- input @ data/bin-20kn_600e-var.in
 -- output @ data/bin-20kn_600e-var.out
--- input @ data/graph1MW_6.in
--- output @ data/graph1MW_6.out
--- input @ data/64kn_32e-var-1-256-skew.in
+-- input @ data/graph1MW_6.in.gz
+-- output @ data/graph1MW_6.out.gz
+-- input @ data/64kn_32e-var-1-256-skew.in.gz
 -- output @ data/64kn_32e-var-1-256-skew.out
 
 import "/futlib/segmented"
