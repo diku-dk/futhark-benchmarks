@@ -49,7 +49,9 @@ let step [n][e]
   let active_edges   = map (\tid -> unsafe (nodes_n_edges[tid])) active_indices
   let scan_num_edges = scan (+) 0i32 active_edges
   let flat_len       = scan_num_edges[n_indices-1]
-  let (tmp1, tmp2, tmp3) = unzip (replicate flat_len (false, 0i32, 1i32))
+  let (tmp1, tmp2, tmp3) = (replicate flat_len false,
+                            replicate flat_len 0i32,
+                            replicate flat_len 1i32)
   let write_inds     = map (\i -> if i==0i32 then 0i32 else unsafe scan_num_edges[i-1]) (iota n_indices)
   let active_flags   = scatter tmp1 write_inds (replicate n_indices true)
   let track_nodes_tmp= scatter tmp2 write_inds (iota n_indices) --active_indices

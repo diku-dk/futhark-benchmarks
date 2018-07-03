@@ -173,5 +173,6 @@ let main [m][n][p][k] (xi_0:  [m][n][p][k]f32
                       , td: f32 ): ([m][n][p][k]f32,
                                     [m][n][p][k]f32,
                                     [m][n][p][k]f32) =
-  unzip(add_ascent_grad3v( zip@3 xi_0 xi_1 xi_2, v, td ))
+  unzip3 (map (map (map unzip3 >-> unzip3) >-> unzip3)
+          (add_ascent_grad3v( map3 (map3 (map3 zip3)) xi_0 xi_1 xi_2, v, td )))
 

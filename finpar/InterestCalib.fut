@@ -1,4 +1,6 @@
 -- Interest rate calibration
+--
+-- This program is horrible style.  Do not write code like this.
 -- ==
 -- tags { nobench no_opencl }
 -- compiled input @ InterestCalib-data/small.in
@@ -279,7 +281,7 @@ let mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
   let gene_bds = genomeBounds()
   let amplitude = moves_unif_ampl_ratio()
   let gene_rats = map mutateHelper (
-                       zip (replicate n amplitude) (sob_row) orig muta (gene_bds) )
+                       zip5 (replicate n amplitude) (sob_row) orig muta (gene_bds) )
   let (tmp_genome, fb_rats) = unzip(gene_rats)
   let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
   let fb_rat    = f32.product (fb_rats)
@@ -292,7 +294,7 @@ let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
                           if i == dim_j then moves_unif_ampl_ratio() else 0.0
                      ) (iota(n) )
 
-  let gene_rats = map mutateHelper (zip amplitudes (sob_row) orig muta (gene_bds) )
+  let gene_rats = map mutateHelper (zip5 amplitudes (sob_row) orig muta (gene_bds) )
   let (tmp_genome, fb_rats) = unzip(gene_rats)
   let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
   let fb_rat    = f32.product (fb_rats)
@@ -308,7 +310,7 @@ let mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f3
                      ) (gene_bds )
 
   let tmp_genome = map (perturbation(gamma1,ampl_ratio))
-                   (zip (g_i) (g_k) (g_l) (sob_row) (mm_diffs))
+                   (zip5 (g_i) (g_k) (g_l) (sob_row) (mm_diffs))
 
   in  copy( map constrainDim (zip (tmp_genome) (gene_bds) ) )
 
@@ -431,7 +433,7 @@ let exactYhat(n_schedi:  i32,
                                (a1 + a2, f32.max b1 b2 )
                            ) (0.0, -f32.inf) uplos
 
-    let (_bai, bbi, _aici, _log_aici) = unzip(babaicis) in
+    let (_bai, bbi, _aici, _log_aici) = unzip4 babaicis in
 
     if(n_schedi < 2) -- == 1
     then lo
@@ -526,8 +528,8 @@ let evalGenomeOnSwap (genomea: []f32,
   let t4     = (rhoxy * sigmay) / sigmax
 
   -- computing n_schedi-size temporary arrays
-  let tmp_arrs =
-          map (\(i: i32): (f32,f32,f32,f32,f32,f32,f32)  ->
+  let (tmp_arrs_a, tmp_arrs_b) = unzip <|
+          map (\(i: i32): ((f32,f32,f32,f32),(f32,f32,f32))  ->
                  let beg_date = add_months maturity (t32 (swap_freq*r32(i) ))
                  let end_date = add_months beg_date (t32 swap_freq)
                  let res      = date_act_365( end_date, beg_date ) * strike
@@ -542,18 +544,19 @@ let evalGenomeOnSwap (genomea: []f32,
                  let expo_aici = 0.5 * (vt_end - v0_end + v0_mat)
                  let fact_aici = cii * zc(end_date) / zc_mat      in
 
-                     ( baii
-                     , bbii
-                     , fact_aici * f32.exp( expo_aici )
-                     , f32.log( fact_aici ) + expo_aici
-                     , 0.0  - ( baii + bbii * t4 )
-                     , fact_aici
-                     , bbii * (mux * t4 - (muy - 0.5*rhoxyc*sigmay*sigmay*bbii) ) + expo_aici
+                     ( (baii
+                       , bbii
+                       , fact_aici * f32.exp( expo_aici )
+                       , f32.log( fact_aici ) + expo_aici)
+                     , (0.0  - ( baii + bbii * t4 )
+                       , fact_aici
+                       , bbii * (mux * t4 - (muy - 0.5*rhoxyc*sigmay*sigmay*bbii) ) + expo_aici)
                      )
              ) (iota(n_schedi) )
-  let (bas, bbs, aicis, log_aicis, scales, cs, t1_cs) = unzip(tmp_arrs)
+  let (bas, bbs, aicis, log_aicis) = unzip4 tmp_arrs_a
+  let (scales, cs, t1_cs) = unzip3 tmp_arrs_b
   let scals = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy)
-  let exact_arrs = zip bas bbs aicis (log_aicis )
+  let exact_arrs = zip4 bas bbs aicis (log_aicis )
 
   -- exactYhat via Brent method
   let eps = 0.5 * sigmax
@@ -562,7 +565,7 @@ let evalGenomeOnSwap (genomea: []f32,
   let h   = exactYhat( n_schedi, scals, exact_arrs, mux - eps )
 
   -- integration with Hermite polynomials
-  let herm_arrs   = zip bbs scales cs (t1_cs )
+  let herm_arrs   = zip4 bbs scales cs (t1_cs )
   let df          = 0.5 * ( g - h ) / eps
   let sqrt2sigmax = f32.sqrt(2.0) * sigmax
   let t2          = rhoxy / (sigmax*rhoxycs)
@@ -579,7 +582,7 @@ let evalGenomeOnSwap (genomea: []f32,
                                            let fact_aici = csi
                                            let expo_part = uGaussian_P_withExpFactor( -h2, expo_aici )
                                            in  fact_aici * expo_part
-                                       ) (zip bbs scales cs (t1_cs )
+                                       ) (zip4 bbs scales cs (t1_cs )
                                        )
                       let accum1 = f32.sum accum1s
                       let tmp    = f32.sqrt(2.0) * x_quad
@@ -661,7 +664,7 @@ let interestCalibKernel(pop:  i32
                         map  (sobolInd(sobDirVct)) z5s
                     ) (iota(pop) )
              let new_gene_rat =
-                 map mutate_dims_all (zip (sob_mat) genomes proposals )
+                 map mutate_dims_all (zip3 (sob_mat) genomes proposals )
              let (new_genomes, fb_rats) = unzip(new_gene_rat)
              in  (new_genomes, fb_rats, sob_offs+5*pop)
 
@@ -677,7 +680,7 @@ let interestCalibKernel(pop:  i32
                     ) (iota(pop) )
 
              let new_gene_rat =
-                 map (mutate_dims_one(dim_j)) (zip (sob_mat) genomes proposals )
+                 map (mutate_dims_one(dim_j)) (zip3 (sob_mat) genomes proposals )
              let (new_genomes, fb_rats) = unzip(new_gene_rat)
              in  (new_genomes, fb_rats, sob_offs+5*pop+1)
 
@@ -712,8 +715,8 @@ let interestCalibKernel(pop:  i32
                     f32.sum terms
               ) proposals
       let res_gene_liks =
-          map (\(tup: ([]f32,f32,[]f32,f32,f32,i32)): (*[]f32,f32)  ->
-                 let (gene, logLik, new_gene, new_logLik, fb_rat, i) = tup
+          map (\(tup: ([]f32,f32,[]f32,(f32,f32,i32))): (*[]f32,f32)  ->
+                 let (gene, logLik, new_gene, (new_logLik, fb_rat, i)) = tup
                  let acceptance = f32.min 1.0 (f32.exp(new_logLik - logLik)*fb_rat)
                  let rand01     = sobolInd sobDirVct (sob_offs+i)
                  let (res_gene, res_logLik) =
@@ -721,7 +724,7 @@ let interestCalibKernel(pop:  i32
                        then (new_gene, new_logLik)
                        else (gene,     logLik    )
                  in (copy(res_gene), res_logLik)
-             ) (zip genomes logLiks proposals (new_logLiks) (fb_rats) (iota(pop))
+             ) (zip4 genomes logLiks proposals (zip3 (new_logLiks) (fb_rats) (iota(pop)))
              )
 
       let (res_genomes, res_logLiks) = unzip(res_gene_liks) in
@@ -772,7 +775,7 @@ let extended_swaption_of_swaption(swaption: (f32,f32,f32)): (date,[](date,date),
                                 ( lvl + a12, earliest t0 a1, latest tn a2 )
                             ) (0.0, max_date, min_date) a12s
 
-    let (_lvls, a1s, a2s) = unzip( a12s )
+    let (_lvls, a1s, a2s) = unzip3 a12s
     let swap_sched       = zip   a1s a2s
     let strike     = (zc(t0) - zc(tn)) / lvl
 
@@ -852,8 +855,8 @@ let pricer_of_swaption(today:  date,
 --
     let (_scheduleix, scheduleiy) = unzip(schedulei)
 --
-    let (bai, bbi, aici, log_aici, t1_cst, scale) = unzip (
-            map (\((end_date, ci): (date,f32)): (f32,f32,f32,f32,f32,f32)  ->
+    let (tmp_a, tmp_b) = unzip (
+            map (\((end_date, ci): (date,f32)): ((f32,f32,f32),(f32,f32,f32))  ->
                   -- Begin Brigo and Mercurio: defined top p. 148
                     let (v0_end, _dummyA, _dummyB) =
                             bigv( genome, date_act_365(end_date, today   ) )
@@ -872,13 +875,14 @@ let pricer_of_swaption(today:  date,
                     let cst= bbi * (mux*t4 - t3)
                     let t1_cst = aici * f32.exp(cst)
                     let scale  = -(bai + bbi*t4)                              in
-                        (bai, bbi, aici, log_aici, t1_cst, scale)
+                        ((bai, bbi, aici), (log_aici, t1_cst, scale))
 
                 ) (zip scheduleiy ci
             )
         )
+    let ((bai, bbi, aici), (log_aici, t1_cst, scale)) = (unzip3 tmp_a, unzip3 tmp_b)
 
-    let babaici = zip bai bbi aici (log_aici)
+    let babaici = zip4 bai bbi aici (log_aici)
     let scals   = (b, sigmax, sigmay, rhoxy, rhoxyc, rhoxycs, mux, muy)
 
     let eps = 0.5 * sigmax
@@ -907,7 +911,7 @@ let pricer_of_swaption(today:  date,
                                             let (bbii, t1_csti, scalei) = bbit1cstscale
                                             let h2 = h1 + bbii * sigmay_rhoxycs in
                                                 t1_csti * f32.exp(scalei*x) * uGaussian_P(-h2)
-                                        ) (zip bbi (t1_cst) scale
+                                        ) (zip3 bbi (t1_cst) scale
                                      )
                         let accum = f32.sum tmps
                         let integrand_res = t1 * ( uGaussian_P(-h1) - accum )

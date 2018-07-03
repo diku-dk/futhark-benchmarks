@@ -78,7 +78,7 @@ let main (boxes1d: i32) (num_nn: i32) (par_per_box: i32):
 
        ) (iota(number_boxes) )
 
-  let (box_coefs, box_nnghs0, box_num_nghbs) = unzip(boxes)
+  let (box_coefs, box_nnghs0, box_num_nghbs) = unzip3 boxes
   let box_nnghs = copy(transpose(box_nnghs0))
 
   ----------------------------------------------
@@ -99,25 +99,25 @@ let main (boxes1d: i32) (num_nn: i32) (par_per_box: i32):
                        ) (iota(par_per_box))
                 ) (iota(number_boxes) )
 
-  let (qv, rv) = unzip(rqv)
+  let (qv, rv) = map unzip rqv |> unzip
 
   in ( alpha,
 
-       (unzip(box_coefs)).1,
-       (unzip(box_coefs)).2,
-       (unzip(box_coefs)).3,
-       (unzip(box_coefs)).4,
+       (unzip4(box_coefs)).1,
+       (unzip4(box_coefs)).2,
+       (unzip4(box_coefs)).3,
+       (unzip4(box_coefs)).4,
 
-       (unzip(box_nnghs)).1,
-       (unzip(box_nnghs)).2,
-       (unzip(box_nnghs)).3,
-       (unzip(box_nnghs)).4,
+       (map (map (.1)) box_nnghs),
+       (map (map (.2)) box_nnghs),
+       (map (map (.3)) box_nnghs),
+       (map (map (.4)) box_nnghs),
 
        box_num_nghbs,
 
-       (unzip(rv)).1,
-       (unzip(rv)).2,
-       (unzip(rv)).3,
-       (unzip(rv)).4,
+       (map (map (.1)) rv),
+       (map (map (.2)) rv),
+       (map (map (.3)) rv),
+       (map (map (.4)) rv),
 
        qv)

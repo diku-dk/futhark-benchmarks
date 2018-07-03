@@ -143,7 +143,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
                        if i32.(j == j0) || real.(r <= cr && lower_bound <= aux && aux <= upper_bound)
                        then aux
                        else x_i_j)
-                      (zip (iota num_free_vars) rs lower_bounds upper_bounds auxs x_i)
+                      (zip6 (iota num_free_vars) rs lower_bounds upper_bounds auxs x_i)
 
        in (rng, v_i))
 
@@ -193,8 +193,8 @@ module mk_least_squares (real: real) (rand: rng_engine)
     let vars_to_free_vars = scatter (replicate num_vars (-1))
                                     free_vars_to_vars (iota num_free_vars)
     let (x, lower_bounds, upper_bounds) =
-      unzip (map (\(_, _, {initial_value, lower_bound, upper_bound}) ->
-                  (initial_value, lower_bound, upper_bound)) free_vars)
+      unzip3 (map (\(_, _, {initial_value, lower_bound, upper_bound}) ->
+                   (initial_value, lower_bound, upper_bound)) free_vars)
 
     let rms_of_error (err: real) = real.(sqrt (err * (i32 10000 / i32 num_observed)))
 
