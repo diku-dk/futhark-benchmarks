@@ -29,7 +29,7 @@ let find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
 
 let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point =
   let (cluster_counts, cluster_points) =
-    unzip (map (\cluster ->
+    unzip <| map unzip (map (\cluster ->
                  map2 (\point_cluster point ->
                         if cluster == point_cluster
                         then (1, point)

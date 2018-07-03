@@ -46,8 +46,8 @@ let bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32
                     unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32): (f32,f32)  ->
                                    let new_dw = eta()*delta_el*lyk + momentum()*oldw_el
                                    in ( w_el+new_dw, new_dw ))
-                           (zip (w_row) (oldw_row) delta)))
-            (zip w oldw lyext))
+                           (zip3 (w_row) (oldw_row) delta)))
+            (zip3 w oldw lyext))
 
 
 let bpnn_layerforward_GOOD [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =

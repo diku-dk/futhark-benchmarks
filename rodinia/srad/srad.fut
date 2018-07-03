@@ -55,8 +55,8 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
     let q0sqr = varROI / (meanROI*meanROI)
 
     let (dN, dS, dW, dE, c) =
-      unzip (map2 (\i row ->
-                map2 (\j jc ->
+      unzip5 (map2 (\i row ->
+                unzip5 (map2 (\j jc ->
                         let dN_k = unsafe image[indexN(rows,i),j] - jc
                         let dS_k = unsafe image[indexS(rows,i),j] - jc
                         let dW_k = unsafe image[i, indexW(cols,j)] - jc
@@ -74,7 +74,7 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
                                   else if c_k > 1.0
                                        then 1.0 else c_k
                         in (dN_k, dS_k, dW_k, dE_k, c_k))
-                      (iota cols) row)
+                      (iota cols) row))
              (iota rows) image)
 
     let image =
@@ -86,8 +86,8 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
                           let cE = unsafe c[i, indexE(cols,j)]
                           let d = cN*dN_k + cS*dS_k + cW*dW_k + cE*dE_k
                           in pixel + 0.25 * lambda * d)
-                        (zip (iota cols) image_row c_row dN_row dS_row dW_row dE_row))
-                        (zip (iota rows) image c dN dS dW dE)
+                        (zip7 (iota cols) image_row c_row dN_row dS_row dW_row dE_row))
+                        (zip7 (iota rows) image c dN dS dW dE)
     in image
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS

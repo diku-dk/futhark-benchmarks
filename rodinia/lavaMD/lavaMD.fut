@@ -33,11 +33,11 @@ let main [num_neighbors][number_boxes][par_per_box]
           [number_boxes][par_per_box]f32,
           [number_boxes][par_per_box]f32,
           [number_boxes][par_per_box]f32) =
-  let box_coefs = zip (box_coefs_0) (box_coefs_1) (box_coefs_2) (box_coefs_3)
-  let box_nnghs = zip@1 box_nnghs_0 box_nnghs_1 box_nnghs_2 box_nnghs_3
-  let rv = zip@1 rv_0 rv_1 rv_2 rv_3
+  let box_coefs = zip4 (box_coefs_0) (box_coefs_1) (box_coefs_2) (box_coefs_3)
+  let box_nnghs = map4 zip4 box_nnghs_0 box_nnghs_1 box_nnghs_2 box_nnghs_3
+  let rv = map4 zip4 rv_0 rv_1 rv_2 rv_3
   let a2 = 2.0*alpha*alpha in
-  unzip(map (\(l: i32): [par_per_box](f32,f32,f32,f32)  ->
+  unzip4 <| map unzip4 (map (\(l: i32): [par_per_box](f32,f32,f32,f32)  ->
         let rA = rv[l]
         in
         map  (\(rA_el:  (f32,f32,f32,f32) ): (f32,f32,f32,f32)  -> --(i32 i) ->

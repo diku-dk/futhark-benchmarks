@@ -907,14 +907,14 @@ let embedded_fehlberg_7_8 [equs][pars]
   let initvalu_temp = map (\(xy: (f32,f32,f32)): f32  ->
                            let (x,y1,y2) = xy
                            in x + h * ( b31*y1 + b32*y2 )
-                          ) (zip initvalu (finavalu_temp[0]) (finavalu_temp[1]) )
+                          ) (zip3 initvalu (finavalu_temp[0]) (finavalu_temp[1]) )
   let finavalu_temp[2] = master( timeinst_temp, initvalu_temp, parameter )
 
   let timeinst_temp = timeinst + a4*h
   let initvalu_temp = map (\(xy: (f32,f32,f32)): f32  ->
                               let (x,y1,y2) = xy
                               in x + h * ( b41*y1 + b43*y2 )
-                         ) (zip initvalu (finavalu_temp[0]) (finavalu_temp[2]) )
+                         ) (zip3 initvalu (finavalu_temp[0]) (finavalu_temp[2]) )
   let finavalu_temp[3] = master( timeinst_temp, initvalu_temp, parameter )
 
   let timeinst_temp = timeinst + a5*h
