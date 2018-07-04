@@ -8,5 +8,11 @@ run: all
 fluid.py: fluid.fut
 	futhark-pyopencl --library fluid.fut
 
+fluid.c: fluid.fut
+	futhark-opencl --library fluid.fut
+
+_fluid.py: fluid.c
+	build_futhark_ffi fluid
+
 clean:
 	rm -f fluid.py fluid.pyc
