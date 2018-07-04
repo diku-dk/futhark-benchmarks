@@ -129,8 +129,8 @@ class FluidGUI:
         x0, y0 = pos_old
         x1, y1 = pos_new
         force = 5.0
-        self.U[x1, y1] = force * (x1 - x0)
-        self.V[x1, y1] = force * (y1 - y0)
+        self.U = self.futhark.poke(self.U, x1, y1, force * (x1 - x0))
+        self.V = self.futhark.poke(self.V, x1, y1, force * (y1 - y0))
 
     def add_density(self, pos_old, pos_new, density):
         x_old, y_old = pos_old
@@ -138,7 +138,7 @@ class FluidGUI:
         points = get_line((x_old + 1, y_old + 1),
                           (x_new + 1, y_new + 1))
         for x, y in points:
-            self.D[x, y] = density
+            self.D = self.futhark.poke(self.D, x, y, density)
 
     def react(self):
         for event in pygame.event.get():
@@ -209,15 +209,15 @@ def main(args):
     try:
         grid_resolution = int(args[0])
     except IndexError:
-        print 'Usage: ./fluid-gui.py GRID_RESOLUTION'
-        print
-        print 'Add particles with right click.'
-        print 'Add forces with left click.'
-        print 'Press C to clear all particles and forces.'
-        print 'Press Q/A and W/S to modify diffusion rate and viscosity.'
-        print
-        print 'Example: Create a 256x256 fluid simulation.'
-        print '  ./fluid-gui.py 256'
+        print('Usage: ./fluid-gui.py GRID_RESOLUTION')
+        print()
+        print('Add particles with right click.')
+        print('Add forces with left click.')
+        print('Press C to clear all particles and forces.')
+        print('Press Q/A and W/S to modify diffusion rate and viscosity.')
+        print()
+        print('Example: Create a 256x256 fluid simulation.')
+        print('  ./fluid-gui.py 256')
         return 1
     f = FluidGUI(grid_resolution=grid_resolution)
     f.run()
