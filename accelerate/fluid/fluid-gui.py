@@ -10,8 +10,17 @@ import time
 import numpy as np
 import pygame
 
-import fluid
-
+try:
+    import _fluid
+    from futhark_ffi.compat import FutharkCompat
+    print('Using futhark-pycffi backend.')
+    def futhark_object():
+        return FutharkCompat(_fluid)
+except ImportError:
+    import fluid
+    print('Using futhark-pyopencl backend.')
+    def futhark_object():
+        return fluid.fluid()
 
 # From http://www.roguebasin.com/index.php?title=Bresenham%27s_Line_Algorithm#Python
 def get_line(start, end):
@@ -95,7 +104,7 @@ class FluidGUI:
 
     def run(self):
         self.clear()
-        self.futhark = fluid.fluid()
+        self.futhark = futhark_object()
 
         pygame.init()
         pygame.display.set_caption('Fluid Simulation GUI!')
