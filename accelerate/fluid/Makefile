@@ -11,8 +11,8 @@ fluid.py: fluid.fut
 fluid.c: fluid.fut
 	futhark-opencl --library fluid.fut
 
-_fluid.o: fluid.c
+_fluid.so: fluid.c
 	build_futhark_ffi fluid
 
 clean:
-	rm -f fluid.py fluid.pyc _fluid.o fluid.c
+	rm -f fluid.py fluid.pyc *.o *.so *.c

@@ -10,7 +10,19 @@ import pygame
 import time
 import sys
 
-nb = nbody.nbody(interactive=True)
+try:
+    import _nbody
+    from futhark_ffi.compat import FutharkCompat
+    print('Using futhark-pycffi backend.')
+    def futhark_object():
+        return FutharkCompat(_nbody)
+except ImportError:
+    import nbody
+    print('Using futhark-pyopencl backend.')
+    def futhark_object():
+        return nbody.nbody()
+
+nb = futhark_object()
 
 pygame.init()
 pygame.display.set_caption('N-body')
@@ -216,20 +228,10 @@ def mouseMass(pos):
     x = x_ul + (float(x) / width) * x_dist
     y = y_ul + (float(y) / height) * y_dist
     (x,y,z) = point(x,y,0)
-
     if mass_active and pos:
-        ms[0] = 10000
-        xps[0] = x
-        yps[0] = y
-        zps[0] = z
-        xvs[0] = 0
-        yvs[0] = 0
-        zvs[0] = 0
+        (xps, yps, zps, ms) = nb.mouse_mass_active(xps, yps, zps, ms, x, y, z)
     else:
-        ms[0] = 0.0001
-        xps[0] = x_br
-        yps[0] = y_br
-
+        (xps, yps, zps, ms) = nb.mouse_mass_inactive(xps, yps, zps, ms)
 
 pygame.key.set_repeat(1, 1)
 
