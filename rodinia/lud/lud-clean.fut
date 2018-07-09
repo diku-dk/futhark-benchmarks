@@ -106,8 +106,6 @@ let lud_perimeter_lower [b][m] (diag: [b][b]f32, mat: [m][b][b]f32): *[m][b][b]f
 
 let lud_internal [m][b] (top_per: [m][b][b]f32, lft_per: [m][b][b]f32, mat_slice: [m][m][b][b]f32 ): *[m][m][b][b]f32 =
   let top_slice = map transpose top_per in
---  let lft_slice = lft_per[1:mp1] in
---  let mat_slice = mat[1:mp1,1:mp1] in
   map (\[m] (mat_arr: [m][b][b]f32, lft: [b][b]f32): [m][b][b]f32  ->
         map (\ (mat_blk: [b][b]f32, top: [b][b]f32): [b][b]f32  ->
                 map  (\ (mat_row: [b]f32, lft_row: [b]f32): [b]f32  ->
