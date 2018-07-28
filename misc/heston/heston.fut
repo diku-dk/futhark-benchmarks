@@ -34,7 +34,7 @@ type objective_ctx = {day_count_fractions: []real,
                      }
 
 module real_least_squares = mk_least_squares real rand
-module real_distance = relative_distance real
+module real_distance = absolute_distance real
 
 type quote = {maturity: date, strike: real, quote: real}
 
