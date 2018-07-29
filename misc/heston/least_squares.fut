@@ -126,17 +126,17 @@ module mk_least_squares (real: real) (rand: rng_engine)
                  (rng: rand.rng) (i :i32) (x_i: [num_free_vars]real) =
       (-- We have to draw 'to_draw' distinct elements from 'x', and it
        -- can't be 'i'.  We do this with brute-force looping.
-       let (rng,a) = random_i32.rand (0,np) rng
-       let (rng,b) = random_i32.rand (0,np) rng
-       let (rng,c) = random_i32.rand (0,np) rng
-       let (rng,a) = loop (rng,a) while a i32.== i do random_i32.rand (0,np) rng
-       let (rng,b) = loop (rng,b) while b i32.== i || b i32.== a do random_i32.rand (0,np) rng
-       let (rng,c) = loop (rng,c) while c i32.== i || c i32.== a || c i32.== b do random_i32.rand (0,np) rng
+       let (rng,a) = random_i32.rand (0,np-1) rng
+       let (rng,b) = random_i32.rand (0,np-1) rng
+       let (rng,c) = random_i32.rand (0,np-1) rng
+       let (rng,a) = loop (rng,a) while a i32.== i do random_i32.rand (0,np-1) rng
+       let (rng,b) = loop (rng,b) while b i32.== i || b i32.== a do random_i32.rand (0,np-1) rng
+       let (rng,c) = loop (rng,c) while c i32.== i || c i32.== a || c i32.== b do random_i32.rand (0,np-1) rng
        let (rng,r) = random_real.rand bounds rng
        let x_r1 = unsafe real.(if r <= from_fraction 1 2 then x[best_idx] else x[a])
        let x_r2 = unsafe x[b]
        let x_r3 = unsafe x[c]
-       let (rng,j0) = random_i32.rand (0,num_free_vars) rng
+       let (rng,j0) = random_i32.rand (0,num_free_vars-1) rng
        let (rng,rs) = nrand bounds rng num_free_vars
        let auxs = real.(map2 (+) x_r1 (map (difw*) (map2 (-) x_r2 x_r3)))
        let v_i = map (\(j, r, lower_bound, upper_bound, aux, x_i_j) ->
