@@ -17,7 +17,7 @@ import "/futlib/math"
 
 type int = i32
 
-let B = 16
+let B = 32
 
 let fInd (y:i32) (x:i32): i32 = y*(B+1) + x
 let max3 (x:int, y:int, z:int) = if x < y 
@@ -37,7 +37,11 @@ let intraBlockPar [lensq][len] (penalty: int)
   -- for ( int ty = 0 ; ty < BLOCK_SIZE ; ty++)
   --   REF(ty, tx) =  reference_d[index + cols * ty];
   let slice_ref =  unsafe reference2[b_y*B+1 : b_y*B+1+B, b_x*B+1 : b_x*B+1+B]
-  let ref_l = copy slice_ref
+
+  let ref_l = replicate (B*B) 0
+  let ref_l = loop ref_l for i < B do
+                scatter ref_l (map (\tid->i*B+tid) (iota B)) slice_ref[i]
+  let ref_l = unflatten B B ref_l
 
   let inp_l = replicate ((B+1)*(B+1)) 0i32
 
