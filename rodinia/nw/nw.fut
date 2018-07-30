@@ -3,6 +3,9 @@
 --
 -- ==
 --
+-- compiled input @ data/large.in.gz
+-- output @ data/large.out.gz
+
 -- compiled input @ data/tiny.in
 -- output @ data/tiny.out
 -- compiled input @ data/small.in
