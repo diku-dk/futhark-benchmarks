@@ -1,6 +1,6 @@
 -- | Parameter calibration based on genetic least-squares optimisation.
 
-import "/futlib/random"
+import "lib/github.com/diku-dk/cpprandom/random"
 
 module type least_squares = {
   -- | The representation of real numbers.
