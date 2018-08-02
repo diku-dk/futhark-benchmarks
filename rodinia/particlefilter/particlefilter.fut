@@ -25,7 +25,7 @@
 -- compiled input @ data/128_128_10_image_400000_particles.in
 -- output @ data/128_128_10_image_400000_particles.out
 
-import "/futlib/random"
+import "lib/github.com/diku-dk/cpprandom/random"
 
 module rnge = linear_congruential_engine i32 {
   let m = i32.largest
