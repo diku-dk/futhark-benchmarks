@@ -5,7 +5,7 @@
 -- compiled input @ data/10000_quotes.in
 -- compiled input @ data/100000_quotes.in
 
-import "/futlib/random"
+import "lib/github.com/diku-dk/cpprandom/random"
 import "/futlib/math"
 import "heston"
 
