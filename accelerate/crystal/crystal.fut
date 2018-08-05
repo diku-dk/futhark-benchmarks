@@ -2,7 +2,7 @@
 --
 -- ==
 -- tags { futhark-c futhark-opencl }
--- input {
+-- bench input {
 --   200
 --   30.0f32
 --   5
@@ -10,7 +10,7 @@
 --   1.0f32
 -- }
 --
--- compiled input {
+-- nobench compiled input {
 --   20
 --   30.0f32
 --   5
@@ -18,7 +18,7 @@
 --   0.5f32
 -- }
 --
--- compiled input {
+-- nobench compiled input {
 --   40
 --   30.0f32
 --   5
@@ -26,7 +26,7 @@
 --   0.5f32
 -- }
 --
--- compiled input {
+-- nobench compiled input {
 --   40
 --   30.0f32
 --   50
