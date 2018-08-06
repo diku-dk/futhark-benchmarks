@@ -12,7 +12,7 @@
 -- compiled input @ InterestCalib-data/large.in
 -- output @ InterestCalib-data/large.out
 
-import "/futlib/date"
+import "lib/github.com/diku-dk/date/date"
 
 --------------------------------------------------/
 --/ Constants and Utility Functions
