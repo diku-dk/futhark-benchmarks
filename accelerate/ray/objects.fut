@@ -1,5 +1,4 @@
 import "/futlib/colour"
-import "/futlib/math"
 import "types"
 
 module type object = {

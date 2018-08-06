@@ -1,7 +1,5 @@
 -- Buddhabrot fractal: https://en.wikipedia.org/wiki/Buddhabrot
 
-import "/futlib/math"
-
 let dot(c: (f32,f32)): f32 =
   let (r, i) = c
   in r * r + i * i

@@ -18,8 +18,6 @@
 -- "data/N-bodies.in" all have the other attributes n_steps=1, timestep=1.0, and
 -- epsilon=50.0.
 
-import "/futlib/math"
-import "/futlib/array"
 import "/futlib/vector"
 import "/futlib/colour"
 

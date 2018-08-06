@@ -50,7 +50,6 @@
 --   1.0f32
 -- }
 
-import "/futlib/math"
 import "/futlib/colour"
 
 let odd(n: i32): bool = (n & 1) == 1

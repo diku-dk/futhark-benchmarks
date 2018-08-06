@@ -13,8 +13,6 @@
 -- compiled input @ data/1000000.in
 -- output @ data/1000000.out
 
-import "/futlib/math"
-
 let thefunction(x: f64, omegan: f64, select: i32): f64 =
   if select == 0 then (x+1.0) ** x
   else if select == 1 then (x+1.0)**x * f64.cos(omegan*x)

@@ -6,8 +6,6 @@
 -- compiled input @ data/medium.in.gz
 -- output @ data/medium.out
 
-import "/futlib/math"
-
 let emptyRecord: (i32, f32) = (0, 0.0f32)
 
 let main [numRecords]

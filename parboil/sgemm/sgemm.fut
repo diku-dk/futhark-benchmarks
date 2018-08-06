@@ -8,8 +8,6 @@
 -- compiled input @ data/medium.in.gz
 -- output @ data/medium.out.gz
 
-import "/futlib/array"
-
 let mult [n][m][p] (xss: [n][m]f32, yss: [m][p]f32): [n][p]f32 =
   let dotprod xs ys = f32.sum (map2 (*) xs ys)
   in map (\xs -> map (dotprod xs) (transpose yss)) xss

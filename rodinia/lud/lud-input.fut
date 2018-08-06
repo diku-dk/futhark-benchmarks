@@ -2,8 +2,6 @@
 --
 -- Algorithm from Rodinia.
 
-import "/futlib/math"
-
 let main(n: i32): [n][n]f32 =
   let lambda = -0.001
   let f (p: i32) =

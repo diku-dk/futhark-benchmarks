@@ -11,8 +11,6 @@
 -- compiled input { 10f32 4000 4000 }
 -- compiled input { 10f32 8000 8000 }
 
-import "/futlib/math"
-import "/futlib/array"
 import "/futlib/vector"
 import "/futlib/colour"
 

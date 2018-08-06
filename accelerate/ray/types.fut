@@ -1,4 +1,3 @@
-import "/futlib/math"
 import "/futlib/vector"
 
 module vec3 = mk_vec3 f32

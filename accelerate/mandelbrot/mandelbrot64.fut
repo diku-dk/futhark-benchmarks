@@ -1,6 +1,5 @@
 -- Mandelbrot visualisation with 64-bit floats.
 
-import "/futlib/math"
 import "generic_mandelbrot"
 
 module mandelbrot = mandelbrot f64

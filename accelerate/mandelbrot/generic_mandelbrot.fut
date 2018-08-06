@@ -3,7 +3,6 @@
 -- always done in single-precision.  This matches how Accelerate does
 -- things.
 
-import "/futlib/math"
 import "/futlib/complex"
 import "/futlib/colour"
 

@@ -6,8 +6,6 @@
 -- input @ data/medium.in
 -- output @ data/medium.out
 
-import "/futlib/array"
-
 let in_range   (x: i32, lb: i32, ub: i32): bool = (x >= lb) && (x <= ub)
 let clamp_range(x: i32, lb: i32, ub: i32): i32 = if      (x < lb) then lb 
                                               else if (x > ub) then ub else x

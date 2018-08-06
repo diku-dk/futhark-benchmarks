@@ -1,4 +1,3 @@
-import "/futlib/math"
 import "/futlib/colour"
 import "types"
 import "objects"

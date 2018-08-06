@@ -1,7 +1,5 @@
 -- A least significant digit radix sort to test out `scatter`.
 
-import "/futlib/array"
-
 let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
   let bits = map (\x -> (i32.u32 x >>> digit_n) & 1) xs
   let bits_inv = map (\(b: i32): i32  -> 1 - b) bits

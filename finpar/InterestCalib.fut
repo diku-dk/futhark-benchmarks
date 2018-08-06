@@ -12,9 +12,7 @@
 -- compiled input @ InterestCalib-data/large.in
 -- output @ InterestCalib-data/large.out
 
-import "/futlib/math"
 import "/futlib/date"
-import "/futlib/array"
 
 --------------------------------------------------/
 --/ Constants and Utility Functions
