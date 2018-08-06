@@ -399,11 +399,15 @@ module xorshift128plus: rng_engine with int.t = u64 = {
     let new_y = x ^ y ^ (x >> 17u64) ^ (y >> 26u64)
     in ((new_x,new_y), (new_y + y))
 
+  -- This seeding is quite a hack to ensure that we get good results
+  -- even for poor seeds.  The main trick is to run a couple of rounds
+  -- of the RNG after we're done.
   let rng_from_seed [n] (seed: [n]i32) =
-    loop (a,b) = (1u64,u64.i32 n) for i < n do
-      if n % 2 == 0
-      then (rand (a^u64.i32 (hash seed[i]),b)).1
-      else (rand (a, b^u64.i32 (hash seed[i]))).1
+    (loop (a,b) = (u64.i32 (hash (-n)), u64.i32 (hash n)) for i < n do
+       if i % 2 == 0
+       then (rand (a^u64.i32 (hash seed[i]),b)).1
+       else (rand (a, b^u64.i32 (hash seed[i]))).1)
+    |> rand |> (.1) |> rand |> (.1)
 
   let split_rng (n: i32) ((x,y): rng): [n]rng =
     map (\i -> let (a,b) = (rand (rng_from_seed [hash (i^n)])).1
@@ -489,7 +493,8 @@ module uniform_real_distribution (R: real) (E: rng_engine):
   rng_distribution with num.t = R.t
                    with engine.rng = E.rng
                    with distribution = (R.t,R.t) = {
-  let to_D (x: E.int.t) = R.i64 (E.int.to_i64 x)
+  let to_R (x: E.int.t) =
+    R.u64 (u64.i64 (E.int.to_i64 x))
 
   module engine = E
   module num = R
@@ -499,7 +504,7 @@ module uniform_real_distribution (R: real) (E: rng_engine):
 
   let rand ((min_r,max_r): distribution) (rng: E.rng) =
     let (rng', x) = E.rand rng
-    let x' = to_D x R./ to_D E.max
+    let x' = R.((to_R x - to_R E.min) / (to_R E.max - to_R E.min))
     in (rng', R.(min_r + x' * (max_r - min_r)))
 }
 
