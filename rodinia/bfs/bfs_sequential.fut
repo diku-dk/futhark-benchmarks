@@ -12,8 +12,6 @@
 -- input @ data/64kn_32e-var-1-256-skew.in
 -- output @ data/64kn_32e-var-1-256-skew.out
 
-import "/futlib/array"
-
 let node_work [n][e] (tid: i32,
                       cost: *[n]i32,
                       nodes_start_index: [n]i32,

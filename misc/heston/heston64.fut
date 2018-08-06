@@ -6,7 +6,6 @@
 -- compiled input @ data/100000_quotes.in
 
 import "lib/github.com/diku-dk/cpprandom/random"
-import "/futlib/math"
 import "heston"
 
 module heston64 = heston f64 pcg32

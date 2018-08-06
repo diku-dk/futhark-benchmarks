@@ -25,8 +25,6 @@
 -- compiled input @ data/lena512.in
 -- output @ data/lena512.out
 
-import "/futlib/math"
-
 let luminanceOfRGBA32(p: i32): f32 =
   let r = i8.i32(p >> 24)
   let g = i8.i32(p >> 16)

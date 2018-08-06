@@ -5,8 +5,6 @@
 -- [1] G. E. Blelloch. "Prefix sums and their applications." Technical Report
 --     CMU-CS-90-190. Carnegie Mellon University. 1990.
 
-import "/futlib/array"
-
 let plus_scan [n] (x: [n]i32): [n]i32 =
   scan (+) 0 x
 

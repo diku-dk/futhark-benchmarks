@@ -9,9 +9,6 @@
 -- compiled input @ data/fvcorr.domn.193K.toa.gz
 -- output @ data/fvcorr.domn.193K.out.gz
 
-import "/futlib/math"
-import "/futlib/array"
-
 let gamma: f32 = 1.4
 let iterations: i32 = 2000
 

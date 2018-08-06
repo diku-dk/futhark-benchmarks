@@ -8,7 +8,6 @@
 -- compiled input { 4000 4000 -0.7f32 0f32 3.067f32 100 16f32 }
 -- compiled input { 8000 8000 -0.7f32 0f32 3.067f32 100 16f32 }
 
-import "/futlib/math"
 import "generic_mandelbrot"
 
 module mandelbrot = mandelbrot f32

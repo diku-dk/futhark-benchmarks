@@ -13,8 +13,6 @@
 -- compiled input @ data/medium.in.gz
 -- output @ data/medium.out.gz
 
-import "/futlib/math"
-
 type int = i32
 
 let B = 32

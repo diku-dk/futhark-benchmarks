@@ -30,9 +30,6 @@
 
 -- medium.in attributes: n_steps=1, n_solver_steps=40, grid_res=100
 
-
-import "/futlib/array"
-
 ------------------------------------------------------------
 -- General helper functions.
 ------------------------------------------------------------

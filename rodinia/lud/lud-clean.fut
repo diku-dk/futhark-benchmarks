@@ -12,8 +12,6 @@
 -- compiled input @ data/2048.in.gz
 -- output @ data/2048.out.gz
 
-import "/futlib/array"
-
 -------------------------------------------
 ---- Translation of: lud_diagonal_omp -----
 -------------------------------------------

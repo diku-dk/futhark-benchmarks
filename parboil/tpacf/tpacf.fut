@@ -8,9 +8,6 @@
 -- compiled input @ data/large.in.gz
 -- output @ data/large.out
 
-import "/futlib/math"
-import "/futlib/array"
-
 type vec3 = (f64, f64, f64)
 
 let dec2rad(dec: f64): f64 = f64.pi/180.0 * dec

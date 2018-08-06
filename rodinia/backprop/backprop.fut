@@ -5,9 +5,6 @@
 -- output @ data/small.out
 -- input @ data/medium.in
 
-import "/futlib/math"
-import "/futlib/array"
-
 let eta(): f32       = 0.3
 let momentum(): f32  = 0.3
 let init_zero(): bool = false

@@ -8,8 +8,6 @@
 -- output @ data/small.out
 -- input @ data/medium.in
 
-import "/futlib/math"
-
 ----------------------
 ----- Ecc MODULE -----
 ----------------------
