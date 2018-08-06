@@ -1,6 +1,6 @@
 -- | Heston calibration based on a generic least-squares solver.
 
-import "/futlib/date"
+import "lib/github.com/diku-dk/date/date"
 import "lib/github.com/diku-dk/cpprandom/random"
 import "distance"
 import "least_squares"
