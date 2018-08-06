@@ -9,7 +9,7 @@ module mktest (dist: rng_distribution) = {
 
   let test (x: i32) (n: i32) (d: dist.distribution) =
     let rng = engine.rng_from_seed [x]
-    let (rng, x) = dist.rand d rng
+    let (rng, _) = dist.rand d rng
     let rngs = engine.split_rng n rng
     let (_, xs) = unzip (map (dist.rand d) rngs)
     let mean = num.(reduce (+) (i32 0) xs / i32 n)
@@ -23,7 +23,7 @@ module mktest_f (dist: rng_distribution) (R: real with t = dist.num.t) = {
 
   let test (x: i32) (n: i32) (d: dist.distribution) =
     let rng = engine.rng_from_seed [x]
-    let (rng, x) = dist.rand d rng
+    let (rng, _) = dist.rand d rng
     let rngs = engine.split_rng n rng
     let (_, xs) = unzip (map (dist.rand d) rngs)
     let mean = num.(reduce (+) (i32 0) xs / i32 n)
