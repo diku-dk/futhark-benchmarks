@@ -50,7 +50,7 @@
 --   1.0f32
 -- }
 
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 
 let odd(n: i32): bool = (n & 1) == 1
 

@@ -3,7 +3,7 @@
 import "genlife"
 import "fading"
 
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 
 module conway_rules: rules with cell = bool = {
   type cell = bool

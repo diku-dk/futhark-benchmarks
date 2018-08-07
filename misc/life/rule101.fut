@@ -9,7 +9,7 @@
 import "genlife"
 import "genlife_1d"
 
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 
 module rule101_rules: rules_and_visuals_1d = {
   type cell = bool

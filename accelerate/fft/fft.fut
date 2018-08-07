@@ -50,7 +50,7 @@ let transform [n][m] (cutoff: i32) (arr: [n][m]u8) =
 -- to u8 induces too many false negatives when testing on hardware
 -- with less accurate floats (such as GPUs).
 
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 
 let unpack_rgb (x: [3]u8): (u8, u8, u8) =
   (x[0], x[1], x[2])

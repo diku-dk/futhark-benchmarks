@@ -1,7 +1,7 @@
 -- A wrapper around the Pan library that provides actual screen
 -- frames.
 
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 import "pan"
 
 let fcolorToColour (r,g,b,a) = argb.from_rgba r g b a
