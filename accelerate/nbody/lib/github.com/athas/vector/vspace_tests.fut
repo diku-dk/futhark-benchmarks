@@ -1,6 +1,6 @@
 -- | ignore
 
-import "space"
+import "vspace"
 import "vector"
 
 module vec3 = mk_vspace_3d f64
