@@ -4,7 +4,7 @@
 -- things.
 
 import "/futlib/complex"
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 
 module mandelbrot(real: real): {
   val render_mandelbrot:

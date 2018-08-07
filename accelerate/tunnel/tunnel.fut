@@ -12,7 +12,7 @@
 -- compiled input { 10f32 8000 8000 }
 
 import "lib/github.com/athas/vector/vspace"
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 
 module vec2 = mk_vspace_2d f32
 

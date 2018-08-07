@@ -19,7 +19,7 @@
 -- epsilon=50.0.
 
 import "lib/github.com/athas/vector/vspace"
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 
 module vec3 = mk_vspace_3d f32
 

@@ -13,7 +13,7 @@
 --   0f32
 -- }
 
-import "/futlib/colour"
+import "lib/github.com/athas/matte/colour"
 
 import "types"
 import "objects"
