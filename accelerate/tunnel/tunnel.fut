@@ -11,10 +11,10 @@
 -- compiled input { 10f32 4000 4000 }
 -- compiled input { 10f32 8000 8000 }
 
-import "/futlib/vector"
+import "lib/github.com/athas/vector/space"
 import "/futlib/colour"
 
-module vec2 = mk_vec2 f32
+module vec2 = mk_vspace_2d f32
 
 type v2 = (f32,f32)
 
@@ -31,17 +31,17 @@ let smoothstep(edge0: f32, edge1: f32, x: f32): f32 =
   let t = clamp(0f32, ((x-edge0) / (edge1-edge0)), 1.0f32)
   in t*t*(3f32 - 2f32*t)
 
-let rand2(p: vec2.vec): vec2.vec =
+let rand2(p: vec2.vector): vec2.vector =
   let x = {x=127.1f32, y=311.7f32}
   let y = {x=269.5f32, y=183.3f32}
   in {x= fract(f32.sin(vec2.dot p x) * 43758.5453f32),
       y= fract(f32.sin(vec2.dot p y) * 43758.5453f32)}
 
-let rand1(p: vec2.vec): f32 =
+let rand1(p: vec2.vector): f32 =
   let z = {x=419.2f32, y=371.9f32}
   in fract(f32.sin(vec2.dot p z) * 833458.57832f32)
 
-let sample(irregular: f32, cell: vec2.vec, cellOffset: vec2.vec, sharpness: f32, i: i32, j: i32): vec2.vec =
+let sample(irregular: f32, cell: vec2.vector, cellOffset: vec2.vector, sharpness: f32, i: i32, j: i32): vec2.vector =
   let samplePos = {x=r32 i, y=r32 j}
   let u = rand2(vec2.(cell + samplePos))
   let centre = {x=u.x * irregular, y=u.y * irregular}
@@ -50,7 +50,7 @@ let sample(irregular: f32, cell: vec2.vec, cellOffset: vec2.vec, sharpness: f32,
   let colour = rand1(vec2.(cell + samplePos))
   in {x=colour * det, y=det}
 
-let voronoise(xy: vec2.vec, irregular: f32, smoothness: f32): f32 =
+let voronoise(xy: vec2.vector, irregular: f32, smoothness: f32): f32 =
   let cell = {x=r32(t32 xy.x), y=r32(t32 xy.y)}
   let cellOffset = {x=fract xy.x, y=fract xy.y}
   let sharpness = 1f32 + 63f32 * ((1f32-smoothness) ** 4f32)
