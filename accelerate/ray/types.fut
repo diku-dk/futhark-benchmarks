@@ -1,6 +1,6 @@
-import "/futlib/vector"
+import "lib/github.com/athas/vector/space"
 
-module vec3 = mk_vec3 f32
+module vec3 = mk_vspace_3d f32
 
-type position = vec3.vec
-type direction = vec3.vec
+type position = vec3.vector
+type direction = vec3.vector
