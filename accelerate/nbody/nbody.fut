@@ -18,15 +18,15 @@
 -- "data/N-bodies.in" all have the other attributes n_steps=1, timestep=1.0, and
 -- epsilon=50.0.
 
-import "/futlib/vector"
+import "lib/github.com/athas/vector/space"
 import "/futlib/colour"
 
-module vec3 = mk_vec3 f32
+module vec3 = mk_vspace_3d f32
 
 type mass = f32
-type position = vec3.vec
-type acceleration = vec3.vec
-type velocity = vec3.vec
+type position = vec3.vector
+type acceleration = vec3.vector
+type velocity = vec3.vector
 type body = {position: position,
              mass: mass,
              velocity: velocity,
