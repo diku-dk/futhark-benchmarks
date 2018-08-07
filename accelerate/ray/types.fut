@@ -1,4 +1,4 @@
-import "lib/github.com/athas/vector/space"
+import "lib/github.com/athas/vector/vspace"
 
 module vec3 = mk_vspace_3d f32
 
