@@ -1,7 +1,7 @@
 -- | Pricing of [European
 -- call-options](https://en.wikipedia.org/wiki/Option_style#American_and_European_options)
 -- in the [Heston model](https://en.wikipedia.org/wiki/Heston_model).
-import "/futlib/complex"
+import "lib/github.com/diku-dk/complex/complex"
 import "lib/github.com/diku-dk/date/date"
 
 -- | Parameters for the Heston model.
@@ -42,7 +42,7 @@ let twenty: num_points = false
 
 open R
 
-module c64 = complex(R)
+module c64 = mk_complex R
 type c64 = c64.complex
 
 let (x: c64) +! (y: c64) = x c64.+ y
