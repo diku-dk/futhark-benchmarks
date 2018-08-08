@@ -18,4 +18,5 @@
 !.gitignore
 !/**/
 !*.fut
+!futhark.pkg
 !**/data/*.gz
