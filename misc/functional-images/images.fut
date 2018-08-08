@@ -18,9 +18,9 @@ let region_to_argb: region -> argb_image = (>-> boolToColour)
 -- main changes are due to the fact that Futhark is not lazy.
 let fairlyClose ((u,v): point) = (u*u + v*v) < 100f32
 
-import "/futlib/complex"
+import "lib/github.com/diku-dk/complex/complex"
 
-module complex = complex f32
+module complex = mk_complex f32
 type complex = complex.complex
 
 let mandelbrotNext p1 p1' = complex.(p1 + p1' * p1')

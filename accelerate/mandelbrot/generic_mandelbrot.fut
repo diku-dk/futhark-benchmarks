@@ -3,7 +3,7 @@
 -- always done in single-precision.  This matches how Accelerate does
 -- things.
 
-import "/futlib/complex"
+import "lib/github.com/diku-dk/complex/complex"
 import "lib/github.com/athas/matte/colour"
 
 module mandelbrot(real: real): {
@@ -14,7 +14,7 @@ module mandelbrot(real: real): {
     [screenX][screenY]i32
 } = {
 type real = real.t
-module complex = complex real
+module complex = mk_complex real
 type complex = complex.complex
 
 let int (x: i32) = real.i32 x
