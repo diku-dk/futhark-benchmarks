@@ -13,7 +13,7 @@ let dot ((ax,ay,az), (bx,by,bz)): f32 =
 -----------------------------------------
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
-let main [num_neighbors][number_boxes][par_per_box]
+let main [number_boxes][par_per_box][num_neighbors]
              (alpha:  f32
             , box_coefs_0: [number_boxes]i32
             , box_coefs_1: [number_boxes]i32

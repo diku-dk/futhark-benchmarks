@@ -17,7 +17,7 @@ let sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
 
 -----------------------
 -----------------------
-let main (boxes1d: i32) (num_nn: i32) (par_per_box: i32):
+let main (boxes1d: i32) (par_per_box: i32) (num_neighbors: i32):
                         (f32,
                          []i32,
                          []i32,
@@ -45,7 +45,7 @@ let main (boxes1d: i32) (num_nn: i32) (par_per_box: i32):
   -- 1. Initialize boxs' data structure --
   ----------------------------------------
   let boxes = 
-    map (\(nh: i32): ( (i32, i32, i32, i32), [num_nn](i32,i32,i32,i32), i32 )  ->
+    map (\(nh: i32): ( (i32, i32, i32, i32), [num_neighbors](i32,i32,i32,i32), i32 )  ->
           let k = nh % boxes1d
           let nr= nh / boxes1d
           let j = nr % boxes1d
@@ -54,8 +54,8 @@ let main (boxes1d: i32) (num_nn: i32) (par_per_box: i32):
           -- current home box
           let box_coef = ( k, j, i, nh )
           -- initialize neighbor boxes
-          let box_nngh_cur_nn = (replicate num_nn (0,0,0,0), 0)
-          let (box_nngh_cur_nn) = loop (box_nngh_cur_nn) for nn < num_nn do
+          let box_nngh_cur_nn = (replicate num_neighbors (0,0,0,0), 0)
+          let (box_nngh_cur_nn) = loop (box_nngh_cur_nn) for nn < num_neighbors do
             let (box_nngh, cur_nn) = box_nngh_cur_nn
             let n = (nn % 3) - 1
             let nr= nn / 3
