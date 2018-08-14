@@ -56,7 +56,7 @@ let calculate_ranks [n] (links:[]link) (ranks_in: *[n]f32)
     let ranks_pages = calculate_page_ranks links ranks sizes
     in calculate_dangling_ranks ranks_pages sizes
 
-import "/futlib/radix_sort"
+import "lib/github.com/diku-dk/sorts/radix_sort"
 
 let sort_by_to = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i link.to)
 
