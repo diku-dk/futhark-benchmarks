@@ -4,13 +4,13 @@
 -- ==
 -- tags { futhark-opencl futhark-c }
 --
--- input @ data/nbody-acc-t0.in
+-- nobench input @ data/nbody-acc-t0.in
 -- output @ data/nbody-acc-t0.out
 --
--- input @ data/nbody-acc-t10.in
+-- nobench input @ data/nbody-acc-t10.in
 -- output @ data/nbody-acc-t10.out
 --
--- input @ data/100-bodies.in
+-- nobench input @ data/100-bodies.in
 -- input @ data/1000-bodies.in
 -- input @ data/10000-bodies.in
 -- input @ data/100000-bodies.in
