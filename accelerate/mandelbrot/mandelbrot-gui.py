@@ -34,7 +34,7 @@ m64 = None # Loaded on demand.
 mandelbrot = m32
 
 def make_mandelbrot():
-    return mandelbrot.render_mandelbrot(screenX, screenY, xcentre, ycentre, width, limit, radius).get()
+    return mandelbrot.render_mandelbrot(screenX, screenY, xcentre, ycentre, width, limit, radius).transpose().get()
 
 (xcentre,ycentre,width,limit,radius) = presets['0']
 
@@ -101,13 +101,15 @@ def render():
     start = time.time()
     frame = make_mandelbrot()
     end = time.time()
+    blit_start = time.time()
     pygame.surfarray.blit_array(surface, frame)
     screen.blit(surface, (0, 0))
+    blit_end = time.time()
 
     infomessage = "Centre: (%f,%f); width: %f; bits: %d; iterations: %d; radius: %.2f" % (xcentre, ycentre, width, precision, limit, radius)
     showText(infomessage, (10,10))
 
-    speedmessage = "Futhark call took %.2fms" % ((end-start)*1000,)
+    speedmessage = "Futhark call took %.2fms; blitting took %.2fms" % ((end-start)*1000,(blit_end-blit_start)*1000)
     showText(speedmessage, (10, 40))
 
     pygame.display.flip()

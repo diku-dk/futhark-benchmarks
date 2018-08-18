@@ -26,10 +26,10 @@ let divergence (limit: i32) (radius: real) (c0: complex): (complex,i32) =
 
 let mandelbrot (screenX: i32) (screenY: i32) (limit: i32) (radius: real)
                ((xmin, ymin, xmax, ymax): (real,real,real,real))
-    : [screenX][screenY](complex,i32) =
+    : [screenY][screenX](complex,i32) =
   let sizex = real.(xmax - xmin)
   let sizey = real.(ymax - ymin)
-  in tabulate_2d screenX screenY <| \x y ->
+  in tabulate_2d screenY screenX <| \y x ->
        let c0 = complex.mk real.(xmin + (int x * sizex) / int screenX)
                            real.(ymin + (int y * sizey) / int screenY)
        in divergence limit radius c0
@@ -108,7 +108,7 @@ let escape_to_colour (limit: i32) (points: i32)
 let render_mandelbrot (screenX: i32) (screenY: i32)
                       (xcentre: real) (ycentre: real) (width: real)
                       (limit: i32) (radius: real)
-                      : [screenX][screenY]i32 =
+                      : [screenY][screenX]i32 =
   let aspect_ratio = real.(int screenX / int screenY)
   let (xmin,ymin) = (real.(xcentre - width/int 2),
                      real.(ycentre - (int 1/aspect_ratio)*width/int 2))
