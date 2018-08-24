@@ -254,7 +254,9 @@ let run4 [sx][sy][sz][dims1][N]
               in res
         ) (iota N)
 
-
+-- run4 seems to be the best one,
+-- at group size 32 for NVIDIA, and
+-- at group size 16 for AMD
 let main [sx][sy][sz][dims1][N]
          (dataI:   [dims1][sz][sy][sx]T)
          (scale0  : real)
@@ -263,7 +265,7 @@ let main [sx][sy][sz][dims1][N]
          (pts: [3][N]real) : [dims1][N]real =
     let scale = [scale0,  scale0,  scale0]
     let offset= [offset0, offset0, offset0]
-    in  run2 dataI scale offset pts
+    in  run4 dataI scale offset pts
 
 -- futhark-dataset -b --f32-bounds=0.0:1.0 -g [1][200][200][200]f32 --f64-bounds=1:1 -g f64 --f64-bounds=0:0 -g f64 --f64-bounds=1.0:199.0 -g [3][1000000]f64 > fake.in
 -- futhark-dataset -b --f32-bounds=0.0:1.0 -g [1][200][200][200]f32 --f32-bounds=1:1 -g f32 --f32-bounds=0:0 -g f32 --f32-bounds=1.0:199.0 -g [3][1000000]f32 > fake32.in
