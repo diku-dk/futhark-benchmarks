@@ -149,12 +149,13 @@ let run2 [sx][sy][sz][dims1][N]
         (scale  : [3]real)
         (offset : [3]real)
         (pts: [3][N]real) : [dims1][N]real =
+    let res0 = replicate dims1 zero in
     transpose <|
     map (\i ->
             let (x, px) = myfun sx (scale[0]) (offset[0]) (pts[0,i])
             let (y, py) = myfun sy (scale[1]) (offset[1]) (pts[1,i])
             let (z, pz) = myfun sz (scale[2]) (offset[2]) (pts[2,i])
-            let res = replicate dims1 zero in
+            let res = copy res0 in
             loop(res) for m < dims1 do
                 let s = zero in
                 let res[m] = 
@@ -230,11 +231,8 @@ let run4 [sx][sy][sz][dims1][N]
     map (\i ->
             let (x, px) = myfunVct sx (scale[0]) (offset[0]) (pts[0,i])
             let (y, py) = myfunVct sy (scale[1]) (offset[1]) (pts[1,i])
---            let (y, py) = myfun sy (scale[1]) (offset[1]) (pts[1,i])
             let (z, pz) = myfun sz (scale[2]) (offset[2]) (pts[2,i])
 
---            let (y, py) = myfunVct sy (scale[1]) (offset[1]) (pts[1,i])
---            let (z, pz) = myfunVct sz (scale[2]) (offset[2]) (pts[2,i])
 --            let res = replicate dims1 zero in
 --            loop(res) for m < dims1 do
               let m   = 0
@@ -269,5 +267,6 @@ let main [sx][sy][sz][dims1][N]
 
 -- futhark-dataset -b --f32-bounds=0.0:1.0 -g [1][200][200][200]f32 --f64-bounds=1:1 -g f64 --f64-bounds=0:0 -g f64 --f64-bounds=1.0:199.0 -g [3][1000000]f64 > fake.in
 -- futhark-dataset -b --f32-bounds=0.0:1.0 -g [1][200][200][200]f32 --f32-bounds=1:1 -g f32 --f32-bounds=0:0 -g f32 --f32-bounds=1.0:199.0 -g [3][1000000]f32 > fake32.in
--- gcc -o interp_cos_plays interp_cos_plays.c -lOpenCL -lm -O3 -std=c99
+-- gcc -o interp_cos_plays interp_cos_plays.c -lOpenCL -lm -O3 -std=c9
+-- futhark-pkg add github.com/athas/vector
 
