@@ -18,8 +18,8 @@ let toReal (x: T) : real = f32.to_f64 x
 let main0 [sx][sy][sz][dims1][N]
 
         (dataI:   [dims1][sz][sy][sx]T)
-        (scale0  : real)
-        (offset0 : real) 
+        (_scale0  : real)
+        (_offset0 : real)
         (pts: [3][N]real) : 
         ([dims1][sz][sy][sx]T, [3][N]real) =
 
