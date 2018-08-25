@@ -15,4 +15,7 @@ module mandelbrot = mandelbrot f32
 let main (screenX: i32) (screenY: i32)
          (xcentre: f32) (ycentre: f32) (width: f32)
          (depth: i32) (radius: f32) =
-  mandelbrot.render_mandelbrot screenX screenY xcentre ycentre width depth radius
+  -- Hack to avoid returning something gigantic.
+  let frame = mandelbrot.render_mandelbrot screenX screenY xcentre ycentre width depth radius
+  let frame_flat = flatten frame
+  in frame_flat[frame_flat[0] % length frame_flat]
