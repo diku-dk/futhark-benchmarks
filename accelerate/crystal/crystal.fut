@@ -93,8 +93,11 @@ entry render_frame(field_size: i32, scale: f32, degree: i32, time: f32)
                         normalize_index(x, field_size),
                         normalize_index(y, field_size)))
 
-let main(field_size: i32, scale: f32, degree: i32,
-         n_steps: i32, time_delta: f32): [n_steps][field_size][field_size]argb.colour =
-  tabulate n_steps (\step_i ->
+entry main(field_size: i32, scale: f32, degree: i32,
+           n_steps: i32, time_delta: f32) =
+  -- Hack to avoid returning something gigantic.
+  let frames = tabulate n_steps (\step_i ->
                       let time = r32(step_i) * time_delta
                       in render_frame(field_size, scale, degree, time))
+  let frames_flat = map flatten frames
+  in map (\frame_flat -> [frame_flat[0] % length frame_flat]) frames_flat
