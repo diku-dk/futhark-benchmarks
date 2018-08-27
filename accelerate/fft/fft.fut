@@ -20,7 +20,7 @@ import "lib/github.com/diku-dk/complex/complex"
 module c32 = mk_complex f32
 type c32 = c32.complex
 
-import "/futlib/fft"
+import "lib/github.com/diku-dk/fft/stockham-radix-2"
 
 module fft = mk_fft f32
 
