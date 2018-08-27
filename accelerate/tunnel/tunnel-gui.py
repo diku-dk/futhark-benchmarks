@@ -11,7 +11,7 @@ width=1200
 height=800
 size=(width,height)
 
-render_tunnel = tunnel.tunnel(interactive=True).main
+render_tunnel = tunnel.tunnel(interactive=True).render
 
 pygame.init()
 pygame.display.set_caption('Tunnel')

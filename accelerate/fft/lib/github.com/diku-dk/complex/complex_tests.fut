@@ -1,3 +1,5 @@
+-- | ignore
+
 import "complex"
 
 module c32 = mk_complex f32
