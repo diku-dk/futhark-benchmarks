@@ -139,11 +139,12 @@ module mk_least_squares (real: real) (rand: rng_engine)
        let (rng,j0) = random_i32.rand (0,num_free_vars-1) rng
        let (rng,rs) = nrand bounds rng num_free_vars
        let auxs = real.(map2 (+) x_r1 (map (difw*) (map2 (-) x_r2 x_r3)))
-       let v_i = map (\(j, r, lower_bound, upper_bound, aux, x_i_j) ->
+       let bounds = zip lower_bounds upper_bounds
+       let v_i = map5 (\j r (lower_bound, upper_bound) aux x_i_j ->
                        if i32.(j == j0) || real.(r <= cr && lower_bound <= aux && aux <= upper_bound)
                        then aux
                        else x_i_j)
-                      (zip6 (iota num_free_vars) rs lower_bounds upper_bounds auxs x_i)
+                      (iota num_free_vars) rs bounds auxs x_i
 
        in (rng, v_i))
 
