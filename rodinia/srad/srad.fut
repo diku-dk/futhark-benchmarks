@@ -78,16 +78,16 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
              (iota rows) image)
 
     let image =
-      map (\(i, image_row, c_row, dN_row, dS_row, dW_row, dE_row) ->
-                map (\(j, pixel, c_k, dN_k, dS_k, dW_k, dE_k)  ->
+      map4 (\i image_row c_row (dN_row, dS_row, dW_row, dE_row) ->
+                map4 (\j pixel c_k (dN_k, dS_k, dW_k, dE_k)  ->
                           let cN = c_k
                           let cS = unsafe c[indexS(rows, i), j]
                           let cW = c_k
                           let cE = unsafe c[i, indexE(cols,j)]
                           let d = cN*dN_k + cS*dS_k + cW*dW_k + cE*dE_k
                           in pixel + 0.25 * lambda * d)
-                        (zip7 (iota cols) image_row c_row dN_row dS_row dW_row dE_row))
-                        (zip7 (iota rows) image c dN dS dW dE)
+                     (iota cols) image_row c_row (zip4 dN_row dS_row dW_row dE_row))
+           (iota rows) image c (zip4 dN dS dW dE)
     in image
 
   -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
