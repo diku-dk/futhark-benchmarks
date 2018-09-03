@@ -1096,7 +1096,8 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
 let equations (): i32 = 91
 let parameters(): i32 = 16
 
-let main(repeat: i32, eps: f32, workload: i32, xmax: i32, y0: [91]f32, params: [16]f32): (bool, [workload][91]f32) =
+let main (repeat: i32) (eps: f32) (workload: i32)
+         (xmax: i32) (y0: [91]f32) (params: [16]f32): (bool, [workload][91]f32) =
   let (oks, y_res) = unzip (
     map  (\(i: i32): (bool,[91]f32)  ->
             let add_fact = r32(i % repeat)*eps

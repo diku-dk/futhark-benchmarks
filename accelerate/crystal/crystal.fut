@@ -86,18 +86,18 @@ let quasicrystal(scale: f32, degree: i32, time: f32, x: f32, y: f32): argb.colou
 let normalize_index(i: i32, field_size: i32): f32 =
   r32(i) / r32(field_size)
 
-entry render_frame(field_size: i32, scale: f32, degree: i32, time: f32)
+entry render_frame (field_size: i32) (scale: f32) (degree: i32) (time: f32)
                   : [field_size][field_size]argb.colour =
   tabulate_2d field_size field_size
   (\y x -> quasicrystal(scale, degree, time,
                         normalize_index(x, field_size),
                         normalize_index(y, field_size)))
 
-entry main(field_size: i32, scale: f32, degree: i32,
-           n_steps: i32, time_delta: f32) =
+entry main(field_size: i32) (scale: f32) (degree: i32)
+          (n_steps: i32) (time_delta: f32) =
   -- Hack to avoid returning something gigantic.
   let frames = tabulate n_steps (\step_i ->
                       let time = r32(step_i) * time_delta
-                      in render_frame(field_size, scale, degree, time))
+                      in render_frame field_size scale degree time)
   let frames_flat = map flatten frames
   in map (\frame_flat -> [frame_flat[0] % length frame_flat]) frames_flat

@@ -14,25 +14,25 @@ let dot ((ax,ay,az), (bx,by,bz)): f32 =
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
 let main [number_boxes][par_per_box][num_neighbors]
-             (alpha:  f32
-            , box_coefs_0: [number_boxes]i32
-            , box_coefs_1: [number_boxes]i32
-            , box_coefs_2: [number_boxes]i32
-            , box_coefs_3: [number_boxes]i32
-            , box_nnghs_0 : [num_neighbors][number_boxes]i32
-            , box_nnghs_1 : [num_neighbors][number_boxes]i32
-            , box_nnghs_2 : [num_neighbors][number_boxes]i32
-            , box_nnghs_3 : [num_neighbors][number_boxes]i32
-            , box_num_nghbs: [number_boxes]i32
-            , rv_0: [number_boxes][par_per_box]f32
-            , rv_1: [number_boxes][par_per_box]f32
-            , rv_2: [number_boxes][par_per_box]f32
-            , rv_3: [number_boxes][par_per_box]f32
-            , qv: [number_boxes][par_per_box]f32
-      ): ([number_boxes][par_per_box]f32,
-          [number_boxes][par_per_box]f32,
-          [number_boxes][par_per_box]f32,
-          [number_boxes][par_per_box]f32) =
+             (alpha:  f32)
+             (box_coefs_0: [number_boxes]i32)
+             (box_coefs_1: [number_boxes]i32)
+             (box_coefs_2: [number_boxes]i32)
+             (box_coefs_3: [number_boxes]i32)
+             (box_nnghs_0 : [num_neighbors][number_boxes]i32)
+             (box_nnghs_1 : [num_neighbors][number_boxes]i32)
+             (box_nnghs_2 : [num_neighbors][number_boxes]i32)
+             (box_nnghs_3 : [num_neighbors][number_boxes]i32)
+             (box_num_nghbs: [number_boxes]i32)
+             (rv_0: [number_boxes][par_per_box]f32)
+             (rv_1: [number_boxes][par_per_box]f32)
+             (rv_2: [number_boxes][par_per_box]f32)
+             (rv_3: [number_boxes][par_per_box]f32)
+             (qv: [number_boxes][par_per_box]f32)
+      : ([number_boxes][par_per_box]f32,
+         [number_boxes][par_per_box]f32,
+         [number_boxes][par_per_box]f32,
+         [number_boxes][par_per_box]f32) =
   let box_coefs = zip4 (box_coefs_0) (box_coefs_1) (box_coefs_2) (box_coefs_3)
   let box_nnghs = map4 zip4 box_nnghs_0 box_nnghs_1 box_nnghs_2 box_nnghs_3
   let rv = map4 zip4 rv_0 rv_1 rv_2 rv_3

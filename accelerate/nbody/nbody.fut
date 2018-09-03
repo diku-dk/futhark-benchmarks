@@ -76,20 +76,20 @@ let unwrap_body (b: body): ((f32, f32, f32), f32, (f32, f32, f32), (f32, f32, f3
    (b.velocity.x, b.velocity.y, b.velocity.z),
    (b.acceleration.x, b.acceleration.y, b.acceleration.z))
 
-let main [n]
-        (n_steps: i32,
-         epsilon: f32,
-         time_step: f32,
-         xps: [n]f32,
-         yps: [n]f32,
-         zps: [n]f32,
-         ms: [n]f32,
-         xvs: [n]f32,
-         yvs: [n]f32,
-         zvs: [n]f32,
-         xas: [n]f32,
-         yas: [n]f32,
-         zas: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
+entry main [n]
+        (n_steps: i32)
+        (epsilon: f32)
+        (time_step: f32)
+        (xps: [n]f32)
+        (yps: [n]f32)
+        (zps: [n]f32)
+        (ms: [n]f32)
+        (xvs: [n]f32)
+        (yvs: [n]f32)
+        (zvs: [n]f32)
+        (xas: [n]f32)
+        (yas: [n]f32)
+        (zas: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
   let bodies  = map4 wrap_body (zip3 xps yps zps) ms (zip3 xvs yvs zvs) (zip3 xas yas zas)
   let bodies' = advance_bodies_steps n_steps epsilon time_step bodies
   let (final_pos, ms', final_vel, final_acc) = map unwrap_body (bodies') |> unzip4
@@ -128,14 +128,14 @@ let rotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
 let inverseRotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
   matmult (rotateYMatrix y_rotation) (rotateXMatrix x_rotation)
 
-entry inverseRotatePoint (x: f32, y: f32, z: f32, x_rotation: f32, y_rotation: f32): (f32,f32,f32) =
+entry inverseRotatePoint (x: f32) (y: f32) (z: f32) (x_rotation: f32) (y_rotation: f32): (f32,f32,f32) =
   let {x,z,y} = rotatePointByMatrix (inverseRotationMatrix x_rotation y_rotation) {x,y,z}
   in (x,y,z)
 
 let rotatePoints [n] (ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
   rotatePointsByMatrix (rotationMatrix x_rotation y_rotation) ps
 
-let renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_mass: f32)
+let renderPoint(w: i32) (h: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32) (max_mass: f32)
                ({x,y,z=_}:position) (m: f32): (i32, i32) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
@@ -155,12 +155,12 @@ let renderPoint(w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32, max_
     in (x''*h + y'', colour)
 
 entry render [n]
-            (w: i32, h: i32, x_ul: f32, y_ul: f32, x_br: f32, y_br: f32,
-             xps: [n]f32, yps: [n]f32, zps: [n]f32, ms: [n]f32,
-             x_rotation: f32, y_rotation: f32,
-             max_mass: f32, invert: bool): [w][h]i32 =
+            (w: i32) (h: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32)
+            (xps: [n]f32) (yps: [n]f32) (zps: [n]f32) (ms: [n]f32)
+            (x_rotation: f32) (y_rotation: f32)
+            (max_mass: f32) (invert: bool): [w][h]i32 =
   let background = if invert then argb.white else argb.black
-  let (is, vs) = unzip(map2 (renderPoint(w,h,x_ul,y_ul,x_br,y_br,max_mass))
+  let (is, vs) = unzip(map2 (renderPoint w h x_ul y_ul x_br y_br max_mass)
                        (rotatePoints (map3 (\x y z -> {x,y,z}) xps yps zps)
                                      x_rotation y_rotation) ms)
   let vs' = map (\x -> if invert then ~x else x) vs

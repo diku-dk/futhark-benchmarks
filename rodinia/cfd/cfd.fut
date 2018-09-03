@@ -291,9 +291,9 @@ let time_step [nel]
 ---- MAIN ENTRY POINT ----
 --------------------------
 let main [nel]
-        (areas:   [nel]f32,
-         elements_surrounding_elements: [4][nel]i32,
-         normals: [3][4][nel]f32 ): [5][nel]f32 =
+        (areas:   [nel]f32)
+        (elements_surrounding_elements: [4][nel]i32)
+        (normals: [3][4][nel]f32 ): [5][nel]f32 =
     let angle_of_attack = (3.1415926535897931 / 180.0) * deg_angle_of_attack
 
     let var_of_density = 1.4f32

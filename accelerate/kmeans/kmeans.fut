@@ -50,8 +50,7 @@ let continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
     f32.abs (x1-x2) > 0.01 || f32.abs(y1-y2) > 0.01
   in any changed (zip old_centres (intrinsics.opaque cur_centres))
 
-let main [n] (k: i32,
-              points_in: [n][2]f32): ([][2]f32, i32) =
+let main [n] (k: i32) (points_in: [n][2]f32): ([][2]f32, i32) =
   -- Transform from 2D-array to array of pairs.
   let points = map (\point -> (point[0], point[1])) points_in
 
