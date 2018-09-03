@@ -321,17 +321,17 @@ let genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]
 
 -- Entry point
 let main [num_bits][num_models][num_und][num_dates]
-        (contract_number: i32,
-         num_mc_it: i32,
-         dir_vs: [][num_bits]i32,
-         md_cs: [num_models][num_und][num_und]f32,
-         md_vols: [num_models][num_dates][num_und]f32,
-         md_drifts: [num_models][num_dates][num_und]f32,
-         md_sts: [num_models][num_und]f32,
-         md_detvals: [num_models][]f32,
-         md_discts: [num_models][]f32,
-         bb_inds: [3][num_dates]i32,
-         bb_data: [3][num_dates]f32)
+        (contract_number: i32)
+        (num_mc_it: i32)
+        (dir_vs: [][num_bits]i32)
+        (md_cs: [num_models][num_und][num_und]f32)
+        (md_vols: [num_models][num_dates][num_und]f32)
+        (md_drifts: [num_models][num_dates][num_und]f32)
+        (md_sts: [num_models][num_und]f32)
+        (md_detvals: [num_models][]f32)
+        (md_discts: [num_models][]f32)
+        (bb_inds: [3][num_dates]i32)
+        (bb_data: [3][num_dates]f32)
          : []f32 =
   let sobvctsz  = num_dates*num_und
   let sobol_mat = stream_map (\[chunk] (ns: [chunk]i32): [chunk][sobvctsz]f32  ->

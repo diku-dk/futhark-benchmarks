@@ -187,7 +187,7 @@ let consColumn [m][n] (mat: [m][n]f32, col: [m]f32): [m][]f32 =
           (iota(n+1)))
           (zip mat col)
 
-let main [num_bits] (n_in: i32, dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
+let main [num_bits] (n_in: i32) (dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
     let (n_inp1, n_hid, n_hidp1, n_out) = (n_in+1, 16, 16+1, 1)
     let (   input_units, target,
            ( input_weights,  input_weights_fstcol),

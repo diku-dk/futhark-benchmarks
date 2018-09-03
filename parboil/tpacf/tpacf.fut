@@ -84,10 +84,10 @@ let fixPoints (ra: f64) (dec: f64): vec3 =
   in (f64.cos(rarad)*cd, f64.sin(rarad)*cd, f64.sin(decrad))
 
 let main [numD][numRs][numR]
-         (datapointsx: [numD]f64,
-          datapointsy: [numD]f64,
-          randompointsx: [numRs][numR]f64,
-          randompointsy: [numRs][numR]f64)
+         (datapointsx: [numD]f64)
+         (datapointsy: [numD]f64)
+         (randompointsx: [numRs][numR]f64)
+         (randompointsy: [numRs][numR]f64)
         : *[60]i32 =
   let numBins2 = numBins + 2
   let binb = map (\k ->

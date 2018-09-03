@@ -29,7 +29,7 @@ let sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
            then res ^ dirVct[i]
            else res
 
-let main(cols: i32, rows: i32): [cols]i32 =
+let main (cols: i32) (rows: i32): [cols]i32 =
     let dirVct = sobolDirVcts()
     -----------------------
     -- 1. Initialization --

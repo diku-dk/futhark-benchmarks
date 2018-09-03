@@ -48,8 +48,8 @@ let centroids_of [n][d] (k: i32, points: [n][d]f32, membership: [n]i32): [k][d]f
   in cluster_sums
 
 let main [n][d]
-        (threshold: i32, k: i32, max_iterations: i32,
-         points: [n][d]f32): ([][]f32, i32) =
+        (threshold: i32) (k: i32) (max_iterations: i32)
+        (points: [n][d]f32): ([][]f32, i32) =
   -- Assign arbitrary initial cluster centres.
   let cluster_centres = map (\(i: i32): [d]f32  ->
                                unsafe points[i])

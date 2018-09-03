@@ -25,7 +25,7 @@
 -- module dist = uniform_real_distribution f32 minstd_rand
 --
 -- let rng = minstd_rand.rng_from_seed [123]
--- let (rng, x) = dist.rand (1,6)
+-- let (rng, x) = dist.rand (1,6) rng
 -- ```
 --
 -- The `rand` function of `uniform_real_distribution`@term simply
@@ -36,7 +36,7 @@
 -- ```
 -- module norm_dist = normal_distribution f32 minstd_rand
 --
--- let (rng, y) = norm_dist.rand {mean=50, stddev=25}
+-- let (rng, y) = norm_dist.rand {mean=50, stddev=25} rng
 -- ```
 --
 -- Since both `dist` and `norm_dist` have been initialised with the

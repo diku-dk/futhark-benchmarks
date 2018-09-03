@@ -81,6 +81,6 @@ let cipher_idea [n] (key: [52]u16, text: [n]u8): [n]u8 =
   let blocks = unflatten (n//8) 8 text
   in flatten (map (cipher_idea_block(key)) blocks)
 
-let main [n] (z: [52]u16, dk: [52]u16, text: [n]u8): ([n]u8, [n]u8) =
+let main [n] (z: [52]u16) (dk: [52]u16) (text: [n]u8): ([n]u8, [n]u8) =
   let text_encrypted = cipher_idea(z, text)
   in (text_encrypted, cipher_idea(dk, text_encrypted))

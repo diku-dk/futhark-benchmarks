@@ -1,5 +1,5 @@
 require {
-  github.com/diku-dk/complex 0.1.0 #2994eb305e6ca1b87d62cdee02bb305513523134
-  github.com/diku-dk/cpprandom 1.0.2 #48fa813ec83be9c43444710200a30ef63fb1a77d
+  github.com/diku-dk/complex 0.1.2 #790bf261a6a36a9454b55f3f8109ac5cb1f4bf6e
+  github.com/diku-dk/cpprandom 1.1.0 #d5ad453c350b887908263442e4a841851eb74043
   github.com/diku-dk/date 1.0.1 #66d8e8ea1d28f1610a50b3b32016458f4058edb4
 }
