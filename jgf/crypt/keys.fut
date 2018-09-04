@@ -46,9 +46,10 @@ let encryptionKey(userkey: [8]i16): [52]i16 =
   -- wrap around to the first two members of the previous eight.
   let z = loop (z) for i in map (8+) (iota (52-8)) do
     let j = i %% 8
-    let z[i] = if      j  < 6 then (z[i-7]>>>9i16) | (z[i-6]<<7i16)
-               else if j == 6 then (z[i-7]>>>9i16) | (z[i-14]<<7i16)
-                              else (z[i-15]>>>9i16) | (z[i-14]<<7i16)
+    let rshift x y = i16.u16 (u16.i16 x >> y)
+    let z[i] = if      j  < 6 then (z[i-7]`rshift`9) | (z[i-6]<<7i16)
+               else if j == 6 then (z[i-7]`rshift`9) | (z[i-14]<<7i16)
+                              else (z[i-15]`rshift`9) | (z[i-14]<<7i16)
     in z
   in z
 

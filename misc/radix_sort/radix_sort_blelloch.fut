@@ -31,5 +31,5 @@ let split_blelloch [n] (a: [n]u32, flags: [n]i32): [n]u32 =
 
 let split_radix_sort [n] (a: [n]u32, number_of_bits: i32): [n]u32 =
   loop (a) for i < number_of_bits do
-    let ai = map (\a -> (i32.u32 a >>> i) & 1) a
+    let ai = map (\a -> i32.u32 (a >> u32.i32 i) & 1) a
     in split_blelloch(a, ai)

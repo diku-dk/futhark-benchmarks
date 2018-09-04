@@ -25,7 +25,7 @@
 -- module dist = uniform_real_distribution f32 minstd_rand
 --
 -- let rng = minstd_rand.rng_from_seed [123]
--- let (rng, x) = dist.rand (1,6)
+-- let (rng, x) = dist.rand (1,6) rng
 -- ```
 --
 -- The `rand` function of `uniform_real_distribution`@term simply
@@ -36,7 +36,7 @@
 -- ```
 -- module norm_dist = normal_distribution f32 minstd_rand
 --
--- let (rng, y) = norm_dist.rand {mean=50, stddev=25}
+-- let (rng, y) = norm_dist.rand {mean=50, stddev=25} rng
 -- ```
 --
 -- Since both `dist` and `norm_dist` have been initialised with the
@@ -81,10 +81,11 @@
 -- From http://stackoverflow.com/a/12996028
 local
 let hash(x: i32): i32 =
-  let x = ((x >>> 16) ^ x) * 0x45d9f3b
-  let x = ((x >>> 16) ^ x) * 0x45d9f3b
-  let x = ((x >>> 16) ^ x)
-  in x
+  let x = u32.i32 x
+  let x = ((x >> 16) ^ x) * 0x45d9f3b
+  let x = ((x >> 16) ^ x) * 0x45d9f3b
+  let x = ((x >> 16) ^ x)
+  in i32.u32 x
 
 -- | Low-level modules that act as sources of random numbers in some
 -- uniform distribution.
@@ -163,10 +164,10 @@ module linear_congruential_engine (T: integral) (P: {
 
   let rng_from_seed [n] (seed: [n]i32) =
     let seed' =
-      loop seed' = T.i32 1 for i < n do
-        ((seed' T.>>> T.i32 16) T.^ seed') T.^
-        T.i32 (seed[i] ^ 0b1010101010101)
-    in (rand seed').1
+      loop seed' = 1 for i < n do
+        u32.(((seed' >> 16) ^ seed') ^
+             (i32 seed[i] ^ 0b1010101010101))
+    in (rand (T.u32 seed')).1
 
   let split_rng (n: i32) (x: rng): [n]rng =
     map (\i -> x T.^ T.i32 (hash i)) (iota n)

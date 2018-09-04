@@ -71,10 +71,10 @@ let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
   -- sub-block.
   let x4 = u16.u32(u32.u16(x4) * u32.u16(key[ik+3]) %% 0x10001u32)
   -- Repackage from 16-bit sub-blocks to 8-bit byte array text2.
-  in [ u8.u16(x1), u8.u16(x1>>>8u16)
-     , u8.u16(x3), u8.u16(x3>>>8u16)
-     , u8.u16(x2), u8.u16(x2>>>8u16)
-     , u8.u16(x4), u8.u16(x4>>>8u16)
+  in [ u8.u16(x1), u8.u16(x1>>8u16)
+     , u8.u16(x3), u8.u16(x3>>8u16)
+     , u8.u16(x2), u8.u16(x2>>8u16)
+     , u8.u16(x4), u8.u16(x4>>8u16)
      ]
 
 let cipher_idea [n] (key: [52]u16, text: [n]u8): [n]u8 =
