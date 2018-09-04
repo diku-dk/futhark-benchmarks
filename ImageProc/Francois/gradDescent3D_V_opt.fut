@@ -212,7 +212,7 @@ let main1 [m][n][p][q] ( v:  [m][n][p][q]f32
 
     add_descent_div3v(v, xi, g, tp)
 
-let main(m: i32, n: i32, p: i32, q: i32, loop_count: i32): [m][n][p][q]f32 = 
+let main(m: i32) (n: i32) (p: i32) (q: i32) (loop_count: i32): [m][n][p][q]f32 = 
     let mnpq = (m*n*p*q)
     let v  = unflatten_4d m n p q (map r32 (iota(mnpq)) )
     let g  = unflatten_4d m n p q (map r32 (iota(mnpq)) )

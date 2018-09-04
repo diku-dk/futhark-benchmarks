@@ -185,12 +185,12 @@ let add_descent_div3s [m][n][p] (v:  [m][n][p]f32
 -----------------------------------------------------
 -----------------------------------------------------
 
-let main [m][n][p] ( v:  [m][n][p]f32
-                   , xi_0: [m][n][p]f32
-                   , xi_1: [m][n][p]f32
-                   , xi_2: [m][n][p]f32
-                   , g: [m][n][p]f32
-                   , tp: f32 ): [m][n][p]f32 =
+let main [m][n][p] ( v:  [m][n][p]f32)
+                   (xi_0: [m][n][p]f32)
+                   (xi_1: [m][n][p]f32)
+                   (xi_2: [m][n][p]f32)
+                   (g: [m][n][p]f32)
+                   (tp: f32 ): [m][n][p]f32 =
     add_descent_div3s(v, map3 (map3 zip3) xi_0 xi_1 xi_2, g, tp)
 
  

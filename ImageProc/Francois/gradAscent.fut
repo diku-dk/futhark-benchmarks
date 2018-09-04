@@ -166,11 +166,11 @@ let add_ascent_grad3v [m][n][p][k] (xi:  [m][n][p][k](f32,f32,f32)
      ) (iota(m) )
 
 
-let main [m][n][p][k] (xi_0:  [m][n][p][k]f32
-                      , xi_1: [m][n][p][k]f32
-                      , xi_2: [m][n][p][k]f32
-                      , v: [m][n][p][k]f32
-                      , td: f32 ): ([m][n][p][k]f32,
+let main [m][n][p][k] (xi_0:  [m][n][p][k]f32)
+                      (xi_1: [m][n][p][k]f32)
+                      (xi_2: [m][n][p][k]f32)
+                      (v: [m][n][p][k]f32)
+                      (td: f32 ): ([m][n][p][k]f32,
                                     [m][n][p][k]f32,
                                     [m][n][p][k]f32) =
   unzip3 (map (map (map unzip3 >-> unzip3) >-> unzip3)
