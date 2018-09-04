@@ -1,0 +1,3 @@
+require {
+  github.com/diku-dk/cpprandom 1.1.1 #e70c4cdbbe8f5320eb831595a92a549e164a371d
+}

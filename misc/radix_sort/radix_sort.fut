@@ -1,7 +1,7 @@
 -- A least significant digit radix sort to test out `scatter`.
 
 let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
-  let bits = map (\x -> (i32.u32 x >>> digit_n) & 1) xs
+  let bits = map (\x -> i32.u32 (x >> u32.i32 digit_n) & 1) xs
   let bits_inv = map (\(b: i32): i32  -> 1 - b) bits
   let ps0 = scan (+) 0 (bits_inv)
   let ps0_clean = map2 (*) bits_inv ps0
