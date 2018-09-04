@@ -320,13 +320,13 @@ let draw_one_frame [g]
   in (draw_densities d1 g_minus_two, u1, v1, d1)
 
 entry draw_one_frame_raw [g]
-  (u0: [g][g]f32,
-   v0: [g][g]f32,
-   d0: [g][g]f32,
-   n_solver_steps: i32,
-   time_step: f32,
-   diffusion_rate: f32,
-   viscosity: f32): ([][][3]i8,
+  (u0: [g][g]f32)
+  (v0: [g][g]f32)
+  (d0: [g][g]f32)
+  (n_solver_steps: i32)
+  (time_step: f32)
+  (diffusion_rate: f32)
+  (viscosity: f32): ([][][3]i8,
                      [g][g]f32,
                      [g][g]f32,
                      [g][g]f32) =

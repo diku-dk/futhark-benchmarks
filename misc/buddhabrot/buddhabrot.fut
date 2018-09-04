@@ -87,9 +87,9 @@ let visualise [yprec][xprec][depth]
   let coloured = map (colourise(max_visits)) (visits_per_pixel)
   in unflatten n m coloured
 
-let main(n: i32, m: i32, v_xmin: f32, v_ymin: f32, v_xmax: f32, v_ymax: f32,
-                     depth: i32,
-                     xprec: i32, yprec: i32, f_xmin: f32, f_ymin: f32, f_xmax: f32, f_ymax: f32): [n][m]i32 =
+let main(n: i32) (m: i32) (v_xmin: f32) (v_ymin: f32) (v_xmax: f32) (v_ymax: f32)
+                     (depth: i32)
+                     (xprec: i32) (yprec: i32) (f_xmin: f32) (f_ymin: f32) (f_xmax: f32) (f_ymax: f32): [n][m]i32 =
   let (trajectories, escapes) = trajectories(depth, xprec, yprec,
                                              (f_xmin, f_ymin, f_xmax, f_ymax))
   let image = visualise(n, m, (v_xmin, v_ymin, v_xmax, v_ymax), trajectories, escapes)
