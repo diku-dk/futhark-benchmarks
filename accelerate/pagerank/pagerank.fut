@@ -24,7 +24,7 @@
 
 type link = {from: i32, to: i32}
 
-import "/futlib/segmented"
+import "lib/github.com/diku-dk/segmented/segmented"
 
 -- Calculate ranks from pages without any outbound edges
 -- This defaults to the page contribution / number of pages

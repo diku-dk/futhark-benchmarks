@@ -26,7 +26,7 @@
 -- input @ data/64kn_32e-var-1-256-skew.in.gz
 -- output @ data/64kn_32e-var-1-256-skew.out
 
-import "/futlib/segmented"
+import "lib/github.com/diku-dk/segmented/segmented"
 
 let step [n][e]
         (cost: *[n]i32)
