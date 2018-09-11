@@ -12,8 +12,7 @@ module linalg_f32 = mk_linalg f32
 -- input { [1,2,3] [4,5,6] }
 -- output { 32 }
 
-entry test_dotprod [n] (as: [n]i32, bs: [n]i32): i32 =
-  linalg_i32.dotprod as bs
+entry test_dotprod = linalg_i32.dotprod
 
 -- ==
 -- entry: test_outer
@@ -46,8 +45,7 @@ entry test_inv [n] (A: [n][n]f32): [n][n]f32 =
 -- }
 -- output { [[19, 22], [43, 50]] }
 
-entry test_matmul (x: [][]i32, y: [][]i32): [][]i32 =
-  linalg_i32.matmul x y
+entry test_matmul = linalg_i32.matmul
 
 -- ==
 -- entry: test_kronecker
@@ -75,4 +73,4 @@ entry test_kronecker = linalg_i32.kronecker
 -- }
 -- output { [1.9734432f32, 1.8890195f32] }
 
-entry test_ols [n][m] (X: [n][m]f32) (b: [n]f32): [m]f32 = linalg_f32.ols X b
+entry test_ols = linalg_f32.ols
