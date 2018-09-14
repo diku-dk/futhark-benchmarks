@@ -28,7 +28,7 @@
 import "lib/github.com/diku-dk/cpprandom/random"
 
 module rnge = linear_congruential_engine i32 {
-  let m = i32.largest
+  let m = i32.highest
   let a = 1103515245
   let c = 12345
 }
