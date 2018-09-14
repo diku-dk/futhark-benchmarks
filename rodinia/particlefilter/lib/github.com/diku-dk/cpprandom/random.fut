@@ -417,8 +417,8 @@ module xorshift128plus: rng_engine with int.t = u64 = {
   let join_rng [n] (xs: [n]rng): rng =
     reduce (\(x1,y1) (x2,y2) -> (x1^x2,y1^y2)) (0u64,0u64) xs
 
-  let min = u64.smallest
-  let max = u64.largest
+  let min = u64.lowest
+  let max = u64.highest
 }
 
 
