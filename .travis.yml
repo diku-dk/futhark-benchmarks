@@ -17,4 +17,4 @@ before_install:
  - (cd futhark-nightly-linux-x86_64/ && PREFIX=$HOME/.local make install)
 
 script:
-  - futhark-test --nobuffer --pass-compiler-option=--Werror -C .
+  - futhark-test --notty --pass-compiler-option=--Werror -C .
