@@ -61,14 +61,17 @@ def switch_rules(d):
     ruleset, (life_init, life_steps, life_render, life_uninit) = next_ruleset(life, ruleset, d)
     life_state = life_init(bools)
 
-while True:
+running=True
+while running:
     life_state = life_steps(steps, life_state)
     render()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            sys.exit()
+            running=False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
                 switch_rules(1)
             if event.key == pygame.K_LEFT:
                 switch_rules(-1)
+            if event.key == pygame.K_ESCAPE:
+                running=False
