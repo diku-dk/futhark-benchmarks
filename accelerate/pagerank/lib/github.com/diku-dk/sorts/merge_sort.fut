@@ -1,6 +1,6 @@
 -- | Bitonic merge sort.
 --
--- Runs in *O(n log(n))* work and *O(log(n))* span.  Internally pads
+-- Runs in *O(n log²(n))* work and *O(log²(n))* span.  Internally pads
 -- the array to the next power of two, so a poor fit for some array
 -- sizes.
 

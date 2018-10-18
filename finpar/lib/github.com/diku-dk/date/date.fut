@@ -54,7 +54,7 @@ open ({
                      hour: i32,
                      minute: i32 }
 
-  let hours_in_day = 24
+  let hours_in_day: i32 = 24
   let minutes_in_day = hours_in_day * 60
   let fminutes_in_day = r64 minutes_in_day
   let minutes_to_noon = (hours_in_day / 2) * 60

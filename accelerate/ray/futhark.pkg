@@ -1,4 +1,4 @@
 require {
-  github.com/athas/vector 0.2.1 #dec96258d786a3f82e7f774d4e5c0f5b92b0b078
+  github.com/athas/vector 0.2.2 #2ee4bc0a7dbc4572787753a18a5debbdfada572a
   github.com/athas/matte 0.1.1 #24f332e6ff8b5872b950cfcbead9b2f7c6571490
 }

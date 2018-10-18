@@ -105,7 +105,7 @@ module vector_1 : vector = {
   let zip a b = (a, b)
   let get _ a = a
   let set _ x _ = x
-  let length _ = 1
+  let length _ = 1i32
   let to_array a = [a]
   let from_array as = as[0]
 }

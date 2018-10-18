@@ -16,7 +16,7 @@ module mk_fft (R: real): {
   type real = R.t
   type complex = complex.complex
 
-  let radix = 2
+  let radix:i32 = 2
 
   let fft_iteration [n] (forward: R.t) (ns: i32) (data: [n]complex) (j: i32)
                   : (i32, complex, i32, complex) =

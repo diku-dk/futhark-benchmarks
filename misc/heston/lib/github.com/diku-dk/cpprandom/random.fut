@@ -268,7 +268,7 @@ module discard_block_engine (K: {
   let min = E.min
   let max = E.max
 
-  let rng_from_seed (xs: []i32) =
+  let rng_from_seed (xs: []i32): rng =
     (E.rng_from_seed xs, 0)
 
   let split_rng (n: i32) ((rng, i): rng): [n]rng =
@@ -350,9 +350,9 @@ module minstd_rand0: rng_engine with int.t = u32 =
 -- `w=24`, `s=10`, `r=24`.
 module ranlux24_base: rng_engine with int.t = u32 =
   subtract_with_carry_engine u32 {
-    let w = 24
-    let s = 10
-    let r = 24
+    let w:i32 = 24
+    let s:i32 = 10
+    let r:i32 = 24
   }
 
 -- | A subtract-with-carry pseudo-random generator of 48-bit numbers,
@@ -361,9 +361,9 @@ module ranlux24_base: rng_engine with int.t = u32 =
 -- `w=48`, `s=5`, `r=12`.
 module ranlux48_base: rng_engine with int.t = u64 =
   subtract_with_carry_engine u64 {
-    let w = 48
-    let s = 5
-    let r = 12
+    let w:i32 = 48
+    let s:i32 = 5
+    let r:i32 = 12
   }
 
 -- | A subtract-with-carry pseudo-random generator of 24-bit numbers
@@ -372,7 +372,7 @@ module ranlux48_base: rng_engine with int.t = u64 =
 -- It is an instantiation of a `discard_block_engine`@term with
 -- `ranlux24_base`@term, with parameters `p=223` and `r=23`.
 module ranlux24: rng_engine with int.t = u32 =
-  discard_block_engine {let p = 223 let r = 23} ranlux24_base
+  discard_block_engine {let p:i32 = 223 let r:i32 = 23} ranlux24_base
 
 -- | A subtract-with-carry pseudo-random generator of 48-bit numbers
 -- with accelerated advancement.
@@ -380,13 +380,13 @@ module ranlux24: rng_engine with int.t = u32 =
 -- It is an instantiation of a `discard_block_engine`@term with
 -- `ranlux48_base`@term, with parameters `p=223` and `r=23`.
 module ranlux48: rng_engine with int.t = u64 =
-  discard_block_engine {let p = 389 let r = 11} ranlux48_base
+  discard_block_engine {let p:i32 = 389 let r:i32 = 11} ranlux48_base
 
 -- | An engine adaptor that returns shuffled sequences generated with
 -- `minstd_rand0`@term.  It is not a good idea to use this RNG in a
 -- parallel setting, as the state size is fairly large.
 module knuth_b: rng_engine with int.t = u32 =
-  shuffle_order_engine {let k = 256} minstd_rand0
+  shuffle_order_engine {let k:i32 = 256} minstd_rand0
 
 -- | The [xorshift128+](https://en.wikipedia.org/wiki/Xorshift#xorshift+) engine.  Uses
 -- two 64-bit words as state.
@@ -481,8 +481,11 @@ module uniform_int_distribution (D: integral) (E: rng_engine):
     let max = to_E max
     let range = max - min + i32 1
     in if range <= i32 0
-       then (rng, to_D E.min) -- Avoid infinite loop below.
-       else let secure_max = E.max - E.max %% range
+       then (rng, to_D E.min)
+       else -- Avoid infinite loop if range exceeds what the RNG
+            -- engine can supply.  This does not mean that we actually
+            -- deliver sensible values, though.
+            let secure_max = E.max - E.max %% range
             let (rng,x) = loop (rng, x) = E.rand rng
                           while x >= secure_max do E.rand rng
             in (rng, to_D (min + x / (secure_max / range)))

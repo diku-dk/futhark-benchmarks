@@ -780,7 +780,7 @@ let master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f
   let jcaSL   = 0.0f32
   let jcaCyt  = 0.0f32
   let (jcaDyad, jcaSL, jcaCyt, finavalu) =
-    loop ((jcaDyad, jcaSL, jcaCyt, finavalu)) for ii < 3 do
+    loop ((jcaDyad, jcaSL, jcaCyt, finavalu)) for ii < 3i32 do
         let (initvalu_offset, parameter_offset, ind) =
             if      (ii == 0) then -- cam function for Dyad
                 ( 46, 1, 35 )

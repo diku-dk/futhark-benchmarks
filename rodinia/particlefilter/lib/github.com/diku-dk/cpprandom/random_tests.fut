@@ -106,7 +106,7 @@ entry test_f32_normal (x: i32) (n: i32) =
 -- compiled input { 1 10000 } output { 50f32 25f32 }
 
 module shuffle_m =
- shuffle_order_engine {let k = 30} pcg32
+ shuffle_order_engine {let k:i32 = 30} pcg32
 
 module test_f32_shuffle_m =
   mktest_f (normal_distribution f32 shuffle_m) f32
