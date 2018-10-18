@@ -11,9 +11,9 @@ module quad2_rules: rules_and_visuals = {
 
   let value (c: cell) = i32.i8 c
 
-  let weights = [[0,1,0],
-                 [1,1,1],
-                 [0,1,0]]
+  let weights: [][]i32 = [[0,1,0],
+                          [1,1,1],
+                          [0,1,0]]
 
   let step (_c: cell) (neighbours: i32) =
     let t = [0i8, 1i8, 1i8, 0i8,

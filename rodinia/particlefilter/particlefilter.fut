@@ -29,8 +29,8 @@ import "lib/github.com/diku-dk/cpprandom/random"
 
 module rnge = linear_congruential_engine i32 {
   let m = i32.highest
-  let a = 1103515245
-  let c = 12345
+  let a: i32 = 1103515245
+  let c: i32 = 12345
 }
 
 module norm_rng = normal_distribution f64 rnge

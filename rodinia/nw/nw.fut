@@ -15,7 +15,7 @@
 
 type int = i32
 
-let B = 32
+let B:int = 32
 
 let fInd (y:i32) (x:i32): i32 = y*(B+1) + x
 let max3 (x:int, y:int, z:int) = if x < y 

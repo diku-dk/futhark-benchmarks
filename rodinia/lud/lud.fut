@@ -213,7 +213,7 @@ let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat
            ) (zip (mat_arr) (top_slice) )
      ) (zip (mat_slice) (lft_slice) )
 
-let block_size = 32
+let block_size: i32 = 32
 
 --------------------------------------------
 ---- Main Driver:

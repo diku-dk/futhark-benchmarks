@@ -34,7 +34,7 @@ let step ((c,col,h): cell) (neighbours: i32) =
 } {
   type cell = cell
 
-let init (b: bool) = (V.init b, argb.black, 10000)
+let init (b: bool): cell = (V.init b, argb.black, 10000)
 
 let uninit ((c,_,_): cell) = V.uninit c
 

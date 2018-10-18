@@ -67,7 +67,7 @@ let compute_sizes [m] (n: i32) (links: [m]link) =
   let links = sort_by_from links
   let froms = map (\(x: link) -> x.from) links
   let flags = map2 (!=) froms (rotate (-1) froms)
-  let sizes = segmented_scan (+) 0 flags (replicate m 1)
+  let sizes = segmented_scan (+) 0 flags (replicate m 1i32)
   let (sizes, ids, _) = unzip3 (filter (.3) (zip3 sizes froms (rotate 1 flags)))
   in scatter (replicate n 0) ids sizes
 
