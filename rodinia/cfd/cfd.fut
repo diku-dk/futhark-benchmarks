@@ -73,19 +73,19 @@ let compute_flux_contribution(_density:  f32,  momentum: (f32,f32,f32), density_
 --
 let compute_step_factor [nelr]
                         (variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = -- 5 == nvar
-    map (\(i: i32): f32  ->
-            let density    = variables[var_density,    i]
-            let momentum_x = variables[var_momentum+0, i]
-            let momentum_y = variables[var_momentum+1, i]
-            let momentum_z = variables[var_momentum+2, i]
+    map2 (\area variables'  ->
+            let density    = variables'[var_density]
+            let momentum_x = variables'[var_momentum+0]
+            let momentum_y = variables'[var_momentum+1]
+            let momentum_z = variables'[var_momentum+2]
             let momentum   = ( momentum_x, momentum_y, momentum_z )
-            let density_energy = variables[var_density_energy, i]
+            let density_energy = variables'[var_density_energy]
             let velocity   = compute_velocity( density, momentum )
             let speed_sqd  = compute_speed_sqd(velocity)
             let pressure   = compute_pressure(density, density_energy, speed_sqd)
             let speed_of_sound = compute_speed_of_sound( density, pressure )
-            in ( 0.5 / (f32.sqrt(areas[i]) * (f32.sqrt(speed_sqd) + speed_of_sound) ) )
-       ) (iota(nelr))
+            in ( 0.5 / (f32.sqrt(area) * (f32.sqrt(speed_sqd) + speed_of_sound) ) )
+       ) areas (transpose variables)
 
 --5 == nvar
 let compute_flux [nnb][nel][ndim]
@@ -109,13 +109,13 @@ let compute_flux [nnb][nel][ndim]
     let smoothing_coefficient = 0.2
     in
     transpose(
-      map (\(i: i32): [5]f32  ->
-            let density_i    = variables[var_density, i]
-            let momentum_i_x = variables[var_momentum+0, i]
-            let momentum_i_y = variables[var_momentum+1, i]
-            let momentum_i_z = variables[var_momentum+2, i]
+      map3 (\variables' elements_surrounding_elements' normals': [5]f32  ->
+            let density_i    = variables'[var_density]
+            let momentum_i_x = variables'[var_momentum+0]
+            let momentum_i_y = variables'[var_momentum+1]
+            let momentum_i_z = variables'[var_momentum+2]
             let momentum_i   = (momentum_i_x, momentum_i_y, momentum_i_z)
-            let density_energy_i = variables[var_density_energy, i]
+            let density_energy_i = variables'[var_density_energy]
             let velocity_i   = compute_velocity(density_i, momentum_i)
             let speed_sqd_i  = compute_speed_sqd(velocity_i)
             let speed_i      = f32.sqrt(speed_sqd_i)
@@ -139,12 +139,10 @@ let compute_flux [nnb][nel][ndim]
             let (flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) = flux_i_momentum
             let flux_i_density_energy = 0.0
             let loop_res = (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z)
-            let loop_res = loop(loop_res) for j < nnb do
+            let loop_res = loop(loop_res)
+            for (nb, normal_x, normal_y, normal_z) in zip4 elements_surrounding_elements'
+                                                           normals'[0] normals'[1] normals'[2] do
                 let (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) = loop_res
-                let nb = elements_surrounding_elements[j, i]
-                let normal_x = normals[0, j, i]
-                let normal_y = normals[1, j, i]
-                let normal_z = normals[2, j, i]
                 let normal_len = f32.sqrt(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z)
                 in if (0 <= nb) -- a legitimate neighbor
                 then let density_nb    = unsafe variables[var_density,    nb]
@@ -266,7 +264,9 @@ let compute_flux [nnb][nel][ndim]
             --fluxes[i + (var_momentum+2)*nelr] = flux_i_momentum.z;
             --fluxes[i + var_density_energy*nelr] = flux_i_density_energy;
 
-         ) (iota(nel))
+           ) (transpose variables)
+             (transpose elements_surrounding_elements)
+             (transpose (map transpose normals))
     )
 
 --
@@ -276,15 +276,15 @@ let time_step [nel]
               step_factors: [nel]f32,
               fluxes: [5][nel]f32  ): [5][nel]f32 =
   transpose(
-    map (\(i: i32): [5]f32  ->
-            let factor = step_factors[i] / r32(rk+1-j)
-            in [ old_variables[var_density,    i] + factor*fluxes[var_density,    i]
-               , old_variables[var_momentum+0, i] + factor*fluxes[var_momentum+0, i]
-               , old_variables[var_momentum+1, i] + factor*fluxes[var_momentum+1, i]
-               , old_variables[var_momentum+2, i] + factor*fluxes[var_momentum+2, i]
-               , old_variables[var_density_energy, i] + factor*fluxes[var_density_energy, i]
+    map3 (\old_variables' fluxes' step_factor: [5]f32  ->
+            let factor = step_factor / r32(rk+1-j)
+            in [ old_variables'[var_density] + factor*fluxes'[var_density]
+               , old_variables'[var_momentum+0] + factor*fluxes'[var_momentum+0]
+               , old_variables'[var_momentum+1] + factor*fluxes'[var_momentum+1]
+               , old_variables'[var_momentum+2] + factor*fluxes'[var_momentum+2]
+               , old_variables'[var_density_energy] + factor*fluxes'[var_density_energy]
                ]
-       ) (iota nel)
+       ) (transpose old_variables) (transpose fluxes) step_factors
   )
 
 --------------------------
