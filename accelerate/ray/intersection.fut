@@ -8,10 +8,10 @@ let cast_ray [n] 'object
              (objects: [n]object) (dummy: object) (orig: position) (dir: direction)
            : (bool, f32, object) =
     loop (hit, closest_hit_dist, closest_hit_obj) =
-         (false, f32.inf, dummy) for i < n do
-      (let (new_hit, dist) = distance_to objects[i] orig dir
+         (false, f32.inf, dummy) for obj in objects do
+      (let (new_hit, dist) = distance_to obj orig dir
        in if new_hit && dist < closest_hit_dist
-          then (new_hit, dist, objects[i])
+          then (new_hit, dist, obj)
           else (hit, closest_hit_dist, closest_hit_obj))
 
 let cast_ray_sphere = cast_ray sphere.distance_to
