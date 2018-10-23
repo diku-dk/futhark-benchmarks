@@ -24,9 +24,8 @@ let plus_scan_reverse_order [n] (x: [n]i32): [n]i32 =
 let split_blelloch [n] (a: [n]u32, flags: [n]i32): [n]u32 =
   let i_down = plus_prescan(map (1-) flags)
   let i_up = map (n-) (plus_scan_reverse_order(flags))
-  let index = map (\(i: i32): i32  ->
-                    if flags[i] == 1 then i_up[i] else i_down[i]) (
-                  iota(n))
+  let index = map3 (\flag up down -> if flag == 1 then up else down)
+                   flags i_up i_down
   in permute(a, index)
 
 let split_radix_sort [n] (a: [n]u32, number_of_bits: i32): [n]u32 =
