@@ -9,10 +9,10 @@ let sobolDirVcts(): [30]i32 =
 let sobolInd(dirVct:  [30]i32, n: i32 ): i32 =
   let n_gray = (n >> 1) ^ n
   let res = 0
-  in loop (res) for i < 30 do
+  in loop (res) for (i, v) in zip (iota 30) dirVct do
        let t = 1 << i
        in if (n_gray & t) == t
-          then res ^ dirVct[i]
+          then res ^ v
           else res
 
 -----------------------
