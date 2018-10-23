@@ -26,7 +26,7 @@ let common_main [n][e] (step: step_fn)
           step cost nodes_start_index nodes_n_edges edges_dest
                graph_visited graph_mask updating_graph_mask
 
-        let step2_inds = map (\i -> if updating_graph_mask'[i] then i else (-1)) (iota n)
+        let step2_inds = map2 (\x i -> if x then i else -1) updating_graph_mask' (iota n)
 
         let graph_visited' =
             scatter graph_visited step2_inds (replicate n true)
