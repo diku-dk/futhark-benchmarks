@@ -33,8 +33,8 @@ let doCompute [num1][num2][numBBins]
                binb: [numBBins]f64)
              : [numBins2]i32 =
   let one_value (xOuter, yOuter, zOuter) =
-    loop dBins = replicate numBins2 0i32 for i < num2 do
-      let (xInner, yInner, zInner) = data2[i]
+    loop dBins = replicate numBins2 0i32
+    for (xInner, yInner, zInner) in data2 do
       let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
       let (min,max) =
         loop (min, max) = (0, numBins) while (min+1) < max do
@@ -59,8 +59,8 @@ let doComputeSelf [numD][numBBins]
                    binb: [numBBins]f64)
                  : [numBins2]i32 =
   let one_value (xOuter, yOuter, zOuter) index =
-    loop dBins = replicate numBins2 0i32 for j in index+1..<numD do
-      let (xInner, yInner, zInner) = unsafe data[j]
+    loop dBins = replicate numBins2 0i32
+    for (xInner, yInner, zInner) in drop (index+1) data do
       let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
       let (min,max) = loop (min, max) = (0, numBins) while (min+1) < max do
         let k = (min+max) / 2
