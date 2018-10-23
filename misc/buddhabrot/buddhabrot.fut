@@ -71,9 +71,8 @@ let visualise [yprec][xprec][depth]
   let visits_per_pixel =
     flatten (stream_red_per (\ass bss: [n][m]i32  -> map2 (\as bs: [m]i32 -> map2 (+) as bs) ass bss) (
                          \[chunk] (inp: [chunk]([depth](f32,f32),bool)): [n][m]i32  ->
-                             loop acc = replicate n (replicate m 0) for i < chunk do
-                               (let (trajectory, escaped) = inp[i]
-                                in if escaped then (loop acc for j < depth do
+                             loop acc = replicate n (replicate m 0) for (trajectory, escaped) in inp do
+                               (if escaped then (loop acc for j < depth do
                                                       (unsafe
                                                        let (x,y) = trajectory[j]
                                                        let i = toI(n, view, y)
