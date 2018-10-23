@@ -16,9 +16,9 @@ let permute [n] (a: [n]u32, index: [n]i32): [n]u32 =
   scatter (copy a) index a
 
 let plus_scan_reverse_order [n] (x: [n]i32): [n]i32 =
-  let xreversed = x[::-1]
+  let xreversed = reverse x
   let x' = plus_scan xreversed
-  let x'reversed = map (\(i: i32): i32  -> x'[n - i - 1]) (iota(n))
+  let x'reversed = reverse x'
   in x'reversed
 
 let split_blelloch [n] (a: [n]u32, flags: [n]i32): [n]u32 =
