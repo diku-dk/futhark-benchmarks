@@ -46,11 +46,12 @@ let main (cols: i32) (rows: i32): [cols]i32 =
     -- 1. Kernel --
     ---------------
     in loop (result) for t < (rows-1) do
-        map (\(i: i32): i32  ->
-                let res = result[i]
-                let res = if (i >  0)     then min(res, unsafe result[i-1]) else res
+        map5 (\i prev res next wall'  ->
+                let res = if i >  0     then min(res, prev) else res
 
-                let res = if (i < cols-1) then min(res, unsafe result[i+1]) else res
+                let res = if i < cols-1 then min(res, next) else res
 
-                in wall[t+1, i] + res 
-           ) (iota(cols) )
+                in wall' + res)
+             (iota cols)
+             (rotate (-1) result) result (rotate 1 result)
+             wall[t+1]
