@@ -37,13 +37,13 @@ let main [number_boxes][par_per_box][num_neighbors]
   let box_nnghs = map4 zip4 box_nnghs_0 box_nnghs_1 box_nnghs_2 box_nnghs_3
   let rv = map4 zip4 rv_0 rv_1 rv_2 rv_3
   let a2 = 2.0*alpha*alpha in
-  unzip4 <| map unzip4 (map (\(l: i32): [par_per_box](f32,f32,f32,f32)  ->
+  unzip4 <| map unzip4 (map2 (\box_num_nghbs' (l: i32): [par_per_box](f32,f32,f32,f32)  ->
         let rA = rv[l]
         in
         map  (\(rA_el:  (f32,f32,f32,f32) ): (f32,f32,f32,f32)  -> --(i32 i) ->
                 let (rai_v, rai_x, rai_y, rai_z) = rA_el in -- rA[i]
                 let acc = (0.0,0.0,0.0,0.0)
-                in loop(acc) for k < box_num_nghbs[l]+1 do
+                in loop(acc) for k < box_num_nghbs'+1 do
                           let pointer = if (k > 0)
                                         then let (_,_,_,num) = unsafe box_nnghs[k-1, l] in num
                                         else l
@@ -77,4 +77,4 @@ let main [number_boxes][par_per_box][num_neighbors]
                           let (a1, a2, a3, a4) = acc
                           in  (a1+r1, a2+r2, a3+r3, a4+r4)
             ) rA
-     ) (iota(number_boxes) ))
+     ) box_num_nghbs (iota(number_boxes) ))
