@@ -298,9 +298,9 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
                    in w * c64.re (coeff_k *! c64.exp (x *! minus_ikk)))
                   minus_ik maturity_for_quote)
 
-       -- write reduction as loop to avoid pointless segmented
+       -- Write reduction as foldl to avoid pointless segmented
        -- reduction (the inner parallelism is not needed).
-       let res = map (\x -> loop v = int 0 for i < num_points do v + x[i])
+       let res = map (foldl (+) (int 0))
                      (transpose (map2 iter x w))
        in map3 (\moneyness resk m ->
                let day_count_fraction = unsafe day_count_fractions[m]
