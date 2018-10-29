@@ -1,95 +1,86 @@
 -- Buddhabrot fractal: https://en.wikipedia.org/wiki/Buddhabrot
 
-let dot(c: (f32,f32)): f32 =
-  let (r, i) = c
-  in r * r + i * i
+import "lib/github.com/athas/matte/colour"
+import "lib/github.com/diku-dk/complex/complex"
+import "lib/github.com/diku-dk/cpprandom/random"
 
-let multComplex(x: (f32,f32), y: (f32,f32)): (f32,f32) =
-  let (a, b) = x
-  let (c, d) = y
-  in (a*c - b * d,
-      a*d + b * c)
+module rand = minstd_rand
+module dist = uniform_real_distribution f32 rand
+type rng = rand.rng
 
-let addComplex(x: (f32,f32), y: (f32,f32)): (f32,f32) =
-  let (a, b) = x
-  let (c, d) = y
-  in (a + c,
-      b + d)
+module c32 = mk_complex f32
+type c32 = c32.complex
 
-let divergence(depth: i32, c0: (f32,f32)): ([depth](f32,f32),bool) =
-  let trajectory = replicate depth (0.0, 0.0)
+let divergence (radius: f32) (limit: i32) (c0: c32): ([limit]c32, bool) =
+  let trajectory = replicate limit (0.0, 0.0)
   let (trajectory, _, i) =
-    loop (trajectory, c, i) = (trajectory, c0, 0) while i < depth && dot(c) < 4.0 do
+    loop (trajectory, c, i) = (trajectory, c0, 0)
+    while i < limit && c32.mag c < radius do
       unsafe
-      let c' = addComplex(c0, multComplex(c, c))
+      let c' = c32.(c0+ c * c)
       let trajectory[i] = c'
       in (trajectory, c', i + 1)
-  in (trajectory, i == depth)
+  in (trajectory, i == limit)
 
-let trajectories(depth: i32, xprec: i32, yprec: i32,
-                                        field: (f32,f32,f32,f32)): ([yprec][xprec][depth](f32,f32),
-     [yprec][xprec]bool) =
+let trajectories (rng: rng) (limit: i32) (radius: f32)
+                 (npoints: i32) (field: (f32,f32,f32,f32)): (rng, []([limit]c32, bool)) =
+  let (xmin, ymin, xmax, ymax) = field
+  let mk_point rng = let (rng, x) = dist.rand (xmin, xmax) rng
+                     let (rng, y) = dist.rand (ymin, ymax) rng
+                     in (rng, c32.mk x y)
+  let (rngs, points) = rng |> rand.split_rng npoints |> map mk_point |> unzip
+  let sample_point c0 = divergence radius limit c0
+  in (rand.join_rng rngs, map sample_point points)
+
+-- This colouring function makes no sense, but it creates a cool retro effect.
+let colourise(max_visits: i32) (visits: i32): i32 =
+  i32.u32 (f32.to_bits ((r32 visits) / (r32 max_visits) * 255.0))
+
+let pixel_pos screenX screenY field c =
   let (xmin, ymin, xmax, ymax) = field
   let sizex = xmax - xmin
   let sizey = ymax - ymin
-  let (trajectories, escapes) =
-    unzip(map  (\(i: i32): ([depth](f32,f32),bool)  ->
-                 let x = i % xprec
-                 let y = i / yprec
-                 let c0 = (xmin + (r32(x) * sizex) / r32(xprec),
-                           ymin + (r32(y) * sizey) / r32(yprec))
-                 in divergence(depth, c0)
-              ) (iota(xprec*yprec)))
-  in (unflatten yprec xprec trajectories,
-      unflatten xprec yprec escapes)
+  let (y,x) = (c32.re c, c32.im c)
+  in (t32 ((x - xmin) * (r32 screenX / sizex)),
+      t32 ((y - ymin) * (r32 screenY / sizey)))
 
-let toI(n: i32, view: (f32,f32,f32,f32), y: f32): i32 =
-  let (_, ymin, _, ymax) = view
-  let sizey = ymax - ymin
-  let y' = y - ymin
-  in t32(y' / (sizey / r32(n)))
+let row_major screenX _screenY (x, y): i32 =
+  y * screenX + x
 
-let toJ(m: i32, view: (f32,f32,f32,f32), x: f32): i32 =
-  let (xmin, _, xmax, _) = view
-  let sizex = xmax - xmin
-  let x' = x - xmin
-  in t32(x' / (sizex / r32(m)))
+type state = { rng: rand.rng
+             , prior_visits: []i32
+             , iter: i32 }
 
-let max(x: i32) (y: i32): i32 =
-  if x < y then y else x
+entry new_state (screenX: i32) (screenY: i32) (seed: i32): state =
+  { rng = rand.rng_from_seed [seed]
+  , prior_visits = replicate (screenX*screenY) 0
+  , iter = 0 }
 
-let colourise(max_visits: i32) (visits: i32): i32 =
-  let c = 255-t32(f32.log(r32(visits)) / f32.log(r32(max_visits)) * 255.0)
-  in c << 16 | c << 8 | c
-
-let visualise [yprec][xprec][depth]
-              (n: i32, m: i32, view: (f32,f32,f32,f32),
-               trajectories: [yprec][xprec][depth](f32,f32),
-               escapes: [yprec][xprec]bool): [n][m]i32 =
-  let trajectories' = flatten trajectories
-  let escapes' = flatten escapes
-  let visits_per_pixel =
-    flatten (stream_red_per (\ass bss: [n][m]i32  -> map2 (\as bs: [m]i32 -> map2 (+) as bs) ass bss) (
-                         \[chunk] (inp: [chunk]([depth](f32,f32),bool)): [n][m]i32  ->
-                             loop acc = replicate n (replicate m 0) for (trajectory, escaped) in inp do
-                               (if escaped then (loop acc for j < depth do
-                                                      (unsafe
-                                                       let (x,y) = trajectory[j]
-                                                       let i = toI(n, view, y)
-                                                       let j = toJ(m, view, x)
-                                                       in if i >= 0 && i < n && j >= 0 && j < m
-                                                          then let acc[i,j] = acc[i,j] + 1
-                                                               in acc
-                                                          else acc))
-                                              else acc)) (zip (trajectories') (escapes')))
+let visualise (state: state)
+              (screenX: i32) (screenY: i32) (limit: i32) (radius: f32)
+              (npoints: i32) (field: (f32,f32,f32,f32)):
+             (state, [screenY][screenX]argb.colour) =
+  let (rng, trajectories) = trajectories state.rng limit radius npoints field
+  let mk_increments (npoints, escaped) =
+    if escaped
+    then map (pixel_pos screenX screenY field >-> row_major screenX screenY) npoints
+    else replicate limit (-1)
+  let touched = flatten (map mk_increments trajectories)
+  let visits_per_pixel = reduce_by_index (copy state.prior_visits) (+) 0
+                                         touched (replicate (length touched) 1)
   let max_visits = i32.maximum visits_per_pixel
-  let coloured = map (colourise(max_visits)) (visits_per_pixel)
-  in unflatten n m coloured
+  let coloured = map (colourise max_visits) visits_per_pixel
+  in ({rng, prior_visits = visits_per_pixel, iter = state.iter + 1},
+      unflatten screenY screenX coloured)
 
-let main(n: i32) (m: i32) (v_xmin: f32) (v_ymin: f32) (v_xmax: f32) (v_ymax: f32)
-                     (depth: i32)
-                     (xprec: i32) (yprec: i32) (f_xmin: f32) (f_ymin: f32) (f_xmax: f32) (f_ymax: f32): [n][m]i32 =
-  let (trajectories, escapes) = trajectories(depth, xprec, yprec,
-                                             (f_xmin, f_ymin, f_xmax, f_ymax))
-  let image = visualise(n, m, (v_xmin, v_ymin, v_xmax, v_ymax), trajectories, escapes)
-  in image
+entry main (state: state) (screenX: i32) (screenY: i32)
+         xcentre ycentre width limit radius npoints
+       : (state, [screenY][screenX]argb.colour) =
+  let aspect_ratio = r32 screenX / r32 screenY
+  let (xmin,ymin) = (xcentre - width/2,
+                     ycentre - (1/aspect_ratio)*width/2)
+  let (xmax,ymax) = (xcentre + width/2,
+                     ycentre + (1/aspect_ratio)*width/2)
+  in visualise state screenX screenY limit radius npoints (xmin, ymin, xmax, ymax)
+
+entry frob (s: state) = s.iter
