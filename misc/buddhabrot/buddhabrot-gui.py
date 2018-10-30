@@ -9,7 +9,7 @@ import time
 import sys
 
 buddhabrot = buddhabrot(interactive=True)
-npoints = 1000000
+npoints = 100000
 
 (width, height) = (1024,768)
 aspect = width/float(height)
