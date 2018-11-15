@@ -3,9 +3,6 @@
 -- compiled input @ data/fake.in
 -- output @ data/fake.out
 
-import "/futlib/math"
-import "/futlib/array"
-
 type real = f64
 let zero : real = 0.0
 let rfloor = f64.floor

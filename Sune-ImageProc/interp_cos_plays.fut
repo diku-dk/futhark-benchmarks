@@ -3,9 +3,6 @@
 -- compiled input @ data/fake.in
 -- output @ data/fake.out
 
-import "/futlib/math"
-import "/futlib/array"
-
 import "lib/github.com/athas/vector/vector"
 
 type real = f64
