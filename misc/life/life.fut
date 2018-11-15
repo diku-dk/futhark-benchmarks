@@ -1,7 +1,7 @@
 -- Simple game of life implementation with a donut world.
 --
 -- ==
--- compiled input {
+-- nobench compiled input {
 --   [[0, 0, 0, 0, 0],
 --    [0, 0, 1, 0, 0],
 --    [0, 0, 0, 1, 0],
