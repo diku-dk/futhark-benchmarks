@@ -222,7 +222,7 @@ module subtract_with_carry_engine (T: integral) (P: {
             false)
       else (T.(modulus - x[k] - bool carry + x[short_index]),
             true)
-    let x = (copy x) with [k] <- xi
+    let x = (copy x) with [k] = xi
     let k = (k + 1) % long_lag
     in ({x, carry, k}, xi)
 
@@ -230,7 +230,7 @@ module subtract_with_carry_engine (T: integral) (P: {
     let rng = e.rng_from_seed seed
     let (x, _) = loop (x, rng) = (replicate P.r (T.i32 0), rng)
                    for i < P.r do let (v, rng) = e.rand rng
-                                  in (x with [i] <- T.(v % modulus),
+                                  in (x with [i] = T.(v % modulus),
                                       rng)
     let carry = T.(last x == i32 0)
     let k = 0
@@ -302,7 +302,7 @@ module shuffle_order_engine (K: {val k: i32}) (E: rng_engine)
     let xs = replicate K.k (int.i32 0)
     in loop (rng,xs) for i < K.k do
          let (rng,x) = E.rand rng
-         in (rng, xs with [i] <- x)
+         in (rng, xs with [i] = x)
 
   let rng_from_seed (xs: []i32) =
     build_table (E.rng_from_seed xs)
@@ -318,7 +318,7 @@ module shuffle_order_engine (K: {val k: i32}) (E: rng_engine)
     let (rng,x) = E.rand rng
     let i = i32.i64 (int.to_i64 x) % K.k
     let (rng,y) = E.rand rng
-    in unsafe ((rng, (copy table) with [i] <- y), table[i])
+    in unsafe ((rng, (copy table) with [i] = y), table[i])
 
   let min = E.min
   let max = E.max
