@@ -365,4 +365,4 @@ let main [g]
   get_end_frame u0 v0 d0 n_steps n_solver_steps
                 time_step diffusion_rate viscosity
 
-entry poke [g] (a: *[g][g]f32) (i: i32) (j: i32) (v: f32) = a with [i,j] <- v
+entry poke [g] (a: *[g][g]f32) (i: i32) (j: i32) (v: f32) = a with [i,j] = v
