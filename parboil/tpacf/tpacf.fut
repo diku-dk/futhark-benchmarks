@@ -49,7 +49,7 @@ let doCompute [num1][num2][numBBins]
                       then max+1
                       else max
 
-      in unsafe dBins with [index] <- dBins[index] + 1i32
+      in unsafe dBins with [index] = dBins[index] + 1i32
   in map one_value data1 |> sumBins
 
 let doComputeSelf [numD][numBBins]
@@ -74,7 +74,7 @@ let doComputeSelf [numD][numBBins]
                       then max+1
                       else max
 
-      in unsafe dBins with [index] <- dBins[index] + 1i32
+      in unsafe dBins with [index] = dBins[index] + 1i32
   in map2 one_value data (iota numD) |> sumBins
 
 let fixPoints (ra: f64) (dec: f64): vec3 =

@@ -89,7 +89,7 @@ module any_vector : vector with vector 'a = []a = {
   let reduce = reduce
   let zip = zip
   let get i a = a[i]
-  let set i v a = copy a with [i] <- v
+  let set i v a = copy a with [i] = v
   let length = length
   let to_array = id
   let from_array = id

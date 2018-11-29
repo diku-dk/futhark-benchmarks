@@ -167,13 +167,13 @@ entry render [n]
   in unflatten w h (scatter (replicate (w*h) background) is vs')
 
 entry mouse_mass_active (xps: *[]f32) (yps: *[]f32) (zps: *[]f32) (ms: *[]f32) (x: f32) (y: f32) (z: f32) =
-  (xps with [0] <- x,
-   yps with [0] <- y,
-   zps with [0] <- z,
-   ms with [0] <- 10000)
+  (xps with [0] = x,
+   yps with [0] = y,
+   zps with [0] = z,
+   ms with [0] = 10000)
 
 entry mouse_mass_inactive (xps: *[]f32) (yps: *[]f32) (zps: *[]f32) (ms: *[]f32) =
-  (xps with [0] <- 0,
-   yps with [0] <- 0,
-   zps with [0] <- 0,
-   ms with [0] <- 0.0001)
+  (xps with [0] = 0,
+   yps with [0] = 0,
+   zps with [0] = 0,
+   ms with [0] = 0.0001)
