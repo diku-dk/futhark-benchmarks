@@ -18,8 +18,8 @@ entry sum_iota_f64 = iota >-> map r64 >-> f64.sum
 -- random input { [10000]i32 }
 -- random input { [100000]i32 }
 -- random input { [1000000]i32 }
--- random input { [10000000]i32 }
--- random input { [100000000]i32 }
+-- no_python random input { [10000000]i32 }
+-- no_python random input { [100000000]i32 }
 
 entry sum_i8  = map i8.i32 >-> i8.sum
 entry sum_i32 = i32.sum
@@ -41,7 +41,7 @@ entry sum_f64 = map r64 >-> f64.sum
 -- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 }
 -- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 }
 -- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 }
--- random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
+-- no_python random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
 
 let mat4_mul (+) (*) (a0,a1,a2,a3) (b0,b1,b2,b3) =
   ((b0*a0 + b1*a2),
@@ -102,7 +102,7 @@ entry lss_iota_f64 = iota >-> map     r64 >-> lss (const true) (<=)
 -- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 }
 -- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 }
 -- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 }
--- random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
+-- no_python random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
 
 entry lss_i8  = map  i8.i32 >-> lss (const true) (<=)
 entry lss_i32 = map i32.i32 >-> lss (const true) (<=)
