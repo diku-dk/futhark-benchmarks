@@ -26,6 +26,23 @@ entry sum_i32 = i32.sum
 entry sum_f32 = map r32 >-> f32.sum
 entry sum_f64 = map r64 >-> f64.sum
 
+-- ==
+-- entry: sum_scaled_i8 sum_scaled_i32 sum_scaled_f32 sum_scaled_f64
+-- random input { [10000]i32 }
+-- random input { [100000]i32 }
+-- random input { [1000000]i32 }
+-- only_c random input { [10000000]i32 }
+-- only_c random input { [100000000]i32 }
+
+entry sum_scaled_i8 xs = let ys = map (i8.i32 >-> (*2)) xs
+                         in (i8.sum ys, ys)
+entry sum_scaled_i32 xs = let ys = map (i32.i32 >-> (*2)) xs
+                          in (i32.sum ys, ys)
+entry sum_scaled_f32 xs = let ys = map (f32.i32 >-> (*2)) xs
+                          in (f32.sum ys, ys)
+entry sum_scaled_f64 xs = let ys = map (f64.i32 >-> (*2)) xs
+                          in (f64.sum ys, ys)
+
 -- Now for some non-commutative reductions.
 
 -- ==
