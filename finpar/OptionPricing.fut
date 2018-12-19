@@ -284,16 +284,16 @@ let payoff1(md_disct: []f32, md_detval: []f32, xss: [1][1]f32): f32 =
 
 let payoff2 (md_disc: []f32, xss: [5][3]f32): f32 =
   let (date, amount) =
-    if      1.0 <= fminPayoff(xss[0]) then (0, 1150.0)
-    else if 1.0 <= fminPayoff(xss[1]) then (1, 1300.0)
-    else if 1.0 <= fminPayoff(xss[2]) then (2, 1450.0)
-    else if 1.0 <= fminPayoff(xss[3]) then (3, 1600.0)
-    else let x50  = fminPayoff(xss[4])
-         let value  = if      1.0 <= x50 then 1750.0
-                      else if 0.75 < x50 then 1000.0
-                      else                    x50*1000.0
-         in (4, value)
-         in trajInner(amount, date, md_disc)
+    if 1.0 <= fminPayoff(xss[0]) then (0, 1150.0) else
+    if 1.0 <= fminPayoff(xss[1]) then (1, 1300.0) else
+    if 1.0 <= fminPayoff(xss[2]) then (2, 1450.0) else
+    if 1.0 <= fminPayoff(xss[3]) then (3, 1600.0) else
+    let x50  = fminPayoff(xss[4])
+    let value  = if 1.0 <= x50 then 1750.0 else
+                 if 0.75 < x50 then 1000.0
+                 else x50*1000.0
+    in (4, value)
+  in trajInner(amount, date, md_disc)
 
 let payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
   let conds  = map (\x ->
@@ -316,8 +316,8 @@ let payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
 let genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]f32): f32 =
   if      contract == 1 then unsafe payoff1(md_disct, md_detval, xss)
   else if contract == 2 then unsafe payoff2(md_disct, xss)
-  else if contract == 3 then unsafe payoff3(md_disct, xss)
-  else 0.0
+       else if contract == 3 then unsafe payoff3(md_disct, xss)
+            else 0.0
 
 -- Entry point
 let main [num_bits][num_models][num_und][num_dates]
@@ -335,7 +335,7 @@ let main [num_bits][num_models][num_und][num_dates]
          : []f32 =
   let sobvctsz  = num_dates*num_und
   let sobol_mat = stream_map (\[chunk] (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
-                               sobolChunk(dir_vs, unsafe ns[0], chunk))
+                                sobolChunk(dir_vs, unsafe ns[0], chunk))
                              (iota num_mc_it)
 
   let gauss_mat = map ugaussian sobol_mat
