@@ -65,7 +65,6 @@ let tridagSeq [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
               let b[i] = b[i] - beta*c[i-1]
               let y[i] = y[i] - beta*y[i-1]
               in  (y, b)
-
   let y[n-1] = y[n-1]/b[n-1]
   in loop (y) for i in n-2..n-3...0 do
      let y[i] = (y[i] - c[i]*y[i+1]) / b[i]
@@ -151,7 +150,7 @@ let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
                   let c2 =      (mu*dx[1] + 0.5*var*dxx[1]) * unsafe result_row[j  ]
                   in  c1 + c2 + c3)
                myD myDD mu_row var_row (iota m))
-      myMu myVar result
+       myMu myVar result
 
 -- for implicitY: should be called with transpose(u) instead of u
 let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
@@ -167,7 +166,7 @@ let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
           in if true
              then tridagSeq( a, copy b, c, copy u_row )
              else tridagPar( a, b, c, u_row ))
-      myMu myVar u
+       myMu myVar u
 
 let rollback
   [numX][numY]
@@ -175,14 +174,11 @@ let rollback
    myMuX: [numY][numX]f32, myDx: [numX][3]f32, myDxx: [numX][3]f32, myVarX: [numY][numX]f32,
    myMuY: [numX][numY]f32, myDy: [numY][3]f32, myDyy: [numY][3]f32, myVarY: [numX][numY]f32)
   : [numY][numX]f32 =
-
   let dtInv = 1.0/(tnext-tnow)
-
   -- explicitX
   let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult )
   let u = map2 (map2 (\u_el res_el  -> dtInv*res_el + 0.5*u_el))
                u myResult
-
   -- explicitY
   let myResultTR = transpose(myResult)
   let v = explicitMethod(myDy, myDyy, myMuY, myVarY, myResultTR)
@@ -192,8 +188,7 @@ let rollback
   -- implicitY
   let y = map2 (\u_row v_row: []f32 ->
                   map2 (\u_el v_el -> dtInv*u_el - 0.5*v_el) u_row v_row)
-              (transpose u) v
-
+               (transpose u) v
   let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
   in transpose myResultTR
 
@@ -204,7 +199,6 @@ let value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: 
   let (myDy, myDyy) = initOperator(myY)
   let myResult = setPayoff(strike, myX, myY)
   let myTimeline_neighbours = reverse (zip (init myTimeline) (tail myTimeline))
-
   let myResult = loop (myResult) for (tnow,tnext) in myTimeline_neighbours do
                  let (myMuX, myVarX, myMuY, myVarY) =
                    updateParams(myX, myY, tnow, alpha, beta, nu)
