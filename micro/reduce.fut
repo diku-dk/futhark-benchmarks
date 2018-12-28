@@ -81,7 +81,7 @@ entry prod_mat4_f64 as bs cs ds = map4 (mat4'    r64) as bs cs ds |> reduce (mat
 
 -- Try a non-commutative reduction with a beefy operator containing lots of control flow.
 
-let lss 't (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
+let lss 't (t: t) (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
   let max = i32.max
 
   let rop (lssx, lisx, lcsx, tlx, firstx, lastx)
@@ -99,7 +99,7 @@ let lss 't (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
       let xmatch = if pred1 x then 1 else 0
       in (xmatch, xmatch, xmatch, 1, x, x)
 
-  in (reduce rop (0,0,0,0,xs[0],xs[0]) (map mop xs)).1
+  in (reduce rop (0,0,0,0,t,t) (map mop xs)).1
 
 -- ==
 -- entry: lss_iota_i8 lss_iota_i32 lss_iota_f32 lss_iota_f64
@@ -109,10 +109,10 @@ let lss 't (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
 -- input { 10000000 }
 -- input { 100000000 }
 
-entry lss_iota_i8  = iota >-> map  i8.i32 >-> lss (const true) (<=)
-entry lss_iota_i32 = iota >-> map i32.i32 >-> lss (const true) (<=)
-entry lss_iota_f32 = iota >-> map     r32 >-> lss (const true) (<=)
-entry lss_iota_f64 = iota >-> map     r64 >-> lss (const true) (<=)
+entry lss_iota_i8  = iota >-> map  i8.i32 >-> lss 0 (const true) (<=)
+entry lss_iota_i32 = iota >-> map i32.i32 >-> lss 0 (const true) (<=)
+entry lss_iota_f32 = iota >-> map     r32 >-> lss 0 (const true) (<=)
+entry lss_iota_f64 = iota >-> map     r64 >-> lss 0 (const true) (<=)
 
 -- ==
 -- entry: lss_i8 lss_i32 lss_f32 lss_f64
@@ -121,7 +121,7 @@ entry lss_iota_f64 = iota >-> map     r64 >-> lss (const true) (<=)
 -- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 }
 -- no_python random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
 
-entry lss_i8  = map  i8.i32 >-> lss (const true) (<=)
-entry lss_i32 = map i32.i32 >-> lss (const true) (<=)
-entry lss_f32 = map     r32 >-> lss (const true) (<=)
-entry lss_f64 = map     r64 >-> lss (const true) (<=)
+entry lss_i8  = map  i8.i32 >-> lss 0 (const true) (<=)
+entry lss_i32 = map i32.i32 >-> lss 0 (const true) (<=)
+entry lss_f32 = map     r32 >-> lss 0 (const true) (<=)
+entry lss_f64 = map     r64 >-> lss 0 (const true) (<=)
