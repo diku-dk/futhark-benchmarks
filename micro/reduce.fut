@@ -1,23 +1,40 @@
 -- Benchmarks for the reduce SOAC.
+--
+-- Some benchmarks do not perform validation for floating-point
+-- datasets because the sequential reference is too inaccurate, or
+-- because the random data is so badly conditioned that the results
+-- are fragile (FP is not associative nor commutative, so we are
+-- cheating anyway).
 
 -- ==
--- entry: sum_iota_i8 sum_iota_i32 sum_iota_f32 sum_iota_f64
+-- entry: sum_iota_i8 sum_iota_i32
+-- input { 10000 } auto output
+-- input { 100000 } auto output
+-- input { 1000000 } auto output
+-- input { 10000000 } auto output
+-- input { 100000000 } auto output
+
+-- ==
+-- entry: sum_iota_f32 sum_iota_f64
 -- input { 10000 }
 -- input { 100000 }
 -- input { 1000000 }
 -- input { 10000000 }
 -- input { 100000000 }
 
+
 entry sum_iota_i8  = iota >-> map i8.i32 >-> i8.sum
 entry sum_iota_i32 = iota >-> i32.sum
 entry sum_iota_f32 = iota >-> map r32 >-> f32.sum
 entry sum_iota_f64 = iota >-> map r64 >-> f64.sum
 
+-- The larger ones are not correctness-tested because the sequential
+-- reference is too inaccurate for f32.
 -- ==
 -- entry: sum_i8 sum_i32 sum_f32 sum_f64
--- random input { [10000]i32 }
--- random input { [100000]i32 }
--- random input { [1000000]i32 }
+-- random input { [10000]i32 } auto output
+-- random input { [100000]i32 } auto output
+-- random input { [1000000]i32 } auto output
 -- no_python random input { [10000000]i32 }
 -- no_python random input { [100000000]i32 }
 
@@ -27,10 +44,18 @@ entry sum_f32 = map r32 >-> f32.sum
 entry sum_f64 = map r64 >-> f64.sum
 
 -- ==
--- entry: sum_scaled_i8 sum_scaled_i32 sum_scaled_f32 sum_scaled_f64
--- random input { [10000]i32 }
--- random input { [100000]i32 }
--- random input { [1000000]i32 }
+-- entry: sum_scaled_i8 sum_scaled_i32
+-- random input { [10000]i32 } auto output
+-- random input { [100000]i32 } auto output
+-- random input { [1000000]i32 } auto output
+-- only_c random input { [10000000]i32 } auto output
+-- only_c random input { [100000000]i32 } auto output
+
+-- ==
+-- entry: sum_scaled_f32 sum_scaled_f64
+-- random input { [10000]i32 } auto output
+-- random input { [100000]i32 } auto output
+-- random input { [1000000]i32 } auto output
 -- only_c random input { [10000000]i32 }
 -- only_c random input { [100000000]i32 }
 
@@ -46,7 +71,15 @@ entry sum_scaled_f64 xs = let ys = map (f64.i32 >-> (*2)) xs
 -- Now for some non-commutative reductions.
 
 -- ==
--- entry: prod_iota_mat4_i8 prod_iota_mat4_i32 prod_iota_mat4_f32 prod_iota_mat4_f64
+-- entry: prod_iota_mat4_i8 prod_iota_mat4_i32
+-- input { 10000 } auto output
+-- input { 100000 } auto output
+-- input { 1000000 } auto output
+-- input { 10000000 } auto output
+-- input { 100000000 } auto output
+
+-- ==
+-- entry: prod_iota_mat4_f32 prod_iota_mat4_f64
 -- input { 10000 }
 -- input { 100000 }
 -- input { 1000000 }
@@ -54,7 +87,14 @@ entry sum_scaled_f64 xs = let ys = map (f64.i32 >-> (*2)) xs
 -- input { 100000000 }
 
 -- ==
--- entry: prod_mat4_i8 prod_mat4_i32 prod_mat4_f32 prod_mat4_f64
+-- entry: prod_mat4_i8 prod_mat4_i32
+-- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 } auto output
+-- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 } auto output
+-- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 } auto output
+-- no_python random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 } auto output
+
+-- ==
+-- entry: prod_mat4_f32 prod_mat4_f64
 -- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 }
 -- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 }
 -- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 }
@@ -103,11 +143,11 @@ let lss 't (t: t) (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
 
 -- ==
 -- entry: lss_iota_i8 lss_iota_i32 lss_iota_f32 lss_iota_f64
--- input { 10000 }
--- input { 100000 }
--- input { 1000000 }
--- input { 10000000 }
--- input { 100000000 }
+-- input { 10000 } auto output
+-- input { 100000 } auto output
+-- input { 1000000 } auto output
+-- input { 10000000 } auto output
+-- input { 100000000 } auto output
 
 entry lss_iota_i8  = iota >-> map  i8.i32 >-> lss 0 (const true) (<=)
 entry lss_iota_i32 = iota >-> map i32.i32 >-> lss 0 (const true) (<=)
@@ -116,10 +156,10 @@ entry lss_iota_f64 = iota >-> map     r64 >-> lss 0 (const true) (<=)
 
 -- ==
 -- entry: lss_i8 lss_i32 lss_f32 lss_f64
--- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 }
--- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 }
--- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 }
--- no_python random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
+-- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 } auto output
+-- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 } auto output
+-- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 } auto output
+-- no_python random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 } auto output
 
 entry lss_i8  = map  i8.i32 >-> lss 0 (const true) (<=)
 entry lss_i32 = map i32.i32 >-> lss 0 (const true) (<=)
