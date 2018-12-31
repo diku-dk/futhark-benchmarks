@@ -22,19 +22,24 @@
 -- input { 10000000 }
 -- input { 100000000 }
 
-
 entry sum_iota_i8  = iota >-> map i8.i32 >-> i8.sum
 entry sum_iota_i32 = iota >-> i32.sum
 entry sum_iota_f32 = iota >-> map r32 >-> f32.sum
 entry sum_iota_f64 = iota >-> map r64 >-> f64.sum
 
--- The larger ones are not correctness-tested because the sequential
--- reference is too inaccurate for f32.
 -- ==
 -- entry: sum_i8 sum_i32 sum_f32 sum_f64
 -- random input { [10000]i32 } auto output
 -- random input { [100000]i32 } auto output
 -- random input { [1000000]i32 } auto output
+-- no_python random input { [10000000]i32 } auto output
+-- no_python random input { [100000000]i32 } auto output
+
+-- ==
+-- entry: sum_f32 sum_f64
+-- random input { [10000]i32 }
+-- random input { [100000]i32 }
+-- random input { [1000000]i32 }
 -- no_python random input { [10000000]i32 }
 -- no_python random input { [100000000]i32 }
 
@@ -53,9 +58,9 @@ entry sum_f64 = map r64 >-> f64.sum
 
 -- ==
 -- entry: sum_scaled_f32 sum_scaled_f64
--- random input { [10000]i32 } auto output
--- random input { [100000]i32 } auto output
--- random input { [1000000]i32 } auto output
+-- random input { [10000]i32 }
+-- random input { [100000]i32 }
+-- random input { [1000000]i32 }
 -- only_c random input { [10000000]i32 }
 -- only_c random input { [100000000]i32 }
 
