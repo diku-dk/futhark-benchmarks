@@ -28,7 +28,7 @@ entry sum_iota_f32 = iota >-> map r32 >-> f32.sum
 entry sum_iota_f64 = iota >-> map r64 >-> f64.sum
 
 -- ==
--- entry: sum_i8 sum_i32 sum_f32 sum_f64
+-- entry: sum_i8 sum_i32
 -- random input { [10000]i32 } auto output
 -- random input { [100000]i32 } auto output
 -- random input { [1000000]i32 } auto output
