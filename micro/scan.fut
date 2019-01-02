@@ -81,7 +81,6 @@ entry sum_scaled_f64 xs = let ys = map (f64.i32 >-> (*2)) xs
 -- input { 100000 } auto output
 -- input { 1000000 } auto output
 -- input { 10000000 } auto output
--- input { 100000000 } auto output
 
 -- ==
 -- entry: prod_iota_mat4_f32 prod_iota_mat4_f64
@@ -89,7 +88,6 @@ entry sum_scaled_f64 xs = let ys = map (f64.i32 >-> (*2)) xs
 -- input { 100000 }
 -- input { 1000000 }
 -- input { 10000000 }
--- input { 100000000 }
 
 -- ==
 -- entry: prod_mat4_i8 prod_mat4_i32
