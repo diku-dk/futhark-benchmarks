@@ -34,7 +34,7 @@ module type least_squares = {
                    -> (max_global: i32) -> (np: i32)
                    -> [num_vars]optimization_variable
                    -> (num_observed: i32)
-                   -> calibration_result [num_vars]
+                   -> *calibration_result [num_vars]
 }
 
 module mk_least_squares (real: real) (rand: rng_engine)
@@ -187,7 +187,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
       (np: i32)
       (variables: [num_vars]optimization_variable)
       (num_observed: i32)
-      : calibration_result [num_vars] =
+      : *calibration_result [num_vars] =
     let (free_vars_to_vars, free_vars) =
       unzip (filter (\(_, (fixed, _, _)) -> !fixed) (zip (iota num_vars) variables))
     let num_free_vars = length free_vars
