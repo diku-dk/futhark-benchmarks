@@ -212,6 +212,6 @@ module mk_least_squares (real: real) (rand: rng_engine)
     let err = objective (active_vars vars_to_free_vars variables x)
 
     in {parameters = active_vars vars_to_free_vars variables x,
-        root_mean_squared_error = rms_of_error err,
+        root_mean_squared_error = copy (rms_of_error err),
         num_feval = num_feval}
 }
