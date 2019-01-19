@@ -118,8 +118,8 @@ let rotateYMatrix (angle: f32): [3][3]f32 =
 
 let matmult [n][m][p] (x: [n][m]f32) (y: [m][p]f32): [n][p]f32 =
   map (\xr ->
-        map (\yc -> f32.sum (map2 (*) xr yc))
-            (transpose y))
+         map (\yc -> f32.sum (map2 (*) xr yc))
+             (transpose y))
       x
 
 let rotationMatrix (x_rotation: f32) (y_rotation: f32): [3][3]f32 =
@@ -140,19 +140,19 @@ let renderPoint(w: i32) (h: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32)
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
-    -- Normalise x,y to positions in interval (0,1) within the viewport.
-    let x' = (x-x_ul) / (x_br-x_ul)
-    let y' = (y-y_ul) / (y_br-y_ul)
-    -- Convert x',y' to screen coordinate space.
-    let x'' = t32(x' * r32(w))
-    let y'' = t32(y' * r32(h))
-    let intensity = if m >= max_mass
-                    then 255
-                    else 128 + t32((m / max_mass) * 128f32)
-    let colour = intensity * 0x10000 +
-                 intensity * 0x100 +
-                 0xFF
-    in (x''*h + y'', colour)
+  -- Normalise x,y to positions in interval (0,1) within the viewport.
+  let x' = (x-x_ul) / (x_br-x_ul)
+  let y' = (y-y_ul) / (y_br-y_ul)
+  -- Convert x',y' to screen coordinate space.
+  let x'' = t32(x' * r32(w))
+  let y'' = t32(y' * r32(h))
+  let intensity = if m >= max_mass
+                  then 255
+                  else 128 + t32((m / max_mass) * 128f32)
+  let colour = intensity * 0x10000 +
+               intensity * 0x100 +
+               0xFF
+  in (x''*h + y'', colour)
 
 entry render [n]
             (w: i32) (h: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32)
@@ -161,8 +161,8 @@ entry render [n]
             (max_mass: f32) (invert: bool): [w][h]i32 =
   let background = if invert then argb.white else argb.black
   let (is, vs) = unzip(map2 (renderPoint w h x_ul y_ul x_br y_br max_mass)
-                       (rotatePoints (map3 (\x y z -> {x,y,z}) xps yps zps)
-                                     x_rotation y_rotation) ms)
+                            (rotatePoints (map3 (\x y z -> {x,y,z}) xps yps zps)
+                                          x_rotation y_rotation) ms)
   let vs' = map (\x -> if invert then ~x else x) vs
   in unflatten w h (scatter (replicate (w*h) background) is vs')
 

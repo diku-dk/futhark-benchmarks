@@ -75,3 +75,5 @@ while running:
                 switch_rules(-1)
             if event.key == pygame.K_ESCAPE:
                 running=False
+            if event.unicode == 'r':
+                life_state = life_init(numpy.random.choice([True, False], size=size))
