@@ -1,6 +1,8 @@
 -- ==
 -- entry: transpose_i8
 -- only_c random input { 1 100000000 [100000000]i8 }
+-- only_c random input { 2  50000000 [100000000]i8 }
+-- only_c random input { 4  25000000 [100000000]i8 }
 -- only_c random input { 10 10000000 [100000000]i8 }
 -- only_c random input { 100 1000000 [100000000]i8 }
 -- only_c random input { 1000 100000 [100000000]i8 }
@@ -8,11 +10,15 @@
 -- only_c random input { 100000 1000 [100000000]i8 }
 -- only_c random input { 1000000 100 [100000000]i8 }
 -- only_c random input { 10000000 10 [100000000]i8 }
+-- only_c random input { 25000000  4 [100000000]i8 }
+-- only_c random input { 50000000  2 [100000000]i8 }
 -- only_c random input { 100000000 1 [100000000]i8 }
 
 -- ==
 -- entry: transpose_i32
 -- only_c random input { 1 100000000 [100000000]i32 }
+-- only_c random input { 2  50000000 [100000000]i32 }
+-- only_c random input { 4  25000000 [100000000]i32 }
 -- only_c random input { 10 10000000 [100000000]i32 }
 -- only_c random input { 100 1000000 [100000000]i32 }
 -- only_c random input { 1000 100000 [100000000]i32 }
@@ -20,11 +26,15 @@
 -- only_c random input { 100000 1000 [100000000]i32 }
 -- only_c random input { 1000000 100 [100000000]i32 }
 -- only_c random input { 10000000 10 [100000000]i32 }
+-- only_c random input { 25000000  4 [100000000]i32 }
+-- only_c random input { 50000000  2 [100000000]i32 }
 -- only_c random input { 100000000 1 [100000000]i32 }
 
 -- ==
 -- entry: transpose_i64
 -- only_c random input { 1 100000000 [100000000]i64 }
+-- only_c random input { 2  50000000 [100000000]i64 }
+-- only_c random input { 4  25000000 [100000000]i64 }
 -- only_c random input { 10 10000000 [100000000]i64 }
 -- only_c random input { 100 1000000 [100000000]i64 }
 -- only_c random input { 1000 100000 [100000000]i64 }
@@ -32,6 +42,8 @@
 -- only_c random input { 100000 1000 [100000000]i64 }
 -- only_c random input { 1000000 100 [100000000]i64 }
 -- only_c random input { 10000000 10 [100000000]i64 }
+-- only_c random input { 25000000  4 [100000000]i64 }
+-- only_c random input { 50000000  2 [100000000]i64 }
 -- only_c random input { 100000000 1 [100000000]i64 }
 
 entry transpose_i8  n m xs: [][]i8  = unflatten n m xs |> transpose

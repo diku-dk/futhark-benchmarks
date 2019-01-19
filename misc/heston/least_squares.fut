@@ -30,11 +30,11 @@ module type least_squares = {
   -- of the number of observations (used for computing the error).
   --
   val least_squares [num_vars]
-                   :  (objective: [num_vars]real -> real)
+                   :  [num_vars]optimization_variable
+                   -> (objective: [num_vars]real -> real)
                    -> (max_global: i32) -> (np: i32)
-                   -> [num_vars]optimization_variable
                    -> (num_observed: i32)
-                   -> calibration_result [num_vars]
+                   -> *calibration_result [num_vars]
 }
 
 module mk_least_squares (real: real) (rand: rng_engine)
@@ -182,12 +182,12 @@ module mk_least_squares (real: real) (rand: rng_engine)
     in {x0=x0, f=fx0, num_feval=ncalls, status=status}
 
   let least_squares [num_vars]
+      (variables: [num_vars]optimization_variable)
       (objective: []real -> real)
       (max_global: i32)
       (np: i32)
-      (variables: [num_vars]optimization_variable)
       (num_observed: i32)
-      : calibration_result [num_vars] =
+      : *calibration_result [num_vars] =
     let (free_vars_to_vars, free_vars) =
       unzip (filter (\(_, (fixed, _, _)) -> !fixed) (zip (iota num_vars) variables))
     let num_free_vars = length free_vars
@@ -212,6 +212,6 @@ module mk_least_squares (real: real) (rand: rng_engine)
     let err = objective (active_vars vars_to_free_vars variables x)
 
     in {parameters = active_vars vars_to_free_vars variables x,
-        root_mean_squared_error = rms_of_error err,
+        root_mean_squared_error = copy (rms_of_error err),
         num_feval = num_feval}
 }
