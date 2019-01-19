@@ -99,7 +99,7 @@ let run_calibration({today,
          (map2 (\(p,v) w -> real.(w * p / v)) prices_and_vegas weights)
          (map3 (\w (_, v) p -> real.(w * p / v)) weights prices_and_vegas x_prices)
 
-  in real_least_squares.least_squares objective max_global np variables (length quotes)
+  in real_least_squares.least_squares variables objective max_global np (length quotes)
 
 let date_of_int(x: i32) =
   let d = x%100
