@@ -2,6 +2,7 @@
 -- ==
 -- compiled input @ data/sahara-cloudy.in.gz
 -- output @ data/sahara-cloudy.out.gz
+-- compiled input @ data/peru.in.gz
 
 let logplus (x: f32) : f32 =
   if x > (f32.exp 1)
