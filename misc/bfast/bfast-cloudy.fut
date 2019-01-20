@@ -142,10 +142,15 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   ---------------------------------------------
   let beta0  = map (matvecmul_row_filt Xh) Yh   -- [2k+2]
                |> intrinsics.opaque
+
   let beta   = map2 matvecmul_row Xinv beta0    -- [2k+2]
-               |> intrinsics.opaque
+               |> intrinsics.opaque -- ^ requires transposition of Xinv
+                                    --   unless all parallelism is exploited
+
   let y_preds= map (matvecmul_row Xt) beta      -- [N]
-               |> intrinsics.opaque
+               |> intrinsics.opaque -- ^ requires transposition of Xt (small)
+                                    --   can be eliminated by passing
+                                    --   (transpose X) instead of Xt
 
   ---------------------------------------------
   -- 5. filter etc.                          --
