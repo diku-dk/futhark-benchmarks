@@ -229,3 +229,30 @@ WRONG (still outermost map chosen)
 --pass-option --size=main.suff_intra_par_39=333
 WRONG (still outermost map chosen)
 
+#########################################
+### DIGGING INTO KERNELS
+#########################################
+
+1. Matrix Inversion intra-group-par kernel; "let Xinv = map mat_inv Xsqr"
+Kernel map_intra_group_27232        executed      1 times, with average runtime:   1708us	and total runtime:   1708us
+very good runtime!
+This is about 900us faster than what Einar and Jakob reported (2684us)
+
+2. Intra-group kernel of "let (Nss, y_errors, val_indss) = map2 (...filterPadWithKeys...)"
+Kernel map_intra_group_28924        executed      1 times, with average runtime:   4986us	and total runtime:   4986us 
+Einar & Jakob reported: 2878us, which is sligthly far away
+removing the final glob-mem-copy "loops" brings it to 4381us (and bypassing the final read from local memory reduces it to 4128;
+                                                              eliminating the unneccessarey scatter initialization => 3954us)
+Even if these improvements are done, it is fair to say that we are losing at least 1ms in this kernel ...
+It is also likely that running it multiple times without clFinish will bring the time down a bit ...
+(IN comparison with Einar and Jakob we are loosing 1.5ms here ...)
+
+3. Intra-group kernel of "let (hs, nss, sigmas) = map2 (... redomap o redomap ...)
+Kernel map_intra_group_29679        executed      1 times, with average runtime:   2809us	and total runtime:   2809us
+Einar & Jakob reported: 2104us, which is about 700us faster ... 
+You can save about 100us by making only the first thread perform the final math computation
+
+4. Kernel map_intra_group_30286        executed      1 times, with average runtime:   3301us	and total runtime:   3301us
+this one is not really comparable because the good version (ours) performs two more reduce operations, while theirs 
+(Einar and Jakob's) writes more elements to global memory.
+similarly, one can speed it up by 100us by making the final scalar computation be executed by only the first thread.
