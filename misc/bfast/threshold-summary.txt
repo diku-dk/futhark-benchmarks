@@ -1,0 +1,231 @@
+####################################################################################
+## 1. Versions of "let Xsqr = intrinsics.opaque <| map (matmul_filt Xh Xth) Yh"
+####################################################################################
+if (suff_outer_par_26552 = suff_outer_par_6 < glob_par_val) { => NO }
+else {
+    if (intra_suff_and_fits_26652 = suff_intra_par_7 < intra_par_val) { => NO }
+    else {
+        if (suff_outer_par_27057 = suff_outer_par_8 < glob_par_val) { => NO }
+        else {
+            if (intra_suff_and_fits_27063 = suff_intra_par_9 < intra_par_val) { => NO }
+            else {
+                if (suff_outer_par_27125 = suff_outer_par_10 < m * k2p2 * k2p2) { => YES }
+                else {
+                    if (intra_suff_and_fits_27132 = suff_intra_par_11 < intra_par_val) { => NO }
+                    else { .... }
+                }
+            }
+        }
+    }
+}
+
+SOLUTION: 
+
+suff_outer_par_6  = INFTY
+suff_intra_par_7  = INFTY
+suff_outer_par_8  = INFTY
+suff_intra_par_9  = INFTY
+suff_outer_par_10 = 100
+suff_intra_par_11 = INFTY (does not matter)
+
+####################################################################################
+### 2. Versions of "let Xinv = intrinsics.opaque <| map mat_inv Xsqr"
+####################################################################################
+
+if (intra_suff_and_fits_27394 = suff_intra_par_13 < 2 * k2p2 * k2p2) { => YES }
+else { ... }
+
+SOLUTION:
+suff_intra_par_13  = 1
+
+####################################################################################
+### 3. Versions of "let beta0 : [m][2k+2]f32 = map (matvecmul_row_filt Xh) Yh"
+####################################################################################
+
+if (suff_outer_par_27911 = suff_outer_par_17 < m) { => NO }
+else {
+    if (intra_suff_and_fits_27992 = suff_intra_par_18 < k2p2) { => NO }
+    else {
+        if (suff_outer_par_28170 = suff_outer_par_19 < m * k2p2) { => YES }
+        else {
+            if (intra_suff_and_fits_28176 = suff_intra_par_20 < n) { => NO }
+            else { ... }
+        }
+    }
+}
+
+SOLUTION:
+suff_outer_par_17 = INFTY
+suff_intra_par_18 = 2048
+suff_outer_par_19 = 1
+suff_intra_par_20 = 2048
+
+####################################################################################
+### 4. Versions of "let beta : [m][2k+2]f32 = map2 matvecmul_row Xinv beta0"
+####################################################################################
+
+if (suff_outer_par_28254 = suff_outer_par_21 < m) { => NO }
+else {
+    if (intra_suff_and_fits_28335 = suff_intra_par_22 < k2p2) { => NO }
+    else {
+        if (suff_outer_par_28508 = suff_outer_par_23 < m * k2p2) { => YES }
+        else {
+            if (intra_suff_and_fits_28514 = suff_intra_par_24 < k2p2) { => NO }
+            else { segred_comm ... this could be best option because the others require transposition }
+        }
+    }
+}
+
+SOLUTION:
+suff_outer_par_21 = INFTY
+suff_intra_par_22 = 2048
+suff_outer_par_23 = INFTY
+suff_intra_par_24 = 2048
+
+####################################################################################
+### 5. Versions of "let y_preds : [m][N]f32 = map (matvecmul_row Xt) beta"
+####################################################################################
+
+if (suff_outer_par_28586 = suff_outer_par_25 < m) { => NO }
+else {
+    if (intra_suff_and_fits_28663 = suff_intra_par_26 < N) { => NO }
+    else {
+        if(suff_outer_par_28833 = suff_outer_par_27 < m * N) { => YES }
+        else {
+            if(intra_suff_and_fits_28839 = suff_intra_par_28 < k2p2) { => NO }
+            else { segreduce_comm }
+        }
+    }
+}
+
+SOLUTION:
+suff_outer_par_25 = INFTY
+suff_intra_par_26 = 2048
+suff_outer_par_27 = 1
+suff_intra_par_28 = 2048
+
+####################################################################################
+### 6. Versions of "let (Nss, y_errors, val_indss) = map2 (...filterPadWithKeys...)"
+####################################################################################
+
+if (suff_outer_par_28911 = suff_outer_par_29 < m) { => NO }
+else {
+    if(intra_suff_and_fits_29088 = suff_intra_par_30 < N) { => YES }
+    else { fully-flattened }
+}
+
+SOLUTION:
+suff_outer_par_29 = INFTY
+suff_intra_par_30 = 1
+
+####################################################################################
+### 7. Versions of "let (hs, nss, sigmas) = map2 (... redomap o redomap ...)"
+####################################################################################
+
+if (suff_outer_par_29667 = suff_outer_par_33 < m ) { => NO }
+else {
+    if(intra_suff_and_fits_29812 = suff_intra_par_34 < n) { => YES }
+    else { fully-flattened }
+}
+
+SOLUTION:
+suff_outer_par_33 = INFTY
+suff_intra_par_34 = 1
+
+####################################################################################
+### 8. Versions of "let MO_fsts = map (... redomap ...)"
+####################################################################################
+
+if(suff_outer_par_30027 = suff_outer_par_35 < m) { => NO }
+else {
+    if(intra_suff_and_fits_30113 = suff_intra_par_36 < hmax) { => COULD BE ? }
+    else { segred_comm (perhaps BETTER) }
+}
+
+SOLUTION: since "hmax" depends on the number of NaNs and could be small, perhaps it
+          is better to use the fully-flattened "segred_comm" version!
+suff_outer_par_35 = INFTY
+suff_intra_par_36 = 2048
+
+####################################################################################
+### 9. Versions of "(_,_,breaks,means)= map (...scanomap o redomap o scattermap...)"
+####################################################################################
+
+if (suff_outer_par_30272 = suff_outer_par_38 < m) { => NO }
+else {
+    if(intra_suff_and_fits_30581 = suff_intra_par_39 < N-n) { => YES }
+    else { fully-flattened }
+}
+
+SOLUTION:
+suff_outer_par_38 = INFTY
+suff_intra_par_39 = 1
+
+#########################################
+### Variable translation in gen-code
+#########################################
+
+size_25527 = m
+size_25528 = N
+size_25526 = N
+n_25531    = n
+res_25550  = k2p2
+
+#########################################
+### Variable translation in gen-code
+#########################################
+
+./bfast-cloudy -D --size=main.suff_outer_par_6=50000000 --size=main.suff_intra_par_7=2048 --size=main.suff_outer_par_8=50000000 --size=main.suff_intra_par_9=2048 --size=main.suff_outer_par_10=1  --size=main.suff_intra_par_11=2048 --size=main.suff_intra_par_13=1 --size=main.suff_outer_par_17=50000000 --size=main.suff_intra_par_18=2048 --size=main.suff_outer_par_19=1 --size=main.suff_intra_par_20=2048 --size=main.suff_outer_par_21=50000000 --size=main.suff_intra_par_22=2048 --size=main.suff_outer_par_23=50000000 --size=main.suff_intra_par_24=2048 --size=main.suff_outer_par_25=50000000 --size=main.suff_intra_par_26=2048 --size=main.suff_outer_par_27=1 --size=main.suff_intra_par_28=2048 --size=main.suff_outer_par_29=50000000 --size=main.suff_intra_par_30=1 --size=main.suff_outer_par_33=50000000 --size=main.suff_intra_par_34=1 --size=main.suff_outer_par_35=50000000 --size=main.suff_intra_par_36=2048 --size=main.suff_outer_par_38=50000000 --size=main.suff_intra_par_39=1 < data/sahara-cloudy.in > /dev/null
+
+#########################################
+### Result of autotuning (VERY POOR)
+#########################################
+
+futhark bench --skip-compilation bfast-cloudy.fut --exclude-case=notune --pass-option --size=main.suff_outer_par_29=135936 --pass-option --size=main.suff_outer_par_23=1087488 --pass-option --size=main.suff_outer_par_21=33984 --pass-option --size=main.suff_outer_par_27=56277504 --pass-option --size=main.suff_outer_par_25=135936 --pass-option --size=main.suff_intra_par_24=10 --pass-option --size=main.suff_intra_par_26=207 --pass-option --size=main.suff_intra_par_20=456 --pass-option --size=main.suff_intra_par_22=4 --pass-option --size=main.suff_intra_par_28=16 --pass-option --size=main.suff_outer_par_38=61305 --pass-option --size=main.suff_outer_par_33=33984 --pass-option --size=main.suff_outer_par_35=60017 --pass-option --size=main.suff_outer_par_10=2174976 --pass-option --size=main.suff_outer_par_17=54260 --pass-option --size=main.suff_outer_par_19=1087488 --pass-option --size=main.suff_intra_par_7=8 --pass-option --size=main.suff_intra_par_9=4 --pass-option --size=main.suff_intra_par_36=35 --pass-option --size=main.suff_intra_par_11=456 --pass-option --size=main.suff_intra_par_34=232 --pass-option --size=main.suff_intra_par_13=67 --pass-option --size=main.suff_outer_par_6=33984 --pass-option --size=main.suff_intra_par_30=208 --pass-option --size=main.suff_intra_par_18=4 --pass-option --size=main.suff_outer_par_8=325544 --pass-option --size=main.suff_intra_par_39=333 --pass-option --default-tile-size=8
+
+
+--pass-option --size=main.suff_outer_par_6=33984 
+--pass-option --size=main.suff_intra_par_7=8 
+--pass-option --size=main.suff_outer_par_8=325544 
+--pass-option --size=main.suff_intra_par_9=4 
+--pass-option --size=main.suff_outer_par_10=2174976 
+--pass-option --size=main.suff_intra_par_11=456 
+WRONG (outermost map parallelized)
+
+--pass-option --size=main.suff_intra_par_13=67
+OK
+
+--pass-option --size=main.suff_outer_par_17=54260 
+--pass-option --size=main.suff_intra_par_18=4 
+--pass-option --size=main.suff_outer_par_19=1087488 
+--pass-option --size=main.suff_intra_par_20=456 
+WRONG (outermost parallelization chosen)
+
+--pass-option --size=main.suff_outer_par_21=33984 
+--pass-option --size=main.suff_intra_par_22=4 
+--pass-option --size=main.suff_outer_par_23=1087488 
+--pass-option --size=main.suff_intra_par_24=10 
+OKish (but still different)
+
+--pass-option --size=main.suff_outer_par_25=135936 
+--pass-option --size=main.suff_intra_par_26=207 
+--pass-option --size=main.suff_outer_par_27=56277504 
+--pass-option --size=main.suff_intra_par_28=16
+WRONG AGAIN (what a heck?)
+ 
+--pass-option --size=main.suff_outer_par_29=135936 
+--pass-option --size=main.suff_intra_par_30=208
+OK
+
+--pass-option --size=main.suff_outer_par_33=33984 
+--pass-option --size=main.suff_intra_par_34=232 
+WRONG (outermost map chosen)
+
+--pass-option --size=main.suff_outer_par_35=60017 
+--pass-option --size=main.suff_intra_par_36=35
+WRONG (still outermost map chosen)
+
+--pass-option --size=main.suff_outer_par_38=61305 
+--pass-option --size=main.suff_intra_par_39=333
+WRONG (still outermost map chosen)
+
