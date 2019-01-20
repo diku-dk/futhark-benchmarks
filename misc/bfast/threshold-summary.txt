@@ -29,7 +29,7 @@ suff_outer_par_10 = 100
 suff_intra_par_11 = INFTY (does not matter)
 
 ####################################################################################
-### 2. Versions of "let Xinv = intrinsics.opaque <| map mat_inv Xsqr"
+### 2. Versions of "let Xinv = map mat_inv Xsqr"
 ####################################################################################
 
 if (intra_suff_and_fits_27394 = suff_intra_par_13 < 2 * k2p2 * k2p2) { => YES }
@@ -175,7 +175,7 @@ res_25550  = k2p2
 ### Variable translation in gen-code
 #########################################
 
-./bfast-cloudy -D --size=main.suff_outer_par_6=50000000 --size=main.suff_intra_par_7=2048 --size=main.suff_outer_par_8=50000000 --size=main.suff_intra_par_9=2048 --size=main.suff_outer_par_10=1  --size=main.suff_intra_par_11=2048 --size=main.suff_intra_par_13=1 --size=main.suff_outer_par_17=50000000 --size=main.suff_intra_par_18=2048 --size=main.suff_outer_par_19=1 --size=main.suff_intra_par_20=2048 --size=main.suff_outer_par_21=50000000 --size=main.suff_intra_par_22=2048 --size=main.suff_outer_par_23=50000000 --size=main.suff_intra_par_24=2048 --size=main.suff_outer_par_25=50000000 --size=main.suff_intra_par_26=2048 --size=main.suff_outer_par_27=1 --size=main.suff_intra_par_28=2048 --size=main.suff_outer_par_29=50000000 --size=main.suff_intra_par_30=1 --size=main.suff_outer_par_33=50000000 --size=main.suff_intra_par_34=1 --size=main.suff_outer_par_35=50000000 --size=main.suff_intra_par_36=2048 --size=main.suff_outer_par_38=50000000 --size=main.suff_intra_par_39=1 < data/sahara-cloudy.in > /dev/null
+./bfast-cloudy -r 20 -t /dev/stderr --default-tile-size=8 --size=main.suff_outer_par_6=50000000 --size=main.suff_intra_par_7=2048 --size=main.suff_outer_par_8=50000000 --size=main.suff_intra_par_9=2048 --size=main.suff_outer_par_10=1  --size=main.suff_intra_par_11=2048 --size=main.suff_intra_par_13=1 --size=main.suff_outer_par_17=50000000 --size=main.suff_intra_par_18=2048 --size=main.suff_outer_par_19=1 --size=main.suff_intra_par_20=2048 --size=main.suff_outer_par_21=50000000 --size=main.suff_intra_par_22=2048 --size=main.suff_outer_par_23=50000000 --size=main.suff_intra_par_24=2048 --size=main.suff_outer_par_25=50000000 --size=main.suff_intra_par_26=2048 --size=main.suff_outer_par_27=1 --size=main.suff_intra_par_28=2048 --size=main.suff_outer_par_29=50000000 --size=main.suff_intra_par_30=1 --size=main.suff_outer_par_33=50000000 --size=main.suff_intra_par_34=1 --size=main.suff_outer_par_35=50000000 --size=main.suff_intra_par_36=2048 --size=main.suff_outer_par_38=50000000 --size=main.suff_intra_par_39=1 < data/sahara-cloudy.in > /dev/null
 
 #########################################
 ### Result of autotuning (VERY POOR)
