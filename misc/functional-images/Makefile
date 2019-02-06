@@ -1,10 +1,2 @@
-all: images.py
-
-run: images.py
-	python gui.py
-
-images.py: images.fut pan.fut
-	futhark-pyopencl --library $<
-
-clean:
-	rm -f images.py *.pyc
+export PROGNAME=images
+include lib/github.com/diku-dk/lys/common.mk
