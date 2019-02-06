@@ -57,9 +57,9 @@ let visualise_argb_image (img: argb_image)
                      (ycentre + (1f32/aspect_ratio)*width/2f32))
   let sizex = xmax - xmin
   let sizey = ymax - ymin
-  let p (x,y) = (xmin + (r32 x * sizex) / r32 screen_width,
+  let p (y,x) = (xmin + (r32 x * sizex) / r32 screen_width,
                  ymin + (r32 y * sizey) / r32 screen_height)
-  in tabulate_2d screen_width screen_height (curry (p >-> img))
+  in tabulate_2d screen_height screen_width (curry (p >-> img))
 
 let visualise_cimage (img: cimage) = visualise_argb_image (cimage_to_argb img)
 
@@ -135,26 +135,127 @@ let escape_to_colour (limit: i32) (points: i32)
        let ix = t32 (f32.sqrt (r32 n + 1.0 - smooth) * scale + shift)
        in mk_palette points (ix %% points)
 
-entry mandelbrot_greyscale (_: f32) (_: f32) t =
+let mandelbrot_greyscale t =
   mandelbrotGreyscale 100 |> rotate' t |> visualise_cimage
 
-entry julia_greyscale (xuser: f32) (yuser: f32) t =
+let julia_greyscale (xuser: f32) (yuser: f32) t =
   juliaGreyscale (xuser, yuser) 100 |> rotate' t |> visualise_cimage
 
-entry mandelbrot_colour (_: f32) (_: f32) t =
+let mandelbrot_colour t =
   mandelbrotImage 100 (escape_to_colour 100 2048) |>
   rotate' t |> visualise_argb_image
 
-entry julia_colour (user_x: f32) (user_y: f32) t =
+let julia_colour (user_x: f32) (user_y: f32) t =
   juliaEscapes (user_x, user_y) 100 |> rotate' t
   |> (>-> escape_to_colour 100 2048) |> visualise_argb_image
 
-entry figure_7_15 (_: f32) (_: f32) t =
+let figure_7_15 t =
   altRings |> shiftXor t |> uscale 0.05f32
   |> (>-> boolToColour) |> visualise_argb_image
 
-entry fancy (_: f32) (_: f32) t =
+let fancy t =
   cond (altRings |> shiftXor t |> uscale 0.05f32)
        (mandelbrotImage 100 (escape_to_colour 100 2048) |> rotate' t)
        (mandelbrotGreyscale 100 |> rotate' t |> cimage_to_argb)
   |> visualise_argb_image
+
+import "lib/github.com/diku-dk/lys/lys"
+
+module lys: lys = {
+  type mode = #mandelbrot_greyscale
+            | #julia_greyscale
+            | #mandelbrot_colour
+            | #julia_colour
+            | #figure_7_15
+            | #fancy
+
+  type state = {screen_size: {height:i32, width:i32},
+                image_size: {height:f32, width:f32},
+                centre: (f32, f32),
+                userpos: (f32, f32),
+                mouse: (i32, i32),
+                mode: mode,
+                time: f32,
+                zooming: f32}
+
+  let init h w: state = {
+      screen_size = {height=h, width=w},
+      image_size = {height=10, width=10},
+      centre = (0, 0),
+      userpos = (0.5, 0.5),
+      mouse = (0, 0),
+      mode = #mandelbrot_greyscale,
+      time = 0,
+      zooming = 0
+    }
+
+  let resize h w s: state =
+    let h_shrink = r32 s.screen_size.height / r32 h
+    let w_shrink = r32 s.screen_size.width / r32 w
+    in s with screen_size = {height=h, width=w}
+         with image_size = {width=s.image_size.width * (1/w_shrink),
+                            height=s.image_size.height * (1/h_shrink)}
+
+  let keydown k s: state =
+    if      k == '1' then s with mode = #mandelbrot_greyscale
+    else if k == '2' then s with mode = #julia_greyscale
+    else if k == '3' then s with mode = #mandelbrot_colour
+    else if k == '4' then s with mode = #julia_colour
+    else if k == '5' then s with mode = #figure_7_15
+    else if k == '6' then s with mode = #fancy
+    else if k == SDLK_KP_PLUS then s with zooming = -0.01
+    else if k == SDLK_KP_MINUS then s with zooming = 0.01
+    else s
+
+  let keyup k s: state =
+    if      k == SDLK_KP_PLUS then s with zooming = 0
+    else if k == SDLK_KP_MINUS then s with zooming = 0
+    else s
+
+  let key (e: key_event) k s: state =
+    match e
+    case #keydown -> keydown k s
+    case #keyup -> keyup k s
+
+  let diff (x1: i32, y1: i32) (x2, y2) = (x2 - x1, y2 - y1)
+
+  let move_pixels (s: state) (dx, dy): state =
+    let x_per_pixel = s.image_size.width / r32 s.screen_size.width
+    let y_per_pixel = s.image_size.height / r32 s.screen_size.height
+    in s with centre = (s.centre.1 + x_per_pixel * r32 dx,
+                        s.centre.2 + y_per_pixel * r32 dy)
+
+  let mouse (buttons: i32) x y s: state =
+    let dpos = diff (x,y) s.mouse
+    let s = s with mouse = (x,y)
+    let s = if (buttons & 1) == 1
+            then move_pixels s dpos
+            else s
+    let s = if (buttons & 4) == 4
+            then s with userpos = (r32 x / r32 s.screen_size.width,
+                                   r32 y / r32 s.screen_size.height)
+            else s
+    in s
+
+  let do_zoom factor s: state =
+    s with image_size = {width = s.image_size.width * (1+factor),
+                         height = s.image_size.height * (1+factor)}
+
+  let wheel _ y = do_zoom (-(r32 y)/100)
+
+  let step td (s: state) = do_zoom s.zooming s with time = s.time + td
+
+  let render (s: state): [][]argb.colour =
+    let render f = f
+                   s.time
+                   s.screen_size.width s.screen_size.height
+                   s.image_size.width s.image_size.height
+                   s.centre.1 s.centre.2
+    in match s.mode
+       case #mandelbrot_greyscale -> render mandelbrot_greyscale
+       case #julia_greyscale -> render (julia_greyscale s.userpos.1 s.userpos.2)
+       case #mandelbrot_colour -> render mandelbrot_colour
+       case #julia_colour -> render (julia_colour s.userpos.1 s.userpos.2)
+       case #figure_7_15 -> render figure_7_15
+       case #fancy -> render fancy
+}
