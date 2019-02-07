@@ -1,4 +1,6 @@
 -- BFAST-irregular: version handling obscured observations (e.g., clouds)
+--
+-- We do not validate the "breaks", because they appear to be numerically quite unstable.
 -- ==
 -- compiled input @ data/sahara-cloudy.in.gz
 -- output @ data/sahara-cloudy.out.gz
@@ -198,7 +200,7 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   ---------------------------------------------
   -- 8. moving sums computation:             --
   ---------------------------------------------
-  let (_MOs, _MOs_NN, breaks, means) = zip (zip4 Nss nss sigmas hs) (zip3 MO_fsts y_errors val_indss) |>
+  let (_MOs, _MOs_NN, _breaks, means) = zip (zip4 Nss nss sigmas hs) (zip3 MO_fsts y_errors val_indss) |>
     map (\ ( (Ns,ns,sigma, h), (MO_fst,y_error,val_inds) ) ->
             let Nmn = N-n
             let MO = map (\j -> if j >= Ns-ns then 0.0
@@ -230,7 +232,7 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
             in (MO'', MO', fst_break', mean)
         ) |> unzip4
 
-  in (breaks, means)
+  in means
 -- For Fabian: with debugging info, replace the result with the next line
 --in (MO_fsts, Nss, nss, sigmas, _MOs, _MOs_NN, BOUND, breaks, means, y_errors, y_preds)
 
