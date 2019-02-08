@@ -176,7 +176,8 @@ module lys: lys = {
                 mouse: (i32, i32),
                 mode: mode,
                 time: f32,
-                zooming: f32}
+                zooming: f32,
+                paused: bool}
 
   let init h w: state = {
       screen_size = {height=h, width=w},
@@ -186,7 +187,8 @@ module lys: lys = {
       mouse = (0, 0),
       mode = #mandelbrot_greyscale,
       time = 0,
-      zooming = 0
+      zooming = 0,
+      paused = false
     }
 
   let resize h w s: state =
@@ -205,6 +207,7 @@ module lys: lys = {
     else if k == '6' then s with mode = #fancy
     else if k == SDLK_KP_PLUS then s with zooming = -0.01
     else if k == SDLK_KP_MINUS then s with zooming = 0.01
+    else if k == ' ' then s with paused = !s.paused
     else s
 
   let keyup k s: state =
@@ -241,9 +244,13 @@ module lys: lys = {
     s with image_size = {width = s.image_size.width * (1+factor),
                          height = s.image_size.height * (1+factor)}
 
+  let text _ _ = []
+
   let wheel _ y = do_zoom (-(r32 y)/100)
 
-  let step td (s: state) = do_zoom s.zooming s with time = s.time + td
+  let step td (s: state) =
+    let td' = if s.paused then 0 else td
+    in do_zoom s.zooming s with time = s.time + td'
 
   let render (s: state): [][]argb.colour =
     let render f = f

@@ -25,3 +25,16 @@ entry wheel (x: i32) (y: i32) (s: state): state =
 entry step (td: f32) (s: state): state = m.lys.step td s
 
 entry render (s: state) = m.lys.render s
+
+entry text (render_duration: f32) (s: state): m.printf_input_cs =
+  let inps = m.lys.text render_duration s
+  in unzip5 (map (\(s, args, colour) ->
+                    let (ts, vs) = unzip (map (\(t, v) ->
+                                                 let t' = match t
+                                                          case #placeholder -> 0
+                                                          case #f32 -> 1
+                                                          case #i32 -> 2
+                                                 let v' = (v.f32, v.i32)
+                                                 in (t', v')) args)
+                    let (fs, is) = unzip vs
+                    in (s, ts, fs, is, colour)) inps)
