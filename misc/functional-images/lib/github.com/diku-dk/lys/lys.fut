@@ -5,6 +5,17 @@ open import "../../athas/matte/colour"
 
 type key_event = #keydown | #keyup
 
+type string = []i32
+type printf_arg_type = #placeholder | #f32 | #i32
+type printf_arg_value = {f32: f32, i32: i32}
+type printf_arg = (printf_arg_type, printf_arg_value)
+type printf_input = (string, []printf_arg, argb.colour)
+let printf_val: printf_arg_value = {f32=0, i32=0}
+let printf_placeholder: printf_arg = (#placeholder, printf_val)
+let spad [n] (s: [n]i32): []i32 = s ++ replicate (100 - n) 0
+type printf_arg_type_c = i32 -- 0, 1, or 2
+type printf_input_cs = ([]string, [][]printf_arg_type_c, [][]f32, [][]i32, []argb.colour)
+
 module type lys = {
   type state
 
@@ -32,6 +43,9 @@ module type lys = {
   -- last dimensions provided to the state (via `init`@term or
   -- `resize`@term).
   val render : state -> [][]argb.colour
+
+  -- | Show helpful text in the upper-left corner.
+  val text : f32 -> state -> []printf_input
 }
 
 -- | A dummy lys module that just produces a black rectangle and does
@@ -45,6 +59,7 @@ module lys: lys = {
   let mouse _ _ _ s = s
   let wheel _ _ s = s
   let render {h,w} = replicate w argb.black |> replicate h
+  let text _ _ = []
 }
 
 module mk_lys (m: lys): lys = {
