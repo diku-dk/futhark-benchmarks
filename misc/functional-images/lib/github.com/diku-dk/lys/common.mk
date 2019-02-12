@@ -7,16 +7,14 @@ CFLAGS?=$(NOWARN_CFLAGS) -Wall -Wextra -pedantic
 
 OS=$(shell uname -s)
 ifeq ($(OS),Darwin)
-LDFLAGS?=-framework OpenCL -lm -lSDL2
+OPENCLFLAGS?=-framework OpenCL
 else
-LDFLAGS?=-lOpenCL -lm -lSDL2
+OPENCLFLAGS?=-lOpenCL
 endif
+LDFLAGS?=$(OPENCLFLAGS) -lm -lSDL2 -lSDL2_ttf
 
 $(PROGNAME): $(PROGNAME)_wrapper.o lib/github.com/diku-dk/lys/liblys.c
-	gcc lib/github.com/diku-dk/lys/liblys.c -I. -DPROGHEADER='"$(PROGNAME)_wrapper.h"' $(PROGNAME)_wrapper.o -o $@ $(LDFLAGS)
-
-lib: futhark.pkg
-	futhark pkg sync
+	gcc lib/github.com/diku-dk/lys/liblys.c -I. -DPROGHEADER='"$(PROGNAME)_wrapper.h"' $(PROGNAME)_wrapper.o -o $@ $(CFLAGS) $(LDFLAGS)
 
 # We do not want warnings and such for the generated code.
 $(PROGNAME)_wrapper.o: $(PROGNAME)_wrapper.c
