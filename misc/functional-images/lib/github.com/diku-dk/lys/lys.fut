@@ -60,7 +60,7 @@ module lys_no_text = {
 
 -- | A dummy lys module that just produces a black rectangle and does
 -- nothing in response to events.
-module lys: lys = {
+module lys: lys_no_text = {
   type state = {h: i32, w: i32}
   let init h w = {h,w}
   let step _ s = s

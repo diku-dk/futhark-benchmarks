@@ -1,5 +1,5 @@
 require {
   github.com/diku-dk/complex 0.1.2 #790bf261a6a36a9454b55f3f8109ac5cb1f4bf6e
   github.com/athas/matte 0.1.1 #24f332e6ff8b5872b950cfcbead9b2f7c6571490
-  github.com/diku-dk/lys 0.0.0-20190222091513+3e403124cb1141c936dcdaddb5fa595a16891881 #3e403124cb1141c936dcdaddb5fa595a16891881
+  github.com/diku-dk/lys 0.0.0-20190222112340+a1df9659520568cd7034bbb6d0eee694ccd56b7a #a1df9659520568cd7034bbb6d0eee694ccd56b7a
 }
