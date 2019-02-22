@@ -6,15 +6,6 @@ open import "../../athas/matte/colour"
 type key_event = #keydown | #keyup
 
 type string = []i32
-type printf_arg_type = #placeholder | #f32 | #i32
-type printf_arg_value = {f32: f32, i32: i32}
-type printf_arg = (printf_arg_type, printf_arg_value)
-type printf_input = (string, []printf_arg, argb.colour)
-let printf_val: printf_arg_value = {f32=0, i32=0}
-let printf_placeholder: printf_arg = (#placeholder, printf_val)
-let spad [n] (s: [n]i32): []i32 = s ++ replicate (100 - n) 0
-type printf_arg_type_c = i32 -- 0, 1, or 2
-type printf_input_cs = ([]string, [][]printf_arg_type_c, [][]f32, [][]i32, []argb.colour)
 
 module type lys = {
   type state
@@ -44,8 +35,27 @@ module type lys = {
   -- `resize`@term).
   val render : state -> [][]argb.colour
 
-  -- | Show helpful text in the upper-left corner.
-  val text : f32 -> state -> []printf_input
+  -- | Show helpful text in the upper-left corner.  Specify in printf format.
+  val text_format : string
+  -- | The content must be a scalar or a tuple of scalars.
+  type text_content
+  val text_content : f32 -> state -> text_content
+  -- | The colour can vary based on the state.
+  val text_colour : state -> argb.colour
+}
+
+-- | A module type for the simple case where we don't want any text.
+module type lys_no_text = {
+  include lys with text_content = ()
+}
+
+-- A convenience module that can be `open`ed to give dummy definitions
+-- for the text-related functionality.
+module lys_no_text = {
+  let text_format = ""
+  type text_content = ()
+  let text_content _ _ = ()
+  let text_colour _ = argb.black
 }
 
 -- | A dummy lys module that just produces a black rectangle and does
@@ -59,7 +69,7 @@ module lys: lys = {
   let mouse _ _ _ s = s
   let wheel _ _ s = s
   let render {h,w} = replicate w argb.black |> replicate h
-  let text _ _ = []
+  open lys_no_text
 }
 
 module mk_lys (m: lys): lys = {

@@ -1,28 +1,20 @@
 // Convenience framework for writing visualisations with Futhark and
 // C/SDL.
 
-#define CL_SILENCE_DEPRECATION
-
 #define _XOPEN_SOURCE
-#include PROGHEADER
+#include "liblys.h"
+#include PRINTFHEADER
 
 #include <inttypes.h>
 #include <assert.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
 #include <time.h>
 #include <sys/time.h>
 #include <unistd.h>
 
-static int64_t get_wall_time(void) {
-  struct timeval time;
-  assert(gettimeofday(&time,NULL) == 0);
-  return time.tv_sec * 1000000 + time.tv_usec;
-}
-
 #define FPS 60
-#define INITIAL_WIDTH 250
-#define INITIAL_HEIGHT 250
+#define INITIAL_WIDTH 800
+#define INITIAL_HEIGHT 600
+#define FONT_SIZE 24
 
 #define SDL_ASSERT(x) _sdl_assert(x, __FILE__, __LINE__)
 static inline void _sdl_assert(int res, const char *file, int line) {
@@ -33,29 +25,11 @@ static inline void _sdl_assert(int res, const char *file, int line) {
   }
 }
 
-#define FUT_CHECK(ctx, x) _fut_check(ctx, x, __FILE__, __LINE__)
-static inline void _fut_check(struct futhark_context *ctx, int res,
-                              const char *file, int line) {
-  if (res != 0) {
-    fprintf(stderr, "%s:%d: Futhark error %d: %s\n",
-            file, line, res, futhark_context_get_error(ctx));
-    exit(EXIT_FAILURE);
-  }
+static int64_t get_wall_time(void) {
+  struct timeval time;
+  assert(gettimeofday(&time,NULL) == 0);
+  return time.tv_sec * 1000000 + time.tv_usec;
 }
-
-struct lys_context {
-  struct futhark_context *fut;
-  struct futhark_opaque_state *state;
-  SDL_Window *wnd;
-  SDL_Surface *wnd_surface;
-  SDL_Surface *surface;
-  TTF_Font *font;
-  int width;
-  int height;
-  int32_t *data;
-  int64_t last_time;
-  int running;
-};
 
 void window_size_updated(struct lys_context *ctx, int newx, int newy) {
   // https://stackoverflow.com/a/40122002
@@ -136,6 +110,11 @@ void handle_sdl_events(struct lys_context *ctx) {
       case SDLK_ESCAPE:
         ctx->running = 0;
         break;
+      case SDLK_F1:
+        if (event.key.type == SDL_KEYDOWN) {
+          ctx->show_text = !ctx->show_text;
+        }
+        break;
       default:
         {
           struct futhark_opaque_state *new_state;
@@ -172,106 +151,58 @@ void sdl_loop(struct lys_context *ctx) {
 
     SDL_ASSERT(SDL_BlitSurface(ctx->surface, NULL, ctx->wnd_surface, NULL)==0);
 
+    if (ctx->show_text) {
+      build_text(ctx, ctx->text_buffer, ctx->text_buffer_len, ctx->text_format,
+                 render_milliseconds);
+      if (*(ctx->text_buffer) != '\0') {
+        uint32_t text_colour;
+        FUT_CHECK(ctx->fut,
+                  futhark_entry_text_colour(ctx->fut, (int32_t*) &text_colour,
+                                            ctx->state));
+        SDL_Color sdl_text_colour =
+          { .a = (text_colour >> 24) & 0xff,
+            .r = (text_colour >> 16) & 0xff,
+            .g = (text_colour >> 8) & 0xff,
+            .b = text_colour & 0xff };
 
-    struct futhark_i32_2d *f_ss;
-    struct futhark_i32_2d *f_tss;
-    struct futhark_f32_2d *f_fss;
-    struct futhark_i32_2d *f_iss;
-    struct futhark_i32_1d *f_cs;
-    FUT_CHECK(ctx->fut, futhark_entry_text(ctx->fut, &f_ss, &f_tss,
-                                           &f_fss, &f_iss, &f_cs,
-                                           render_milliseconds, ctx->state));
-    int64_t *ss_shape = futhark_shape_i32_2d(ctx->fut, f_ss);
-    int64_t *tss_shape = futhark_shape_i32_2d(ctx->fut, f_tss);
-    int64_t *fss_shape = futhark_shape_f32_2d(ctx->fut, f_fss);
-    int64_t *iss_shape = futhark_shape_i32_2d(ctx->fut, f_iss);
-    int64_t *cs_shape = futhark_shape_i32_1d(ctx->fut, f_cs);
+        SDL_Surface *text_surface;
+        SDL_Rect offset_rect;
+        offset_rect.x = 10;
+        int y = 10;
+        char* buffer = ctx->text_buffer;
+        while (true) {
+          char* buffer_start = buffer;
 
-    int32_t *ss = malloc(sizeof(int32_t) * ss_shape[0] * ss_shape[1]);
-    assert(ss != NULL);
-    int32_t *tss = malloc(sizeof(int32_t) * tss_shape[0] * tss_shape[1]);
-    assert(tss != NULL);
-    float *fss = malloc(sizeof(float) * fss_shape[0] * fss_shape[1]);
-    assert(fss != NULL);
-    int32_t *iss = malloc(sizeof(int32_t) * iss_shape[0] * iss_shape[1]);
-    assert(iss != NULL);
-    int32_t *cs = malloc(sizeof(int32_t) * cs_shape[0]);
-    assert(cs != NULL);
+          bool no_more_text = false;
+          while (true) {
+            buffer++;
+            if (*buffer == '\n') {
+              *buffer = '\0';
+              break;
+            } else if (*buffer == '\0') {
+              no_more_text = true;
+              break;
+            }
+          }
 
-    FUT_CHECK(ctx->fut, futhark_values_i32_2d(ctx->fut, f_ss, ss));
-    FUT_CHECK(ctx->fut, futhark_values_i32_2d(ctx->fut, f_tss, tss));
-    FUT_CHECK(ctx->fut, futhark_values_f32_2d(ctx->fut, f_fss, fss));
-    FUT_CHECK(ctx->fut, futhark_values_i32_2d(ctx->fut, f_iss, iss));
-    FUT_CHECK(ctx->fut, futhark_values_i32_1d(ctx->fut, f_cs, cs));
+          text_surface = TTF_RenderUTF8_Blended(ctx->font, buffer_start, sdl_text_colour);
+          SDL_ASSERT(text_surface != NULL);
+          offset_rect.y = y;
+          offset_rect.w = text_surface->w;
+          offset_rect.h = text_surface->h;
+          SDL_ASSERT(SDL_BlitSurface(text_surface, NULL,
+                                     ctx->wnd_surface, &offset_rect) == 0);
+          SDL_FreeSurface(text_surface);
 
-    SDL_Surface *text_surface;
-    SDL_Rect offset_rect;
-    offset_rect.x = 10;
-    SDL_Color text_color;
-    text_color.a = 0xff;
-    char text[200];
-    int y = 10;
-    for (size_t i = 0; i < (size_t) tss_shape[0]; i++) {
-      int32_t *s_i = ss + i * ss_shape[1];
-      char s[100];
-      for (size_t k = 0; k < 100; k++) {
-        s[k] = (char) s_i[k];
-      }
-
-      int32_t *ts = tss + tss_shape[1] * i;
-      float *fs = fss + fss_shape[1] * i;
-      int32_t *is = iss + iss_shape[1] * i;
-
-      text_color.r = (cs[i] >> 16) & 0xff;
-      text_color.g = (cs[i] >> 8) & 0xff;
-      text_color.b = cs[i] & 0xff;
-
-      size_t arg_len = 20;
-      char* args = malloc(sizeof(char) * arg_len * tss_shape[1]);
-      for (size_t j = 0; j < (size_t) tss_shape[1]; j++) {
-        char *arg = args + j * arg_len;
-        if (ts[j] == 1) {
-          snprintf(arg, arg_len, "%.2f", fs[j]);
-        } else if (ts[j] == 2) {
-          snprintf(arg, arg_len, "%d", is[j]);
+          if (no_more_text) {
+            break;
+          } else {
+            buffer++;
+            y += FONT_SIZE;
+          }
         }
       }
-      if (tss_shape[1] == 0) {
-        snprintf(text, sizeof(text) / sizeof(char), "%s", s);
-      } else if (tss_shape[1] == 1) {
-        snprintf(text, sizeof(text) / sizeof(char), s, args);
-      } else if (tss_shape[1] == 2) {
-        snprintf(text, sizeof(text) / sizeof(char), s, args, args + arg_len);
-      } else if (tss_shape[1] == 3) {
-        snprintf(text, sizeof(text) / sizeof(char),
-                 s, args, args + arg_len, args + 2 * arg_len);
-      } else if (tss_shape[1] == 4) {
-        snprintf(text, sizeof(text) / sizeof(char),
-                 s, args, args + arg_len, args + 2 * arg_len, args + 3 * arg_len);
-      }
-      free(args);
-      text_surface = TTF_RenderUTF8_Blended(ctx->font, text, text_color);
-      SDL_ASSERT(text_surface != NULL);
-      offset_rect.y = y;
-      offset_rect.w = text_surface->w;
-      offset_rect.h = text_surface->h;
-      SDL_ASSERT(SDL_BlitSurface(text_surface, NULL,
-                                 ctx->wnd_surface, &offset_rect) == 0);
-      SDL_FreeSurface(text_surface);
-      y += 30;
     }
-
-    free(ss);
-    free(tss);
-    free(fss);
-    free(iss);
-    free(cs);
-    FUT_CHECK(ctx->fut, futhark_free_i32_2d(ctx->fut, f_ss));
-    FUT_CHECK(ctx->fut, futhark_free_i32_2d(ctx->fut, f_tss));
-    FUT_CHECK(ctx->fut, futhark_free_f32_2d(ctx->fut, f_fss));
-    FUT_CHECK(ctx->fut, futhark_free_i32_2d(ctx->fut, f_iss));
-    FUT_CHECK(ctx->fut, futhark_free_i32_1d(ctx->fut, f_cs));
-
 
     SDL_ASSERT(SDL_UpdateWindowSurface(ctx->wnd) == 0);
 
@@ -281,7 +212,8 @@ void sdl_loop(struct lys_context *ctx) {
   }
 }
 
-void do_sdl(struct futhark_context *fut, int height, int width) {
+void do_sdl(struct futhark_context *fut, int height, int width,
+            bool allow_resize, char* font_path) {
   struct lys_context ctx;
   memset(&ctx, 0, sizeof(struct lys_context));
 
@@ -292,20 +224,49 @@ void do_sdl(struct futhark_context *fut, int height, int width) {
   SDL_ASSERT(SDL_Init(SDL_INIT_EVERYTHING) == 0);
   SDL_ASSERT(TTF_Init() == 0);
 
-  ctx.font = TTF_OpenFont("lib/github.com/diku-dk/lys/Inconsolata-Regular.ttf", 30);
+  ctx.font = TTF_OpenFont(font_path, FONT_SIZE);
   SDL_ASSERT(ctx.font != NULL);
 
+  int flags = 0;
+  if (allow_resize) {
+    flags |= SDL_WINDOW_RESIZABLE;
+  }
   ctx.wnd =
     SDL_CreateWindow("Lys",
                      SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                     width, height, SDL_WINDOW_RESIZABLE);
+                     width, height, flags);
   SDL_ASSERT(ctx.wnd != NULL);
 
   window_size_updated(&ctx, width, height);
 
   ctx.running = 1;
+
+  struct futhark_u8_1d *text_format_array;
+  FUT_CHECK(ctx.fut, futhark_entry_text_format(ctx.fut, &text_format_array));
+  size_t text_format_len = futhark_shape_u8_1d(ctx.fut, text_format_array)[0];
+  ctx.text_format = malloc(sizeof(char) * (text_format_len + 1));
+  assert(ctx.text_format != NULL);
+  FUT_CHECK(ctx.fut, futhark_values_u8_1d(ctx.fut, text_format_array, (unsigned char*) ctx.text_format));
+  ctx.text_format[text_format_len] = '\0';
+  FUT_CHECK(ctx.fut, futhark_free_u8_1d(ctx.fut, text_format_array));
+
+  ctx.text_buffer_len = text_format_len;
+  for (size_t i = 0; i < text_format_len; i++) {
+    if (ctx.text_format[i] == '%') {
+      ctx.text_buffer_len += 20; // estimate
+    }
+  }
+  ctx.text_buffer = malloc(sizeof(char) * ctx.text_buffer_len);
+  assert(ctx.text_buffer != NULL);
+  ctx.text_buffer[0] = '\0';
+
+  ctx.show_text = 1;
+
   sdl_loop(&ctx);
   FUT_CHECK(fut, futhark_free_opaque_state(fut, ctx.state));
+
+  free(ctx.text_format);
+  free(ctx.text_buffer);
 
   free(ctx.data);
   SDL_FreeSurface(ctx.surface);
@@ -342,11 +303,22 @@ void create_futhark_context(const char *deviceopt,
 
 int main(int argc, char** argv) {
   int width = INITIAL_WIDTH, height = INITIAL_HEIGHT;
+  bool allow_resize = true;
   char *deviceopt = "";
 
-  int c;
+  if (argc > 1 && strcmp(argv[1], "--help") == 0) {
+    printf("Usage: %s options...\n", argv[0]);
+    puts("Options:");
+    puts("  -w INT  Set the initial width of the window.");
+    puts("  -h INT  Set the initial height of the window.");
+    puts("  -R      Disallow resizing the window.");
+    puts("  -d DEV  Set the GPU device.");
+    puts("  --help  Print this help and exit.");
+    return 0;
+  }
 
-  while ( (c = getopt(argc, argv, "w:h:d:")) != -1) {
+  int c;
+  while ( (c = getopt(argc, argv, "w:h:Rd:")) != -1) {
     switch (c) {
     case 'w':
       width = atoi(optarg);
@@ -361,6 +333,9 @@ int main(int argc, char** argv) {
         fprintf(stderr, "'%s' is not a valid width.\n", optarg);
         exit(EXIT_FAILURE);
       }
+      break;
+    case 'R':
+      allow_resize = false;
       break;
     case 'd':
       deviceopt = optarg;
@@ -379,11 +354,23 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
+  char font_path_rel[] = "/lib/github.com/diku-dk/lys/Inconsolata-Regular.ttf";
+  char* font_path = malloc(sizeof(char) * strlen(argv[0]) + sizeof(font_path_rel));
+  assert(font_path != NULL);
+  strcpy(font_path, argv[0]);
+  char *last_dash = strrchr(font_path, '/');
+  if (last_dash != NULL) {
+    *last_dash = '\0';
+  }
+  strcat(font_path, font_path_rel);
+
   struct futhark_context_config* cfg;
   struct futhark_context* ctx;
 
   create_futhark_context(deviceopt, &cfg, &ctx);
-  do_sdl(ctx, height, width);
+  do_sdl(ctx, height, width, allow_resize, font_path);
+
+  free(font_path);
 
   futhark_context_free(ctx);
   futhark_context_config_free(cfg);
