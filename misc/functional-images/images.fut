@@ -161,7 +161,9 @@ let fancy t =
 
 import "lib/github.com/diku-dk/lys/lys"
 
-module lys: lys = {
+module lys: lys_no_text = {
+  open lys_no_text
+
   type mode = #mandelbrot_greyscale
             | #julia_greyscale
             | #mandelbrot_colour
