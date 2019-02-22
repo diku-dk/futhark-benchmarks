@@ -3,20 +3,45 @@ futhark-benchmarks
 
 Futhark implementations of various benchmarks.  The intention is that
 these implementations are of existing published benchmarks, and thus
-show where we do well or poorly.
+show where we do well or poorly.  We highly encourage everyone to make
+use of it when evaluating Futhark performance.  The following contains
+instructions on how to do that.
 
-You can run everything that runs with:
+Running benchmarks
+------------------
 
-    futhark-bench .
+The recommended method for running all benchmarks is
 
-Although you may want to pass `--compiler=futhark-opencl` to use the
-GPU.  Some of the data sets take a very long time with the default
-`futhark-c` compiler.
+    futhark bench * --backend=opencl --ignore-files /lib/
+
+This uses the OpenCL compiler backend, and ignores the test suites of
+any embedded libraries (which are usually too small to be useful
+benchmarks, and would merely be noise).  You can replace `opencl` with
+another backend.  While the `c` backend is likely too slow to be
+practical for many of the benchmarks, the `cuda` backend should
+perform fine.
+
+If necessary, you can use `--pass-option` to pass more options to the
+generated Futhark programs.  This may be necessary if you are using
+the OpenCL backend on a system with more than one OpenCL device, and
+you wish to use another device than the default.  For example, to ask
+Futhark to use the first device that contains "NVIDIA" in its name,
+you could use `--pass-option=-dNVIDIA`.
+
+If you wish to analyse the performance results with a program, the
+`--json` option to `futhark bench` may be useful.
+
+For more information, see the [documentation for `futhark bench`][0].
+
+[0]: https://futhark.readthedocs.io/en/latest/man/futhark-bench.html
+
+Internal details
+----------------
 
 Many of the input/output files are stored in a simple binary format
 for performance and space reasons.  This format is [documented in the
-Futhark reference manual][0], and can be converted to a textual
-representation via the [futhark-dataset][1] tool.
+Futhark reference manual][1], and can be converted to a textual
+representation via the [futhark-dataset][2] tool.
 
-[0]: http://futhark.readthedocs.io/en/latest/binary-data-format.html
-[1]: http://futhark.readthedocs.io/en/latest/man/futhark-dataset.html
+[1]: http://futhark.readthedocs.io/en/latest/binary-data-format.html
+[2]: http://futhark.readthedocs.io/en/latest/man/futhark-dataset.html
