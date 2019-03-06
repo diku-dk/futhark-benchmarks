@@ -37,18 +37,18 @@ let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point 
                      membership points)
                (0..<k))
   let cluster_sizes =
-    map (intrinsics.opaque >-> i32.sum) cluster_counts
+    map (opaque >-> i32.sum) cluster_counts
   let new_centre count my_points =
     let (x,y) = reduce_comm add_points (0, 0) my_points
     in (x / r32 count, y / r32 count)
   let cluster_centres =
-    map2 new_centre (intrinsics.opaque cluster_sizes) cluster_points
+    map2 new_centre (opaque cluster_sizes) cluster_points
   in cluster_centres
 
 let continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
   let changed ((x1,y1), (x2,y2)) =
     f32.abs (x1-x2) > 0.01 || f32.abs(y1-y2) > 0.01
-  in any changed (zip old_centres (intrinsics.opaque cur_centres))
+  in any changed (zip old_centres (opaque cur_centres))
 
 let main [n] (k: i32) (points_in: [n][2]f32): ([][2]f32, i32) =
   -- Transform from 2D-array to array of pairs.

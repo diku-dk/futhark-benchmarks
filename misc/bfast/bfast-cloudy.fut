@@ -112,7 +112,7 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   ----------------------------------
   let k2p2 = 2*k + 2
   let k2p2' = if trend > 0 then k2p2 else k2p2-1
-  let X = intrinsics.opaque <|
+  let X = opaque <|
 	  if trend > 0
           then mkX_with_trend k2p2' freq mappingindices
 	  else mkX_no_trend   k2p2' freq mappingindices
@@ -121,7 +121,7 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   -- PERFORMANCE BUG: instead of `let Xt = copy (transpose X)`
   --   we need to write the following ugly thing to force manifestation:
   let zero = r32 <| (N*N + 2*N + 1) / (N + 1) - N - 1
-  let Xt  = intrinsics.opaque <|
+  let Xt  = opaque <|
             map (map (+zero)) (copy (transpose X))
 
   let Xh  =  (X[:,:n])
@@ -131,33 +131,33 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   ----------------------------------
   -- 2. mat-mat multiplication    --
   ----------------------------------
-  let Xsqr = intrinsics.opaque <|
+  let Xsqr = opaque <|
              map (matmul_filt Xh Xth) Yh
 
   ----------------------------------
   -- 3. matrix inversion          --
   ----------------------------------
-  let Xinv = intrinsics.opaque <|
+  let Xinv = opaque <|
              map mat_inv Xsqr
   ---------------------------------------------
   -- 4. several matrix-vector multiplication --
   ---------------------------------------------
   let beta0  = map (matvecmul_row_filt Xh) Yh   -- [2k+2]
-               |> intrinsics.opaque
+               |> opaque
 
   let beta   = map2 matvecmul_row Xinv beta0    -- [2k+2]
-               |> intrinsics.opaque -- ^ requires transposition of Xinv
+               |> opaque -- ^ requires transposition of Xinv
                                     --   unless all parallelism is exploited
 
   let y_preds= map (matvecmul_row Xt) beta      -- [N]
-               |> intrinsics.opaque -- ^ requires transposition of Xt (small)
+               |> opaque -- ^ requires transposition of Xt (small)
                                     --   can be eliminated by passing
                                     --   (transpose X) instead of Xt
 
   ---------------------------------------------
   -- 5. filter etc.                          --
   ---------------------------------------------
-  let (Nss, y_errors, val_indss) = ( intrinsics.opaque <| unzip3 <|
+  let (Nss, y_errors, val_indss) = ( opaque <| unzip3 <|
     map2 (\y y_pred ->
             let y_error_all = zip y y_pred |>
                 map (\(ye,yep) -> if !(f32.isnan ye) 
@@ -170,7 +170,7 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   ---------------------------------------------
   -- 6. ns and sigma                         --
   ---------------------------------------------
-  let (hs, nss, sigmas) = intrinsics.opaque <| unzip3 <|
+  let (hs, nss, sigmas) = opaque <| unzip3 <|
     map2 (\yh y_error ->
             let ns    = map (\ye -> if !(f32.isnan ye) then 1 else 0) yh
                         |> reduce (+) 0
@@ -189,7 +189,7 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
     map (\(y_error, ns, h) -> unsafe
             map (\i -> if i < h then unsafe y_error[i + ns-h+1] else 0.0) (iota hmax)
             |> reduce (+) 0.0 
-        ) |> intrinsics.opaque
+        ) |> opaque
 
   let BOUND = map (\q -> let t   = n+1+q
                          let time = unsafe mappingindices[t-1]

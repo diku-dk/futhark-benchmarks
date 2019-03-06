@@ -1105,4 +1105,4 @@ let main (repeat: i32) (eps: f32) (workload: i32)
           in solver(xmax, params, y_row)
         ) (iota workload))
 
-  in ( and (intrinsics.opaque oks), y_res )
+  in ( and (opaque oks), y_res )
