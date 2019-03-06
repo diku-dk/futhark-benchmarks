@@ -56,10 +56,10 @@ entry absmax_i32 [n] (k: i32) (is : [n]i32) (vs : [n]i32) : [k]i32 =
 -- compile this quite efficiently.
 -- ==
 -- entry: sum_vec_i32
--- random input { 10 [10000]i32 [1000000]i32 }
--- random input { 10 [1000]i32 [1000000]i32 }
--- random input { 10000 [10000]i32 [1000000]i32 }
--- random input { 10000 [1000]i32 [1000000]i32 }
+-- random input { 10 [10000]i32 [1000000]i32 } auto output
+-- random input { 10 [1000]i32 [1000000]i32 } auto output
+-- random input { 10000 [10000]i32 [1000000]i32 } auto output
+-- random input { 10000 [1000]i32 [1000000]i32 } auto output
 
 entry sum_vec_i32 [n][m] (k: i32) (is : [m]i32) (vs : [n]i32) : [k][]i32 =
   let l = n/m
