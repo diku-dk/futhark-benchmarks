@@ -66,7 +66,7 @@ let bpnn_layerforward [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2
   -- FIXME: nasty hack to avoid fusion, which presently causes the
   -- kernel extractor to sequentialise the reduction.
 
-  let res_tmp   = map f32.sum (intrinsics.opaque res_map)
+  let res_tmp   = map f32.sum (opaque res_map)
 
   in map ( \(pr: f32, conn0: f32): f32  -> squash(pr+conn0))
   (zip (res_tmp) (conn_fstrow))

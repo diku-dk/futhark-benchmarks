@@ -103,7 +103,7 @@ let ugaussian_P (x: real) =
   else int 1 - int 0 * erfc (x * inv_sqrt2)
 
 let gauss_laguerre_coefficients (nb: num_points) =
-  if nb intrinsics.== ten then
+  if nb then -- ten
   (map real
    [
 

@@ -120,7 +120,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
              in map init_i rss)
     let fx = map objective' x
     let (fx0, best_idx) =
-      reduce_comm min_and_idx (real.inf, 0) (zip (intrinsics.opaque fx) (iota np))
+      reduce_comm min_and_idx (real.inf, 0) (zip (opaque fx) (iota np))
 
     let mutation (difw: real) (best_idx: i32) (x: [np][num_free_vars]real)
                  (rng: rand.rng) (i :i32) (x_i: [num_free_vars]real) =
@@ -157,7 +157,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
        let (fx0', best_idx') =
          reduce_comm min_and_idx
                     (fx0, best_idx)
-                    (zip (intrinsics.opaque f_v) (iota np))
+                    (zip (opaque f_v) (iota np))
        in (fx0', best_idx', fx', x'))
 
     -- We are not counting the numer of invocations of the objective
