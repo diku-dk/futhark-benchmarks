@@ -51,3 +51,18 @@ let absmax (x: i32) (y: i32): i32 =
 
 entry absmax_i32 [n] (k: i32) (is : [n]i32) (vs : [n]i32) : [k]i32 =
   reduce_by_index (replicate k 0) absmax 0 (map (%k) is) vs
+
+-- Now a vectorised operator.  If the compiler is clever, it can
+-- compile this quite efficiently.
+-- ==
+-- entry: sum_vec_i32
+-- random input { 10 [10000]i32 [1000000]i32 }
+-- random input { 10 [1000]i32 [1000000]i32 }
+-- random input { 10000 [10000]i32 [1000000]i32 }
+-- random input { 10000 [1000]i32 [1000000]i32 }
+
+entry sum_vec_i32 [n][m] (k: i32) (is : [m]i32) (vs : [n]i32) : [k][]i32 =
+  let l = n/m
+  let vs' = unflatten m l vs
+  in reduce_by_index (replicate k (replicate l 0)) (map2 (+))
+                     (replicate l 0) (map (%k) is) vs'
