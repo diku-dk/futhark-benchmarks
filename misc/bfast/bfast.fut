@@ -52,7 +52,7 @@ let findSplit [N] (n: i32) (y: [N]f32) : i32 =
   let gauss_jordan [nm] (n:i32) (A: *[nm]f32): [nm]f32 =
     let m = nm / n in
     loop A for i < n do
-      let v1 = A[i]
+      let v1 = unsafe A[i]
 
       let A' = map (\ind -> let (k, j) = (ind / m, ind % m)
                             let x = unsafe (A[j] / v1) in
