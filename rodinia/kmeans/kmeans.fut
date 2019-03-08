@@ -30,12 +30,8 @@ let add_centroids [d] (x: [d]f32) (y: [d]f32): *[d]f32 =
 
 let centroids_of [n][d] (k: i32, points: [n][d]f32, membership: [n]i32): [k][d]f32 =
   let points_in_clusters =
-     stream_red_per (\(acc: [k]i32) (x: [k]i32) ->
-                     map2 (+) acc x)
-                    (\(inp: []i32) ->
-                     loop acc = (replicate k 0) for c in inp do
-                       unsafe let acc[c] = acc[c] + 1 in acc)
-                    membership
+    reduce_by_index (replicate k 0) (+) 0 membership (replicate n 1)
+
   let cluster_sums =
     stream_red_per (\(acc: [k][d]f32) (elem: [k][d]f32) ->
                     map2 add_centroids acc elem)
