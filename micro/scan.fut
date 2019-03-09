@@ -11,16 +11,16 @@
 -- input { 10000 } auto output
 -- input { 100000 } auto output
 -- input { 1000000 } auto output
--- no_csharp input { 10000000 } auto output
--- no_csharp input { 100000000 } auto output
+-- only_c input { 10000000 } auto output
+-- only_c input { 100000000 } auto output
 
 -- ==
 -- entry: sum_iota_f32 sum_iota_f64
 -- input { 10000 }
 -- input { 100000 }
 -- input { 1000000 }
--- no_csharp input { 10000000 }
--- no_csharp input { 100000000 }
+-- only_c input { 10000000 }
+-- only_c input { 100000000 }
 
 entry sum_iota_i8  = iota >-> map i8.i32 >-> scan (+) 0
 entry sum_iota_i32 = iota >-> scan (+) 0
@@ -32,16 +32,16 @@ entry sum_iota_f64 = iota >-> map r64 >-> scan (+) 0
 -- random input { [10000]i32 } auto output
 -- random input { [100000]i32 } auto output
 -- random input { [1000000]i32 } auto output
--- no_csharp no_python random input { [10000000]i32 } auto output
--- no_csharp no_python random input { [100000000]i32 } auto output
+-- only_c no_python random input { [10000000]i32 } auto output
+-- only_c no_python random input { [100000000]i32 } auto output
 
 -- ==
 -- entry: sum_f32 sum_f64
 -- random input { [10000]i32 }
 -- random input { [100000]i32 }
 -- random input { [1000000]i32 }
--- no_csharp no_python random input { [10000000]i32 }
--- no_csharp no_python random input { [100000000]i32 }
+-- only_c no_python random input { [10000000]i32 }
+-- only_c no_python random input { [100000000]i32 }
 
 entry sum_i8  = map  i8.i32 >-> scan (+) 0
 entry sum_i32 = map i32.i32 >-> scan (+) 0
@@ -53,16 +53,16 @@ entry sum_f64 = map f64.i32 >-> scan (+) 0
 -- random input { [10000]i32 } auto output
 -- random input { [100000]i32 } auto output
 -- random input { [1000000]i32 } auto output
--- no_csharp only_c random input { [10000000]i32 } auto output
--- no_csharp only_c random input { [100000000]i32 } auto output
+-- only_c only_c random input { [10000000]i32 } auto output
+-- only_c only_c random input { [100000000]i32 } auto output
 
 -- ==
 -- entry: sum_scaled_f32 sum_scaled_f64
 -- random input { [10000]i32 }
 -- random input { [100000]i32 }
 -- random input { [1000000]i32 }
--- no_csharp only_c random input { [10000000]i32 }
--- no_csharp only_c random input { [100000000]i32 }
+-- only_c only_c random input { [10000000]i32 }
+-- only_c only_c random input { [100000000]i32 }
 
 entry sum_scaled_i8 xs = let ys = map (i8.i32 >-> (*2)) xs
                          in (scan (+) 0 ys, ys)
@@ -80,26 +80,26 @@ entry sum_scaled_f64 xs = let ys = map (f64.i32 >-> (*2)) xs
 -- input { 10000 } auto output
 -- input { 100000 } auto output
 -- input { 1000000 } auto output
--- no_csharp input { 10000000 } auto output
+-- only_c input { 10000000 } auto output
 
 -- ==
 -- entry: prod_iota_mat4_f32 prod_iota_mat4_f64
 -- input { 10000 }
 -- input { 100000 }
 -- input { 1000000 }
--- no_csharp input { 10000000 }
+-- only_c input { 10000000 }
 
 -- ==
 -- entry: prod_mat4_i8 prod_mat4_i32
 -- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 } auto output
 -- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 } auto output
--- no_csharp random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 } auto output
+-- only_c random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 } auto output
 
 -- ==
 -- entry: prod_mat4_f32 prod_mat4_f64
 -- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 }
 -- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 }
--- no_csharp random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 }
+-- only_c random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 }
 
 let mat4_mul (+) (*) (a0,a1,a2,a3) (b0,b1,b2,b3) =
   ((b0*a0 + b1*a2),
@@ -155,7 +155,7 @@ let lss 't (t: t) (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t) =
 -- input { 10000 } auto output
 -- input { 100000 } auto output
 -- input { 1000000 } auto output
--- no_csharp input { 10000000 } auto output
+-- only_c input { 10000000 } auto output
 
 entry lss_iota_i8  = iota >-> map  i8.i32 >-> lss 0 (const true) (<=)
 entry lss_iota_i32 = iota >-> map i32.i32 >-> lss 0 (const true) (<=)
