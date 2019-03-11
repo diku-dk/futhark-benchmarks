@@ -8,7 +8,7 @@
 import "lib/github.com/diku-dk/cpprandom/random"
 import "heston"
 
-module heston32 = heston f32 pcg32
+module heston32 = heston f32 minstd_rand
 
 -- We still read the data sets as double precision, and initially
 -- convert them to single.  This is included in measurements, but

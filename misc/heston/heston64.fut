@@ -8,7 +8,7 @@
 import "lib/github.com/diku-dk/cpprandom/random"
 import "heston"
 
-module heston64 = heston f64 pcg32
+module heston64 = heston f64 minstd_rand
 
 let main [num_quotes]
          (max_global: i32)
