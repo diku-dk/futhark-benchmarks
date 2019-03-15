@@ -4,4 +4,4 @@ run: trace.py
 	python ray-gui.py
 
 trace.py: *.fut
-	futhark-pyopencl --library trace.fut
+	futhark pyopencl --library trace.fut
