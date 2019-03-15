@@ -3,10 +3,10 @@
 all: nbody.py
 
 nbody.py: nbody.fut
-	futhark-pyopencl --library nbody.fut
+	futhark pyopencl --library nbody.fut
 
 nbody.c: nbody.fut
-	futhark-opencl --library nbody.fut
+	futhark opencl --library nbody.fut
 
 _nbody.so: nbody.c
 	build_futhark_ffi nbody
