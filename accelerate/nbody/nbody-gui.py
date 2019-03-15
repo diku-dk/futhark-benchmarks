@@ -20,7 +20,7 @@ except ImportError:
     import nbody
     print('Using futhark-pyopencl backend.')
     def futhark_object():
-        return nbody.nbody()
+        return nbody.nbody(default_threshold=1)
 
 nb = futhark_object()
 
