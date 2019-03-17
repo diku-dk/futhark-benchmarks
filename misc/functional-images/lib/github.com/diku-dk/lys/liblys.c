@@ -62,6 +62,13 @@ void window_size_updated(struct lys_context *ctx, int newx, int newy) {
 }
 
 void mouse_event(struct lys_context *ctx, Uint32 state, int x, int y) {
+  // We ignore mouse events if we are running a program that would
+  // like mouse grab, but where we have temporarily taken the mouse
+  // back from it (to e.g. resize the window).
+  if (ctx->grab_mouse != ctx->mouse_grabbed) {
+    return;
+  }
+
   struct futhark_opaque_state *new_state;
   FUT_CHECK(ctx->fut, futhark_entry_mouse(ctx->fut, &new_state, state, x, y, ctx->state));
   futhark_free_opaque_state(ctx->fut, ctx->state);
@@ -95,11 +102,24 @@ void handle_sdl_events(struct lys_context *ctx) {
       ctx->running = 0;
       break;
     case SDL_MOUSEMOTION:
-      mouse_event(ctx, event.motion.state, event.motion.x, event.motion.y);
+      if (ctx->grab_mouse) {
+        mouse_event(ctx, event.motion.state, event.motion.xrel, event.motion.yrel);
+      } else {
+        mouse_event(ctx, event.motion.state, event.motion.x, event.motion.y);
+      }
       break;
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
-      mouse_event(ctx, 1<<(event.button.button-1), event.motion.x, event.motion.y);
+      if (ctx->grab_mouse && !ctx->mouse_grabbed) {
+        assert(SDL_SetRelativeMouseMode(1) == 0);
+        ctx->mouse_grabbed = 1;
+      }
+
+      if (ctx->grab_mouse) {
+        mouse_event(ctx, 1<<(event.button.button-1), event.motion.xrel, event.motion.yrel);
+      } else {
+        mouse_event(ctx, 1<<(event.button.button-1), event.motion.x, event.motion.y);
+      }
       break;
     case SDL_MOUSEWHEEL:
       wheel_event(ctx, event.wheel.x, event.wheel.y);
@@ -108,7 +128,12 @@ void handle_sdl_events(struct lys_context *ctx) {
     case SDL_KEYUP:
       switch (event.key.keysym.sym) {
       case SDLK_ESCAPE:
-        ctx->running = 0;
+        if (ctx->grab_mouse && ctx->mouse_grabbed) {
+          assert(SDL_SetRelativeMouseMode(0) == 0);
+          ctx->mouse_grabbed = 0;
+        } else if (event.key.type == SDL_KEYDOWN) {
+          ctx->running = 0;
+        }
         break;
       case SDLK_F1:
         if (event.key.type == SDL_KEYDOWN) {
@@ -240,6 +265,13 @@ void do_sdl(struct futhark_context *fut, int height, int width,
   window_size_updated(&ctx, width, height);
 
   ctx.running = 1;
+  ctx.mouse_grabbed = 0;
+
+  FUT_CHECK(ctx.fut, futhark_entry_grab_mouse(ctx.fut, &ctx.grab_mouse));
+  if (ctx.grab_mouse) {
+    assert(SDL_SetRelativeMouseMode(1) == 0);
+    ctx.mouse_grabbed = 1;
+  }
 
   struct futhark_u8_1d *text_format_array;
   FUT_CHECK(ctx.fut, futhark_entry_text_format(ctx.fut, &text_format_array));
@@ -285,6 +317,7 @@ void create_futhark_context(const char *deviceopt,
   *ctx = futhark_context_new(*cfg);
   assert(*ctx != NULL);
 
+#ifdef LYS_BACKEND_opencl
   cl_device_id device;
   assert(clGetCommandQueueInfo(futhark_context_get_command_queue(*ctx),
                                CL_QUEUE_DEVICE, sizeof(cl_device_id), &device, NULL)
@@ -299,6 +332,7 @@ void create_futhark_context(const char *deviceopt,
 
   printf("Using OpenCL device: %s\n", dev_name);
   free(dev_name);
+#endif
 }
 
 int main(int argc, char** argv) {
@@ -312,7 +346,7 @@ int main(int argc, char** argv) {
     puts("  -w INT  Set the initial width of the window.");
     puts("  -h INT  Set the initial height of the window.");
     puts("  -R      Disallow resizing the window.");
-    puts("  -d DEV  Set the GPU device.");
+    puts("  -d DEV  Set the computation device.");
     puts("  --help  Print this help and exit.");
     return 0;
   }
