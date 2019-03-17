@@ -1,7 +1,2 @@
-all: trace.py
-
-run: trace.py
-	python ray-gui.py
-
-trace.py: *.fut
-	futhark pyopencl --library trace.fut
+PROGNAME=ray
+include lib/github.com/diku-dk/lys/common.mk

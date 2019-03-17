@@ -21,7 +21,7 @@ import "intersection"
 import "lights"
 
 let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_dir: position)
-                 : [sizeX][sizeY]direction =
+                 : [sizeY][sizeX]direction =
   let eye_vector = vec3.(normalise eye_dir)
   let vp_right = vec3.normalise (vec3.cross eye_vector {x=0,y=1,z=0})
   let vp_up = vec3.normalise (vec3.cross vp_right eye_vector)
@@ -34,11 +34,11 @@ let cast_view_rays (sizeX: i32) (sizeY: i32) (fov: i32) (eye_dir: position)
   let pixel_width = camera_width / (r32 sizeX - 1)
   let pixel_height = camera_height / (r32 sizeY - 1)
 
-  let cast (x: i32) (y: i32) =
+  let cast (y: i32) (x: i32) =
     let xcomp = vec3.scale ((r32 x * pixel_width) - half_width) vp_right
     let ycomp = vec3.scale ((r32 y * pixel_height) - half_height) vp_up
     in vec3.(normalise (eye_vector + xcomp + ycomp))
-  in map (\x -> map (cast x) (reverse (iota sizeY))) (iota sizeX)
+  in map (\y -> map (cast y) (iota sizeX)) (reverse (iota sizeY))
 
 let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
              : (position, direction, argb.colour, f32) =
