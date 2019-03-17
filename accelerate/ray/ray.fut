@@ -36,7 +36,7 @@ module lys: lys with text_content = text_content = {
     else if k == 's' then s with forward_sgn = -1
     else if k == 'a' then s with sideway_sgn = -1
     else if k == 'd' then s with sideway_sgn = 1
-    else if k == 'z' then s with limit = i32.max (s.limit + 1) 1
+    else if k == 'z' then s with limit = i32.max (s.limit - 1) 0
     else if k == 'x' then s with limit = s.limit + 1
     else s
 
@@ -90,7 +90,7 @@ module lys: lys with text_content = text_content = {
 
   type text_content = text_content
 
-  let text_format = "FPS: %.2f; max bounces: %d"
+  let text_format = "FPS: %.2f; rendering limit: %d"
 
   let text_content (render_duration: f32) (s: state): text_content =
     (1000 / render_duration, s.limit)
