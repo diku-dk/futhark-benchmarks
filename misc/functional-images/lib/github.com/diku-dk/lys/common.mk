@@ -1,21 +1,36 @@
 PROGNAME?=lys
-PROG_FUT_DEPS?=$(shell futhark imports $(PROGNAME).fut)
+LYS_BACKEND?=opencl
+PROG_FUT_DEPS=$(shell futhark imports $(PROGNAME).fut)
 
 all: $(PROGNAME)
 
-NOWARN_CFLAGS=-std=c99 -O
-CFLAGS?=$(NOWARN_CFLAGS) -Wall -Wextra -pedantic
+NOWARN_CFLAGS=-std=c11 -O
+CFLAGS?=$(NOWARN_CFLAGS) -Wall -Wextra -pedantic -DLYS_BACKEND_$(LYS_BACKEND)
+BASE_LDFLAGS=-lm -lSDL2 -lSDL2_ttf
 
 OS=$(shell uname -s)
 ifeq ($(OS),Darwin)
-OPENCLFLAGS?=-framework OpenCL
+OPENCL_LDFLAGS?=-framework OpenCL
 else
-OPENCLFLAGS?=-lOpenCL
+OPENCL_LDFLAGS?=-lOpenCL
 endif
-LDFLAGS?=$(OPENCLFLAGS) -lm -lSDL2 -lSDL2_ttf
 
+ifeq ($(LYS_BACKEND),opencl)
+LDFLAGS?=$(OPENCL_LDFLAGS) $(BASE_LDFLAGS)
+else ifeq ($(LYS_BACKEND),cuda)
+LDFLAGS?=$(BASE_LDFLAGS) -lcuda -lnvrtc
+else
+$(error Unknown LYS_BACKEND: $(LYS_BACKEND).  Must be 'opencl' or 'cuda')
+endif
+
+ifeq ($(shell test futhark.pkg -nt lib; echo $$?),0)
+$(PROGNAME):
+	futhark pkg sync
+	@make # The sync might have resulted in a new Makefile.
+else
 $(PROGNAME): $(PROGNAME)_wrapper.o $(PROGNAME)_printf.h lib/github.com/diku-dk/lys/liblys.c lib/github.com/diku-dk/lys/liblys.h
 	gcc lib/github.com/diku-dk/lys/liblys.c -I. -DPROGHEADER='"$(PROGNAME)_wrapper.h"' -DPRINTFHEADER='"$(PROGNAME)_printf.h"' $(PROGNAME)_wrapper.o -o $@ $(CFLAGS) $(LDFLAGS)
+endif
 
 $(PROGNAME)_printf.h: $(PROGNAME)_wrapper.c
 	python3 lib/github.com/diku-dk/lys/gen_printf.py $@ $<
@@ -24,8 +39,8 @@ $(PROGNAME)_printf.h: $(PROGNAME)_wrapper.c
 $(PROGNAME)_wrapper.o: $(PROGNAME)_wrapper.c
 	gcc -o $@ -c $< $(NOWARN_CFLAGS)
 
-%.c: %.fut lib
-	futhark opencl --library $<
+%.c: %.fut
+	futhark $(LYS_BACKEND) --library $<
 
 %_wrapper.fut: lib/github.com/diku-dk/lys/genlys.fut $(PROG_FUT_DEPS)
 	cat $< | sed 's/"lys"/"$(PROGNAME)"/' > $@

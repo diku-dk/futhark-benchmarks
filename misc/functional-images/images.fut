@@ -163,6 +163,7 @@ import "lib/github.com/diku-dk/lys/lys"
 
 module lys: lys_no_text = {
   open lys_no_text
+  let grab_mouse = false
 
   type mode = #mandelbrot_greyscale
             | #julia_greyscale
