@@ -3,13 +3,11 @@ import "lib/github.com/athas/matte/colour"
 module trace = import "trace"
 import "types"
 
-type eye = {pos: position, a: f32, b: f32}
-
-let move_eye (eye: eye) (pos: direction) =
-  eye with pos = vec3.(eye.pos + pos)
 
 type text_content = (f32, i32)
 module lys: lys with text_content = text_content = {
+  type eye = {pos: position, a: f32, b: f32}
+
   type state = { height: i32
                , width: i32
                , fov: i32
