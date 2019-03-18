@@ -161,8 +161,8 @@ let fancy t =
 
 import "lib/github.com/diku-dk/lys/lys"
 
-module lys: lys_no_text = {
-  open lys_no_text
+type text_content = f32
+module lys: lys with text_content = text_content = {
   let grab_mouse = false
 
   type mode = #mandelbrot_greyscale
@@ -268,4 +268,13 @@ module lys: lys_no_text = {
        case #julia_colour -> render (julia_colour s.userpos.1 s.userpos.2)
        case #figure_7_15 -> render figure_7_15
        case #fancy -> render fancy
+
+  type text_content = text_content
+
+  let text_format = "FPS: %.2f"
+
+  let text_content (fps: f32) (_: state): text_content =
+    fps
+
+  let text_colour = const argb.yellow
 }
