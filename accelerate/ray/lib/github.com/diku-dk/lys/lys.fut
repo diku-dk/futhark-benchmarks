@@ -63,7 +63,7 @@ module type lys = {
   val text_format : string
   -- | The content must be a scalar or a tuple of scalars.
   type text_content
-  val text_content : f32 -> state -> text_content
+  val text_content : (fps: f32) -> state -> text_content
   -- | The colour can vary based on the state.
   val text_colour : state -> argb.colour
 }

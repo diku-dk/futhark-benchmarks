@@ -160,17 +160,14 @@ void sdl_loop(struct lys_context *ctx) {
   while (ctx->running) {
     int64_t now = get_wall_time();
     float delta = ((float)(now - ctx->last_time))/1000000;
+    ctx->fps = (ctx->fps*0.9 + (1/delta)*0.1);
     ctx->last_time = now;
     struct futhark_opaque_state *new_state;
     FUT_CHECK(ctx->fut, futhark_entry_step(ctx->fut, &new_state, delta, ctx->state));
     futhark_free_opaque_state(ctx->fut, ctx->state);
     ctx->state = new_state;
 
-    int64_t render_start = get_wall_time();
     FUT_CHECK(ctx->fut, futhark_entry_render(ctx->fut, &out_arr, ctx->state));
-    FUT_CHECK(ctx->fut, futhark_context_sync(ctx->fut));
-    int64_t render_end = get_wall_time();
-    float render_milliseconds = ((float) (render_end - render_start)) / 1000.0;
     FUT_CHECK(ctx->fut, futhark_values_i32_2d(ctx->fut, out_arr, ctx->data));
     FUT_CHECK(ctx->fut, futhark_free_i32_2d(ctx->fut, out_arr));
 
@@ -178,7 +175,7 @@ void sdl_loop(struct lys_context *ctx) {
 
     if (ctx->show_text) {
       build_text(ctx, ctx->text_buffer, ctx->text_buffer_len, ctx->text_format,
-                 render_milliseconds);
+                 ctx->fps);
       if (*(ctx->text_buffer) != '\0') {
         uint32_t text_colour;
         FUT_CHECK(ctx->fut,
@@ -241,6 +238,7 @@ void do_sdl(struct futhark_context *fut, int height, int width,
             bool allow_resize, char* font_path) {
   struct lys_context ctx;
   memset(&ctx, 0, sizeof(struct lys_context));
+  ctx.fps = 0;
 
   ctx.last_time = get_wall_time();
   ctx.fut = fut;

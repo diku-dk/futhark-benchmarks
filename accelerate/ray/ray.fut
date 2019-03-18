@@ -90,8 +90,8 @@ module lys: lys with text_content = text_content = {
 
   let text_format = "FPS: %.2f; rendering limit: %d"
 
-  let text_content (render_duration: f32) (s: state): text_content =
-    (1000 / render_duration, s.limit)
+  let text_content (fps: f32) (s: state): text_content =
+    (fps, s.limit)
 
   let text_colour = const argb.yellow
 

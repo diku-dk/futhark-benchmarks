@@ -25,6 +25,7 @@ struct lys_context {
   bool show_text;
   bool grab_mouse;
   bool mouse_grabbed;
+  float fps;
 };
 
 #define FUT_CHECK(ctx, x) _fut_check(ctx, x, __FILE__, __LINE__)
