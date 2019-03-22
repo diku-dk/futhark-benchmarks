@@ -161,7 +161,7 @@ let fancy t =
 
 import "lib/github.com/diku-dk/lys/lys"
 
-type text_content = f32
+type text_content = i32
 module lys: lys with text_content = text_content = {
   let grab_mouse = false
 
@@ -271,10 +271,10 @@ module lys: lys with text_content = text_content = {
 
   type text_content = text_content
 
-  let text_format = "FPS: %.2f"
+  let text_format = "FPS: %d"
 
   let text_content (fps: f32) (_: state): text_content =
-    fps
+    t32 fps
 
   let text_colour = const argb.yellow
 }
