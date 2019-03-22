@@ -11,7 +11,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#define FPS 60
 #define INITIAL_WIDTH 800
 #define INITIAL_HEIGHT 600
 #define FONT_SIZE 24
@@ -228,17 +227,19 @@ void sdl_loop(struct lys_context *ctx) {
 
     SDL_ASSERT(SDL_UpdateWindowSurface(ctx->wnd) == 0);
 
-    SDL_Delay((int) (1000.0 / FPS - delta / 1000));
+    SDL_Delay((int) (1000.0 / ctx->max_fps - delta / 1000));
 
     handle_sdl_events(ctx);
   }
 }
 
-void do_sdl(struct futhark_context *fut, int height, int width,
+void do_sdl(struct futhark_context *fut,
+            int height, int width, int max_fps,
             bool allow_resize, char* font_path) {
   struct lys_context ctx;
   memset(&ctx, 0, sizeof(struct lys_context));
   ctx.fps = 0;
+  ctx.max_fps = max_fps;
 
   ctx.last_time = get_wall_time();
   ctx.fut = fut;
@@ -334,7 +335,7 @@ void create_futhark_context(const char *deviceopt,
 }
 
 int main(int argc, char** argv) {
-  int width = INITIAL_WIDTH, height = INITIAL_HEIGHT;
+  int width = INITIAL_WIDTH, height = INITIAL_HEIGHT, max_fps = 60;
   bool allow_resize = true;
   char *deviceopt = "";
 
@@ -345,12 +346,13 @@ int main(int argc, char** argv) {
     puts("  -h INT  Set the initial height of the window.");
     puts("  -R      Disallow resizing the window.");
     puts("  -d DEV  Set the computation device.");
+    puts("  -r INT  Maximum frames per second.");
     puts("  --help  Print this help and exit.");
     return 0;
   }
 
   int c;
-  while ( (c = getopt(argc, argv, "w:h:Rd:")) != -1) {
+  while ( (c = getopt(argc, argv, "w:h:r:Rd:")) != -1) {
     switch (c) {
     case 'w':
       width = atoi(optarg);
@@ -363,6 +365,13 @@ int main(int argc, char** argv) {
       height = atoi(optarg);
       if (height <= 0) {
         fprintf(stderr, "'%s' is not a valid width.\n", optarg);
+        exit(EXIT_FAILURE);
+      }
+      break;
+    case 'r':
+      max_fps = atoi(optarg);
+      if (max_fps <= 0) {
+        fprintf(stderr, "'%s' is not a valid framerate.\n", optarg);
         exit(EXIT_FAILURE);
       }
       break;
@@ -400,7 +409,7 @@ int main(int argc, char** argv) {
   struct futhark_context* ctx;
 
   create_futhark_context(deviceopt, &cfg, &ctx);
-  do_sdl(ctx, height, width, allow_resize, font_path);
+  do_sdl(ctx, height, width, max_fps, allow_resize, font_path);
 
   free(font_path);
 
