@@ -54,9 +54,7 @@ let main (boxes1d: i32) (par_per_box: i32) (num_neighbors: i32):
           -- current home box
           let box_coef = ( k, j, i, nh )
           -- initialize neighbor boxes
-          let box_nngh_cur_nn = (replicate num_neighbors (0,0,0,0), 0)
-          let (box_nngh_cur_nn) = loop (box_nngh_cur_nn) for nn < num_neighbors do
-            let (box_nngh, cur_nn) = box_nngh_cur_nn
+          let (box_nngh_cur_nn) = loop (box_nngh, cur_nn) = (replicate num_neighbors (0,0,0,0), 0)for nn < num_neighbors do
             let n = (nn % 3) - 1
             let nr= nn / 3
             let m = (nr % 3) - 1
