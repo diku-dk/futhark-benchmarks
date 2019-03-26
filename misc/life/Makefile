@@ -3,7 +3,7 @@
 all: life.py
 
 life.py: $(shell echo *.fut)
-	futhark-pyopencl --library life.fut
+	futhark pyopencl --library life.fut
 clean:
 	rm -f life.py *.pyc
 
