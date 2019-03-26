@@ -20,7 +20,7 @@ except ImportError:
     import fluid
     print('Using futhark-pyopencl backend.')
     def futhark_object():
-        return fluid.fluid()
+        return fluid.fluid(interactive=True)
 
 # From http://www.roguebasin.com/index.php?title=Bresenham%27s_Line_Algorithm#Python
 def get_line(start, end):
