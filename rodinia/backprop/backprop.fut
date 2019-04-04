@@ -115,7 +115,7 @@ let sobolIndR [num_bits] (dirVct: [num_bits]i32) (n: i32): f32 =
            else res
     in r32(res) * norm_fact
 
-let bpnn_randomize_weights(m: i32, n: i32, offset: i32, dirVct: []i32): ([m][n]f32,[m]f32) =
+let bpnn_randomize_weights (m: i32) (n: i32) (offset: i32) (dirVct: []i32): ([m][n]f32,[m]f32) =
     let mat =
       map( \(i: i32): [n]f32  ->
              map( \(j: i32): f32  ->
@@ -130,47 +130,49 @@ let bpnn_randomize_weights(m: i32, n: i32, offset: i32, dirVct: []i32): ([m][n]f
                 (iota m)
     in (mat, vct)
 
-let bpnn_randomize_row(m: i32, offset: i32, dirVct: []i32): [m]f32 =
+let bpnn_randomize_row (m: i32) (offset: i32) (dirVct: []i32): [m]f32 =
     map (sobolIndR(dirVct)) (map (+offset) (iota m))
 
-let bpnn_constant_row(m: i32, value: f32): [m]f32 =
+let bpnn_constant_row (m: i32) (value: f32): [m]f32 =
     replicate m value
 
-let bpnn_zero_weights(m: i32, n: i32): [m][n]f32 =
+let bpnn_zero_weights (m: i32) (n: i32): [m][n]f32 =
     replicate m (replicate n 0.0)
 
 ----------------------------------------------------/
 
-let bpnn_create(n_in: i32, n_inp1: i32, n_hid: i32, n_hidp1: i32, n_out: i32, offset: i32, dirVct: []i32): ( [n_in]f32
-                                                                                                           , [n_out]f32
-                                                                                                           ,([n_inp1][n_hid]f32, [n_inp1]f32)
-                                                                                                           ,([n_hidp1][n_out]f32, [n_hidp1]f32)
-                                                                                                           , [n_inp1][n_hid]f32
-                                                                                                           , [n_hidp1][n_out]f32
-    ) =
+let bpnn_create (n_in: i32) (n_inp1: i32) (n_hid: i32)
+                (n_hidp1: i32) (n_out: i32) (offset: i32) (dirVct: []i32)
+                : ( [n_in]f32
+                  , [n_out]f32
+                  ,([n_inp1][n_hid]f32, [n_inp1]f32)
+                  ,([n_hidp1][n_out]f32, [n_hidp1]f32)
+                  , [n_inp1][n_hid]f32
+                  , [n_hidp1][n_out]f32
+                  ) =
   -- [#n_out]
-  let target = bpnn_constant_row(n_out, 0.1)
+  let target = bpnn_constant_row n_out 0.1
 
   -- [#n_in][#n_hidden]f32
   let (offset, (input_weights, input_weights_fstcol)) =
     if init_zero()
-    then (  offset, (bpnn_zero_weights(n_inp1, n_hid), replicate n_inp1 0.0) )
+    then (  offset, (bpnn_zero_weights n_inp1 n_hid, replicate n_inp1 0.0) )
     else (  offset+n_inp1*n_hidp1,
-            bpnn_randomize_weights(n_inp1, n_hid, offset, dirVct)  )
+            bpnn_randomize_weights n_inp1 n_hid offset dirVct  )
 
   -- [#n_hidden][#n_out]f32
   let (hidden_weights, hidden_weights_fstcol) =
-              bpnn_randomize_weights(n_hidp1, n_out, offset, dirVct)
+    bpnn_randomize_weights n_hidp1 n_out offset dirVct
   let offset = offset + n_hidp1*(n_out+1)
 
   --[#n_in][#n_hidden]f32
-  let input_prev_weights = bpnn_zero_weights(n_inp1,  n_hid)
+  let input_prev_weights = bpnn_zero_weights n_inp1 n_hid
 
   --[#n_hidden][#n_out]f32
-  let hidden_prev_weights= bpnn_zero_weights(n_hidp1, n_out)
+  let hidden_prev_weights= bpnn_zero_weights n_hidp1 n_out
 
   --[#n_in]
-  let input_units = bpnn_randomize_row(n_in, offset+1, dirVct)
+  let input_units = bpnn_randomize_row n_in (offset+1) dirVct
 
   in ( input_units, target,
        (input_weights, input_weights_fstcol),
@@ -190,7 +192,7 @@ let main [num_bits] (n_in: i32) (dirVct: [num_bits]i32): ( f32, f32, [][]f32, []
            ( input_weights,  input_weights_fstcol),
            (hidden_weights, hidden_weights_fstcol),
             input_prev_weights, hidden_prev_weights) =
-        bpnn_create(n_in, n_inp1, n_hid, n_hidp1, n_out, 1, dirVct)
+        bpnn_create n_in n_inp1 n_hid n_hidp1 n_out 1 dirVct
 
     let ( out_err, hid_err, input_weights, hidden_weights ) =
         bpnn_train_kernel(  input_units, target,

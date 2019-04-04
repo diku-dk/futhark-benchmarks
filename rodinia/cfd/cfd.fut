@@ -38,7 +38,7 @@ let compute_speed_of_sound(density: f32, pressure: f32): f32 =
     f32.sqrt( gamma * pressure / density )
 
 --
-let initialize_variables(nelr: i32, ff_variable: [5]f32): [5][nelr]f32 = --[#nvar]float ff_variable
+let initialize_variables (nelr: i32) (ff_variable: [5]f32): [5][nelr]f32 = --[#nvar]float ff_variable
     map (\(x: f32): [nelr]f32  -> replicate nelr x) (ff_variable)
 
 --
@@ -325,7 +325,7 @@ let main [nel]
         compute_flux_contribution(  ff_variable[var_density],        ff_momentum,
                                     ff_variable[var_density_energy], ff_pressure, ff_velocity    )
 
-    let variables = initialize_variables(nel, ff_variable)
+    let variables = initialize_variables nel ff_variable
 
 
 ----  BEGIN DEBUG COSMIN
