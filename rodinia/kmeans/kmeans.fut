@@ -28,7 +28,7 @@ let find_nearest_point [k][d] (pts: [k][d]f32) (pt: [d]f32): i32 =
 let add_centroids [d] (x: [d]f32) (y: [d]f32): *[d]f32 =
   map2 (+) x y
 
-let centroids_of [n][d] (k: i32, points: [n][d]f32, membership: [n]i32): [k][d]f32 =
+let centroids_of [n][d] (k: i32) (points: [n][d]f32) (membership: [n]i32): [k][d]f32 =
   let points_in_clusters =
     reduce_by_index (replicate k 0) (+) 0 membership (replicate n 1)
 
@@ -60,7 +60,7 @@ let main [n][d]
       -- For each point, find the cluster with the closest centroid.
       let new_membership = map (find_nearest_point cluster_centres) points
       -- Then, find the new centres of the clusters.
-      let new_centres = centroids_of(k, points, new_membership)
+      let new_centres = centroids_of k points new_membership
       let delta = i32.sum (map (\b -> if b then 0 else 1)
                                (map2 (==) membership new_membership))
       in (new_membership, new_centres, delta, i+1)

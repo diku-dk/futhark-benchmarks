@@ -65,7 +65,7 @@ let sobolReci2 [n] (sob_dirs: [][]i32, prev: [n]i32, i: i32): [n]i32=
   in map2 (^) prev col
 
 -- computes sobol numbers: n,..,n+chunk-1
-let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32, n: i32, chunk: i32): [chunk][len]f32 =
+let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32) (n: i32) (chunk: i32): [chunk][len]f32 =
   let sob_fact= 1.0 / r32(1 << num_bits)
   let sob_beg = sobolIndI(dir_vs, n+1)
   let contrbs = map (\(k: i32): []i32  ->
@@ -208,9 +208,9 @@ let brownianBridgeDates [num_dates]
        in  bbrow
 
 let brownianBridge [num_dates]
-                   (num_und: i32,
-                    bb_inds: [3][num_dates]i32,
-                    bb_data: [3][num_dates]f32)
+                   (num_und: i32)
+                   (bb_inds: [3][num_dates]i32)
+                   (bb_data: [3][num_dates]f32)
                    (gaussian_arr: []f32)
                    : [num_dates][num_und]f32 =
   let gauss2d  = unflatten num_dates num_und gaussian_arr
@@ -331,10 +331,10 @@ let main [num_bits][num_models][num_und][num_dates]
          : []f32 =
   let sobvctsz  = num_dates*num_und
   let sobol_mat = stream_map (\[chunk] (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
-                                sobolChunk(dir_vs, unsafe ns[0], chunk))
+                                sobolChunk dir_vs (unsafe ns[0]) chunk)
                              (iota num_mc_it)
   let gauss_mat = map ugaussian sobol_mat
-  let bb_mat    = map (brownianBridge(num_und, bb_inds, bb_data)) gauss_mat
+  let bb_mat    = map (brownianBridge num_und bb_inds bb_data) gauss_mat
   let payoffs   = map (\bb_row: [num_models]f32  ->
                          let bd_row = map4 (blackScholes bb_row) md_cs md_vols md_drifts md_sts
                          in map3 (genericPayoff contract_number) md_discts md_detvals bd_row)

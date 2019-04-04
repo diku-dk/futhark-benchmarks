@@ -26,11 +26,11 @@ let sumBins [numBins][numBinss] (bins: [numBinss][numBins]i32): *[numBins]i32 =
 let log10 (num: f64): f64 = f64.log(num) / f64.log(10.0)
 
 let doCompute [num1][num2][numBBins]
-              (data1: [num1]vec3,
-               data2: [num2]vec3,
-               numBins: i32,
-               numBins2: i32,
-               binb: [numBBins]f64)
+              (data1: [num1]vec3)
+              (data2: [num2]vec3)
+              (numBins: i32)
+              (numBins2: i32)
+              (binb: [numBBins]f64)
              : [numBins2]i32 =
   let one_value (xOuter, yOuter, zOuter) =
     loop dBins = replicate numBins2 0i32
@@ -53,10 +53,10 @@ let doCompute [num1][num2][numBBins]
   in map one_value data1 |> sumBins
 
 let doComputeSelf [numD][numBBins]
-                  (data: [numD]vec3,
-                   numBins: i32,
-                   numBins2: i32,
-                   binb: [numBBins]f64)
+                  (data: [numD]vec3)
+                  (numBins: i32)
+                  (numBins2: i32)
+                  (binb: [numBBins]f64)
                  : [numBins2]i32 =
   let one_value (xOuter, yOuter, zOuter) index =
     loop dBins = replicate numBins2 0i32
@@ -97,12 +97,12 @@ let main [numD][numRs][numR]
   let datapoints = map2 fixPoints datapointsx datapointsy
   let randompoints = map2 (map2 fixPoints) randompointsx randompointsy
   let (rrs, drs) = unzip (map (\(random: [numR]vec3) ->
-                               (doComputeSelf(random, numBins, numBins2, binb),
-                                doCompute(datapoints, random, numBins, numBins2, binb)))
+                               (doComputeSelf random numBins numBins2 binb,
+                                doCompute datapoints random numBins numBins2 binb))
                                randompoints)
   let (res,_,_,_) = loop (res, dd, rr, dr) =
                          (replicate (numBins*3) 0i32,
-                          doComputeSelf(datapoints, numBins, numBins2, binb),
+                          doComputeSelf datapoints numBins numBins2 binb,
                           sumBins rrs,
                           sumBins drs) for i < numBins do
       let res[i*3] = dd[i+1]

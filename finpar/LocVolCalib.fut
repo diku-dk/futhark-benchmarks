@@ -9,7 +9,7 @@
 -- compiled input @ LocVolCalib-data/large.in
 -- output @ LocVolCalib-data/large.out
 
-let initGrid(s0: f32, alpha: f32, nu: f32, t: f32, numX: i32, numY: i32, numT: i32)
+let initGrid (s0: f32) (alpha: f32) (nu: f32) (t: f32) (numX: i32) (numY: i32) (numT: i32)
   : (i32, i32, [numX]f32, [numY]f32, [numT]f32) =
   let logAlpha = f32.log alpha
   let myTimeline = map (\i -> t * r32 i / (r32 numT - 1.0)) (iota numT)
@@ -194,7 +194,7 @@ let rollback
 
 let value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =
   let (myXindex, myYindex, myX, myY, myTimeline) =
-    initGrid(s0, alpha, nu, t, numX, numY, numT)
+    initGrid s0 alpha nu t numX numY numT
   let (myDx, myDxx) = initOperator(myX)
   let (myDy, myDyy) = initOperator(myY)
   let myResult = setPayoff(strike, myX, myY)
