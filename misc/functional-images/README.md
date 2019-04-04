@@ -1,12 +1,12 @@
 Functional Images
 =================
 
-If you have the Futhark compiler installed, just run
+If you have the Futhark compiler and the SDL2 development headers
+installed, just run
 
     make
 
-Then, if you have PyOpenCL and Pygame installed (installable via
-`pip`), run
+Then run
 
     make run
 
