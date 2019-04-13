@@ -42,7 +42,7 @@ let sobolIndR [m][num_bits] (dir_vs: [m][num_bits]i32) (n: i32): [m]f32 =
 let index_of_least_significant_0(x: i32): i32 =
   loop i = 0 while i < 32 && ((x>>i)&1) != 0 do i + 1
 
-let sobolRecI [num_bits][n] (sob_dir_vs: [][num_bits]i32, prev: [n]i32, x: i32): [n]i32 =
+let sobolRecI [num_bits][n] (sob_dir_vs: [n][num_bits]i32, prev: [n]i32, x: i32): [n]i32 =
   let bit = index_of_least_significant_0 x
   in map2 (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
 
@@ -60,7 +60,7 @@ let sobolRecMap [n] (sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i3
   let vct_ints = scan (\x y -> map2 (^) x y) (replicate n 0) contribs
   in  map (\xs -> map (\x -> r32 x * sob_fact) xs) vct_ints
 
-let sobolReci2 [n] (sob_dirs: [][]i32, prev: [n]i32, i: i32): [n]i32=
+let sobolReci2 [n] (sob_dirs: [n][]i32, prev: [n]i32, i: i32): [n]i32=
   let col = recM(sob_dirs, i)
   in map2 (^) prev col
 
@@ -68,7 +68,7 @@ let sobolReci2 [n] (sob_dirs: [][]i32, prev: [n]i32, i: i32): [n]i32=
 let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32) (n: i32) (chunk: i32): [chunk][len]f32 =
   let sob_fact= 1.0 / r32(1 << num_bits)
   let sob_beg = sobolIndI(dir_vs, n+1)
-  let contrbs = map (\(k: i32): []i32  ->
+  let contrbs = map (\(k: i32): [len]i32  ->
                        if k==0 then sob_beg
                        else recM(dir_vs, k+n))
                     (iota chunk)
@@ -228,7 +228,10 @@ let correlateDeltas [num_und][num_dates]
                    : [num_dates][num_und]f32 =
   map (\zi: [num_und]f32  ->
          map (\(j: i32): f32  ->
-                let x = map2 (*) (unsafe take (j+1) zi) (unsafe take (j+1) md_c[j])
+                let jp1 = j+1
+                let x = map2 (*)
+                             (unsafe take (j+1) zi : [jp1]f32)
+                             (unsafe take (j+1) md_c[j] : [jp1]f32)
                 in  f32.sum x)
              (iota num_und))
       zds
@@ -310,9 +313,9 @@ let payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
 
 
 let genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]f32): f32 =
-  if      contract == 1 then unsafe payoff1(md_disct, md_detval, xss)
-  else if contract == 2 then unsafe payoff2(md_disct, xss)
-  else if contract == 3 then unsafe payoff3(md_disct, xss)
+  if      contract == 1 then unsafe payoff1(md_disct, md_detval, xss : [1][1]f32)
+  else if contract == 2 then unsafe payoff2(md_disct, xss : [5][3]f32)
+  else if contract == 3 then unsafe payoff3(md_disct, xss : [367][3]f32)
   else 0.0
 
 -- Entry point
@@ -330,6 +333,7 @@ let main [num_bits][num_models][num_und][num_dates]
         (bb_data: [3][num_dates]f32)
          : []f32 =
   let sobvctsz  = num_dates*num_und
+  let dir_vs = dir_vs : [sobvctsz][num_bits]i32
   let sobol_mat = stream_map (\[chunk] (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
                                 sobolChunk dir_vs (unsafe ns[0]) chunk)
                              (iota num_mc_it)
