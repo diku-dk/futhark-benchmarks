@@ -40,11 +40,11 @@ entry sum_i32_f32 [n] (k: i32) (is : [n]i32) (vs1 : [n]i32) (vs2 : [n]f32) : ([k
 -- involve locks and such, so use smaller input sizes.
 -- ==
 -- entry: absmax_i32
--- random input { 10 [10000]i32 [10000]i32 } auto output
--- random input { 100 [10000]i32 [10000]i32 } auto output
--- random input { 1000 [10000]i32 [10000]i32 } auto output
--- random input { 10000 [10000]i32 [10000]i32 } auto output
--- random input { 100000 [10000]i32 [10000]i32 } auto output
+-- random input { 10 [1000000]i32 [1000000]i32 } auto output
+-- random input { 100 [1000000]i32 [1000000]i32 } auto output
+-- random input { 1000 [1000000]i32 [1000000]i32 } auto output
+-- random input { 10000 [1000000]i32 [1000000]i32 } auto output
+-- random input { 100000 [1000000]i32 [1000000]i32 } auto output
 
 let absmax (x: i32) (y: i32): i32 =
   if i32.abs x < i32.abs y then y else x
