@@ -69,7 +69,7 @@ module lys : lys with text_content = text_content = {
                                        else s.config
 
   let wheel _ dy (s : state) =
-    s with config.width = s.config.width * (1 + 0.01 * r64 dy)
+    s with config.width = s.config.width * (1 - 0.01 * r64 dy)
   let grab_mouse = false
   let step _ s = s
 
