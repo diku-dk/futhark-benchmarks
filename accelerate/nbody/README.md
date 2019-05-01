@@ -49,25 +49,3 @@ map
 ```
 
 in Futhark.
-
-## Runtime results on gpu02-diku-apl (GTX 780 Ti)
-
-  n=100:
-    Accelerate: 1.120ms
-    Futhark:    0.214ms
-    Speedup:     5.23x
-
-  n=1000:
-    Futhark:    0.265ms
-    Accelerate: 1.834ms
-    Speedup:     6.92x
-
-  n=10000:
-    Futhark:    1.414ms
-    Accelerate: 8.954ms
-    Speedup:    6.33x
-
-  n=100000:
-    Futhark:    87.304ms
-    Accelerate: 634.3ms
-    Speedup:    7.27x
