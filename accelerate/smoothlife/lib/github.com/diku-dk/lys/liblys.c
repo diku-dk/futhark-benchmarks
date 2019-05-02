@@ -235,6 +235,45 @@ void sdl_loop(struct lys_context *ctx) {
   }
 }
 
+void do_bench(struct futhark_context *fut, int height, int width, int n, const char *operation) {
+  struct futhark_opaque_state *state;
+  int64_t start, end;
+  FUT_CHECK(fut, futhark_entry_init(fut, &state, (int32_t)get_wall_time(), height, width));
+  futhark_context_sync(fut);
+  int do_step = 0, do_render = 0;
+
+  if (strstr(operation, "step") != NULL) {
+    do_step = 1;
+  }
+
+  if (strstr(operation, "render") != NULL) {
+    do_render = 1;
+  }
+
+  start = get_wall_time();
+  for (int i = 0; i < n; i++) {
+    if (do_step) {
+      struct futhark_opaque_state *new_state;
+      FUT_CHECK(fut, futhark_entry_step(fut, &new_state, 1.0/n, state));
+      futhark_free_opaque_state(fut, state);
+      state = new_state;
+    }
+    if (do_render) {
+      struct futhark_i32_2d *out_arr;
+      FUT_CHECK(fut, futhark_entry_render(fut, &out_arr, state));
+      FUT_CHECK(fut, futhark_free_i32_2d(fut, out_arr));
+    }
+  }
+  futhark_context_sync(fut);
+  end = get_wall_time();
+
+  printf("Rendered %d frames in %fs (%f FPS)\n",
+         n, ((double)end-start)/1000000,
+         n / (((double)end-start)/1000000));
+
+  FUT_CHECK(fut, futhark_free_opaque_state(fut, state));
+}
+
 void do_sdl(struct futhark_context *fut,
             int height, int width, int max_fps,
             bool allow_resize, char* font_path) {
@@ -310,11 +349,28 @@ void do_sdl(struct futhark_context *fut,
 }
 
 void create_futhark_context(const char *deviceopt,
+                            int interactive,
                             struct futhark_context_config **cfg,
                             struct futhark_context **ctx) {
   *cfg = futhark_context_config_new();
   assert(*cfg != NULL);
-  futhark_context_config_set_device(*cfg, deviceopt);
+
+#if defined(LYS_BACKEND_opencl) || defined(LYS_BACKEND_cuda)
+  if (deviceopt != NULL) {
+    futhark_context_config_set_device(*cfg, deviceopt);
+  }
+#else
+  (void)deviceopt;
+#endif
+
+#ifdef LYS_BACKEND_opencl
+  if (interactive) {
+    futhark_context_config_select_device_interactively(*cfg);
+  }
+#else
+  (void)interactive;
+#endif
+
   *ctx = futhark_context_new(*cfg);
   assert(*ctx != NULL);
 
@@ -332,6 +388,7 @@ void create_futhark_context(const char *deviceopt,
          == CL_SUCCESS);
 
   printf("Using OpenCL device: %s\n", dev_name);
+  printf("Use -d or -i to change this.\n");
   free(dev_name);
 #endif
 }
@@ -339,7 +396,9 @@ void create_futhark_context(const char *deviceopt,
 int main(int argc, char** argv) {
   int width = INITIAL_WIDTH, height = INITIAL_HEIGHT, max_fps = 60;
   bool allow_resize = true;
-  char *deviceopt = "";
+  char *deviceopt = NULL;
+  char *benchopt = NULL;
+  int interactive = 0;
 
   if (argc > 1 && strcmp(argv[1], "--help") == 0) {
     printf("Usage: %s options...\n", argv[0]);
@@ -349,12 +408,13 @@ int main(int argc, char** argv) {
     puts("  -R      Disallow resizing the window.");
     puts("  -d DEV  Set the computation device.");
     puts("  -r INT  Maximum frames per second.");
+    puts("  -i      Select execution device interactively.");
     puts("  --help  Print this help and exit.");
     return 0;
   }
 
   int c;
-  while ( (c = getopt(argc, argv, "w:h:r:Rd:")) != -1) {
+  while ( (c = getopt(argc, argv, "w:h:r:Rd:b:i")) != -1) {
     switch (c) {
     case 'w':
       width = atoi(optarg);
@@ -383,6 +443,18 @@ int main(int argc, char** argv) {
     case 'd':
       deviceopt = optarg;
       break;
+    case 'i':
+      interactive = 1;
+      break;
+    case 'b':
+      if (strcmp(optarg, "render") == 0 ||
+          strcmp(optarg, "step") == 0) {
+        benchopt = optarg;
+      } else {
+        fprintf(stderr, "Use -b <render|step>\n");
+        exit(EXIT_FAILURE);
+      }
+      break;
     default:
       fprintf(stderr, "unknown option: %c\n", c);
       exit(EXIT_FAILURE);
@@ -410,8 +482,13 @@ int main(int argc, char** argv) {
   struct futhark_context_config* cfg;
   struct futhark_context* ctx;
 
-  create_futhark_context(deviceopt, &cfg, &ctx);
-  do_sdl(ctx, height, width, max_fps, allow_resize, font_path);
+  create_futhark_context(deviceopt, interactive, &cfg, &ctx);
+
+  if (benchopt != NULL) {
+    do_bench(ctx, height, width, max_fps, benchopt);
+  } else {
+    do_sdl(ctx, height, width, max_fps, allow_resize, font_path);
+  }
 
   free(font_path);
 
