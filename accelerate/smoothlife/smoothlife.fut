@@ -113,8 +113,6 @@ let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [][]f32 =
     let p2 = (t32 (f32.round ((r32 x) + l)), y + (f32.round a |> t32))
     in (z, cell, p1.1, p1.2, p2.1, p2.2)
 
-  -- AUTHORSHIP NOTE: points_in_line and get_point_in_line are from the
-  -- handed-out code for PFP assignment 1.
   let points_in_line (_, _, x1, y1, x2, y2) =
     i32.(1 + max (abs (x2 - x1)) (abs (y2 - y1)))
   let get_point_in_line (z, cell, x1, y1, x2, y2) (i: i32) =
@@ -151,22 +149,21 @@ let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [][]f32 =
   let grid = map ((.2) >-> r32) reduced
   in unflatten size size grid
 
--- TODO: FILE BUG REPORT. Moving this function inside init causes
--- internal compiler err when compiling as lys program
-let shift2d 'a [r][c] (arr: [r][c]a): [r][c]a =
-  let (mr, mc) = (r / 2, c / 2)
-  let indices = map (\ir -> map (\ic -> (ir,ic)) (iota c)) (iota r) |> flatten
-  let shift (ir, ic) =
-    ( if ir < mr then ir + mr else ir - mr
-    , if ic < mc then ic + mc else ic - mc
-    )
-  let indices' = map (\(ir, ic) -> let (ir', ic') = shift (ir, ic)
-                                   in ir' * c + ic'
-                     ) indices
-  let arr' = flatten arr
-  in scatter (copy arr') indices' arr' |> unflatten r c
-
 let init (conf: conf) (seed: i32): state =
+
+  let shift2d 'a [r][c] (arr: [r][c]a): [r][c]a =
+    let (mr, mc) = (r / 2, c / 2)
+    let indices = map (\ir -> map (\ic -> (ir,ic)) (iota c)) (iota r) |> flatten
+    let shift (ir, ic) =
+      ( if ir < mr then ir + mr else ir - mr
+      , if ic < mc then ic + mc else ic - mc
+      )
+    let indices' = map (\(ir, ic) -> let (ir', ic') = shift (ir, ic)
+                                     in ir' * c + ic'
+                       ) indices
+    let arr' = flatten arr
+    in scatter (copy arr') indices' arr' |> unflatten r c
+
   let size = conf.world_size
   let (ri, ra) = conf.disc_radius
   let b = conf.rim
