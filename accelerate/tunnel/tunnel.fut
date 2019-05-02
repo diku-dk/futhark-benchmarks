@@ -71,10 +71,28 @@ let tunnel(time: f32) (x: i32) (y: i32): argb.colour =
   let x = voronoise({x=5.0*pt3.x, y=5.0*pt3.y}, 1.0, 1.0) + 0.240*rInv
   in argb.from_rgba (c1.1 * x) (c1.2 * x) (c1.3 * x) 1.0
 
-entry render (time: f32) (w: i32) (h: i32) = tabulate_2d w h <| \x y -> tunnel time (x-w/2) (y-h/2)
+entry render (time: f32) (h: i32) (w: i32) = tabulate_2d h w <| \y x -> tunnel time (x-w/2) (y-h/2)
 
-entry main (time: f32) (w: i32) (h: i32) =
+entry main (time: f32) (h: i32) (w: i32) =
   -- Hack to avoid returning something gigantic.
-  let frame = render time w h
+  let frame = render time h w
   let frame_flat = flatten frame
   in frame_flat[frame_flat[0] % length frame_flat]
+
+import "lib/github.com/diku-dk/lys/lys"
+
+module lys : lys with text_content = i32 = {
+  type text_content = i32
+  type state = {t: f32, h: i32, w: i32}
+  let init _ h w : state = {t=0, h, w}
+  let step td s : state = s with t = s.t + td
+  let resize h w s : state = s with h = h with w = w
+  let key _ _ s = s
+  let mouse _ _ _ s = s
+  let wheel _ _ s = s
+  let grab_mouse = false
+  let render {t, h, w} = render t h w
+  let text_format = "FPS: %d"
+  let text_colour _ = argb.white
+  let text_content fps _ = t32 fps
+}
