@@ -30,11 +30,12 @@ let mkVal [l2][l] (y:i32) (x:i32) (pen:int) (inp_l:[l2]int) (ref_l:[l][l]int) : 
 let intraBlockPar [lensq][len] (penalty: int)
                                (inputsets: [lensq]int) 
                                (reference2: [len][len]int) 
-                               (b_y: i32) (b_x: i32) =
+                               (b_y: i32) (b_x: i32)
+                               : [B][B]int =
   -- index   =   base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x + tx + ( cols + 1 );
   -- for ( int ty = 0 ; ty < BLOCK_SIZE ; ty++)
   --   REF(ty, tx) =  reference_d[index + cols * ty];
-  let slice_ref =  unsafe reference2[b_y*B+1 : b_y*B+1+B, b_x*B+1 : b_x*B+1+B]
+  let slice_ref =  unsafe reference2[b_y*B+1 : b_y*B+1+B, b_x*B+1 : b_x*B+1+B] : [B][B]int
 
   let ref_l = replicate (B*B) 0
   let ref_l = loop ref_l for i < B do
@@ -83,7 +84,7 @@ let intraBlockPar [lensq][len] (penalty: int)
         in  scatter inp_l inds vals
 
   let inp_l2 = unflatten (B+1) (B+1) inp_l
-  in  inp_l2[1:B+1,1:B+1]
+  in  inp_l2[1:B+1,1:B+1] : [B][B]int
 
 
 let updateBlocks [q][lensq] (len: i32) (blk: i32)
