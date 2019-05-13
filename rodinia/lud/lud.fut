@@ -178,7 +178,7 @@ let lud_perimeter_upper [m][b] (diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f
 ------------------------------
 
 let lud_perimeter_lower [b][m] (diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][b]f32 =
-  let slice = mat[0:m,0] in
+  let slice = mat[0:m,0] : [m][b][b]f32 in
   map  (\blk: [b][b]f32  ->
         map  (\ (row0: [b]f32): *[b]f32  ->   -- Lower
                 loop row=replicate b 0.0f32 for j < b do
@@ -197,11 +197,12 @@ let lud_perimeter_lower [b][m] (diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][
 ------------------------------
 
 let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
-  let top_slice0= top_per[1:mp1] in
+  let m = mp1 - 1
+  let top_slice0= top_per[1:mp1] : [m][b][b]f32 in
   let top_slice = map transpose top_slice0 in
-  let lft_slice = lft_per[1:mp1] in
-  let mat_slice = mat[1:mp1,1:mp1] in
-  map (\[m] (mat_arr: [m][b][b]f32, lft: [b][b]f32): [m][b][b]f32  ->
+  let lft_slice = lft_per[1:mp1] : [m][b][b]f32 in
+  let mat_slice = mat[1:mp1,1:mp1] : [m][m][b][b]f32 in
+  map (\(mat_arr: [m][b][b]f32, lft: [b][b]f32): [m][b][b]f32  ->
         map (\ (mat_blk: [b][b]f32, top: [b][b]f32): [b][b]f32  ->
                 map  (\ (mat_row: [b]f32, lft_row: [b]f32): [b]f32  ->
                         map  (\(mat_el, top_row)  ->
@@ -209,9 +210,9 @@ let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat
                                 let sum   = f32.sum prods
                                 in mat_el - sum
                              ) (zip (mat_row) top)
-                    ) (zip (mat_blk) lft )
-           ) (zip (mat_arr) (top_slice) )
-     ) (zip (mat_slice) (lft_slice) )
+                     ) (zip (mat_blk) lft ))
+            (zip mat_arr top_slice))
+      (zip mat_slice lft_slice)
 
 let block_size: i32 = 32
 
@@ -225,9 +226,9 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
     -- Maybe pad the input to be a multiple of the block size.
     let padding = n - m
     let mat = if padding != 0
-              then map (++replicate padding 0f32) mat ++
+              then (map (++replicate padding 0f32) mat : [m][n]f32) ++
                    replicate padding (replicate n 0f32)
-              else mat
+              else mat : [n][n]f32
     -------------------------------------------------
     ---- transform matrix in [n/b,n/b,b,b] block ----
     ---- versions for upper and lower parts      ----
@@ -253,7 +254,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
         -----------------------------------------------
         ---- 1. compute the current diagonal block ----
         -----------------------------------------------
-        let diag = lud_diagonal(matb[0,0]) in
+        let diag = lud_diagonal matb[0,0] in
         --let upper[step,step] = diag in
         ----------------------------------------
         ---- 2. compute the top  perimeter  ----
@@ -293,8 +294,10 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
         ----------------------------------------
         ---- 4. compute the internal blocks ----
         ----------------------------------------
+        let m = length matb - 1 -- new number of blocks.
         let matb = lud_internal(top_per_irreg, lft_per_irreg, matb)
-        in (upper,lower,matb)
+                   : [m][m][b][b]f32
+        in (upper, lower, matb )
     ---------------------
     -- LOOP ENDS HERE! --
     ---------------------

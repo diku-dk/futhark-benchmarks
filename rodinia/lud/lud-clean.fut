@@ -104,7 +104,7 @@ let lud_perimeter_lower [b][m] (diag: [b][b]f32, mat: [m][b][b]f32): *[m][b][b]f
 
 let lud_internal [m][b] (top_per: [m][b][b]f32, lft_per: [m][b][b]f32, mat_slice: [m][m][b][b]f32 ): *[m][m][b][b]f32 =
   let top_slice = map transpose top_per in
-  map (\[m] (mat_arr: [m][b][b]f32, lft: [b][b]f32): [m][b][b]f32  ->
+  map (\(mat_arr: [m][b][b]f32, lft: [b][b]f32): [m][b][b]f32  ->
         map (\ (mat_blk: [b][b]f32, top: [b][b]f32): [b][b]f32  ->
                 map  (\ (mat_row: [b]f32, lft_row: [b]f32): [b]f32  ->
                         map  (\(mat_el, top_row)  ->
@@ -128,9 +128,9 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
     -- Maybe pad the input to be a multiple of the block size.
     let padding = n - m
     let mat = if padding != 0
-              then map (++replicate padding 0f32) mat ++
+              then (map (++replicate padding 0f32) mat : [m][n]f32) ++
                    replicate padding (replicate n 0f32)
-              else mat
+              else mat : [n][n]f32
     -------------------------------------------------
     ---- transform matrix in [n/b,n/b,b,b] block ----
     ---- versions for upper and lower parts      ----
