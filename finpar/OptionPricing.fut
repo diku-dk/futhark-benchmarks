@@ -50,7 +50,7 @@ let recM [n][num_bits] (sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
   let bit = index_of_least_significant_0 i
   in map (\row -> unsafe row[bit]) sob_dirs
 
-let sobolRecMap [n] (sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
+let sobolRecMap [n][num_bits] (sob_fact:  f32, dir_vs: [n][num_bits]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
   -- the if inside may be particularly ugly for
   -- flattening since it introduces control flow!
   let contribs = map (\k -> if k==0
@@ -60,7 +60,7 @@ let sobolRecMap [n] (sob_fact:  f32, dir_vs: [n][]i32, (lb_inc, ub_exc): (i32,i3
   let vct_ints = scan (\x y -> map2 (^) x y) (replicate n 0) contribs
   in  map (\xs -> map (\x -> r32 x * sob_fact) xs) vct_ints
 
-let sobolReci2 [n] (sob_dirs: [n][]i32, prev: [n]i32, i: i32): [n]i32=
+let sobolReci2 [n][num_bits] (sob_dirs: [n][num_bits]i32, prev: [n]i32, i: i32): [n]i32=
   let col = recM(sob_dirs, i)
   in map2 (^) prev col
 
@@ -207,11 +207,11 @@ let brownianBridgeDates [num_dates]
        let bbrow[i] = bbrow[i] - bbrow[i-1]
        in  bbrow
 
-let brownianBridge [num_dates]
+let brownianBridge [num_dates][k]
                    (num_und: i32)
                    (bb_inds: [3][num_dates]i32)
                    (bb_data: [3][num_dates]f32)
-                   (gaussian_arr: []f32)
+                   (gaussian_arr: [k]f32)
                    : [num_dates][num_und]f32 =
   let gauss2d  = unflatten num_dates num_und gaussian_arr
   let gauss2dT = transpose gauss2d
@@ -319,16 +319,16 @@ let genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]
   else 0.0
 
 -- Entry point
-let main [num_bits][num_models][num_und][num_dates]
+let main [k][num_bits][num_models][num_und][num_dates][num_discts]
         (contract_number: i32)
         (num_mc_it: i32)
-        (dir_vs: [][num_bits]i32)
+        (dir_vs: [k][num_bits]i32)
         (md_cs: [num_models][num_und][num_und]f32)
         (md_vols: [num_models][num_dates][num_und]f32)
         (md_drifts: [num_models][num_dates][num_und]f32)
         (md_sts: [num_models][num_und]f32)
-        (md_detvals: [num_models][]f32)
-        (md_discts: [num_models][]f32)
+        (md_detvals: [num_models][1]f32)
+        (md_discts: [num_models][num_discts]f32)
         (bb_inds: [3][num_dates]i32)
         (bb_data: [3][num_dates]f32)
          : []f32 =
