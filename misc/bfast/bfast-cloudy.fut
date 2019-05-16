@@ -191,18 +191,18 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
             |> reduce (+) 0.0 
         ) |> opaque
 
+  let Nmn = N-n
   let BOUND = map (\q -> let t   = n+1+q
                          let time = unsafe mappingindices[t-1]
                          let tmp = logplus ((r32 time) / (r32 mappingindices[N-1]))
                          in  lam * (f32.sqrt tmp)
-                  ) (iota (N-n))
+                  ) (iota Nmn)
 
   ---------------------------------------------
   -- 8. moving sums computation:             --
   ---------------------------------------------
   let (_MOs, _MOs_NN, _breaks, means) = zip (zip4 Nss nss sigmas hs) (zip3 MO_fsts y_errors val_indss) |>
     map (\ ( (Ns,ns,sigma, h), (MO_fst,y_error,val_inds) ) ->
-            let Nmn = N-n
             let MO = map (\j -> if j >= Ns-ns then 0.0
                                 else if j == 0 then MO_fst
                                 else unsafe (-y_error[ns-h+j] + y_error[ns+j])
