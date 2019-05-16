@@ -19,17 +19,17 @@ let logplus (x: f32) : f32 =
 
 -- | builds the X matrices; first result dimensions of size 2*k+2
 let mkX (k2p2: i32) (N: i32) (f: f32) : [k2p2][N]f32 =
-  [ replicate N 1           -- first   row
-  , map r32 (1 ... N)       -- second  row
+  [ replicate N 1     -- first   row
+  , map (r32 >-> (+1)) (iota N) -- second  row
   ] ++
-  ( map (\ i ->           -- sin/cos rows
+  ( map (\ i ->       -- sin/cos rows
           map (\j -> let i' = r32 (i / 2)
                      let j' = r32 j
                      let angle = 2 * f32.pi * i' * j' / f
                      in  if i % 2 == 0 then f32.sin angle else f32.cos angle
-              ) (1 ... N)
+              ) (map (+1) (iota N))
         ) (2 ... k2p2-1)
-  )
+  ) : [k2p2][N]f32
 
 -- | compute the actual number of values that precisely
 --   encapsulate the first n valid values of y.
@@ -37,7 +37,7 @@ let findSplit [N] (n: i32) (y: [N]f32) : i32 =
   let flgs = map (\v -> if f32.isnan v then 0 else 1) y
   let scnf = scan (+) 0 flgs
   let pairs= map (\(i,v)->(i,v==n))
-                 (zip (0 ... N-1) scnf)
+                 (zip (iota N) scnf)
   let (m,b)= reduce (\(i1,b1) (i2,b2) ->
                         if b1 then (i1, b1)
                               else (i2, b2)
@@ -128,7 +128,7 @@ let bfast [N] (f: f32) (k: i32) (n: i32)
   let MO_ini = map (\j ->
                       if j == 0 then MO_fst
                       else  unsafe (-y_error[n-h+j] + y_error[n+j])
-                   ) (0 ... N-n-1)
+                   ) (iota (N-n))
   let MO = scan (+) 0 MO_ini
 
   -- line 5: sigma
@@ -143,7 +143,7 @@ let bfast [N] (f: f32) (k: i32) (n: i32)
   let BOUND = map (\q -> let t   = n+1+q
                          let tmp = logplus ((r32 t) / (r32 n))
                          in  lam * (f32.sqrt tmp)
-                  ) (0 ... N-n-1)
+                  ) (iota (N-n))
 
   let breaks = map2 (\m b -> if (f32.isnan m) || (f32.isnan b) then 0 else (f32.abs m) - b) MO BOUND
   in  breaks
