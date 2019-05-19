@@ -298,7 +298,7 @@ let draw_densities [g]
   (ds: [g][g]f32)
   (g_minus_two: i32):
   [g_minus_two][g_minus_two][3]i8 =
-  let ks = 1...g_minus_two
+  let ks = 1..2...g_minus_two
   in map (\(i: i32): [g_minus_two][3]i8  ->
             map (\(j: i32): [3]i8  ->
                    let value = clamp (255.0 * unsafe ds[i, j])
