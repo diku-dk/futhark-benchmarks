@@ -1,15 +1,15 @@
 -- The outer driving loop is common to all BFS implementations.
 
-type step_fn =  (cost: *[]i32)
-             -> (nodes_start_index: []i32)
-             -> (nodes_n_edges: []i32)
-             -> (edges_dest: []i32)
-             -> (graph_visited: []bool)
-             -> (graph_mask: *[]bool)
-             -> (updating_graph_mask: *[]bool)
-             -> (*[]i32, *[]bool, *[]bool)
+type step_fn [n] =  (cost: *[]i32)
+                 -> (nodes_start_index: [n]i32)
+                 -> (nodes_n_edges: [n]i32)
+                 -> (edges_dest: []i32)
+                 -> (graph_visited: [n]bool)
+                 -> (graph_mask: *[n]bool)
+                 -> (updating_graph_mask: *[n]bool)
+                 -> (*[n]i32, *[n]bool, *[n]bool)
 
-let common_main [n][e] (step: step_fn)
+let common_main [n][e] (step: step_fn [n])
                        (nodes_start_index: [n]i32)
                        (nodes_n_edges: [n]i32)
                        (edges_dest: [e]i32) : [n]i32 =

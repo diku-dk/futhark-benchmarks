@@ -40,7 +40,7 @@ let accel (epsilon: f32) (x:body) (y: body): velocity =
   let s = y.mass * invr3
   in vec3.scale s r
 
-let calc_accels (epsilon: f32) (bodies: []body): []acceleration =
+let calc_accels [n] (epsilon: f32) (bodies: [n]body): [n]acceleration =
   let move (body: body) =
     let accels = map (accel epsilon body) bodies
     in reduce_comm (vec3.+) {x=0f32, y=0f32, z=0f32} accels
