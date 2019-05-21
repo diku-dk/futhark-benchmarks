@@ -18,7 +18,7 @@ module lys: lys with text_content = text_content = {
                , time: f32
    }
 
-  let init h w: state =
+  let init _ h w: state =
     { height = h, width = w,
       fov = 100, limit = 4,
       eye = {pos={x=50,y= -100,z= -700}, a=f32.pi/2, b=0},

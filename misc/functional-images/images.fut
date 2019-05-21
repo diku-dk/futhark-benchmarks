@@ -182,7 +182,7 @@ module lys: lys with text_content = text_content = {
                 zooming: f32,
                 paused: bool}
 
-  let init h w: state = {
+  let init _ h w: state = {
       screen_size = {height=h, width=w},
       image_size = {height=10, width=10},
       centre = (0, 0),
