@@ -1,5 +1,5 @@
 require {
   github.com/athas/matte 0.1.1 #24f332e6ff8b5872b950cfcbead9b2f7c6571490
   github.com/diku-dk/complex 0.1.2 #790bf261a6a36a9454b55f3f8109ac5cb1f4bf6e
-  github.com/diku-dk/cpprandom 1.1.4 #7dd47f3f2f5a8fa24d6847b34d9f8a9091b5d94a
+  github.com/diku-dk/cpprandom 1.1.5 #a900815542e0fdbd10ef8b2f9e5fc177c8f30e63
 }

@@ -26,7 +26,7 @@ let segmented_reduce [n] 't (op: t -> t -> t) (ne: t)
   let segment_ends = rotate 1 flags
   -- Find the offset for each segment end.
   let segment_end_offsets = segment_ends |> map i32.bool |> scan (+) 0
-  let num_segments = if n > 1 then segment_end_offsets[n-1] else 0
+  let num_segments = if n > 0 then last segment_end_offsets else 0
   -- Make room for the final result.  The specific value we write here
   -- does not matter; they will all be overwritten by the segment
   -- ends.
@@ -43,8 +43,9 @@ let segmented_reduce [n] 't (op: t -> t -> t) (ne: t)
 
 let replicated_iota [n] (reps:[n]i32) : []i32 =
   let s1 = scan (+) 0 reps
-  let s2 = map (\i -> if i==0 then 0 else unsafe s1[i-1]) (iota n)
-  let tmp = scatter (replicate (reduce (+) 0 reps) 0) s2 (iota n)
+  let s2 = map2 (\i x -> if i==0 then 0 else x)
+                (iota n) (rotate (-1) s1)
+  let tmp = reduce_by_index (replicate (reduce (+) 0 reps) 0) i32.max 0 s2 (iota n)
   let flags = map (>0) tmp
   in segmented_scan (+) 0 flags tmp
 

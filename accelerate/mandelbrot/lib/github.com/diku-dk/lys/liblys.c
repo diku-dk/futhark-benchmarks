@@ -349,11 +349,28 @@ void do_sdl(struct futhark_context *fut,
 }
 
 void create_futhark_context(const char *deviceopt,
+                            int interactive,
                             struct futhark_context_config **cfg,
                             struct futhark_context **ctx) {
   *cfg = futhark_context_config_new();
   assert(*cfg != NULL);
-  futhark_context_config_set_device(*cfg, deviceopt);
+
+#if defined(LYS_BACKEND_opencl) || defined(LYS_BACKEND_cuda)
+  if (deviceopt != NULL) {
+    futhark_context_config_set_device(*cfg, deviceopt);
+  }
+#else
+  (void)deviceopt;
+#endif
+
+#ifdef LYS_BACKEND_opencl
+  if (interactive) {
+    futhark_context_config_select_device_interactively(*cfg);
+  }
+#else
+  (void)interactive;
+#endif
+
   *ctx = futhark_context_new(*cfg);
   assert(*ctx != NULL);
 
@@ -371,6 +388,7 @@ void create_futhark_context(const char *deviceopt,
          == CL_SUCCESS);
 
   printf("Using OpenCL device: %s\n", dev_name);
+  printf("Use -d or -i to change this.\n");
   free(dev_name);
 #endif
 }
@@ -378,8 +396,9 @@ void create_futhark_context(const char *deviceopt,
 int main(int argc, char** argv) {
   int width = INITIAL_WIDTH, height = INITIAL_HEIGHT, max_fps = 60;
   bool allow_resize = true;
-  char *deviceopt = "";
+  char *deviceopt = NULL;
   char *benchopt = NULL;
+  int interactive = 0;
 
   if (argc > 1 && strcmp(argv[1], "--help") == 0) {
     printf("Usage: %s options...\n", argv[0]);
@@ -389,12 +408,13 @@ int main(int argc, char** argv) {
     puts("  -R      Disallow resizing the window.");
     puts("  -d DEV  Set the computation device.");
     puts("  -r INT  Maximum frames per second.");
+    puts("  -i      Select execution device interactively.");
     puts("  --help  Print this help and exit.");
     return 0;
   }
 
   int c;
-  while ( (c = getopt(argc, argv, "w:h:r:Rd:b:")) != -1) {
+  while ( (c = getopt(argc, argv, "w:h:r:Rd:b:i")) != -1) {
     switch (c) {
     case 'w':
       width = atoi(optarg);
@@ -422,6 +442,9 @@ int main(int argc, char** argv) {
       break;
     case 'd':
       deviceopt = optarg;
+      break;
+    case 'i':
+      interactive = 1;
       break;
     case 'b':
       if (strcmp(optarg, "render") == 0 ||
@@ -459,7 +482,7 @@ int main(int argc, char** argv) {
   struct futhark_context_config* cfg;
   struct futhark_context* ctx;
 
-  create_futhark_context(deviceopt, &cfg, &ctx);
+  create_futhark_context(deviceopt, interactive, &cfg, &ctx);
 
   if (benchopt != NULL) {
     do_bench(ctx, height, width, max_fps, benchopt);
