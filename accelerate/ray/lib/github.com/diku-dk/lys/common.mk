@@ -19,8 +19,10 @@ ifeq ($(LYS_BACKEND),opencl)
 LDFLAGS?=$(OPENCL_LDFLAGS) $(BASE_LDFLAGS)
 else ifeq ($(LYS_BACKEND),cuda)
 LDFLAGS?=$(BASE_LDFLAGS) -lcuda -lnvrtc
+else ifeq ($(LYS_BACKEND),c)
+LDFLAGS?=$(BASE_LDFLAGS)
 else
-$(error Unknown LYS_BACKEND: $(LYS_BACKEND).  Must be 'opencl' or 'cuda')
+$(error Unknown LYS_BACKEND: $(LYS_BACKEND).  Must be 'opencl', 'cuda', or 'c')
 endif
 
 ifeq ($(shell test futhark.pkg -nt lib; echo $$?),0)

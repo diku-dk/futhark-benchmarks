@@ -4,5 +4,5 @@
 
 for d in $(find * -name futhark.pkg -exec dirname {} \;); do
     echo "Upgrading $d"
-    (cd $d && futhark-pkg upgrade && futhark-pkg sync)
+    (cd $d && futhark pkg upgrade && futhark pkg sync)
 done

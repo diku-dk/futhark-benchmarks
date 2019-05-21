@@ -45,7 +45,7 @@ let replicated_iota [n] (reps:[n]i32) : []i32 =
   let s1 = scan (+) 0 reps
   let s2 = map2 (\i x -> if i==0 then 0 else x)
                 (iota n) (rotate (-1) s1)
-  let tmp = scatter (replicate (reduce (+) 0 reps) 0) s2 (iota n)
+  let tmp = reduce_by_index (replicate (reduce (+) 0 reps) 0) i32.max 0 s2 (iota n)
   let flags = map (>0) tmp
   in segmented_scan (+) 0 flags tmp
 

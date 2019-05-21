@@ -104,7 +104,7 @@ module type rng_engine = {
   -- | Split an RNG state into several states.  Implementations of
   -- this function tend to be cryptographically unsound, so be
   -- careful.
-  val split_rng: i32 -> rng -> []rng
+  val split_rng: (n: i32) -> rng -> [n]rng
 
   -- | Combine several RNG states into a single state - typically done
   -- with the result of `split_rng`@term.

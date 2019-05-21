@@ -46,7 +46,8 @@ module mk_shuffle (E: rng_engine) : shuffle with rng = E.rng = {
               map (\i -> unsafe xs[i])
     in (rngs', xs')
 
-  let shuffle rng xs = let rngs = E.split_rng (length xs) rng
-                       let (rngs', xs') = shuffle' rngs xs
-                       in (E.join_rng rngs', xs')
+  let shuffle [n] 't rng (xs: [n]t) =
+    let rngs = E.split_rng n rng
+    let (rngs', xs') = shuffle' rngs xs
+    in (E.join_rng rngs', xs')
 }

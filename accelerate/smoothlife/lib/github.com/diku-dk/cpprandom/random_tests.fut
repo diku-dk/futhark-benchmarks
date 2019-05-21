@@ -27,10 +27,11 @@ module mktest_f (dist: rng_distribution) (R: real with t = dist.num.t) = {
     let rngs = engine.split_rng n rng
     let (_, xs) = unzip (map (dist.rand d) rngs)
     let mean = num.(reduce (+) (i32 0) xs / i32 n)
-    let stddev = R.((xs
-                     |> map (\x -> (x-mean))
-                     |> map num.((** i32 2))
-                     |> sum) / i32 n
+    let stddev = R.(xs
+                    |> map (\x -> (x-mean))
+                    |> map num.((** i32 2))
+                    |> sum
+                    |> (/ i32 n)
                     |> sqrt)
     in (R.round mean, R.round stddev)
 }

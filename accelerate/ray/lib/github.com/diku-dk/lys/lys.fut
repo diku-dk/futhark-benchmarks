@@ -28,8 +28,10 @@ module type lys = {
   -- will take the current state and return a new state.
   type state
 
-  -- | Initial state for a given window size.
-  val init : (h: i32) -> (w: i32) -> state
+  -- | Initial state for a given window size.  A random seed is passed
+  -- in.  Don't treat this as a true random number (it's currently
+  -- just a timestamp), but use it for initialising a proper RNG.
+  val init : (seed: i32) -> (h: i32) -> (w: i32) -> state
 
   -- | Time-stepping the state.
   val step : (time_delta: f32) -> state -> state
@@ -87,7 +89,7 @@ module lys_no_text = {
 -- nothing in response to events.
 module lys: lys_no_text = {
   type state = {h: i32, w: i32}
-  let init h w = {h,w}
+  let init _ h w = {h,w}
   let step _ s = s
   let resize h w _ = {h,w}
   let key _ _ s = s
