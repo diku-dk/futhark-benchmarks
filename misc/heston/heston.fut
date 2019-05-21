@@ -107,7 +107,7 @@ let date_of_int(x: i32) =
   let y = x/10000
   in date_of_triple (y, m, d)
 
-let default_variables: []real_least_squares.optimization_variable =
+let default_variables: [5]real_least_squares.optimization_variable =
   [real_least_squares.optimize_value
    {lower_bound =  real.f64 1e-6, initial_value = real.f64 4e-2, upper_bound = int 1},
    real_least_squares.optimize_value

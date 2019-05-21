@@ -136,10 +136,11 @@ let selectStrong [h][w] (img: [h][w]f32): []i32 =
   let strong = map (\(x: f32): i32  ->
                      if x == edgeStrong then 1 else 0)
                    (flatten img)
+  let n = length strong - 1
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
   let targetIdxAndLen = scan (+) 0 strong
-  let (targetIdx, len') = split (length strong-1) targetIdxAndLen
+  let (targetIdx, len') = split n targetIdxAndLen
   let len = len'[0]
   let zeros = replicate len 0
   let (indices', values) =
@@ -147,7 +148,7 @@ let selectStrong [h][w] (img: [h][w]f32): []i32 =
                  if strong_x == 0
                  then (-1, 0)
                  else (target_i, i+1))
-               (iota(w*h-1)) targetIdx strong[1:])
+               (iota n) targetIdx (strong[1:] : [n]i32))
   in scatter zeros indices' values
 
 let main [h][w] (low: f32) (high: f32) (img: [h][w]i32): []i32 =

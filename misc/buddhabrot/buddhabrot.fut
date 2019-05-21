@@ -67,7 +67,7 @@ let visualise (state: state)
     else replicate limit (-1)
   let touched = flatten (map mk_increments trajectories)
   let visits_per_pixel = reduce_by_index (copy state.prior_visits) (+) 0
-                                         touched (replicate (length touched) 1)
+                                         touched (map (const 1) touched)
   let max_visits = i32.maximum visits_per_pixel
   let coloured = map (colourise max_visits) visits_per_pixel
   in ({rng, prior_visits = visits_per_pixel, iter = state.iter + 1},

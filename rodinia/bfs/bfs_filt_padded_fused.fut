@@ -39,7 +39,7 @@ let step [n][e]
 
   let n_indices = length active_indices
   let graph_mask' =
-    scatter graph_mask active_indices (replicate n_indices false)
+    scatter graph_mask active_indices (map (const false) active_indices)
 
   -- We calculate the maximum number of edges for a node.  This is necessary,
   -- since the number of edges are irregular, and since we want to construct a
