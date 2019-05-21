@@ -220,7 +220,7 @@ let makeSummary(quote_prices: [](f32,f32)): [][]f32 =
 --/ Genome Implementation
 --------------------------------------------------/
 
-let genomeBounds(): [](f32,f32,f32) =
+let genomeBounds: [5](f32,f32,f32) =
     [ (eps0,     1.0-eps0, 0.02)
     , (eps0,     1.0-eps0, 0.02)
     , (eps0-1.0, 1.0-eps0, 0.0 )
@@ -233,7 +233,7 @@ let initGenome (rand_nums: []f32): []f32 =
                     let (r01, (g_min, g_max, _g_ini)) = tup
                     in  r01*(g_max - g_min) + g_min
 
-               ) (zip (rand_nums) (genomeBounds())
+               ) (zip rand_nums genomeBounds
                )
 
 let selectMoveType(r01: f32): i32 =
@@ -276,10 +276,10 @@ let perturbation(gamma1:  f32, ampl_rat : f32)
 
 let mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
   let (sob_row, orig, muta) = tup
-  let gene_bds = genomeBounds()
+  let gene_bds = take n genomeBounds
   let amplitude = moves_unif_ampl_ratio()
   let gene_rats = map mutateHelper (
-                       zip5 (replicate n amplitude) (sob_row) orig muta (gene_bds) )
+                       zip5 (replicate n amplitude) (sob_row) orig muta gene_bds)
   let (tmp_genome, fb_rats) = unzip(gene_rats)
   let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
   let fb_rat    = f32.product (fb_rats)
@@ -287,7 +287,7 @@ let mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
 
 let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
   let (sob_row, orig, muta) = tup
-  let gene_bds = genomeBounds()
+  let gene_bds = take n genomeBounds
   let amplitudes= map (\(i: i32): f32  ->
                           if i == dim_j then moves_unif_ampl_ratio() else 0.0
                      ) (iota(n) )
@@ -300,7 +300,7 @@ let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
 
 
 let mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f32 =
-  let gene_bds = genomeBounds()
+  let gene_bds = genomeBounds
   let gamma_avg = 2.38 / f32.sqrt(2.0*5.0)
   let ampl_ratio= 0.1 * moves_unif_ampl_ratio()
   let gamma1    = gamma_avg - 0.5 + r01
@@ -829,8 +829,7 @@ let pricer_of_swaption(today:  date,
                         if(i == n_schedi-1)
                         then 1.0 + tau*strike
                         else       tau*strike
-                    ) (iota(n_schedi)
-                )
+                    ) (iota n_schedi)
 --
     let tmat0    = date_act_365 (maturity, today)
     let (v0_mat, _, _) = bigv( genome, tmat0)
@@ -875,8 +874,7 @@ let pricer_of_swaption(today:  date,
                     let scale  = -(bai + bbi*t4)                              in
                         ((bai, bbi, aici), (log_aici, t1_cst, scale))
 
-                ) (zip scheduleiy ci
-            )
+                ) (zip (take n_schedi scheduleiy) ci)
         )
     let ((bai, bbi, aici), (log_aici, t1_cst, scale)) = (unzip3 tmp_a, unzip3 tmp_b)
 

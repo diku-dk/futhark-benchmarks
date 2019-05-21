@@ -40,7 +40,7 @@ let step [n][e]
   let n_indices = length active_indices
   let active_indices = active_indices : [n_indices]i32
   let graph_mask' =
-    scatter graph_mask active_indices (replicate n_indices false)
+    scatter graph_mask active_indices (map (const false) active_indices)
 
   -----------------------------------------------------------------------------
   -- BEGIN-FLATTENING: needed to ensure the asymptotic work/depth complexity --

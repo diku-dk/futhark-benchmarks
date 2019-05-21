@@ -81,7 +81,7 @@ let step [n][e]
   let (active_indices, _) = unzip (filter (.2) (zip (iota n) graph_mask))
 
   let graph_mask_res =
-    scatter graph_mask active_indices (replicate (length active_indices) false)
+    scatter graph_mask active_indices (map (const false) active_indices)
 
   -- The whole computation of continue' is hoisted to the outermost level.
   let act_num_edges = map (\tid -> unsafe nodes_n_edges[tid]) (iota n)

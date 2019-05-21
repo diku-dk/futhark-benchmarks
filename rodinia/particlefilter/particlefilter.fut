@@ -65,9 +65,9 @@ let particleFilter [IszX][IszY][Nfr]
   let seed = rnge.rng_from_seed [123] |> rnge.split_rng Nparticles
   let xe = f64.round (r64 IszY / 2)
   let ye = f64.round (r64 IszX / 2)
-  let radius = 5
+  let radius = 5i32
   let diameter = radius * 2 - 1
-  let disk = strelDisk diameter
+  let disk = strelDisk radius : [diameter][diameter]i32
   let objxy = getneighbors disk radius
   let countOnes = length objxy
   let weights = replicate Nparticles (1 / r64 Nparticles)

@@ -79,7 +79,7 @@ let step [n][e]
   let (active_indices, _) = unzip (filter (.2) (zip (iota n) graph_mask))
 
   let graph_mask_res =
-    scatter graph_mask active_indices (replicate (length active_indices) false)
+    scatter graph_mask active_indices (map (const false) active_indices)
 
   let continue = true
   let (cost_res, updating_graph_mask_res, _, _) =
