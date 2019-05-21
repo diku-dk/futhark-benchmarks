@@ -24,7 +24,7 @@ import "lib/github.com/diku-dk/fft/stockham-radix-2"
 
 module fft = mk_fft f32
 
-let tabmap f xs = map2 f (iota (length xs)) xs
+let tabmap [n] 'a 'b (f: i32 -> a -> b) (xs: [n]a) = map2 f (iota n) xs
 
 let centre_2d [n][m] (arr: [n][m]c32): [n][m]c32 =
   let f (i: i32) (j: i32) (x: c32) =
