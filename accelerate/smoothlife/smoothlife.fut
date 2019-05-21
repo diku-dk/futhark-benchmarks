@@ -154,15 +154,16 @@ let init (conf: conf) (seed: i32): state =
   let shift2d 'a [r][c] (arr: [r][c]a): [r][c]a =
     let (mr, mc) = (r / 2, c / 2)
     let indices = map (\ir -> map (\ic -> (ir,ic)) (iota c)) (iota r) |> flatten
+    let n = length indices
     let shift (ir, ic) =
       ( if ir < mr then ir + mr else ir - mr
       , if ic < mc then ic + mc else ic - mc
       )
     let indices' = map (\(ir, ic) -> let (ir', ic') = shift (ir, ic)
-                                     in ir' * c + ic'
-                       ) indices
+                                     in ir' * c + ic')
+                       indices
     let arr' = flatten arr
-    in scatter (copy arr') indices' arr' |> unflatten r c
+    in scatter (copy arr') (take n indices') (take n arr') |> unflatten r c
 
   let size = conf.world_size
   let (ri, ra) = conf.disc_radius
@@ -253,11 +254,11 @@ let step (state: state): state =
   let (r, c) = (state.conf.world_size, state.conf.world_size)
 
   let aaf = fft.fft2_re aa
-  let nf = map2 (complex.*) (flatten aaf) (flatten state.krf)
-  let mf = map2 (complex.*) (flatten aaf) (flatten state.kdf)
-  let n = map (\x -> complex.re x / state.kflr) (fft.ifft2 (unflatten r c nf) |> flatten)
-  let m = map (\x -> complex.re x / state.kfld) (fft.ifft2 (unflatten r c mf) |> flatten)
-  let aa' = snm state.conf n m |> unflatten r c
+  let nf = map2 (map2 (complex.*)) aaf state.krf
+  let mf = map2 (map2 (complex.*)) aaf state.kdf
+  let n = map (\x -> complex.re x / state.kflr) (fft.ifft2 nf |> flatten)
+  let m = map (\x -> complex.re x / state.kfld) (fft.ifft2 mf |> flatten)
+  let aa' = snm state.conf (take (length n) n) (take (length n) m) |> unflatten r c
 
   let timestep f g =
     match state.conf.timestep_mode

@@ -37,7 +37,7 @@ let calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
 -- Calculate ranks from all pages
 -- A rank is counted as the contribution of a page / the outbound edges from that page
 -- A contribution is defined as the rank of the page / the inbound edges
-let calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *[]f32 =
+let calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *[n]f32 =
   let froms = map (\(x: link) -> x.from) links
   let tos = map (\(x: link) -> x.to) links
   let get_rank (i: i32) = unsafe if sizes[i] == 0 then 0f32
