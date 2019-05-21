@@ -26,26 +26,30 @@ local let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm) : (*[n]t,[]
   -- find a pivot for each segment
   let pivots : []t = map (\sgm -> unsafe xs[sgm.start + sgm.sz/2]) sgms
   let sgms_szs : []i32 = map (\sgm -> sgm.sz) sgms
-  let idxs : []i32 = replicated_iota sgms_szs
+  let idxs = replicated_iota sgms_szs
+  let m = length idxs
+  let idxs = idxs : [m]i32
 
   -- find the indexes into values in segments; after a value equal to
   -- a pivot has moved, it will no longer be part of a segment (it
   -- need not be moved again).
   let is =
     let is1 = segmented_replicate sgms_szs (map (\x -> x.start) sgms)
+              : [m]i32
     let fs = map2 (!=) is1 (rotate (i32.negate 1) is1)
     let is2 = segmented_iota fs
     in map2 (+) is1 is2
 
   -- for each such value, how does it compare to the pivot associated
   -- with the segment?
-  let infos : []i32 = map2 (\idx i -> unsafe info (<=) xs[i] pivots[idx]) idxs is
+  let infos : []i32 = map2 (\idx i -> unsafe info (<=) xs[i] pivots[idx])
+                           idxs is
   let orders : [](i32,i32,i32) = map tripit infos
 
   -- compute segment descriptor
   let flags =
-    let flags : []bool = map2 (!=) idxs (rotate (i32.negate 1) idxs)
-    in [true] ++ flags[1:]
+    let flags = map2 (!=) idxs (rotate (i32.negate 1) idxs)
+    in flags with [0] = true
 
   -- compute partition sizes for each segment
   let pszs : [](i32,i32,i32) = segmented_reduce tripadd (0,0,0) flags orders
@@ -65,7 +69,8 @@ local let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm) : (*[n]t,[]
              let s = unsafe sgms[i].start
              in if info < 0 then s+a-1
                 else if info > 0 then s+b-1+x+y
-                else s+e-1+x) idxs where infos
+                else s+e-1+x)
+            idxs where infos
 
   let vs = map (\i -> unsafe xs[i]) is
   let xs' = scatter xs newpos vs
