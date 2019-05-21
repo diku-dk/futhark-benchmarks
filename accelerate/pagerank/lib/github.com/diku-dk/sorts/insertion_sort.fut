@@ -2,7 +2,7 @@
 
 
 local
-let swap 't (i: i32) (j: i32) (xs: *[]t): *[]t =
+let swap 't [n] (i: i32) (j: i32) (xs: *[n]t): *[n]t =
   -- Need copies to prevent the uniqueness checker from getting
   -- cranky.
   let xi = copy xs[i]

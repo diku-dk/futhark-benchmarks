@@ -37,7 +37,10 @@ module mk_fft (R: real): {
       loop (input': *[n]complex, output': *[n]complex) = (input, output) for ns in NS do
         let (i0s, v0s, i1s, v1s) =
           unsafe (unzip4 (map (fft_iteration forward ns input') ix))
-        in (scatter output' (concat i0s i1s) (concat v0s v1s), input')
+        in (scatter output'
+                    (i0s ++ i1s : [n]i32)
+                    (v0s ++ v1s : [n]complex),
+            input')
     in res
 
   let log2 (n: i32) : i32 =
@@ -81,7 +84,7 @@ module mk_fft (R: real): {
     let (n', n_bits) = next_pow_2 n
     let (m', m_bits) = next_pow_2 m
     let forward' = if forward then R.i32 1 else R.i32 (-1)
-    let data = concat (map (\r -> concat r (replicate (m'-m) zero)) data)
+    let data = concat (map (\r -> replicate m' zero with [0:m] = r) data)
                       (replicate (n'-n) (replicate m' zero))
     let data = map (\r -> fft' forward' r m_bits) data
     let data = map (\c -> fft' forward' c n_bits) (transpose data)
