@@ -16,7 +16,7 @@ module rule101_rules: rules_and_visuals_1d = {
 
   let value (b: cell) = i32.bool b
 
-  let weights: []i32 = [1,2,2]
+  let weights: [3]i32 = [1,2,2]
 
   let step (_: cell) (neighbours: i32) =
     neighbours == 2 || neighbours == 3 || neighbours == 4

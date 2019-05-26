@@ -10,9 +10,9 @@ module conway_rules: rules with cell = bool = {
 
   let value (b: cell): i32 = if b then 1 else 0
 
-  let weights: [][]i32 = [[1,1,1],
-                          [1,0,1],
-                          [1,1,1]]
+  let weights: [3][3]i32 = [[1,1,1],
+                            [1,0,1],
+                            [1,1,1]]
 
   let step (alive: cell) (neighbours: i32) =
     neighbours >= 2 &&

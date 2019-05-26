@@ -9,9 +9,9 @@ module quad_rules: rules_and_visuals = {
 
   let value (c: cell) = i32.i8 c
 
-  let weights: [][]i32 = [[1,1,1],
-                          [1,1,1],
-                          [1,1,1]]
+  let weights: [3][3]i32 = [[1,1,1],
+                            [1,1,1],
+                            [1,1,1]]
 
   let step (_c: cell) (neighbours: i32) =
     let t = [0i8,0i8,0i8,2i8,2i8,3i8,3i8,
