@@ -11,7 +11,7 @@ module mandelbrot(real: real): {
     (screenX: i32) -> (screenY: i32) ->
     (xcentre: real.t) -> (ycentre: real.t) -> (width: real.t) ->
     (limit: i32) -> (radius: real.t) ->
-    [screenX][screenY]i32
+    [screenY][screenX]i32
 } = {
 type real = real.t
 module complex = mk_complex real
