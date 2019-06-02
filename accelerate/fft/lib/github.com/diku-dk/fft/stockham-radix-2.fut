@@ -84,7 +84,8 @@ module mk_fft (R: real): {
     let (n', n_bits) = next_pow_2 n
     let (m', m_bits) = next_pow_2 m
     let forward' = if forward then R.i32 1 else R.i32 (-1)
-    let data = concat (map (\r -> replicate m' zero with [0:m] = r) data)
+    let data = concat (map (\r -> (concat r (replicate (m'-m) zero)
+                                  : [m']complex.complex)) data)
                       (replicate (n'-n) (replicate m' zero))
     let data = map (\r -> fft' forward' r m_bits) data
     let data = map (\c -> fft' forward' c n_bits) (transpose data)
