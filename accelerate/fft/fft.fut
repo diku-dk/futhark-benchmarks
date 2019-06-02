@@ -55,16 +55,16 @@ import "lib/github.com/athas/matte/colour"
 let unpack_rgb (x: [3]u8): (u8, u8, u8) =
   (x[0], x[1], x[2])
 
-let main [n][m] (cutoff: i32) (img: [n][m][3]u8): [n][m][3]f32 =
+let main [n][m] (cutoff: i32) (img: [n][m][3]u8): ([n][m]f32,[n][m]f32,[n][m]f32) =
   let (r, g, b) = map1 (map1 (unpack_rgb) >-> unzip3) img |> unzip3
   let r' = transform cutoff r
   let g' = transform cutoff g
   let b' = transform cutoff b
-  in map1 (map1 (\(r,g,b) -> [r, g, b])) (map3 zip3 r' g' b')
+  in (r', g', b')
 
 let pack_rgb ((r,g,b): (f32, f32, f32)): [3]u8 =
   [u8.f32 r, u8.f32 g, u8.f32 b]
 
 entry highpass_filter [n][m] (cutoff: i32) (img: [n][m][3]u8): [n][m][3]u8 =
-  let csss = main cutoff img
-  in map1 (map1 (map1 u8.f32)) csss
+  let (rss, gss, bss) = main cutoff img
+  in map3 (map3 (\r g b -> [u8.f32 r, u8.f32 g, u8.f32 b])) rss gss bss
