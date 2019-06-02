@@ -5,9 +5,8 @@ open import "fft"
 import "../complex/complex"
 
 -- | Given a module describing real numbers, produce a module for
--- performing FFTs using Stockham's algorithm.  All of these will pad
--- with zeroes up to the next power of two before carrying out the
--- computation, and return the truncated array.
+-- performing FFTs using Stockham's algorithm.  Requires that the
+-- input is a power of two; otherwise an error is raised.
 module mk_fft (R: real): {
   include fft_1d with real = R.t
   include fft_2d with real = R.t
@@ -28,7 +27,7 @@ module mk_fft (R: real): {
     let idxD = ((j/ns)*ns*radix) + (j % ns)
     in (idxD, v0, idxD+ns, v1)
 
-  let fft' [n] (forward: R.t) (input: [n]complex) (bits: i32) : []complex =
+  let fft' [n] (forward: R.t) (input: [n]complex) (bits: i32) : [n]complex =
     let input = copy input
     let output = copy input
     let ix = iota(n/radix)
@@ -51,20 +50,13 @@ module mk_fft (R: real): {
       in (r,n)
     in r
 
-  let next_pow_2 (n: i32): (i32, i32) =
-    if n == 0 then (0, 0) else let d = log2 n
-                               in if n == 2**d then (n, d) else (2**(d+1), d+1)
-
-  let ensure_pow_2 [n] (data: [n](R.t, R.t)): (*[](R.t, R.t), i32) =
-    let (m, d) = next_pow_2 n
-    in if n == 0 then (copy data, d)
-       else (concat data (replicate (m - n) (complex.mk_re (R.i32 0))),
-             d)
+  let is_power_of_2 (x: i32) = (x & (x - 1)) == 0
 
   let generic_fft [n] (forward: bool) (data: [n](R.t, R.t)): [n](R.t, R.t) =
-    let (data', bits) = ensure_pow_2 data
-    let forward' = if forward then R.i32 1 else R.i32 (-1)
-    in take n (fft' forward' data' bits)
+    assert (is_power_of_2 n)
+           (let bits = log2 n
+            let forward' = if forward then R.i32 1 else R.i32 (-1)
+            in fft' forward' data bits)
 
   let fft [n] (data: [n](R.t, R.t)): [n](R.t, R.t) =
     generic_fft true data
@@ -80,16 +72,13 @@ module mk_fft (R: real): {
     ifft (map complex.mk_re data)
 
   let generic_fft2 [n][m] (forward: bool) (data: [n][m](R.t, R.t)): [n][m](R.t, R.t) =
-    let zero = complex.mk_re (R.i32 0)
-    let (n', n_bits) = next_pow_2 n
-    let (m', m_bits) = next_pow_2 m
-    let forward' = if forward then R.i32 1 else R.i32 (-1)
-    let data = concat (map (\r -> (concat r (replicate (m'-m) zero)
-                                  : [m']complex.complex)) data)
-                      (replicate (n'-n) (replicate m' zero))
-    let data = map (\r -> fft' forward' r m_bits) data
-    let data = map (\c -> fft' forward' c n_bits) (transpose data)
-    in (transpose data)[:n,:m]
+    assert (is_power_of_2 n && is_power_of_2 m)
+           (let n_bits = log2 n
+            let m_bits = log2 m
+            let forward' = if forward then R.i32 1 else R.i32 (-1)
+            let data = map (\r -> fft' forward' r m_bits) data
+            let data = map (\c -> fft' forward' c n_bits) (transpose data)
+            in transpose data)
 
   let fft2 [n][m] (data: [n][m](R.t, R.t)): [n][m](R.t, R.t) =
     generic_fft2 true data
