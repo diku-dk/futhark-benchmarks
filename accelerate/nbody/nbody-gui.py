@@ -53,10 +53,6 @@ def random_points():
 
             numpy.zeros(N).astype('float32'),
             numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'),
-
-            numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'),
             numpy.zeros(N).astype('float32'))
 
 def random_points_orbit():
@@ -69,10 +65,6 @@ def random_points_orbit():
 
             numpy.zeros(N).astype('float32'),
             xs/width*10,
-            numpy.zeros(N).astype('float32'),
-
-            numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'),
             numpy.zeros(N).astype('float32'))
 
 def random_points_donut():
@@ -88,10 +80,6 @@ def random_points_donut():
 
             numpy.sin(angles-numpy.pi/2)*2*numpy.abs(lengthscales),
             numpy.cos(angles-numpy.pi/2)*2*numpy.abs(lengthscales),
-            numpy.zeros(N).astype('float32'),
-
-            numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'),
             numpy.zeros(N).astype('float32'))
 
 def random_points_spiral():
@@ -105,14 +93,10 @@ def random_points_spiral():
 
             numpy.zeros(N).astype('float32'),
             numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'),
-
-            numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'),
             numpy.zeros(N).astype('float32'))
 
 
-(xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
+(xps,yps,zps,ms,xvs,yvs,zvs) = random_points()
 
 font = pygame.font.Font(None, 36)
 
@@ -123,10 +107,10 @@ def showText(what, where, color):
     screen.blit(text, where)
 
 def render(time_step,invert):
-    global xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas,angle
+    global xps,yps,zps,ms,xvs,yvs,zvs,angle
     start = time.time()
-    (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = \
-      step_nbody(steps_per_call, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas)
+    (xps,yps,zps,ms,xvs,yvs,zvs) = \
+      step_nbody(steps_per_call, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs)
     frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps, ms, x_rotation, y_rotation, max_mass, invert).get()
     end = time.time()
     futhark_time = (end-start)*1000
