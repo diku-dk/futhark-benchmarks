@@ -39,23 +39,6 @@ module lys : lys with text_content = text_content = {
 
   let resize height width (s: state) = s with height = height with width = width
 
-  let key (e: key_event) (key: i32) (s: state) =
-    match e
-    case #keydown -> if key >= '0' && key <= '9'
-                     then s with config = presets[key-'0']
-                     else if key == 'p'
-                     then s with precision = if s.precision == 32 then 64 else 32
-                     else if key == 'q'
-                     then s with config.limit = s.config.limit - 1
-                     else if key == 'e'
-                     then s with config.limit = s.config.limit + 1
-                     else if key == 'z'
-                     then s with config.radius = s.config.radius * 0.99
-                     else if key == 'c'
-                     then s with config.radius = s.config.radius * 1.01
-                     else s
-    case #keyup -> s
-
   let diff (x1: i32, y1: i32) (x2, y2) = (x2 - x1, y2 - y1)
   let move (s: state) (dx: i32, dy: i32) =
     let aspect_ratio = r64 s.width / r64 s.height
@@ -64,14 +47,30 @@ module lys : lys with text_content = text_content = {
     let y_per_pixel = height / r64 s.height
     in s.config with xcentre = s.config.xcentre - x_per_pixel * r64 dx
                 with ycentre = s.config.ycentre - y_per_pixel * r64 dy
-  let mouse (mouse_state: i32) (x: i32) (y: i32) (s: state) =
-    s with mouse = (x,y) with config = if mouse_state != 0 then move s (diff s.mouse (x,y))
-                                       else s.config
-
-  let wheel _ dy (s : state) =
-    s with config.width = s.config.width * (1 - 0.01 * r64 dy)
   let grab_mouse = false
-  let step _ s = s
+
+  let event (e: event) (s: state) =
+    match e
+    case #keydown {key} ->
+      if key >= '0' && key <= '9'
+      then s with config = presets[key-'0']
+      else if key == 'p'
+      then s with precision = if s.precision == 32 then 64 else 32
+      else if key == 'q'
+      then s with config.limit = s.config.limit - 1
+      else if key == 'e'
+      then s with config.limit = s.config.limit + 1
+      else if key == 'z'
+      then s with config.radius = s.config.radius * 0.99
+      else if key == 'c'
+      then s with config.radius = s.config.radius * 1.01
+      else s
+    case #mouse {buttons, x, y} ->
+    s with mouse = (x,y) with config = if buttons != 0 then move s (diff s.mouse (x,y))
+                                       else s.config
+    case #wheel {dx=_, dy} ->
+      s with config.width = s.config.width * (1 - 0.01 * r64 dy)
+    case _ -> s
 
   type text_content = text_content
   let text_format = "FPS: %d; bits: %d; iterations: %d; radius: %.2f"

@@ -85,11 +85,11 @@ module lys : lys with text_content = i32 = {
   type text_content = i32
   type state = {t: f32, h: i32, w: i32}
   let init _ h w : state = {t=0, h, w}
-  let step td s : state = s with t = s.t + td
+  let event (e: event) s : state =
+    match e
+    case #step td -> s with t = s.t + td
+    case _ -> s
   let resize h w s : state = s with h = h with w = w
-  let key _ _ s = s
-  let mouse _ _ _ s = s
-  let wheel _ _ s = s
   let grab_mouse = false
   let render {t, h, w} = render t h w
   let text_format = "FPS: %d"
