@@ -249,11 +249,18 @@ module lys: lys with text_content = text_content = {
 
   let text _ _ = []
 
-  let wheel _ y = do_zoom (-(r32 y)/100)
-
   let step td (s: state) =
     let td' = if s.paused then 0 else td
     in do_zoom s.zooming s with time = s.time + td'
+
+  let event (e: event) (s: state) =
+    match e
+    case #step td -> step td s
+    case #keydown {key} -> keydown key s
+    case #keyup {key} -> keyup key s
+    case #mouse {buttons, x, y} -> mouse buttons x y s
+    case #wheel {dx=_, dy} -> do_zoom (-(r32 dy)/100) s
+    case _ -> s
 
   let render (s: state): [][]argb.colour =
     let render f = f

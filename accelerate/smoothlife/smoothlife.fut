@@ -304,13 +304,13 @@ module lys: lys with text_content = text_content = {
 
   let grab_mouse = false
 
-  let key (e: key_event) (key: i32) (s: state): state =
-    if e == #keydown && key == SDLK_SPACE
-    then init s.state.seed (length s.state.world) (length s.state.world[0])
-    else s
-
-  let mouse _ _ _ = id
-  let wheel _ _ = id
+  let event (e: event) (s: state) =
+    match e
+    case #keydown {key} ->
+      if key == SDLK_SPACE
+      then init s.state.seed (length s.state.world) (length s.state.world[0])
+      else s
+    case _ -> s
 
   type text_content = text_content
   let text_format = "FPS: %d\nWorld: %d by %d"
