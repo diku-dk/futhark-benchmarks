@@ -310,12 +310,14 @@ module lys: lys with text_content = text_content = {
       if key == SDLK_SPACE
       then init s.state.seed (length s.state.world) (length s.state.world[0])
       else s
+    case #step td ->
+      step td s
     case _ -> s
 
   type text_content = text_content
   let text_format = "FPS: %d\nWorld: %d by %d"
-  let text_content (render_duration: f32) (s: state): text_content =
-    (t32 render_duration, length s.state.world, length s.state.world[0])
+  let text_content (fps: f32) (s: state): text_content =
+    (t32 fps, length s.state.world, length s.state.world[0])
   let text_colour = const argb.yellow
 }
 
