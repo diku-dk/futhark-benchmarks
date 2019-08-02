@@ -152,9 +152,6 @@ def blob(pos):
     xvs = numpy.concatenate((xvs.get(),  numpy.zeros(blob_N).astype('float32')))
     yvs = numpy.concatenate((yvs.get(), numpy.zeros(blob_N).astype('float32')))
     zvs = numpy.concatenate((zvs.get(), numpy.zeros(blob_N).astype('float32')))
-    xas = numpy.concatenate((xas.get(), numpy.zeros(blob_N).astype('float32')))
-    yas = numpy.concatenate((yas.get(), numpy.zeros(blob_N).astype('float32')))
-    zas = numpy.concatenate((zas.get(), numpy.zeros(blob_N).astype('float32')))
 
     N += blob_N
 
@@ -275,15 +272,15 @@ while True:
                     zoomOut()
             if event.unicode == 'c':
                 N = 1
-                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points()
             if event.unicode == 'r':
-                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points()
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points()
             if event.unicode == 'o':
-                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_orbit()
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_orbit()
             if event.unicode == 'd':
-                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_donut()
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_donut()
             if event.unicode == 's':
-                (xps,yps,zps,ms,xvs,yvs,zvs,xas,yas,zas) = random_points_spiral()
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_spiral()
             if event.unicode == 'q':
                 time_step -= 0.01
             if event.unicode == 'w':
