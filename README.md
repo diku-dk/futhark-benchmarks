@@ -28,8 +28,8 @@ you wish to use another device than the default.  For example, to ask
 Futhark to use the first device that contains "NVIDIA" in its name,
 you could use `--pass-option=-dNVIDIA`.
 
-If you wish to analyse the performance results with a program, the
-`--json` option to `futhark bench` may be useful.
+If you wish to analyse the performance results with a program, passing
+`--json=results.json` to `futhark bench` may be useful.
 
 For more information, see the [documentation for `futhark bench`][0].
 
