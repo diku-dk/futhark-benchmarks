@@ -62,13 +62,13 @@ let unbytes(bs: [4]u8): u32 =
 let md5_chunk ((a0,b0,c0,d0): md5) (block: [16]u32): md5 =
   loop (a,b,c,d) = (a0,b0,c0,d0) for i < 64 do
     let (f,g) =
-      if      i < 16 then ((b & c) | ((~b) & d),
+      if      i < 16 then ((b & c) | (!b & d),
                            u32.i32 i)
-      else if i < 32 then ((d & b) | ((~d) & c),
+      else if i < 32 then ((d & b) | (!d & c),
                            (5u32*u32.i32 i + 1u32) % 16u32)
       else if i < 48 then (b ^ c ^ d,
                            (3u32*u32.i32 i + 5u32) % 16u32)
-      else                (c ^ (b | (~d)),
+      else                (c ^ (b | !d),
                            (7u32*u32.i32 i)        % 16u32)
     in (d, b + rotate_left(a + f + ks[i] + unsafe block[i32.u32 g], rs[i]), b, c)
 
