@@ -41,7 +41,7 @@ Internal details
 Many of the input/output files are stored in a simple binary format
 for performance and space reasons.  This format is [documented in the
 Futhark reference manual][1], and can be converted to a textual
-representation via the [futhark-dataset][2] tool.
+representation via the [futhark dataset][2] tool.
 
 [1]: http://futhark.readthedocs.io/en/latest/binary-data-format.html
 [2]: http://futhark.readthedocs.io/en/latest/man/futhark-dataset.html
