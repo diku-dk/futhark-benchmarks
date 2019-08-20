@@ -334,7 +334,7 @@ let main [k][num_bits][num_models][num_und][num_dates][num_discts]
          : []f32 =
   let sobvctsz  = num_dates*num_und
   let dir_vs = dir_vs : [sobvctsz][num_bits]i32
-  let sobol_mat = stream_map (\chunk (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
+  let sobol_mat = map_stream (\chunk (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
                                 sobolChunk dir_vs (unsafe ns[0]) chunk)
                              (iota num_mc_it)
   let gauss_mat = map ugaussian sobol_mat
