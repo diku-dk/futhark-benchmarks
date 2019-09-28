@@ -20,3 +20,5 @@
 !*.fut
 !futhark.pkg
 !**/data/*.gz
+!**/lib
+!**/lib/**
