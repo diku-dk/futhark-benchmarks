@@ -11,7 +11,7 @@ Mostly a straightforward port, and most of the controls are the same.
 | a/d | Change iteration limit. |
 | Space | Pause time. |
 | Left/Right | Step through time (you should pause first). |
-| 0-9 | Go to a predefined part of the Julai set. |
+| 0-9 | Go to a predefined part of the Julia set. |
 | Escape | Exit |
 
 The Accelerate implementation uses an array of functions to pick
