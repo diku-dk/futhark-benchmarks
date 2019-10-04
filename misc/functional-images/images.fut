@@ -218,11 +218,6 @@ module lys: lys with text_content = text_content = {
     else if k == SDLK_KP_MINUS then s with zooming = 0
     else s
 
-  let key (e: key_event) k s: state =
-    match e
-    case #keydown -> keydown k s
-    case #keyup -> keyup k s
-
   let diff (x1: i32, y1: i32) (x2, y2) = (x2 - x1, y2 - y1)
 
   let move_pixels (s: state) (dx, dy): state =
