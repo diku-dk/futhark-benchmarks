@@ -76,11 +76,15 @@ entry rule101_render (world: rule101_world) =
 entry rule101_uninit (world: rule101_world) =
  rule101.uninit world
 
+let flatten_to [n][m] 't (k: i32) (xs: [n][m]t): [k]t =
+  flatten xs : [k]t
+
 -- Just a simple test to force the program to be compiled.
 let main [n][m] (base_pattern: [n][m]i32) (_repeats: i32) (k: i32) =
+  let l = k * m
   let pattern = unflatten (n*k) (m*k)
                 (flatten_3d (replicate k
-                             (map (\row -> flatten (replicate k (map bool.i32 row)))
+                             (map (\row -> flatten_to l (replicate k (map bool.i32 row)))
                               base_pattern)))
   let world =
     loop world = conway.init pattern for _i < k do conway.step world

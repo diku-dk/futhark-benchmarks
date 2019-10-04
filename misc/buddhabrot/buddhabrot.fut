@@ -61,7 +61,7 @@ let visualise (state: state)
               (npoints: i32) (field: (f32,f32,f32,f32)):
              (state, [screenY][screenX]argb.colour) =
   let (rng, trajectories) = trajectories state.rng limit radius npoints field
-  let mk_increments (npoints, escaped) =
+  let mk_increments (npoints : [limit](f32,f32), escaped) =
     if escaped
     then map (pixel_pos screenX screenY field >-> row_major screenX screenY) npoints
     else replicate limit (-1)

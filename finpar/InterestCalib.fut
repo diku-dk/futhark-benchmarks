@@ -208,7 +208,7 @@ let sobolInd [m] (dirVct:  [m]i32) (n: i32): f32 =
 --/ [#calibration price, black price, % error]
 ----------------------------------------------------
 let makeSummary(quote_prices: [](f32,f32)): [][]f32 =
-  map (\(qp: (f32,f32)): []f32  ->
+  map (\(qp: (f32,f32)) ->
          let (black_price, calib_price) = qp
          let err_ratio =  (calib_price - black_price) / black_price in
          [10000.0*calib_price, 10000.0*black_price, 100.0*f32.abs(err_ratio)]
