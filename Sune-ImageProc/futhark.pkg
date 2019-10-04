@@ -1,3 +1,3 @@
 require {
-  github.com/athas/vector 0.2.3 #91d8983c45d12c63cebecf2ffb73a2bd3b7215ed
+  github.com/athas/vector 0.3.1 #58f60a95560e1e4cfecdd821e129626e0a0afed3
 }

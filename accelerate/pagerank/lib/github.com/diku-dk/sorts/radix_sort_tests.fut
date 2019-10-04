@@ -30,8 +30,8 @@ entry sort_f32 = radix_sort_float f32.num_bits f32.get_bit
 -- input { [5,4,3,2,1,0,-1,-2] }
 -- output { [7, 6, 5, 4, 3, 2, 1, 0] }
 
-entry sort_perm_i32 (xs: []i32) =
-  zip xs (iota (length xs))
+entry sort_perm_i32 [n] (xs: [n]i32) =
+  zip xs (iota n)
   |> radix_sort_int_by_key (.1) i32.num_bits i32.get_bit
   |> map (.2)
 
@@ -40,7 +40,7 @@ entry sort_perm_i32 (xs: []i32) =
 -- input { [5f32,4f32,3f32,2f32,1f32,0f32,-1f32,-2f32] }
 -- output { [7, 6, 5, 4, 3, 2, 1, 0] }
 
-entry sort_perm_f32 (xs: []f32) =
-  zip xs (iota (length xs))
+entry sort_perm_f32 [n] (xs: [n]f32) =
+  zip xs (iota n)
   |> radix_sort_float_by_key (.1) f32.num_bits f32.get_bit
   |> map (.2)

@@ -45,8 +45,12 @@ let radix_sort [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
                       (xs: [n]t): [n]t =
   loop xs for i < num_bits do radix_sort_step xs get_bit i
 
+let with_indices [n] 'a (xs: [n]a) : [n](a, i32) =
+  zip xs (iota n)
+
 local let by_key_wrapper sorter key num_bits get_bit xs =
-  zip (map key xs) (iota (length xs))
+  map key xs
+  |> with_indices
   |> sorter num_bits (\i (k, _) -> get_bit i k)
   |> map (\(_, i) -> unsafe xs[i]) -- OK because '0<=i<n'.
 

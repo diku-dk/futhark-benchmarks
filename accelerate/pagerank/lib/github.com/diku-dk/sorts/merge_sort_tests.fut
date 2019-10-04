@@ -32,8 +32,8 @@ entry sort_f32 (xs: []f32) = merge_sort (f32.<=) xs
 -- input { [5,4,3,2,1,0,-1,-2] }
 -- output { [7, 6, 5, 4, 3, 2, 1, 0] }
 
-entry sort_perm_i32 (xs: []i32) =
-  zip xs (iota (length xs))
+entry sort_perm_i32 [n] (xs: [n]i32) =
+  zip xs (iota n)
   |> merge_sort_by_key (.1) (<=)
   |> map (.2)
 
@@ -42,7 +42,7 @@ entry sort_perm_i32 (xs: []i32) =
 -- input { [5f32,4f32,3f32,2f32,1f32,0f32,-1f32,-2f32] }
 -- output { [7, 6, 5, 4, 3, 2, 1, 0] }
 
-entry sort_perm_f32 (xs: []f32) =
-  zip xs (iota (length xs))
+entry sort_perm_f32 [n] (xs: [n]f32) =
+  zip xs (iota n)
   |> merge_sort_by_key (.1) (<=)
   |> map (.2)

@@ -12,8 +12,21 @@ module type vspace = {
   -- | A vector type.  Semantically a sequence of `real`s.
   type vector
 
+  -- | Apply an operation to each element of the vector.
+  val map : (real -> real) -> vector -> vector
+
+  -- | Apply a binary operation to corresponding components of two
+  -- vectors.
+  val map2 : (real -> real -> real) -> vector -> vector -> vector
+
+  -- | Add vectors elementwise.
   val +: vector -> vector -> vector
+  -- | Subtract vectors elementwise.
   val -: vector -> vector -> vector
+  -- | Multiply vectors elementwise.
+  val *: vector -> vector -> vector
+  -- | Divide vectors elementwise.
+  val /: vector -> vector -> vector
 
   -- | Inner product.
   val dot: vector -> vector -> real
@@ -36,25 +49,44 @@ module type vspace_2d = {
   include vspace with real = real with vector = {x: real, y: real}
 }
 
+-- | The operations that must be supported by the scalars contained in
+-- a vector.  The builtin modules `f32`@term and `f64`@term satisfy
+-- this interface.
+module type scalar = {
+  type t
+
+  val +: t -> t -> t
+  val -: t -> t -> t
+  val *: t -> t -> t
+  val /: t -> t -> t
+
+  val i32: i32 -> t
+  val sqrt : t -> t
+}
+
 -- | Construct a 2D vector space.
-module mk_vspace_2d(real: real): vspace_2d with real = real.t = {
+module mk_vspace_2d (real: scalar): vspace_2d with real = real.t = {
   type real = real.t
 
   type vector = {x: real, y: real}
 
-  let (a: vector) + (b: vector) =
-    real.({x=a.x+b.x, y=a.y+b.y})
+  let map f (v : vector) =
+    {x = f v.x, y = f v.y}
 
-  let (a: vector) - (b: vector) =
-    real.({x=a.x-b.x, y=a.y-b.y})
+  let map2 f (a : vector) (b : vector) =
+    {x = f a.x b.x, y = f a.y b.y}
+
+  let (+) = map2 (real.+)
+  let (-) = map2 (real.-)
+  let (*) = map2 (real.*)
+  let (/) = map2 (real./)
 
   let dot (a: vector) (b: vector) =
     real.(a.x*b.x + a.y*b.y)
 
   let quadrance v = dot v v
 
-  let scale (s: real) ({x,y}: vector) =
-    real.({x=x*s, y=y*s})
+  let scale (s: real) = map (s real.*)
 
   let norm = quadrance >-> real.sqrt
 
@@ -81,11 +113,16 @@ module mk_vspace_3d(real: real): vspace_3d with real = real.t = {
 
   type vector = {x: real, y: real, z: real}
 
-  let (a: vector) + (b: vector) =
-    real.({x=a.x+b.x, y=a.y+b.y, z=a.z+b.z})
+  let map f (v : vector) =
+    {x = f v.x, y = f v.y, z = f v.z}
 
-  let (a: vector) - (b: vector) =
-    real.({x=a.x-b.x, y=a.y-b.y, z=a.z-b.z})
+  let map2 f (a : vector) (b : vector) =
+    {x = f a.x b.x, y = f a.y b.y, z = f a.z b.z}
+
+  let (+) = map2 (real.+)
+  let (-) = map2 (real.-)
+  let (*) = map2 (real.*)
+  let (/) = map2 (real./)
 
   let dot (a: vector) (b: vector) =
     real.(a.x*b.x + a.y*b.y + a.z*b.z)
@@ -96,8 +133,7 @@ module mk_vspace_3d(real: real): vspace_3d with real = real.t = {
 
   let quadrance v = dot v v
 
-  let scale (s: real) ({x,y,z}: vector) =
-    real.({x=x*s, y=y*s, z=z*s})
+  let scale (s: real) = map (s real.*)
 
   let norm = quadrance >-> real.sqrt
 
@@ -116,14 +152,18 @@ module mk_vspace(V: vector) (real: real):
   type real = real.t
   type vector = V.vector real
 
-  let a + b = V.map (uncurry (real.+)) (V.zip a b)
+  let map = V.map
+  let map2 f a b = V.zip a b |> V.map (uncurry f)
 
-  let a - b = V.map (uncurry (real.-)) (V.zip a b)
+  let (+) = map2 (real.+)
+  let (-) = map2 (real.-)
+  let (*) = map2 (real.*)
+  let (/) = map2 (real./)
 
   let dot (a: vector) (b: vector) =
     V.reduce (real.+) (real.i32 0) (V.map (uncurry (real.*)) (V.zip a b))
 
-  let scale (s: real) = V.map (s real.*)
+  let scale (s: real) = map (s real.*)
 
   let quadrance v = dot v v
 

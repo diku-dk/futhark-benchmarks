@@ -14,6 +14,8 @@ struct lys_context {
   SDL_Surface *wnd_surface;
   SDL_Surface *surface;
   TTF_Font *font;
+  char* font_path;
+  int font_size;
   int width;
   int height;
   int32_t *data;
@@ -27,6 +29,7 @@ struct lys_context {
   bool mouse_grabbed;
   float fps;
   int max_fps;
+  char* **sum_names;
 };
 
 #define FUT_CHECK(ctx, x) _fut_check(ctx, x, __FILE__, __LINE__)
