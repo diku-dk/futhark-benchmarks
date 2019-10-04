@@ -40,8 +40,8 @@ let single_iteration [row][col]
                     (temp: [row][col]f32, power: [row][col]f32,
                      cap: f32, rx: f32, ry: f32, rz: f32,
                      step: f32): [row][col]f32 =
-  map (\(r: i32): []f32  ->
-         map (\(c: i32): f32  ->
+  map (\r ->
+         map (\c ->
                 let temp_el = unsafe temp[r,c]
                 let delta =
                   (step / cap) *
