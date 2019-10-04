@@ -1,5 +1,9 @@
 -- | Small library of simple linear algebra-ish operations.
 
+-- | The result of applying `mk_linalg`@term.  Note that this module
+-- type is declared `local`, which means you cannot directly reference
+-- it by name from outside.  This is because it is not a stable
+-- interface, as we may add new members in minor versions.
 local module type linalg = {
   type t
   -- | Dot product.
@@ -25,8 +29,24 @@ local module type linalg = {
   val ols [n][m]: [n][m]t -> [n]t -> [m]t
 }
 
+-- An algebraic
+-- [field](https://en.wikipedia.org/wiki/Field_(mathematics)), with
+-- some added things. The `mk_linalg` module takes one of these as
+-- arguments.  The builtin modules `f32`@term and `f64`@term satisfy
+-- this interface.
+module type field = {
+  type t
+
+  val +: t -> t -> t
+  val -: t -> t -> t
+  val *: t -> t -> t
+  val /: t -> t -> t
+
+  val i32: i32 -> t
+}
+
 -- | Given some numeric type, produce a linalg module.
-module mk_linalg (T: numeric): linalg with t = T.t = {
+module mk_linalg (T: field): linalg with t = T.t = {
 
   type t = T.t
 
@@ -53,11 +73,14 @@ module mk_linalg (T: numeric): linalg with t = T.t = {
   let kronecker' [m][n][p][q] (xss: [m][n]t) (yss: [p][q]t): [m][n][p][q]t =
     map (map (\x -> map (map (T.*x)) yss)) xss
 
+  let flatten_to [n][m] 't k (xs: [n][m]t): [k]t =
+    flatten xs : [k]t
+
   let kronecker [m][n][p][q] (xss: [m][n]t) (yss: [p][q]t): [][]t =
-    kronecker' xss yss -- [m][n][p][q]
-    |> map transpose   -- [m][p][n][q]
-    |> flatten         -- [m*p][n][q]
-    |> map flatten     -- [m*p][n*q]
+    kronecker' xss yss        -- [m][n][p][q]
+    |> map transpose          -- [m][p][n][q]
+    |> flatten                -- [m*p][n][q]
+    |> map (flatten_to (n*q)) -- [m*p][n*q]
 
   -- Matrix inversion is implemented with Gauss-Jordan.
   let gauss_jordan [n][m] (A: [n][m]t): [n][m]t =
@@ -74,12 +97,13 @@ module mk_linalg (T: numeric): linalg with t = T.t = {
 
   let inv [n] (A: [n][n]t): [n][n]t =
     -- Pad the matrix with the identity matrix.
+    let twon = 2*n
     let Ap = map2 (\row i ->
                     map (\j -> if j < n then unsafe( row[j] )
                                      else if j == n+i
                                           then T.i32 1
                                           else T.i32 0
-                        ) (iota (2*n))
+                        ) (iota twon)
                   ) A (iota n)
     let Ap' = gauss_jordan Ap
     -- Drop the identity matrix at the front.

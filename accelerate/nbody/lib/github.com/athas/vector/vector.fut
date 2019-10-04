@@ -65,7 +65,8 @@ module type vector = {
   -- | Convert a vector to an array.
   val to_array 'a: vector a -> []a
 
-  -- | Create a vector from an array.
+  -- | Create a vector from an array.  This may fail if the array has
+  -- an unexpected size.
   val from_array 'a : []a -> vector a
 }
 
@@ -78,13 +79,12 @@ module type vector = {
 -- implementation of `vector`@mtype, it is probably better to use
 -- arrays directly than to go through this module.
 --
--- Since the size of the vectors is not constrained by the type, it is
--- possible for `zip` to fail with a size error, just as with the
--- ordinary `zip`@term@"/futlib/array".
-module any_vector : vector with vector 'a = []a = {
-  type vector 'a = []a
+-- When using this module, you just need to instantiate it with
+-- another module that indicates the dimensionality of the vectors you
+-- will be producing.
+module any_vector(P: { val d : i32 }) : vector with vector 'a = [P.d]a = {
+  type vector 'a = [P.d]a
 
-  let empty _ = []
   let map = map
   let reduce = reduce
   let zip = zip

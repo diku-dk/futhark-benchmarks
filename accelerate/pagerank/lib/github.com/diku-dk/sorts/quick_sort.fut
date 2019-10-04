@@ -20,7 +20,7 @@ local let tripadd (a1:i32,e1:i32,b1:i32) (a2,e2,b2) =
 
 local type sgm = {start:i32,sz:i32}  -- segment
 
-local let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm) : (*[n]t,[]sgm) =
+local let step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]t,[]sgm) =
   --let _ = trace {NEW_STEP=()}
 
   -- find a pivot for each segment
@@ -52,7 +52,7 @@ local let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm) : (*[n]t,[]
     in flags with [0] = true
 
   -- compute partition sizes for each segment
-  let pszs : [](i32,i32,i32) = segmented_reduce tripadd (0,0,0) flags orders
+  let pszs = segmented_reduce tripadd (0,0,0) flags orders : [k](i32,i32,i32)
 
   -- compute the new segments
   let sgms' =

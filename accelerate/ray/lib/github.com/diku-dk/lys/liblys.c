@@ -15,7 +15,6 @@
 
 #define INITIAL_WIDTH 800
 #define INITIAL_HEIGHT 600
-#define FONT_SIZE 24
 
 #define SDL_ASSERT(x) _sdl_assert(x, __FILE__, __LINE__)
 static inline void _sdl_assert(int res, const char *file, int line) {
@@ -32,6 +31,22 @@ static int64_t get_wall_time(void) {
   return time.tv_sec * 1000000 + time.tv_usec;
 }
 
+static int font_size_from_dimensions(int width, int height) {
+  int size, font_size;
+  if (height < width) {
+    size = height;
+  } else {
+    size = width;
+  }
+  font_size = size / 45;
+  if (font_size < 14) {
+    font_size = 14;
+  } else if (font_size > 32) {
+    font_size = 32;
+  }
+  return font_size;
+}
+
 void window_size_updated(struct lys_context *ctx, int newx, int newy) {
   // https://stackoverflow.com/a/40122002
   ctx->wnd_surface = SDL_GetWindowSurface(ctx->wnd);
@@ -39,6 +54,11 @@ void window_size_updated(struct lys_context *ctx, int newx, int newy) {
 
   ctx->width = newx;
   ctx->height = newy;
+
+  ctx->font_size = font_size_from_dimensions(ctx->width, ctx->height);
+  TTF_CloseFont(ctx->font);
+  ctx->font = TTF_OpenFont(ctx->font_path, ctx->font_size);
+  SDL_ASSERT(ctx->font != NULL);
 
   struct futhark_opaque_state *new_state;
   FUT_CHECK(ctx->fut, futhark_entry_resize(ctx->fut, &new_state, ctx->height, ctx->width, ctx->state));
@@ -176,7 +196,7 @@ void sdl_loop(struct lys_context *ctx) {
 
     if (ctx->show_text) {
       build_text(ctx, ctx->text_buffer, ctx->text_buffer_len, ctx->text_format,
-                 ctx->fps);
+                 ctx->fps, ctx->sum_names);
       if (*(ctx->text_buffer) != '\0') {
         uint32_t text_colour;
         FUT_CHECK(ctx->fut,
@@ -198,7 +218,6 @@ void sdl_loop(struct lys_context *ctx) {
 
           bool no_more_text = false;
           while (true) {
-            buffer++;
             if (*buffer == '\n') {
               *buffer = '\0';
               break;
@@ -206,22 +225,25 @@ void sdl_loop(struct lys_context *ctx) {
               no_more_text = true;
               break;
             }
+            buffer++;
           }
 
-          text_surface = TTF_RenderUTF8_Blended(ctx->font, buffer_start, sdl_text_colour);
-          SDL_ASSERT(text_surface != NULL);
-          offset_rect.y = y;
-          offset_rect.w = text_surface->w;
-          offset_rect.h = text_surface->h;
-          SDL_ASSERT(SDL_BlitSurface(text_surface, NULL,
-                                     ctx->wnd_surface, &offset_rect) == 0);
-          SDL_FreeSurface(text_surface);
+          if (*buffer_start != '\0') {
+            text_surface = TTF_RenderUTF8_Blended(ctx->font, buffer_start, sdl_text_colour);
+            SDL_ASSERT(text_surface != NULL);
+            offset_rect.y = y;
+            offset_rect.w = text_surface->w;
+            offset_rect.h = text_surface->h;
+            SDL_ASSERT(SDL_BlitSurface(text_surface, NULL,
+                                       ctx->wnd_surface, &offset_rect) == 0);
+            SDL_FreeSurface(text_surface);
+          }
 
           if (no_more_text) {
             break;
           } else {
             buffer++;
-            y += FONT_SIZE;
+            y += ctx->font_size;
           }
         }
       }
@@ -289,7 +311,9 @@ void do_sdl(struct futhark_context *fut,
   SDL_ASSERT(SDL_Init(SDL_INIT_EVERYTHING) == 0);
   SDL_ASSERT(TTF_Init() == 0);
 
-  ctx.font = TTF_OpenFont(font_path, FONT_SIZE);
+  ctx.font_path = font_path;
+  ctx.font_size = font_size_from_dimensions(ctx.width, ctx.height);
+  ctx.font = TTF_OpenFont(ctx.font_path, ctx.font_size);
   SDL_ASSERT(ctx.font != NULL);
 
   int flags = 0;
@@ -322,12 +346,64 @@ void do_sdl(struct futhark_context *fut,
   ctx.text_format[text_format_len] = '\0';
   FUT_CHECK(ctx.fut, futhark_free_u8_1d(ctx.fut, text_format_array));
 
+  ctx.sum_names = (char* **) malloc(sizeof(char* *) * n_printf_arguments());
+  assert(ctx.sum_names != NULL);
+
   ctx.text_buffer_len = text_format_len;
+  size_t i_arg = -1;
   for (size_t i = 0; i < text_format_len; i++) {
-    if (ctx.text_format[i] == '%') {
-      ctx.text_buffer_len += 20; // estimate
+    if (ctx.text_format[i] == '%' &&
+        i + 1 < text_format_len && ctx.text_format[i + 1] != '%') {
+      i_arg++;
+      if (ctx.text_format[i + 1] == '[') {
+        ctx.text_format[i + 1] = 's';
+        size_t end_pos;
+        size_t n_choices = 1;
+        bool found_end = false;
+        for (end_pos = i + 2; end_pos < text_format_len; end_pos++) {
+          if (ctx.text_format[end_pos] == '|') {
+            n_choices++;
+          } else if (ctx.text_format[end_pos] == ']') {
+            found_end = true;
+            break;
+          }
+        }
+        assert(found_end);
+        ctx.sum_names[i_arg] = (char* *) malloc(sizeof(char*) * (n_choices + 1));
+        assert(ctx.sum_names[i_arg] != NULL);
+        ctx.sum_names[i_arg][n_choices] = NULL;
+        char* temp_choice = (char*) malloc(sizeof(char) * (end_pos - i - n_choices));
+        assert(temp_choice != NULL);
+        size_t choice_cur = 0;
+        size_t i_choice = 0;
+        for (size_t j = i + 2; j < end_pos + 1; j++) {
+          if (ctx.text_format[j] == '|' || ctx.text_format[j] == ']') {
+            temp_choice[choice_cur] = '\0';
+            ctx.sum_names[i_arg][i_choice] = (char*) malloc(sizeof(char) * (choice_cur + 1));
+            assert(ctx.sum_names[i_arg][i_choice] != NULL);
+            strncpy(ctx.sum_names[i_arg][i_choice], temp_choice, choice_cur + 1);
+            choice_cur = 0;
+            i_choice++;
+          } else {
+            temp_choice[choice_cur] = ctx.text_format[j];
+            choice_cur++;
+          }
+        }
+        free(temp_choice);
+        size_t shift_left = end_pos - i - 1;
+        for (size_t j = end_pos + 1; j < text_format_len; j++) {
+          ctx.text_format[j - shift_left] = ctx.text_format[j];
+        }
+        text_format_len -= shift_left;
+        ctx.text_format[text_format_len] = '\0';
+        i++;
+      } else {
+        ctx.sum_names[i_arg] = NULL;
+        ctx.text_buffer_len += 20; // estimate
+      }
     }
   }
+
   ctx.text_buffer = malloc(sizeof(char) * ctx.text_buffer_len);
   assert(ctx.text_buffer != NULL);
   ctx.text_buffer[0] = '\0';
@@ -339,6 +415,18 @@ void do_sdl(struct futhark_context *fut,
 
   free(ctx.text_format);
   free(ctx.text_buffer);
+
+  for (size_t i = 0; i < n_printf_arguments(); i++) {
+    if (ctx.sum_names[i] != NULL) {
+      size_t j = 0;
+      while (ctx.sum_names[i][j] != NULL) {
+        free(ctx.sum_names[i][j]);
+        j++;
+      }
+      free(ctx.sum_names[i]);
+    }
+  }
+  free(ctx.sum_names);
 
   free(ctx.data);
   SDL_FreeSurface(ctx.surface);
