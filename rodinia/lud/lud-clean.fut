@@ -118,6 +118,9 @@ let lud_internal [m][b] (top_per: [m][b][b]f32, lft_per: [m][b][b]f32, mat_slice
 
 let block_size: i32 = 32
 
+let pad_to [n] 'a (m: i32) (x: a) (arr: [n]a) : [m]a =
+  arr ++ replicate (m - n) x : [m]a
+
 --------------------------------------------
 ---- Main Driver:
 --------------------------------------------
@@ -128,7 +131,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
     -- Maybe pad the input to be a multiple of the block size.
     let padding = n - m
     let mat = if padding != 0
-              then (map (++replicate padding 0f32) mat : [m][n]f32) ++
+              then map (pad_to n 0) mat ++
                    replicate padding (replicate n 0f32)
               else mat : [n][n]f32
     -------------------------------------------------

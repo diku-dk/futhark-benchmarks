@@ -39,7 +39,7 @@ let bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32
   let lyext = map( \(k: i32): f32  ->
                         if k < 1 then 1.0 else unsafe ly[k-1])
                  (iota nly)
-  in unzip (map ( \(w_row: []f32, oldw_row: []f32, lyk: f32): ([]f32,[]f32)  ->
+  in unzip (map (\(w_row: []f32, oldw_row: []f32, lyk: f32)  ->
                     unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32): (f32,f32)  ->
                                    let new_dw = eta()*delta_el*lyk + momentum()*oldw_el
                                    in ( w_el+new_dw, new_dw ))
