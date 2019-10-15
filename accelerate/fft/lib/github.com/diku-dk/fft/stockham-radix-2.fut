@@ -19,7 +19,7 @@ module mk_fft (R: real): {
 
   let fft_iteration [n] (forward: R.t) (ns: i32) (data: [n]complex) (j: i32)
                   : (i32, complex, i32, complex) =
-    let angle = R.(f64(-2.0) * forward * pi * (i32(j % ns))) R./ R.i32(ns * radix)
+    let angle = R.(f64(-2.0) * forward * pi) R.* (R.i32(j % ns)) R./ R.i32(ns * radix)
     let (v0, v1) = (data[j],
                     data[j+n/radix] complex.* (complex.mk (R.cos angle) (R.sin angle)))
 
