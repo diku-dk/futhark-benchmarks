@@ -29,7 +29,7 @@ module lys: lys with text_content = text_content = {
   let resize h w s: state =
     s with height = h with width = w
 
-  let keydown k (s: state) =
+  let keydown (k: i32) (s: state) =
     if      k == 'w' then s with forward_sgn = 1
     else if k == 's' then s with forward_sgn = -1
     else if k == 'a' then s with sideway_sgn = -1
@@ -38,7 +38,7 @@ module lys: lys with text_content = text_content = {
     else if k == 'x' then s with limit = s.limit + 1
     else s
 
-  let keyup k (s: state) =
+  let keyup (k: i32) (s: state) =
     if      k == 'w' then s with forward_sgn = 0
     else if k == 's' then s with forward_sgn = 0
     else if k == 'a' then s with sideway_sgn = 0
