@@ -22,4 +22,7 @@ let main (xs: [vector_8.length]i32) =
 -- input { [1,2,3] }
 -- error:
 
-entry error (xs: []i32) = vector_8.from_array xs
+entry error (xs: []i32) =
+  xs
+  |> vector_8.from_array
+  |> vector_8.to_array
