@@ -168,6 +168,7 @@ let run2 [sx][sy][sz][dims1][N]
 module vector_2 = cat_vector vector_1 vector_1
 module v4 = cat_vector vector_2 vector_2
 type vec4 't = v4.vector t
+let mkv4 't arr = v4.from_array (arr : [v4.length]t)
 
 let myfunVct (s: i32) (scale: real) (offset: real) (pt: real) : 
              (vec4 real, vec4 i32) =
@@ -175,11 +176,11 @@ let myfunVct (s: i32) (scale: real) (offset: real) (pt: real) :
     let t  = t - (rfloor t)
     let t2 = t*t
     let t3 = t2*t
-    let x = v4.from_array <|
+    let x = mkv4
             [-t3+3*t2-3*t+1, 3*t3-6*t2+4, -3*t3+3*t2+3*t+1,  t3]
 
     let t  = i32conv ( (pt-offset) / scale )
-    let px = v4.from_array <|
+    let px = mkv4
              [ i32.min (i32.max (t - 1i32) 0i32) (s - 1i32)
              , i32.max (i32.min t (s-1)) 0
              , i32.min (i32.max (t+1) 0) (s-1)
@@ -213,9 +214,9 @@ let run3 [sx][sy][sz][dims1][N]
                                       let dfdp = (x_l * y_k * z_j) / 216.0
                                       let dd   = unsafe dataI[m, pz_j, py_k, px_l]
                                       in  dfdp * (toReal dd)
-                               ) (v4.from_array <| iota 4)
-                           ) (v4.from_array <| iota 4)
-                       ) (v4.from_array <| iota 4)
+                               ) v4.iota
+                           ) v4.iota
+                       ) v4.iota
               in res
         ) (iota N)
 
@@ -245,8 +246,8 @@ let run4 [sx][sy][sz][dims1][N]
                                              let dfdp = (x_l * y_k * z_j) / 216.0
                                              let dd   = unsafe dataI[m, pz_j, py_k, px_l]
                                              in  dfdp * (toReal dd)
-                                      ) (v4.from_array <| iota 4)
-                              ) (v4.from_array <| iota 4)
+                                      ) v4.iota
+                              ) v4.iota
                       )
               in res
         ) (iota N)
