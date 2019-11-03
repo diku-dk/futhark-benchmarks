@@ -89,10 +89,10 @@ let matvecmul_row_filt [n][m] (flgs: [m]bool) (xss: [n][m]f32) (ys: [m]f32) =
 
 -- | The core of the alg: the computation for a time series
 --   for one pixel.
-let bfast [N] (f: f32) (k: i32) (n: i32)
+let bfast [N] (Nmn: i32) (f: f32) (k: i32) (n: i32)
               (hfrac: f32) (lam: f32)
               (y: [N]f32) :
-              []f32 =
+              [Nmn]f32 =
   -- it's ok, don't panick: whatever is invariant to the
   -- outer map is gonna be hoisted out!
   -- (Just to advertize the compiler a bit)
@@ -128,7 +128,7 @@ let bfast [N] (f: f32) (k: i32) (n: i32)
   let MO_ini = map (\j ->
                       if j == 0 then MO_fst
                       else  unsafe (-y_error[n-h+j] + y_error[n+j])
-                   ) (iota (N-n))
+                   ) (iota Nmn)
   let MO = scan (+) 0 MO_ini
 
   -- line 5: sigma
@@ -143,7 +143,7 @@ let bfast [N] (f: f32) (k: i32) (n: i32)
   let BOUND = map (\q -> let t   = n+1+q
                          let tmp = logplus ((r32 t) / (r32 n))
                          in  lam * (f32.sqrt tmp)
-                  ) (iota (N-n))
+                  ) (iota Nmn)
 
   let breaks = map2 (\m b -> if (f32.isnan m) || (f32.isnan b) then 0 else (f32.abs m) - b) MO BOUND
   in  breaks
@@ -153,5 +153,5 @@ entry main [m][N] (k: i32) (n: i32) (freq: f32)
                   (hfrac: f32) (lam: f32)
                   (images : [m][N]f32) :
                   ([m][]f32) =
-  let res = map (bfast freq k n hfrac lam) images
+  let res = map (bfast (N-n) freq k n hfrac lam) images
   in  res
