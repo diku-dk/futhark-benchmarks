@@ -26,7 +26,7 @@ module lys: lys with text_content = text_content = {
       sideway_sgn = 0,
       time = 0}
 
-  let resize h w s: state =
+  let resize h w (s: state): state =
     s with height = h with width = w
 
   let keydown (k: i32) (s: state) =
