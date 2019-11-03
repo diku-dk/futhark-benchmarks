@@ -186,10 +186,10 @@ let bpnn_create (n_in: i32) (n_inp1: i32) (n_hid: i32)
        input_prev_weights, hidden_prev_weights)
 
 let consColumn [m][n] (mat: [m][n]f32, col: [m]f32): [m][]f32 =
-    map ( \(matrow: []f32, colelm: f32): []f32  ->
-            map ( \(k: i32): f32  ->
-                    if k < 1 then colelm else unsafe matrow[k-1])
-          (iota(n+1)))
+  let np1 = n+1
+  in map (\(matrow, colelm)  ->
+            map (\k -> if k < 1 then colelm else unsafe matrow[k-1])
+                (iota np1))
           (zip mat col)
 
 let main [num_bits] (n_in: i32) (dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
