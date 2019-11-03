@@ -48,7 +48,7 @@ let radix_sort [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
 let with_indices [n] 'a (xs: [n]a) : [n](a, i32) =
   zip xs (iota n)
 
-local let by_key_wrapper sorter key num_bits get_bit xs =
+local let by_key_wrapper [n] 't sorter key num_bits get_bit (xs: [n]t) : [n]t =
   map key xs
   |> with_indices
   |> sorter num_bits (\i (k, _) -> get_bit i k)
