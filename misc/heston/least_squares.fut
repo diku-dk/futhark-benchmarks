@@ -183,7 +183,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
 
   let least_squares [num_vars]
       (variables: [num_vars]optimization_variable)
-      (objective: []real -> real)
+      (objective: [num_vars]real -> real)
       (max_global: i32)
       (np: i32)
       (num_observed: i32)
