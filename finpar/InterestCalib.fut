@@ -228,7 +228,7 @@ let genomeBounds: [5](f32,f32,f32) =
     , (eps0,     0.2,        0.04)
     ]
 
-let initGenome (rand_nums: []f32): []f32 =
+let initGenome (rand_nums: [5]f32): [5]f32 =
   map  (\(tup: (f32, (f32,f32,f32))): f32  ->
                     let (r01, (g_min, g_max, _g_ini)) = tup
                     in  r01*(g_max - g_min) + g_min
@@ -274,7 +274,7 @@ let perturbation(gamma1:  f32, ampl_rat : f32)
   let perturb       = ( amplitude * r01 - semiamplitude )
   in  gene + perturb + gamma1 * ( gene_k - gene_l )
 
-let mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
+let mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[n]f32,f32) =
   let (sob_row, orig, muta) = tup
   let gene_bds = take n genomeBounds
   let amplitude = moves_unif_ampl_ratio()
@@ -285,7 +285,7 @@ let mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[]f32,f32) =
   let fb_rat    = f32.product (fb_rats)
   in  (copy(new_genome), fb_rat)
 
-let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
+let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[n]f32,f32) =
   let (sob_row, orig, muta) = tup
   let gene_bds = take n genomeBounds
   let amplitudes= map (\(i: i32): f32  ->
@@ -299,7 +299,7 @@ let mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[]f32,f32) =
   in  (copy(new_genome), fb_rat)
 
 
-let mcmc_DE(r01: f32, sob_row: []f32, g_i: []f32, g_k: []f32, g_l: []f32): *[]f32 =
+let mcmc_DE (r01: f32, sob_row: [5]f32, g_i: [5]f32, g_k: [5]f32, g_l: [5]f32): *[5]f32 =
   let gene_bds = genomeBounds
   let gamma_avg = 2.38 / f32.sqrt(2.0*5.0)
   let ampl_ratio= 0.1 * moves_unif_ampl_ratio()
@@ -629,7 +629,7 @@ let interestCalibKernel(pop:  i32
                        , sobDirVct: []i32
                        ): (f32,f32,f32,f32,f32,f32,[][]f32) =
   -- initialize the genomes
-  let genomes = map  (\(i: i32): []f32  ->
+  let genomes = map  (\(i: i32)  ->
                         let k   = 5*i + 1
                         let z5s = map  (+k) (iota(5) )
                         let sobs= map  (sobolInd(sobDirVct)) z5s
@@ -656,7 +656,7 @@ let interestCalibKernel(pop:  i32
       let (proposals, fb_rats, sob_offs) =
         if (move_type == 1) --  move_type == DIMS_ALL
         then let sob_mat =
-                 map (\(i: i32): []f32  ->
+                 map (\(i: i32) ->
                         let k   = 5*i + sob_offs
                         let z5s = map (+k) (iota(5) ) in
                         map  (sobolInd(sobDirVct)) z5s
@@ -671,7 +671,7 @@ let interestCalibKernel(pop:  i32
         then let s1  = sobolInd sobDirVct sob_offs
              let dim_j = t32( s1 * r32(5) )
              let sob_mat =
-                 map (\(i: i32): []f32  ->
+                 map (\(i: i32)  ->
                         let k   = 5*i + sob_offs + 1
                         let z5s = map (+k) (iota(5)) in
                         map  (sobolInd(sobDirVct)) z5s
@@ -684,7 +684,7 @@ let interestCalibKernel(pop:  i32
 
         else                -- move_type == DEMCMC
              let new_genomes =
-                 map (\(i: i32): *[]f32  ->
+                 map (\(i: i32)  ->
                         let kk  = 8*i + sob_offs
                         let s1  = sobolInd sobDirVct kk
                         let k = t32( s1 * r32(pop-1) )  -- random in [0,pop-1)
@@ -713,8 +713,7 @@ let interestCalibKernel(pop:  i32
                     f32.sum terms
               ) proposals
       let res_gene_liks =
-          map (\(tup: ([]f32,f32,[]f32,(f32,f32,i32))): (*[]f32,f32)  ->
-                 let (gene, logLik, new_gene, (new_logLik, fb_rat, i)) = tup
+          map (\(gene, logLik, new_gene, (new_logLik, fb_rat, i)) ->
                  let acceptance = f32.min 1.0 (f32.exp(new_logLik - logLik)*fb_rat)
                  let rand01     = sobolInd sobDirVct (sob_offs+i)
                  let (res_gene, res_logLik) =

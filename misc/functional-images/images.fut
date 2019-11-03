@@ -194,14 +194,14 @@ module lys: lys with text_content = text_content = {
       paused = false
     }
 
-  let resize h w s: state =
+  let resize h w (s: state) =
     let h_shrink = r32 s.screen_size.height / r32 h
     let w_shrink = r32 s.screen_size.width / r32 w
     in s with screen_size = {height=h, width=w}
          with image_size = {width=s.image_size.width * (1/w_shrink),
                             height=s.image_size.height * (1/h_shrink)}
 
-  let keydown k s: state =
+  let keydown k (s: state) =
     if      k == '1' then s with mode = #mandelbrot_greyscale
     else if k == '2' then s with mode = #julia_greyscale
     else if k == '3' then s with mode = #mandelbrot_colour
@@ -213,7 +213,7 @@ module lys: lys with text_content = text_content = {
     else if k == ' ' then s with paused = !s.paused
     else s
 
-  let keyup k s: state =
+  let keyup k (s: state) =
     if      k == SDLK_KP_PLUS then s with zooming = 0
     else if k == SDLK_KP_MINUS then s with zooming = 0
     else s
@@ -226,7 +226,7 @@ module lys: lys with text_content = text_content = {
     in s with centre = (s.centre.1 + x_per_pixel * r32 dx,
                         s.centre.2 + y_per_pixel * r32 dy)
 
-  let mouse (buttons: i32) x y s: state =
+  let mouse (buttons: i32) x y (s: state) =
     let dpos = diff (x,y) s.mouse
     let s = s with mouse = (x,y)
     let s = if (buttons & 1) == 1
@@ -238,7 +238,7 @@ module lys: lys with text_content = text_content = {
             else s
     in s
 
-  let do_zoom factor s: state =
+  let do_zoom factor (s: state) =
     s with image_size = {width = s.image_size.width * (1+factor),
                          height = s.image_size.height * (1+factor)}
 
