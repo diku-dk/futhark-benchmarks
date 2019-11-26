@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import life
-import numpy
-import pygame
+import numpy as np
+from sdl2 import *
+import sdl2.ext
 import argparse
 import pyopencl as cl
 import sys
@@ -32,14 +33,27 @@ parser.add_argument('--steps', metavar='INT', type=int, default=1,
                     help='Number of simulation steps to perform per frame')
 
 args = parser.parse_args()
+height = args.height
+width = args.width
 
 steps=args.steps
-size=(args.width,args.height)
+
+SDL_Init(SDL_INIT_EVERYTHING)
+window = SDL_CreateWindow("Futhark Presents!",
+                          SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+		          width, height, SDL_WINDOW_SHOWN)
 
 
-screen = pygame.display.set_mode(size)
-surface = pygame.Surface(size, depth=32)
-initworld = numpy.random.choice([True, False], size=size)
+def reWindow(window):
+    window_surface = SDL_GetWindowSurface(window)
+    frame_py = np.ndarray(shape=(height, width), dtype=np.int32, order='C')
+    surface = SDL_CreateRGBSurfaceFrom(frame_py.ctypes.data, width, height, 32, width*4,
+                                       0xFF0000, 0xFF00, 0xFF, 0x00000000)
+    return (window_surface, frame_py, surface)
+
+(window_surface, frame_py, surface) = reWindow(window)
+
+initworld = np.random.choice([True, False], size=(height, width))
 
 ruleset = args.variant
 life_init, life_steps, life_render, life_uninit = get_ruleset(life, ruleset)
@@ -48,12 +62,9 @@ life_state = life_init(initworld)
 
 def render():
     frame = life_render(life_state)
-    # We get back a PyOpenCL array.  It is mostly compatible with
-    # Numpy, but Pygame really wants a proper Numpy array, so we use
-    # the get() method to obtain that.
-    pygame.surfarray.blit_array(surface, frame.get())
-    screen.blit(surface, (0, 0))
-    pygame.display.flip()
+    frame.get(ary=frame_py)
+    SDL_BlitSurface(surface, None, window_surface, None)
+    SDL_UpdateWindowSurface(window)
 
 def switch_rules(d):
     global ruleset, life_state, life_init, life_steps, life_render, life_uninit
@@ -65,15 +76,18 @@ running=True
 while running:
     life_state = life_steps(steps, life_state)
     render()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    events = sdl2.ext.get_events()
+    for event in events:
+        if event.type == SDL_QUIT:
             running=False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
+        if event.type == SDL_KEYDOWN:
+            key = event.key.keysym.sym
+            if key == SDLK_RIGHT:
                 switch_rules(1)
-            if event.key == pygame.K_LEFT:
+            if key == SDLK_LEFT:
                 switch_rules(-1)
-            if event.key == pygame.K_ESCAPE:
+            if key == SDLK_ESCAPE:
                 running=False
-            if event.unicode == 'r':
-                life_state = life_init(numpy.random.choice([True, False], size=size))
+            if key == SDLK_r:
+                life_state = life_init(np.random.choice([True, False],
+                                                        size=(height, width)))
