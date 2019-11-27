@@ -12,6 +12,11 @@ module type vspace = {
   -- | A vector type.  Semantically a sequence of `real`s.
   type vector
 
+    -- | Neutral element for the addition.
+  val zero: vector
+  -- | Neutral element for the multiplication by a scalar.
+  val one: real
+
   -- | Apply an operation to each element of the vector.
   val map : (real -> real) -> vector -> vector
 
@@ -70,6 +75,9 @@ module mk_vspace_2d (real: scalar): vspace_2d with real = real.t = {
 
   type vector = {x: real, y: real}
 
+  let zero = {x = real.i32 0, y = real.i32 0}
+  let one  = (real.i32 1)
+
   let map f (v : vector) =
     {x = f v.x, y = f v.y}
 
@@ -92,7 +100,7 @@ module mk_vspace_2d (real: scalar): vspace_2d with real = real.t = {
 
   let normalise (v: vector): vector =
     let l = norm v
-    in scale (real.i32 1 real./ l) v
+    in scale (one real./ l) v
 }
 
 -- | A three-dimensional vector space is just a vector space, but we
@@ -105,6 +113,18 @@ module type vspace_3d = {
 
   -- | Cross product.
   val cross: vector -> vector -> vector
+
+  -- | Rotate vector around the *x* axis.  This leaves the *x* axis
+  -- unchanged.
+  val rot_x : (radians: real) -> vector -> vector
+
+  -- | Rotate vector around the *y* axis.  This leaves the *y* axis
+  -- unchanged.
+  val rot_y : (radians: real) -> vector -> vector
+
+  -- | Rotate vector around the *z* axis.  This leaves the *z* axis
+  -- unchanged.
+  val rot_z : (radians: real) -> vector -> vector
 }
 
 -- | Construct a 3D vector space.
@@ -112,6 +132,9 @@ module mk_vspace_3d(real: real): vspace_3d with real = real.t = {
   type real = real.t
 
   type vector = {x: real, y: real, z: real}
+
+  let zero = {x = real.i32 0, y = real.i32 0, z = real.i32 0}
+  let one  = real.i32 1
 
   let map f (v : vector) =
     {x = f v.x, y = f v.y, z = f v.z}
@@ -139,7 +162,29 @@ module mk_vspace_3d(real: real): vspace_3d with real = real.t = {
 
   let normalise (v: vector): vector =
     let l = norm v
-    in scale (real.i32 1 real./ l) v
+    in scale (one real./ l) v
+
+  let rot_x (theta: real) ({x,y,z} : vector) =
+    let cos_theta = real.cos theta
+    let sin_theta = real.sin theta
+    in { x
+       , y = real.(cos_theta * y - sin_theta * z)
+       , z = real.(sin_theta * y + cos_theta * z)}
+
+  let rot_y (theta: real) ({x,y,z} : vector) =
+    let cos_theta = real.cos theta
+    let sin_theta = real.sin theta
+    in { x = real.(cos_theta * x - sin_theta * z)
+       , y
+       , z = real.(sin_theta * x + cos_theta * z)}
+
+  let rot_z (theta: real) ({x,y,z} : vector) =
+    let cos_theta = real.cos theta
+    let sin_theta = real.sin theta
+    in { x = real.(cos_theta * x - sin_theta * y)
+       , y = real.(sin_theta * x + cos_theta * y)
+       , z}
+
 }
 
 import "vector"
@@ -151,6 +196,9 @@ module mk_vspace(V: vector) (real: real):
        vspace with real = real.t with vector = V.vector real.t = {
   type real = real.t
   type vector = V.vector real
+
+  let zero = V.replicate (real.i32 0)
+  let one: real.t  = real.i32 1
 
   let map = V.map
   let map2 f a b = V.zip a b |> V.map (uncurry f)
@@ -171,5 +219,5 @@ module mk_vspace(V: vector) (real: real):
 
   let normalise (v: vector): vector =
     let l = norm v
-    in scale (real.i32 1 real./ l) v
+    in scale (one real./ l) v
 }

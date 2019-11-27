@@ -4,8 +4,8 @@ import "quick_sort"
 
 -- ==
 -- entry: sort_i32
--- input { empty(i32) }
--- output { empty(i32) }
+-- input { empty([0]i32) }
+-- output { empty([0]i32) }
 -- input { [5,4,3,2,1] }
 -- output { [1,2,3,4,5] }
 -- input { [5,4,3,3,2,1] }
