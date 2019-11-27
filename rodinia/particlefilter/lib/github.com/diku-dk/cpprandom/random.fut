@@ -445,7 +445,10 @@ module pcg32: rng_engine with int.t = u32 = {
     in (rand {state, inc}).1
 
   let split_rng (n: i32) ({state,inc}: rng): [n]rng =
-    map (\i -> (rand {state = state * u64.i32 (hash (i^n)), inc}).1) (iota n)
+    let ith i =
+      let i' = hash (i ^ n)
+      in {state = state ^ u64.i32 i' ^ (u64.i32 i' << 32), inc}
+    in tabulate n ith
 
   let join_rng (rngs: []rng) =
     let states = map (\(x: rng) -> x.state) rngs

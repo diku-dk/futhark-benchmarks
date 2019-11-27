@@ -1,4 +1,6 @@
--- | Data-parallel implementation of quicksort.
+-- | Data-parallel implementation of quicksort.  Note that this
+-- quicksort, while parallel, is quite slow.  In almost all cases you
+-- should use radix- or merge sort instead.
 
 local import "../segmented/segmented"
 
