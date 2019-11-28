@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-#
-# There is some joystick support, but it's hardwired for a USB NES
-# controller I keep on my desk.
 
 import nbody
 
-import numpy
-import pygame
+import numpy as np
+from sdl2 import *
+import sdl2.ext
 import time
 import sys
+from sdl2.sdlttf import (TTF_OpenFont, TTF_RenderText_Shaded, TTF_GetError, TTF_Init, TTF_Quit)
+import ctypes
 
 try:
     import _nbody
@@ -20,17 +20,26 @@ except ImportError:
     import nbody
     print('Using futhark-pyopencl backend.')
     def futhark_object():
-        return nbody.nbody(default_threshold=1)
+        return nbody.nbody(default_threshold=1, interactive=True)
 
 nb = futhark_object()
 
-pygame.init()
-pygame.display.set_caption('N-body')
-screen = pygame.display.set_mode((800,600))
-width = screen.get_width()
-height = screen.get_height()
-surface = pygame.Surface((width, height), depth=32)
-size = (width, height)
+width = 800
+height = 600
+
+SDL_Init(SDL_INIT_EVERYTHING)
+window = SDL_CreateWindow("N-body",
+                          SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+		          width, height, SDL_WINDOW_SHOWN)
+
+def reWindow(window):
+    window_surface = SDL_GetWindowSurface(window)
+    frame_py = np.ndarray(shape=(height, width), dtype=np.int32, order='C')
+    surface = SDL_CreateRGBSurfaceFrom(frame_py.ctypes.data, width, height, 32, width*4,
+                                       0xFF0000, 0xFF00, 0xFF, 0x00000000)
+    return (window_surface, frame_py, surface)
+
+(window_surface, frame_py, surface) = reWindow(window)
 
 x_rotation=0.0
 y_rotation=0.0
@@ -45,88 +54,74 @@ epsilon=50.0
 max_mass=1.0
 
 def random_points():
-    return (numpy.random.normal(size=N,scale=width/5,loc=0).astype('float32'),
-            numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32'),
-            numpy.random.normal(size=N,scale=height/5,loc=0).astype('float32'),
+    return (np.random.normal(size=N,scale=width/5,loc=0).astype('float32'),
+            np.random.normal(size=N,scale=height/5,loc=0).astype('float32'),
+            np.random.normal(size=N,scale=height/5,loc=0).astype('float32'),
 
-            numpy.random.rand(N).astype('float32'),
+            np.random.rand(N).astype('float32'),
 
-            numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'))
+            np.zeros(N).astype('float32'),
+            np.zeros(N).astype('float32'),
+            np.zeros(N).astype('float32'))
 
 def random_points_orbit():
-    xs = numpy.random.normal(size=N,scale=width/10,loc=0).astype('float32')
+    xs = np.random.normal(size=N,scale=width/10,loc=0).astype('float32')
     return (xs,
-            numpy.random.normal(size=N,scale=height/200,loc=0).astype('float32') * (xs/100),
-            numpy.random.normal(size=N,scale=height/200,loc=0).astype('float32') * (xs/10),
+            np.random.normal(size=N,scale=height/200,loc=0).astype('float32') * (xs/100),
+            np.random.normal(size=N,scale=height/200,loc=0).astype('float32') * (xs/10),
 
-            numpy.random.rand(N).astype('float32'),
+            np.random.rand(N).astype('float32'),
 
-            numpy.zeros(N).astype('float32'),
+            np.zeros(N).astype('float32'),
             xs/width*10,
-            numpy.zeros(N).astype('float32'))
+            np.zeros(N).astype('float32'))
 
 def random_points_donut():
-    angles = numpy.random.rand(N).astype('float32') * numpy.pi * 2
-    tangents = numpy.pi*2 - angles
-    lengthscales = numpy.random.normal(size=N).astype('float32')
+    angles = np.random.rand(N).astype('float32') * np.pi * 2
+    tangents = np.pi*2 - angles
+    lengthscales = np.random.normal(size=N).astype('float32')
     lengths = lengthscales*min(width,height)/10 + min(width,height)/2
-    return (lengths * numpy.sin(angles),
-            lengths * numpy.cos(angles),
-            numpy.random.rand(N).astype('float32') * width / 10,
+    return (lengths * np.sin(angles),
+            lengths * np.cos(angles),
+            np.random.rand(N).astype('float32') * width / 10,
 
-            numpy.random.rand(N).astype('float32'),
+            np.random.rand(N).astype('float32'),
 
-            numpy.sin(angles-numpy.pi/2)*2*numpy.abs(lengthscales),
-            numpy.cos(angles-numpy.pi/2)*2*numpy.abs(lengthscales),
-            numpy.zeros(N).astype('float32'))
+            np.sin(angles-np.pi/2)*2*np.abs(lengthscales),
+            np.cos(angles-np.pi/2)*2*np.abs(lengthscales),
+            np.zeros(N).astype('float32'))
 
 def random_points_spiral():
-    lengths = numpy.arange(N).astype('float32') / (N/(min(width,height)/2))
-    angles = lengths / (3*numpy.pi)
-    return (lengths * numpy.sin(angles),
-            lengths * numpy.cos(angles),
-            numpy.random.rand(N).astype('float32') * width / 10,
+    lengths = np.arange(N).astype('float32') / (N/(min(width,height)/2))
+    angles = lengths / (3*np.pi)
+    return (lengths * np.sin(angles),
+            lengths * np.cos(angles),
+            np.random.rand(N).astype('float32') * width / 10,
 
-            numpy.random.rand(N).astype('float32'),
+            np.random.rand(N).astype('float32'),
 
-            numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'),
-            numpy.zeros(N).astype('float32'))
+            np.zeros(N).astype('float32'),
+            np.zeros(N).astype('float32'),
+            np.zeros(N).astype('float32'))
 
 
 (xps,yps,zps,ms,xvs,yvs,zvs) = random_points()
 
-font = pygame.font.Font(None, 36)
-
 curtime=0
-
-def showText(what, where, color):
-    text = font.render(what, 1, color)
-    screen.blit(text, where)
 
 def render(time_step,invert):
     global xps,yps,zps,ms,xvs,yvs,zvs,angle
     start = time.time()
     (xps,yps,zps,ms,xvs,yvs,zvs) = \
       step_nbody(steps_per_call, epsilon, time_step, xps,yps,zps,ms,xvs,yvs,zvs)
-    frame = render_nbody(width, height, x_ul, y_ul, x_br, y_br, xps, yps, zps, ms, x_rotation, y_rotation, max_mass, invert).get()
+    frame = render_nbody(height, width, x_ul, y_ul, x_br, y_br, xps, yps, zps, ms, x_rotation, y_rotation, max_mass, invert).get(ary=frame_py)
     end = time.time()
     futhark_time = (end-start)*1000
     start = time.time()
-    pygame.surfarray.blit_array(surface, frame)
-    screen.blit(surface, (0, 0))
+    SDL_BlitSurface(surface, None, window_surface, None)
+    SDL_UpdateWindowSurface(window)
     end = time.time()
     blit_time = (end-start)*1000
-
-    speedmessage = "Futhark call took %.2fms; blitting %.2fms (N=%d, timestep=%s)" % \
-                   (futhark_time, blit_time, N,
-                    "(paused)" if time_step == 0 else str(time_step))
-    color = (0,0,0) if invert else (255, 255, 255)
-    showText(speedmessage, (10, 10), color)
-
-    pygame.display.flip()
 
 def point(x,y,z):
     return nb.inverseRotatePoint(x, y, z, -x_rotation, -y_rotation)
@@ -141,17 +136,17 @@ def blob(pos):
     (x,y,z) = point(x,y,0)
     blob_N = 100
 
-    angles = numpy.random.rand(blob_N).astype('float32') * numpy.pi * 2
-    z_angles = numpy.random.rand(blob_N).astype('float32') * numpy.pi * 2
-    lengths = numpy.random.rand(blob_N).astype('float32') * min(width,height)/100
+    angles = np.random.rand(blob_N).astype('float32') * np.pi * 2
+    z_angles = np.random.rand(blob_N).astype('float32') * np.pi * 2
+    lengths = np.random.rand(blob_N).astype('float32') * min(width,height)/100
 
-    xps = numpy.concatenate((xps.get(), x + lengths * numpy.cos(angles)))
-    yps = numpy.concatenate((yps.get(), y + lengths * numpy.sin(angles)))
-    zps = numpy.concatenate((zps.get(), z + lengths * numpy.sin(z_angles)))
-    ms = numpy.concatenate((ms.get(), numpy.random.rand(blob_N).astype('float32')))
-    xvs = numpy.concatenate((xvs.get(),  numpy.zeros(blob_N).astype('float32')))
-    yvs = numpy.concatenate((yvs.get(), numpy.zeros(blob_N).astype('float32')))
-    zvs = numpy.concatenate((zvs.get(), numpy.zeros(blob_N).astype('float32')))
+    xps = np.concatenate((xps.get(), x + lengths * np.cos(angles)))
+    yps = np.concatenate((yps.get(), y + lengths * np.sin(angles)))
+    zps = np.concatenate((zps.get(), z + lengths * np.sin(z_angles)))
+    ms = np.concatenate((ms.get(), np.random.rand(blob_N).astype('float32')))
+    xvs = np.concatenate((xvs.get(),  np.zeros(blob_N).astype('float32')))
+    yvs = np.concatenate((yvs.get(), np.zeros(blob_N).astype('float32')))
+    zvs = np.concatenate((zvs.get(), np.zeros(blob_N).astype('float32')))
 
     N += blob_N
 
@@ -214,23 +209,13 @@ def mouseMass(pos):
     else:
         (xps, yps, zps, ms) = nb.mouse_mass_inactive(xps, yps, zps, ms)
 
-pygame.key.set_repeat(1, 1)
-
-# Joystick stuff.
-pygame.joystick.init()
-
-JOYSTICK_X_AXIS=0
-JOYSTICK_Y_AXIS=1
-JOYSTICK_ROTATE_BUTTON=1
-
-joystick = None
-joystick_count = pygame.joystick.get_count()
-for i in range(joystick_count):
-    joystick = pygame.joystick.Joystick(i)
-    joystick.init()
-
 time_step = default_time_step
 time_then = time.time()
+
+def mouse_x_y():
+    x, y = ctypes.c_int(0), ctypes.c_int(0)
+    buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+    return (x.value, y.value)
 
 invert = False
 while True:
@@ -242,74 +227,71 @@ while True:
     rotating_y = 0.0
 
     render(time_step,invert)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    events = sdl2.ext.get_events()
+    for event in events:
+        if event.type == SDL_QUIT:
             sys.exit()
-        elif event.type == pygame.KEYDOWN:
-            repeats = 5 if pygame.key.get_mods() & pygame.KMOD_CTRL else 1
-            for i in range(repeats):
-                if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                    if event.key == pygame.K_RIGHT:
-                        y_rotation += 0.01
-                    if event.key == pygame.K_LEFT:
-                        y_rotation -= 0.01
-                    if event.key == pygame.K_UP:
-                        x_rotation += 0.01
-                    if event.key == pygame.K_DOWN:
-                        x_rotation -= 0.01
-                else:
-                    if event.key == pygame.K_RIGHT:
-                        moveRight(time_delta)
-                    if event.key == pygame.K_LEFT:
-                        moveLeft(time_delta)
-                    if event.key == pygame.K_UP:
-                        moveUp(time_delta)
-                    if event.key == pygame.K_DOWN:
-                        moveDown(time_delta)
-                if event.unicode == '+':
-                    zoomIn()
-                if event.unicode == '-':
-                    zoomOut()
-            if event.unicode == 'c':
-                N = 1
-                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points()
-            if event.unicode == 'r':
-                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points()
-            if event.unicode == 'o':
-                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_orbit()
-            if event.unicode == 'd':
-                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_donut()
-            if event.unicode == 's':
-                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_spiral()
-            if event.unicode == 'q':
-                time_step -= 0.01
-            if event.unicode == 'w':
-                time_step += 0.01
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_SPACE:
+        elif event.type == SDL_KEYDOWN:
+            key = event.key.keysym.sym
+            if key == SDLK_ESCAPE:
+                sys.exit()
+            elif key == SDLK_PLUS:
+                zoomIn()
+            elif key == SDLK_MINUS:
+                zoomOut()
+            elif key == SDLK_SPACE:
                 if time_step > 0:
                     default_time_step = time_step
                     time_step = 0
                 else:
                     time_step = default_time_step
-            if event.key == pygame.K_HOME:
+            elif key == SDLK_HOME:
                 x_rotation=0.0
                 y_rotation=0.0
                 (x_ul, y_ul, x_br, y_br) = (-width/2, -height/2, width/2, height/2)
-            if event.key == pygame.K_i:
+            elif key == SDLK_c:
+                N = 1
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points()
+            elif key == SDLK_r:
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points()
+            elif key == SDLK_o:
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_orbit()
+            elif key == SDLK_d:
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_donut()
+            elif key == SDLK_s:
+                (xps,yps,zps,ms,xvs,yvs,zvs) = random_points_spiral()
+            elif key == SDLK_q:
+                time_step -= 0.01
+            elif key == SDLK_w:
+                time_step += 0.01
+            if key == SDLK_i:
                 invert = not invert
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if pygame.mouse.get_pressed()[0]:
-                blob(pygame.mouse.get_pos())
-            mass_active = pygame.mouse.get_pressed()[2] == 1
-        elif event.type == pygame.MOUSEBUTTONUP:
-            mass_active = pygame.mouse.get_pressed()[2] == 1
+            elif (event.key.keysym.mod & KMOD_SHIFT) != 0:
+                if key == SDLK_RIGHT:
+                    y_rotation += 0.01
+                if key == SDLK_LEFT:
+                    y_rotation -= 0.01
+                if key == SDLK_UP:
+                    x_rotation += 0.01
+                if key == SDLK_DOWN:
+                    x_rotation -= 0.01
+            else:
+                if key == SDLK_RIGHT:
+                    moveRight(time_delta)
+                if key == SDLK_LEFT:
+                    moveLeft(time_delta)
+                if key == SDLK_UP:
+                    moveUp(time_delta)
+                if key == SDLK_DOWN:
+                    moveDown(time_delta)
 
-    if joystick:
-        rotating_y = joystick.get_axis(JOYSTICK_X_AXIS)
-        rotating_x = joystick.get_axis(JOYSTICK_Y_AXIS)
+        elif event.type == SDL_MOUSEBUTTONDOWN:
+            button = event.button
+            if button.button == 1: # left click
+                blob((button.x, button.y))
+            elif button.button == 3: # right click
+                mass_active = True
+        elif event.type == SDL_MOUSEBUTTONUP:
+            mass_active = False
 
-    x_rotation += rotating_x * time_delta
-    y_rotation += rotating_y * time_delta
-
-    mouseMass(pygame.mouse.get_pos())
+    mouseMass(mouse_x_y())

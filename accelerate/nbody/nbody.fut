@@ -127,7 +127,7 @@ entry inverseRotatePoint (x: f32) (y: f32) (z: f32) (x_rotation: f32) (y_rotatio
 let rotatePoints [n] (ps: [n]position) (x_rotation: f32) (y_rotation: f32): [n]position =
   rotatePointsByMatrix (rotationMatrix x_rotation y_rotation) ps
 
-let renderPoint(w: i32) (h: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32) (max_mass: f32)
+let renderPoint(h: i32) (w: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32) (max_mass: f32)
                ({x,y,z=_}:position) (m: f32): (i32, i32) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
@@ -144,19 +144,19 @@ let renderPoint(w: i32) (h: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32)
   let colour = intensity * 0x10000 +
                intensity * 0x100 +
                0xFF
-  in (x''*h + y'', colour)
+  in (y''*w + x'', colour)
 
 entry render [n]
-            (w: i32) (h: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32)
+            (h: i32) (w: i32) (x_ul: f32) (y_ul: f32) (x_br: f32) (y_br: f32)
             (xps: [n]f32) (yps: [n]f32) (zps: [n]f32) (ms: [n]f32)
             (x_rotation: f32) (y_rotation: f32)
-            (max_mass: f32) (invert: bool): [w][h]i32 =
+            (max_mass: f32) (invert: bool): [h][w]i32 =
   let background = if invert then argb.white else argb.black
-  let (is, vs) = unzip(map2 (renderPoint w h x_ul y_ul x_br y_br max_mass)
+  let (is, vs) = unzip(map2 (renderPoint h w x_ul y_ul x_br y_br max_mass)
                             (rotatePoints (map3 (\x y z -> {x,y,z}) xps yps zps)
                                           x_rotation y_rotation) ms)
   let vs' = map (\x -> if invert then !x else x) vs
-  in unflatten w h (scatter (replicate (w*h) background) is vs')
+  in unflatten h w (scatter (replicate (h*w) background) is vs')
 
 entry mouse_mass_active (xps: *[]f32) (yps: *[]f32) (zps: *[]f32) (ms: *[]f32) (x: f32) (y: f32) (z: f32) =
   (xps with [0] = x,
