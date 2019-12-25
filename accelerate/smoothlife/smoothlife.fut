@@ -16,8 +16,7 @@ type sigmoid = #hard | #smooth | #atan | #atancos |
                #overshoot | #linear | #hermite | #sin
 
 type conf =
-  { world_size: i32
-  , timestep: f32
+  { timestep: f32
   , rim: f32
   , disc_radius: (f32, f32)
   , birth_interval: (f32, f32)
@@ -29,19 +28,18 @@ type conf =
   , mix_type: sigmoid
   }
 
-type state =
+type state [n] =
   { conf: conf
-  , world: [][]f32
-  , krf: [][]complex
-  , kdf: [][]complex
+  , world: [n][n]f32
+  , krf: [n][n]complex
+  , kdf: [n][n]complex
   , kflr: f32
   , kfld: f32
   , seed: i32
   }
 
 let default_conf: conf =
-  { world_size    = 256
-  , timestep       = 0.1
+  { timestep       = 0.1
   , rim            = 1.0
   , disc_radius    = (10.0 / 3.0, 10.0)
   , birth_interval = (0.257, 0.336)
@@ -53,12 +51,10 @@ let default_conf: conf =
   , mix_type       = #smooth : sigmoid
   }
 
-let make_conf_simple (win_size: i32) (timestep: f32): conf =
-  default_conf with world_size = win_size
-               with timestep = timestep
+let make_conf_simple (timestep: f32): conf =
+  default_conf with timestep = timestep
 
-let make_conf (world_size: i32)
-              (timestep: f32)
+let make_conf (timestep: f32)
               (rim: f32)
               (disc_radius1: f32) (disc_radius2: f32)
               (birth_interval1: f32) (birth_interval2: f32)
@@ -81,8 +77,7 @@ let make_conf (world_size: i32)
       case 7 -> #sin
       case _ -> #smooth
   in
-  { world_size = world_size
-  , timestep = timestep
+  { timestep = timestep
   , rim = rim
   , disc_radius = (disc_radius1, disc_radius2)
   , birth_interval = (birth_interval1, birth_interval2)
@@ -94,7 +89,7 @@ let make_conf (world_size: i32)
   , mix_type = to_sigmoid mix_type
   }
 
-let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [][]f32 =
+let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
   let (rmin, rmax) = disc
   let num_circles = size * size / t32 (rmax * rmax)
 
@@ -149,7 +144,7 @@ let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [][]f32 =
   let grid = map ((.2) >-> r32) reduced
   in unflatten size size grid
 
-let init (conf: conf) (seed: i32): state =
+let init (size: i32) (conf: conf) (seed: i32): state [size] =
 
   let shift2d 'a [r][c] (arr: [r][c]a): [r][c]a =
     let (mr, mc) = (r / 2, c / 2)
@@ -165,7 +160,6 @@ let init (conf: conf) (seed: i32): state =
     let arr' = flatten arr
     in scatter (copy arr') (take n indices') (take n arr') |> unflatten r c
 
-  let size = conf.world_size
   let (ri, ra) = conf.disc_radius
   let b = conf.rim
 
@@ -248,10 +242,10 @@ let snm [l] (conf: conf) (n: [l]f32) (m: [l]f32): [l]f32 =
                              (sigmoid_mix b2 d2 m)
   in map2 sigmode n m
 
-let step (state: state): state =
+let step [size] (state: state [size]): state [size] =
   let dt = state.conf.timestep
   let aa = state.world
-  let (r, c) = (state.conf.world_size, state.conf.world_size)
+  let (r, c) = (size, size)
 
   let aaf = fft.fft2_re aa
   let nf = map2 (map2 (complex.*)) aaf state.krf
@@ -266,13 +260,12 @@ let step (state: state): state =
       case 1 -> g + dt * (2.0 * f - 1.0)
       case 2 -> g + dt * (f - g)
   let clamp v = f32.min (f32.max v 0.0) 1.0
-  let aa'' = map2 (map2 (\a b -> clamp (timestep a b))) aa' aa
+  let aa'' = map2 (map2 (\a b -> clamp (timestep a b))) (aa' : [size][size]f32) aa
   in state with world = aa''
 
-let render (state: state): [][]argb.colour =
+let render [size] (state: state [size]): [size][size]argb.colour =
   let w = state.world |> flatten
-  let (r, c) = (state.conf.world_size, state.conf.world_size)
-  in map (\v -> argb_colour.from_rgba v v v 0) w |> unflatten r c
+  in map (\v -> argb_colour.from_rgba v v v 0) w |> unflatten size size
 
 type text_content = (i32, i32, i32)
 
@@ -284,11 +277,12 @@ let to_pow2 x = t32 (2 ** f32.ceil (f32.log2 (r32 x)))
 -- configuration atm
 import "lib/github.com/diku-dk/lys/lys"
 module lys: lys with text_content = text_content = {
-  type state = {state: state, h: i32, w: i32}
+  type state = {state: state [], h: i32, w: i32}
 
   let init (seed: i32) (h: i32) (w: i32): state =
-    let conf = make_conf_simple (to_pow2 (i32.min h w)) 0.1
-    in {state=init conf seed, h, w}
+    let size = to_pow2 (i32.min h w)
+    let conf = make_conf_simple 0.1
+    in {state=init size conf seed, h, w}
 
   let step _ (s: state) = s with state = step s.state
 
@@ -329,4 +323,4 @@ module lys: lys with text_content = text_content = {
 -- compiled input { 512 }
 -- compiled input { 1024 }
 let main (w: i32) =
-  make_conf_simple w 0.1 |> (`init` 123) |> iterate 100 step |> (.world)
+  make_conf_simple 0.1 |> (\conf -> init w conf 123) |> iterate 100 step |> (.world)
