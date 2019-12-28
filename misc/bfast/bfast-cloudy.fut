@@ -69,7 +69,7 @@ let mkX_no_trend [N] (k2p2m1: i32) (f: f32) (mappingindices: [N]i32): [k2p2m1][N
 
   let mat_inv [n] (A: [n][n]f32): [n][n]f32 =
     let m = 2*n
-    let nm= n*m
+    let nm = n*m
     -- Pad the matrix with the identity matrix.
     let Ap = map (\ind -> let (i, j) = (ind / m, ind % m)
                           in  if j < n then unsafe ( A[i,j] )
@@ -79,7 +79,7 @@ let mkX_no_trend [N] (k2p2m1: i32) (f: f32) (mappingindices: [N]i32): [k2p2m1][N
                  ) (iota nm)
     let Ap' = gauss_jordan n m Ap
     -- Drop the identity matrix at the front!
-    in (unflatten n m Ap')[0:n,n:2*n]
+    in (unflatten n m Ap')[0:n,n:2*n] : [n][n]f32
 --------------------------------------------------
 --------------------------------------------------
 
