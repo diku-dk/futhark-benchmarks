@@ -19,7 +19,7 @@ local module type linalg = {
   -- | Multiply two matrices.
   val matmul [n][p][m]: [n][p]t -> [p][m]t -> [n][m]t
   -- | Kronecker product of two matrices.
-  val kronecker [n][p][m]: [n][p]t -> [p][m]t -> [][]t
+  val kronecker [n][m][p][q]: [m][n]t -> [p][q]t -> [][]t
   -- | Kronecker product of two matrices, but preserving the blocked
   -- structure in the result.
   val kronecker' [m][n][p][q]: [m][n]t -> [p][q]t -> [m][n][p][q]t
@@ -73,8 +73,8 @@ module mk_linalg (T: field): linalg with t = T.t = {
   let kronecker' [m][n][p][q] (xss: [m][n]t) (yss: [p][q]t): [m][n][p][q]t =
     map (map (\x -> map (map (T.*x)) yss)) xss
 
-  let flatten_to [n][m] 't k (xs: [n][m]t): [k]t =
-    flatten xs : [k]t
+  let flatten_to [n][m] 't (nm: i32) (xs: [n][m]t): [nm]t =
+    flatten xs : [nm]t
 
   let kronecker [m][n][p][q] (xss: [m][n]t) (yss: [p][q]t): [][]t =
     kronecker' xss yss        -- [m][n][p][q]
@@ -107,7 +107,7 @@ module mk_linalg (T: field): linalg with t = T.t = {
                   ) A (iota n)
     let Ap' = gauss_jordan Ap
     -- Drop the identity matrix at the front.
-    in Ap'[0:n, n:n*2]
+    in Ap'[0:n, n:n*2] : [n][n]t
 
   let ols [n][m] (X: [n][m]t) (b: [n]t): [m]t =
     matvecmul_row (matmul (inv (matmul (transpose X) X)) (transpose X)) b
