@@ -23,7 +23,7 @@ module type game_of_life = {
   type cell
 
   -- Run an iteration of the Game of Life.
-  val step: [][]cell -> [][]cell
+  val step [n][m]: [n][m]cell -> [n][m]cell
 }
 
 module gen_life(R: rules): game_of_life with cell = R.cell = {
@@ -80,12 +80,12 @@ module type visuals = {
 module type visualisation = {
   type cell
 
-  val init: [][]bool -> [][]cell
-  val uninit: [][]cell -> [][]bool
+  val init [n][m]: [n][m]bool -> [n][m]cell
+  val uninit [n][m]: [n][m]cell -> [n][m]bool
 
   -- Render the game world in ARGB format.  Alpha value is probably
   -- ignored.
-  val render: [][]cell -> [][]i32
+  val render [n][m]: [n][m]cell -> [n][m]i32
 }
 
 module gen_visualisation (V: visuals) : visualisation with cell = V.cell = {

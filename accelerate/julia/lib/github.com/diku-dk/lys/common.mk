@@ -1,10 +1,10 @@
 PROGNAME?=lys
 LYS_BACKEND?=opencl
-PROG_FUT_DEPS=$(shell futhark imports $(PROGNAME).fut)
+PROG_FUT_DEPS:=$(shell ls *.fut; find lib -name \*.fut)
 
 all: $(PROGNAME)
 
-PKG_CFLAGS=$(shell pkg-config --cflags sdl2) $(shell pkg-config --cflags SDL2_ttf)
+PKG_CFLAGS=$(shell pkg-config --cflags sdl2 SDL2_ttf)
 NOWARN_CFLAGS=-std=c11 -O
 CFLAGS?=$(NOWARN_CFLAGS) $(PKG_CFLAGS) -Wall -Wextra -pedantic -DLYS_BACKEND_$(LYS_BACKEND)
 BASE_LDFLAGS=-lm -lSDL2 -lSDL2_ttf

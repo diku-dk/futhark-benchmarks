@@ -99,7 +99,7 @@ module type rng_engine = {
   -- empty, the resulting RNG should still behave reasonably.  It is
   -- permissible for this function to process the seed array
   -- sequentially, so don't make it too large.
-  val rng_from_seed: []i32 -> rng
+  val rng_from_seed [n]: [n]i32 -> rng
 
   -- | Split an RNG state into several states.  Implementations of
   -- this function tend to be cryptographically unsound, so be
@@ -108,7 +108,7 @@ module type rng_engine = {
 
   -- | Combine several RNG states into a single state - typically done
   -- with the result of `split_rng`@term.
-  val join_rng: []rng -> rng
+  val join_rng [n]: [n]rng -> rng
 
   -- | Generate a single random element, and a new RNG state.
   val rand: rng -> (rng,int.t)

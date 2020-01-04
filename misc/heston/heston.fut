@@ -9,11 +9,12 @@ import "price_european_calls"
 module heston (real: real)
               (rand: rng_engine): {
   type real = real.t
-  val heston: i32 -> i32 -> i32 -> i32 ->
-              []i32 ->
-              []real ->
-              []real ->
-              (real,i32,real,real,real,real,real)
+  val heston [num_quotes]:
+    i32 -> i32 -> i32 -> i32 ->
+    [num_quotes]i32 ->
+    [num_quotes]real ->
+    [num_quotes]real ->
+    (real,i32,real,real,real,real,real)
 } = {
 
 type real = real.t

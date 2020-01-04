@@ -35,7 +35,7 @@ type state [n] =
   , kdf: [n][n]complex
   , kflr: f32
   , kfld: f32
-  , seed: i32
+  , seed: u32
   }
 
 let default_conf: conf =
@@ -144,7 +144,7 @@ let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
   let grid = map ((.2) >-> r32) reduced
   in unflatten size size grid
 
-let init (size: i32) (conf: conf) (seed: i32): state [size] =
+let init (size: i32) (conf: conf) (seed: u32): state [size] =
 
   let shift2d 'a [r][c] (arr: [r][c]a): [r][c]a =
     let (mr, mc) = (r / 2, c / 2)
@@ -189,7 +189,7 @@ let init (size: i32) (conf: conf) (seed: i32): state [size] =
   let kfld = reduce (+) 0 (flatten kd)
 
   in { conf = conf
-     , world = generate_world size conf.disc_radius seed
+     , world = generate_world size conf.disc_radius (i32.u32 seed)
      , krf = krf
      , kdf = kdf
      , kflr = kflr
@@ -279,7 +279,7 @@ import "lib/github.com/diku-dk/lys/lys"
 module lys: lys with text_content = text_content = {
   type state = {state: state [], h: i32, w: i32}
 
-  let init (seed: i32) (h: i32) (w: i32): state =
+  let init (seed: u32) (h: i32) (w: i32): state =
     let size = to_pow2 (i32.min h w)
     let conf = make_conf_simple 0.1
     in {state=init size conf seed, h, w}
@@ -309,7 +309,7 @@ module lys: lys with text_content = text_content = {
     case _ -> s
 
   type text_content = text_content
-  let text_format = "FPS: %d\nWorld: %d by %d"
+  let text_format () = "FPS: %d\nWorld: %d by %d"
   let text_content (fps: f32) (s: state): text_content =
     (t32 fps, length s.state.world, length s.state.world[0])
   let text_colour = const argb.yellow

@@ -13,7 +13,7 @@ let swap 't [n] (i: i32) (j: i32) (xs: *[n]t): *[n]t =
 -- | Insertion sort.  Runs with *O(n^2)* work and *O(n^2)* depth.
 let insertion_sort [n] 't ((<=): t -> t -> bool) (xs: [n]t): *[n]t =
   -- Make a copy of the array so we can operate in-place.
-  loop xs = copy xs for i in 1..<n do
+  loop xs = copy xs for i in 1..< i32.max n 1 do
     -- Construct our own greather-than function out of <=.
     let gt x y = !(x <= y)
     let (_, xs') = loop (j, xs) = (i, xs) while j > 0 && (xs[j-1] `gt` xs[j]) do
