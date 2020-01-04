@@ -224,7 +224,7 @@ module lys : lys with text_content = () = {
 
   type text_content = ()
   let grab_mouse = false
-  let text_format = ""
+  let text_format () = ""
   let text_content _ _ = ()
   let text_colour _ = argb.white
 }

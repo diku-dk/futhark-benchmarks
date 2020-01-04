@@ -20,14 +20,14 @@ module price_european_calls(R: real) : {
 
   val gauss_laguerre_coefficients: num_points -> ([]real, []real)
   val bs_call: bool -> date -> real -> real -> date -> real -> (real,real)
-  val price_european_calls [num_quotes]
-      :  ([]real, []real)
+  val price_european_calls [num_quotes][num_points][num_maturities]
+      :  ([num_points]real, [num_points]real)
       -> bool
       -> real
       -> real
       -> real
       -> heston_parameters real
-      -> []real
+      -> [num_maturities]real
       -> [num_quotes]{strike: real, maturity: i32}
       -> [num_quotes]real
 } = {

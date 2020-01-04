@@ -92,7 +92,7 @@ module lys : lys with text_content = i32 = {
   let resize h w (s: state) = s with h = h with w = w
   let grab_mouse = false
   let render {t, h, w} = render t h w
-  let text_format = "FPS: %d"
+  let text_format () = "FPS: %d"
   let text_colour _ = argb.white
   let text_content fps _ = t32 fps
 }

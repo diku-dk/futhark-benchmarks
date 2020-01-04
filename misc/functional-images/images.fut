@@ -273,7 +273,7 @@ module lys: lys with text_content = text_content = {
 
   type text_content = text_content
 
-  let text_format = "FPS: %d"
+  let text_format () = "FPS: %d"
 
   let text_content (fps: f32) (_: state): text_content =
     t32 fps

@@ -8,7 +8,7 @@ module m = import "lys"
 
 type state = m.lys.state
 
-entry init (seed: i32) (h: i32) (w: i32): state = m.lys.init seed h w
+entry init (seed: u32) (h: i32) (w: i32): state = m.lys.init seed h w
 
 entry resize (h: i32) (w: i32) (s: state): state = m.lys.resize h w s
 
@@ -30,7 +30,7 @@ entry render (s: state) = m.lys.render s
 entry text_colour (s: state): m.argb.colour =
   m.lys.text_colour s
 
-entry text_format: []u8 = m.lys.text_format
+entry text_format: []u8 = m.lys.text_format ()
 
 entry text_content (render_duration: f32) (s: state): m.lys.text_content =
   m.lys.text_content render_duration s
