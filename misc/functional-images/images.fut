@@ -242,8 +242,6 @@ module lys: lys with text_content = text_content = {
     s with image_size = {width = s.image_size.width * (1+factor),
                          height = s.image_size.height * (1+factor)}
 
-  let text _ _ = []
-
   let step td (s: state) =
     let td' = if s.paused then 0 else td
     in do_zoom s.zooming s with time = s.time + td'
