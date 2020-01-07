@@ -57,9 +57,9 @@ let in_outside_corner
   (i == 0 || i == g - 1) && (j == 0 || j == g - 1)
 
 module type edge_handling_mapper = {
-  type info
+  type info [g]
 
-  val inner: i32 -> i32 -> i32 -> info -> f32
+  val inner: i32 -> i32 -> (g: i32) -> info [g] -> f32
 }
 
 module edge_handling (mapper: edge_handling_mapper) = {
@@ -87,7 +87,7 @@ module edge_handling (mapper: edge_handling_mapper) = {
 
   let handle
     (i: i32) (j: i32) (g: i32) (b: i32)
-    (info: mapper.info): f32 =
+    (info: mapper.info []): f32 =
     if inside i j g
     then mapper.inner i j g info
     else let base (i': i32) (j': i32): f32 =
@@ -106,13 +106,13 @@ module edge_handling (mapper: edge_handling_mapper) = {
 ------------------------------------------------------------
 
 module edge_handling_lin_solve = edge_handling({
-  type info = ([][]f32, [][]f32, f32, f32)
+  type info [g] = ([g][g]f32, [g][g]f32, f32, f32)
 
   let inner
     (i: i32)
     (j: i32)
-    (_g: i32)
-    ((s0, s1, a, c): info):
+    (g: i32)
+    ((s0, s1, a, c): info [g]):
     f32 =
     -- A stencil.
     unsafe ((s0[i, j] + a *
@@ -151,13 +151,13 @@ let diffuse [g]
 
 
 module edge_handling_advect = edge_handling({
-  type info = ([][]f32, [][]f32, [][]f32, f32)
+  type info [g] = ([g][g]f32, [g][g]f32, [g][g]f32, f32)
 
   let inner
     (i: i32)
     (j: i32)
     (g: i32)
-    ((s0, u, v, time_step0): info):
+    ((s0, u, v, time_step0): info [g]):
     f32 =
     let x = r32 i - time_step0 * unsafe u[i, j]
     let y = r32 j - time_step0 * unsafe v[i, j]
@@ -197,13 +197,13 @@ let advect [g]
 
 
 module edge_handling_project_top = edge_handling({
-  type info = ([][]f32, [][]f32)
+  type info [g] = ([g][g]f32, [g][g]f32)
 
   let inner
     (i: i32)
     (j: i32)
     (g: i32)
-    ((u0, v0): info):
+    ((u0, v0): info [g]):
     f32 =
     unsafe (-0.5 * (  u0[i + 1, j]
                     - u0[i - 1, j]
@@ -212,13 +212,13 @@ module edge_handling_project_top = edge_handling({
 })
 
 module edge_handling_project_bottom = edge_handling({
-  type info = ([][]f32, [][]f32, i32, i32, i32, i32)
+  type info [g] = ([g][g]f32, [g][g]f32, i32, i32, i32, i32)
 
   let inner
     (i: i32)
     (j: i32)
     (g: i32)
-    ((p0, s0, i0d, j0d, i1d, j1d): info):
+    ((p0, s0, i0d, j0d, i1d, j1d): info [g]):
     f32 =
     unsafe (s0[i, j] - 0.5 * r32 (g - 2)
             * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
