@@ -28,7 +28,7 @@ width = 800
 height = 600
 
 SDL_Init(SDL_INIT_EVERYTHING)
-window = SDL_CreateWindow("N-body",
+window = SDL_CreateWindow(b"N-body",
                           SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		          width, height, SDL_WINDOW_SHOWN)
 
