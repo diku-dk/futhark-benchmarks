@@ -63,7 +63,7 @@ let hit_plane (pln: plane) (dist: f32) (orig: position) (dir: direction)
 -- little bit since the original formulation is recursive, so I'm not
 -- sure the optics are exactly the same.  We are also able to escape
 -- early, in case a ray fails to collide with anyting.
-let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
+let trace_ray (limit: i32) ({spheres,planes}: objects [][]) (lights: lights [])
               (ambient: argb.colour) (orig_point: position) (orig_dir: direction) =
   let dummy_sphere = {position={x=0.0, y=0.0, z=0.0},
                       colour=argb.black,
@@ -107,7 +107,7 @@ let trace_ray (limit: i32) ({spheres,planes}: objects) (lights: lights)
         visibility * shine)
   in refl_colour
 
-let make_objects (time: f32): objects =
+let make_objects (time: f32): objects [][] =
   {spheres = [{position={x= 40.0 * f32.sin time, y= -80.0, z=0.0},
                radius=20.0,
                colour=argb.from_rgba 1.0 0.3 1.0 1.0,
@@ -141,10 +141,10 @@ let main (sizeX: i32) (sizeY: i32) (fov: i32)
          (eye_pos_X: f32) (eye_pos_Y: f32) (eye_pos_Z: f32)
          (eye_dir_A: f32) (eye_dir_B: f32)
          (limit: i32) (time: f32) =
-  let lights: lights = {lights=[{position={x= 250.0, y= 350.0, z= 200.0},
-                                 colour=argb.red}]}
+  let lights = {lights=[{position={x= 250.0, y= 350.0, z= 200.0},
+                         colour=argb.red}]}
 
-  let objects: objects = make_objects time
+  let objects = make_objects time
   let ambient = argb.from_rgba 0.3 0.3 0.3 1.0
   let eye_pos = {x=eye_pos_X, y=eye_pos_Y, z=eye_pos_Z}
   let eye_dir = {x=f32.cos eye_dir_A * f32.cos eye_dir_B,
