@@ -83,7 +83,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
   let max_global_reached: status = 1
   let target_reached: status = 2
 
-  type result = {x0: []real, f: real, num_feval: i32, status: status}
+  type result [n] = {x0: [n]real, f: real, num_feval: i32, status: status}
 
   let active_vars [num_vars] [num_active]
                   (vars_to_free_vars: [num_vars]i32)
@@ -105,7 +105,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
                ({np, cr}: mutation)
                (lower_bounds: [num_free_vars]real)
                (upper_bounds: [num_free_vars]real)
-               ({max_iterations,max_global,target}: termination): result =
+               ({max_iterations,max_global,target}: termination): result [num_free_vars] =
     -- The objective function called only with free variables.
     let objective' x = objective (active_vars vars_to_free_vars variables x)
 

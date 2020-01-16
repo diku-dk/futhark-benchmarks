@@ -29,25 +29,10 @@ let heston_parameters_from_vector (x: [5]real) =
 
 module pricer = price_european_calls real
 
-type objective_ctx = {day_count_fractions: []real,
-                      quotes: []{maturity: i32, strike: real, vega: real, weight: real},
-                      gauss_laguerre_coefficients: ([]real, []real)
-                     }
-
 module real_least_squares = mk_least_squares real rand
 module real_distance = absolute_distance real
 
 type quote = {maturity: date, strike: real, quote: real}
-
-type calibration_input = { today: date
-                         , quotes: []{maturity: date, strike: real, quote: real}
-                         , max_global: i32
-                         , np: i32
-                         , strike_weight_bandwidth: real
-                         , maturity_weight_x0: real
-                         , maturity_weight_gamma: real
-                         , integral_iterations: pricer.num_points
-                         , variables: []real_least_squares.optimization_variable }
 
 let distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
   let switched (x: date) (i: i32) =
