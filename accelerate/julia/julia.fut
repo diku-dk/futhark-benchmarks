@@ -132,7 +132,7 @@ module lys : lys with text_content = () = {
   type state =
     { screenX: i32
     , screenY: i32
-    , palette: []i32
+    , palette: [2048]i32
     , time: f32
     , speed: f32
     , posX: f32
