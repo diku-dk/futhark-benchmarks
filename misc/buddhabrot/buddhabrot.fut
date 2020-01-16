@@ -47,19 +47,19 @@ let pixel_pos screenX screenY field c =
 let row_major screenX _screenY (x, y): i32 =
   y * screenX + x
 
-type state = { rng: rand.rng
-             , prior_visits: []i32
-             , iter: i32 }
+type state [n] = { rng: rand.rng
+                 , prior_visits: [n]i32
+                 , iter: i32 }
 
-entry new_state (screenX: i32) (screenY: i32) (seed: i32): state =
+entry new_state (screenX: i32) (screenY: i32) (seed: i32): state [] =
   { rng = rand.rng_from_seed [seed]
   , prior_visits = replicate (screenX*screenY) 0
   , iter = 0 }
 
-let visualise (state: state)
+let visualise (state: state [])
               (screenX: i32) (screenY: i32) (limit: i32) (radius: f32)
               (npoints: i32) (field: (f32,f32,f32,f32)):
-             (state, [screenY][screenX]argb.colour) =
+             (state [], [screenY][screenX]argb.colour) =
   let (rng, trajectories) = trajectories state.rng limit radius npoints field
   let mk_increments (npoints : [limit](f32,f32), escaped) =
     if escaped
@@ -73,9 +73,9 @@ let visualise (state: state)
   in ({rng, prior_visits = visits_per_pixel, iter = state.iter + 1},
       unflatten screenY screenX coloured)
 
-entry main (state: state) (screenX: i32) (screenY: i32)
+entry main (state: state []) (screenX: i32) (screenY: i32)
          xcentre ycentre width limit radius npoints
-       : (state, [screenY][screenX]argb.colour) =
+       : (state [], [screenY][screenX]argb.colour) =
   let aspect_ratio = r32 screenX / r32 screenY
   let (xmin,ymin) = (xcentre - width/2,
                      ycentre - (1/aspect_ratio)*width/2)
@@ -83,4 +83,4 @@ entry main (state: state) (screenX: i32) (screenY: i32)
                      ycentre + (1/aspect_ratio)*width/2)
   in visualise state screenX screenY limit radius npoints (xmin, ymin, xmax, ymax)
 
-entry frob (s: state) = s.iter
+entry frob (s: state []) = s.iter
