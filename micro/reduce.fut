@@ -144,7 +144,7 @@ let lss 't (t: t) (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
       let xmatch = if pred1 x then 1 else 0
       in (xmatch, xmatch, xmatch, 1, x, x)
 
-  in (reduce rop (0,0,0,0,t,t) (map mop xs)).1
+  in (reduce rop (0,0,0,0,t,t) (map mop xs)).0
 
 -- ==
 -- entry: lss_iota_i8 lss_iota_i32 lss_iota_f32 lss_iota_f64

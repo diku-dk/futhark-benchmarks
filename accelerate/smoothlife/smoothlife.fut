@@ -106,7 +106,7 @@ let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
     let l = a * a - r * r |> f32.abs |> f32.sqrt
     let p1 = (t32 (f32.round ((r32 x) - l)), y + (f32.round a |> t32))
     let p2 = (t32 (f32.round ((r32 x) + l)), y + (f32.round a |> t32))
-    in (z, cell, p1.1, p1.2, p2.1, p2.2)
+    in (z, cell, p1.0, p1.1, p2.0, p2.1)
 
   let points_in_line (_, _, x1, y1, x2, y2) =
     i32.(1 + max (abs (x2 - x1)) (abs (y2 - y1)))
@@ -119,15 +119,15 @@ let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
       else r32(y2-y1) / r32(i32.abs(x2-x1))
     let p1 = (x1, y1)
     let p2 = (x2, y2) in
-    if i32.abs (p1.1 - p2.1) > i32.abs (p1.2 - p2.2)
-    then let dir = compare (p1.1) (p2.1)
+    if i32.abs (p1.0 - p2.0) > i32.abs (p1.1 - p2.1)
+    then let dir = compare (p1.0) (p2.0)
          let sl = slope p1 p2
-         let p = (p1.1 + dir * i, p1.2 + i32.f32 (f32.round (sl * r32 i)))
-         in (z, cell, p.1, p.2)
-    else let dir = compare (p1.2) (p2.2)
-         let sl = slope (p1.2, p1.1) (p2.2, p2.1)
-         let p = (p1.1 + i32.f32 (f32.round (sl * r32 i)), p1.2 + i * dir)
-         in (z, cell, p.1, p.2)
+         let p = (p1.0 + dir * i, p1.1 + i32.f32 (f32.round (sl * r32 i)))
+         in (z, cell, p.0, p.1)
+    else let dir = compare (p1.1) (p2.1)
+         let sl = slope (p1.1, p1.0) (p2.1, p2.0)
+         let p = (p1.0 + i32.f32 (f32.round (sl * r32 i)), p1.1 + i * dir)
+         in (z, cell, p.0, p.1)
 
   let rngs = rng_engine.rng_from_seed [seed] |>
              rng_engine.split_rng num_circles
@@ -137,11 +137,11 @@ let generate_world (size: i32) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
 
   let (points, idxs) =
     map (\(z, cell, x, y) -> ((z, cell), size * y + x)) points |> unzip
-  let op p1 p2 = if p1.1 >= p2.1 then p1 else p2
+  let op p1 p2 = if p1.0 >= p2.0 then p1 else p2
   let ne = (-1, 0)
   let initial_bins = map (const ne) (iota (size * size))
   let reduced = reduce_by_index initial_bins op ne idxs points
-  let grid = map ((.2) >-> r32) reduced
+  let grid = map ((.1) >-> r32) reduced
   in unflatten size size grid
 
 let init (size: i32) (conf: conf) (seed: u32): state [size] =

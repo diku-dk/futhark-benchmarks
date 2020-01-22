@@ -69,7 +69,7 @@ let tunnel(time: f32) (x: i32) (y: i32): argb.colour =
             {x=rInv + 2.0 * mod'(time, 6000.0), y=0.0}
   let c1 = (0.659f32, 0.772f32, 1f32)
   let x = voronoise({x=5.0*pt3.x, y=5.0*pt3.y}, 1.0, 1.0) + 0.240*rInv
-  in argb.from_rgba (c1.1 * x) (c1.2 * x) (c1.3 * x) 1.0
+  in argb.from_rgba (c1.0 * x) (c1.1 * x) (c1.2 * x) 1.0
 
 entry render (time: f32) (h: i32) (w: i32) = tabulate_2d h w <| \y x -> tunnel time (x-w/2) (y-h/2)
 

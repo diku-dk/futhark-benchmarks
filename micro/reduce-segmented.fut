@@ -97,4 +97,4 @@ entry prod_mat4_i32 n m as bs cs ds =
   let css = unflatten n m cs
   let dss = unflatten n m ds
   in map4 (map4 (mat4' id)) ass bss css dss
-     |> map (reduce (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1) >-> (.1))
+     |> map (reduce (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1) >-> (.0))

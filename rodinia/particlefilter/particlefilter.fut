@@ -49,8 +49,8 @@ let getneighbors [diameter] (se: [diameter][diameter]i32) (radius: i32): [](f64,
                                             r64 (x-center)))) (iota diameter))
              (iota diameter)
      |> flatten
-     |> filter (.1)
-     |> map (.2)
+     |> filter (.0)
+     |> map (.1)
 
 -- | Finds the first element in the CDF that is greater than or equal
 -- to the provided value and returns that index

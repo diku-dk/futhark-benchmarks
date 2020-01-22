@@ -111,22 +111,22 @@ let mat4 x = (x, x, x, x)
 let mat4' f a b c d = (f a, f b, f c, f d)
 
 entry prod_iota_mat4_i8  =
- iota >-> map (i8.i32 >-> mat4) >-> scan (mat4_mul  (i8.+)  (i8.*)) (1, 0, 0, 1) >-> map (.1)
+ iota >-> map (i8.i32 >-> mat4) >-> scan (mat4_mul  (i8.+)  (i8.*)) (1, 0, 0, 1) >-> map (.0)
 entry prod_iota_mat4_i32 =
- iota >-> map mat4              >-> scan (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1) >-> map (.1)
+ iota >-> map mat4              >-> scan (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1) >-> map (.0)
 entry prod_iota_mat4_f32 =
- iota >-> map (r32 >-> mat4)    >-> scan (mat4_mul (f32.+) (f32.*)) (1, 0, 0, 1) >-> map (.1)
+ iota >-> map (r32 >-> mat4)    >-> scan (mat4_mul (f32.+) (f32.*)) (1, 0, 0, 1) >-> map (.0)
 entry prod_iota_mat4_f64 =
- iota >-> map (r64 >-> mat4)    >-> scan (mat4_mul (f64.+) (f64.*)) (1, 0, 0, 1) >-> map (.1)
+ iota >-> map (r64 >-> mat4)    >-> scan (mat4_mul (f64.+) (f64.*)) (1, 0, 0, 1) >-> map (.0)
 
 entry prod_mat4_i8 as bs cs ds  =
- map4 (mat4' i8.i32) as bs cs ds |> scan (mat4_mul  (i8.+)  (i8.*)) (1, 0, 0, 1) >-> map (.1)
+ map4 (mat4' i8.i32) as bs cs ds |> scan (mat4_mul  (i8.+)  (i8.*)) (1, 0, 0, 1) >-> map (.0)
 entry prod_mat4_i32 as bs cs ds =
- map4 (mat4'     id) as bs cs ds |> scan (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1) >-> map (.1)
+ map4 (mat4'     id) as bs cs ds |> scan (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1) >-> map (.0)
 entry prod_mat4_f32 as bs cs ds =
- map4 (mat4'    r32) as bs cs ds |> scan (mat4_mul (f32.+) (f32.*)) (1, 0, 0, 1) >-> map (.1)
+ map4 (mat4'    r32) as bs cs ds |> scan (mat4_mul (f32.+) (f32.*)) (1, 0, 0, 1) >-> map (.0)
 entry prod_mat4_f64 as bs cs ds =
- map4 (mat4'    r64) as bs cs ds |> scan (mat4_mul (f64.+) (f64.*)) (1, 0, 0, 1) >-> map (.1)
+ map4 (mat4'    r64) as bs cs ds |> scan (mat4_mul (f64.+) (f64.*)) (1, 0, 0, 1) >-> map (.0)
 
 -- Try a non-commutative reduction with a beefy operator containing lots of control flow.
 
@@ -148,7 +148,7 @@ let lss 't (t: t) (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t) =
       let xmatch = if pred1 x then 1 else 0
       in (xmatch, xmatch, xmatch, 1, x, x)
 
-  in (scan rop (0,0,0,0,t,t) (map mop xs)) |> map (.1)
+  in (scan rop (0,0,0,0,t,t) (map mop xs)) |> map (.0)
 
 -- ==
 -- entry: lss_iota_i8 lss_iota_i32 lss_iota_f32 lss_iota_f64

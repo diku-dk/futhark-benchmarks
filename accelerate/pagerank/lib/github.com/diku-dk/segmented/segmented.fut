@@ -10,7 +10,7 @@ let segmented_scan [n] 't (op: t -> t -> t) (ne: t)
                 (x_flag || y_flag,
                  if y_flag then y else x `op` y))
           (false, ne)
-          (zip flags as))).2
+          (zip flags as))).1
 
 -- | Segmented reduction. Given a binary associative operator ``op``
 -- with neutral element ``ne``, computes the reduction of the segments

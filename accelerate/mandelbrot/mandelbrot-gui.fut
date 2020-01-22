@@ -73,7 +73,7 @@ module lys : lys with text_content = text_content = {
     case _ -> s
 
   type text_content = text_content
-  let text_format () = "FPS: %d; bits: %d; iterations: %d; radius: %.2f"
+  let text_format () = "FPS: %d; bits: %d; iterations: %d; radius: %.1f"
   let text_content (fps: f32) (s: state) = (t32 (f32.round fps), s.precision,
                                             s.config.limit, f32.f64 s.config.radius)
   let text_colour _ = argb.white

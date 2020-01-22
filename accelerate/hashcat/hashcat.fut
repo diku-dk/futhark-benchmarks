@@ -84,7 +84,7 @@ let md5s [n] (bs: [n][16]u32): [n]md5 =
 let first_true [n] (bools : [n]bool): i32 =
   (reduce_comm (\p (i,x) -> if x then (i,x) else p)
                (-1,false)
-               (zip (iota n) bools)).1
+               (zip (iota n) bools)).0
 
 -- Input preprocessing.
 

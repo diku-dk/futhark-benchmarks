@@ -34,8 +34,8 @@ entry sort_f32 (xs: []f32) = merge_sort (f32.<=) xs
 
 entry sort_perm_i32 [n] (xs: [n]i32) =
   zip xs (iota n)
-  |> merge_sort_by_key (.1) (<=)
-  |> map (.2)
+  |> merge_sort_by_key (.0) (<=)
+  |> map (.1)
 
 -- ==
 -- entry: sort_perm_f32
@@ -44,5 +44,5 @@ entry sort_perm_i32 [n] (xs: [n]i32) =
 
 entry sort_perm_f32 [n] (xs: [n]f32) =
   zip xs (iota n)
-  |> merge_sort_by_key (.1) (<=)
-  |> map (.2)
+  |> merge_sort_by_key (.0) (<=)
+  |> map (.1)

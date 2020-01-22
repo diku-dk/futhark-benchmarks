@@ -223,8 +223,8 @@ module lys: lys with text_content = text_content = {
   let move_pixels (s: state) (dx, dy): state =
     let x_per_pixel = s.image_size.width / r32 s.screen_size.width
     let y_per_pixel = s.image_size.height / r32 s.screen_size.height
-    in s with centre = (s.centre.1 + x_per_pixel * r32 dx,
-                        s.centre.2 + y_per_pixel * r32 dy)
+    in s with centre = (s.centre.0 + x_per_pixel * r32 dx,
+                        s.centre.1 + y_per_pixel * r32 dy)
 
   let mouse (buttons: i32) x y (s: state) =
     let dpos = diff (x,y) s.mouse
@@ -260,12 +260,12 @@ module lys: lys with text_content = text_content = {
                    s.time
                    s.screen_size.width s.screen_size.height
                    s.image_size.width s.image_size.height
-                   s.centre.1 s.centre.2
+                   s.centre.0 s.centre.1
     in match s.mode
        case #mandelbrot_greyscale -> render mandelbrot_greyscale
-       case #julia_greyscale -> render (julia_greyscale s.userpos.1 s.userpos.2)
+       case #julia_greyscale -> render (julia_greyscale s.userpos.0 s.userpos.1)
        case #mandelbrot_colour -> render mandelbrot_colour
-       case #julia_colour -> render (julia_colour s.userpos.1 s.userpos.2)
+       case #julia_colour -> render (julia_colour s.userpos.0 s.userpos.1)
        case #figure_7_15 -> render figure_7_15
        case #fancy -> render fancy
 
