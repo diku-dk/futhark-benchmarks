@@ -51,7 +51,7 @@ type event = #step f32
 module type lys = {
   -- | The state maintained by this Lys application.  Most functions
   -- will take the current state and return a new state.
-  type state
+  type^ state
 
   -- | Initial state for a given window size.  A random seed is passed
   -- in.  Don't treat this as a true random number (it's currently

@@ -277,7 +277,7 @@ let to_pow2 x = t32 (2 ** f32.ceil (f32.log2 (r32 x)))
 -- configuration atm
 import "lib/github.com/diku-dk/lys/lys"
 module lys: lys with text_content = text_content = {
-  type state = {state: state [], h: i32, w: i32}
+  type^ state = {state: state [], h: i32, w: i32}
 
   let init (seed: u32) (h: i32) (w: i32): state =
     let size = to_pow2 (i32.min h w)

@@ -4,10 +4,10 @@
 type point = (f32,f32)
 
 -- | Generic image
-type img 'a = point -> a
+type^ img 'a = point -> a
 
 -- | Region (b/w)
-type region = img bool
+type^ region = img bool
 
 -- | Floats in [0;1]
 type frac = f32
@@ -16,12 +16,12 @@ type frac = f32
 type fcolor = (frac,frac,frac,frac)
 
 -- | Color images
-type cimage = img fcolor
+type^ cimage = img fcolor
 
 type polar_point = (f32, f32)
 
 -- | Transformations
-type transform = point -> point
+type^ transform = point -> point
 
 type vector = (point, point)
 
@@ -124,7 +124,7 @@ let rotateP (theta: f32): transform =
 let udisk: region =
   \p -> distO p < 1f32
 
-type filter 'a = img a -> img a
+type^ filter 'a = img a -> img a
 
 let translate 'a ((dx, dy): point): filter a =
   (translateP (-dx, -dy) >->)
@@ -144,10 +144,10 @@ let swirlP (r: f32): transform =
 let swirl 'a (r: f32): filter a =
   (swirlP (-r) >->)
 
-type filterC = filter fcolor
+type^ filterC = filter fcolor
 
 type time = f32
-type anim 'a = time -> img a
+type^ anim 'a = time -> img a
 
 let universeR: region = const true
 let emptyR: region = const false
