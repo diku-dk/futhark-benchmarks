@@ -6,7 +6,7 @@
 
 module m = import "lys"
 
-type state = m.lys.state
+type^ state = m.lys.state
 
 entry init (seed: u32) (h: i32) (w: i32): state = m.lys.init seed h w
 

@@ -8,7 +8,7 @@ let fcolorToColour (r,g,b,a) = argb.from_rgba r g b a
 
 let boolToColour: bool -> argb.colour = boolToFColor >-> fcolorToColour
 
-type argb_image = img argb.colour
+type^ argb_image = img argb.colour
 
 let cimage_to_argb: cimage -> argb_image = (>-> fcolorToColour)
 

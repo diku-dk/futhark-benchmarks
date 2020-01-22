@@ -1,6 +1,6 @@
 -- The outer driving loop is common to all BFS implementations.
 
-type step_fn =  (cost: *[]i32)
+type^ step_fn = (cost: *[]i32)
              -> (nodes_start_index: []i32)
              -> (nodes_n_edges: []i32)
              -> (edges_dest: []i32)
