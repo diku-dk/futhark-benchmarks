@@ -16,7 +16,7 @@ let bubble_sort [n] 't ((<=): t -> t -> bool) (xs: [n]t): [n]t =
   let iter xs (b: i32) =
     let (changed, xs) = tabulate n (f b xs) |> unzip
     in (xs, -b, or changed)
-  in (loop (xs, b, continue) = (xs, 1, true) while continue do iter xs b).1
+  in (loop (xs, b, continue) = (xs, 1, true) while continue do iter xs b).0
 
 -- | Like `bubble_sort`@term, but sort based on key function.
 let bubble_sort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =

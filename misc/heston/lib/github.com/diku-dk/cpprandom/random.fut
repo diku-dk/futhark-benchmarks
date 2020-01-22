@@ -167,7 +167,7 @@ module linear_congruential_engine (T: integral) (P: {
       loop seed' = 1 for i < n do
         u32.(((seed' >> 16) ^ seed') ^
              (i32 seed[i] ^ 0b1010101010101))
-    in (rand (T.u32 seed')).1
+    in (rand (T.u32 seed')).0
 
   let split_rng (n: i32) (x: rng): [n]rng =
     map (\i -> x T.^ T.i32 (hash i)) (iota n)
@@ -280,7 +280,7 @@ module discard_block_engine (K: {
 
   let rand ((rng,i): rng): (rng, t) =
     let (rng, i) =
-      if i >= K.r then (loop rng for _j < K.r - i do (E.rand rng).1, 0)
+      if i >= K.r then (loop rng for _j < K.r - i do (E.rand rng).0, 0)
                   else (rng, i+1)
     let (rng, x) = E.rand rng
     in ((rng, i), x)
@@ -406,13 +406,13 @@ module xorshift128plus: rng_engine with int.t = u64 = {
   let rng_from_seed [n] (seed: [n]i32) =
     (loop (a,b) = (u64.i32 (hash (-n)), u64.i32 (hash n)) for i < n do
        if i % 2 == 0
-       then (rand (a^u64.i32 (hash seed[i]),b)).1
-       else (rand (a, b^u64.i32 (hash seed[i]))).1)
-    |> rand |> (.1) |> rand |> (.1)
+       then (rand (a^u64.i32 (hash seed[i]),b)).0
+       else (rand (a, b^u64.i32 (hash seed[i]))).0)
+    |> rand |> (.0) |> rand |> (.0)
 
   let split_rng (n: i32) ((x,y): rng): [n]rng =
-    map (\i -> let (a,b) = (rand (rng_from_seed [hash (i^n)])).1
-               in (rand (rand (x^a,y^b)).1).1) (iota n)
+    map (\i -> let (a,b) = (rand (rng_from_seed [hash (i^n)])).0
+               in (rand (rand (x^a,y^b)).0).0) (iota n)
 
   let join_rng [n] (xs: [n]rng): rng =
     reduce (\(x1,y1) (x2,y2) -> (x1^x2,y1^y2)) (0u64,0u64) xs
@@ -440,9 +440,9 @@ module pcg32: rng_engine with int.t = u32 = {
     let initseq = 0xda3e39cb94b95bdbu64 -- Should expose this somehow.
     let state = 0u64
     let inc = (initseq << 1u64) | 1u64
-    let {state, inc} = (rand {state, inc}).1
+    let {state, inc} = (rand {state, inc}).0
     let state = loop state for x in xs do state + u64.i32 x
-    in (rand {state, inc}).1
+    in (rand {state, inc}).0
 
   let split_rng (n: i32) ({state,inc}: rng): [n]rng =
     let ith i =

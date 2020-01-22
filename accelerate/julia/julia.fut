@@ -200,8 +200,8 @@ module lys : lys with text_content = () = {
       else s
 
     case #mouse {buttons, x, y} ->
-      let dx = (s.panning.1-r32 x) * s.width / r32 s.screenX
-      let dy = (s.panning.2-r32 y) * s.width / r32 s.screenY
+      let dx = (s.panning.0-r32 x) * s.width / r32 s.screenX
+      let dy = (s.panning.1-r32 y) * s.width / r32 s.screenY
       let (x', y') = if buttons != 0
                      then (dx + s.posX, dy + s.posY)
                      else (s.posX, s.posY)

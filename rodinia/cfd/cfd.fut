@@ -6,8 +6,8 @@
 -- compiled input @ data/fvcorr.domn.097K.toa.gz
 -- output @ data/fvcorr.domn.097K.out.gz
 --
--- compiled input @ data/fvcorr.domn.193K.toa.gz
--- output @ data/fvcorr.domn.193K.out.gz
+-- compiled input @ data/fvcorr.domn.093K.toa.gz
+-- output @ data/fvcorr.domn.093K.out.gz
 
 let gamma: f32 = 1.4
 let iterations: i32 = 2000

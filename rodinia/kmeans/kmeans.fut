@@ -18,7 +18,7 @@ let euclid_dist_2 [d] (pt1: [d]f32) (pt2: [d]f32): f32 =
   f32.sum (map (**2.0f32) (map2 (-) pt1 pt2))
 
 let closest_point (p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
-  if p1.2 < p2.2 then p1 else p2
+  if p1.1 < p2.1 then p1 else p2
 
 let find_nearest_point [k][d] (pts: [k][d]f32) (pt: [d]f32): i32 =
   let (i, _) = reduce_comm closest_point (0, euclid_dist_2 pt pts[0])

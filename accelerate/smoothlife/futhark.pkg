@@ -1,7 +1,7 @@
 require {
   github.com/diku-dk/fft 0.1.6 #377d089ad88a8d37b23a6e8a1056ba63b160c830
   github.com/athas/matte 0.1.1 #24f332e6ff8b5872b950cfcbead9b2f7c6571490
-  github.com/diku-dk/cpprandom 1.1.8 #70b757d52b31cd01527cb25fcbfd4474299d0e0a
-  github.com/diku-dk/lys 0.1.1 #a1e2c3ac28e1f65efc40b93d9c4ed44ac56c1dca
-  github.com/diku-dk/segmented 0.2.6 #12e111194a6fb7d19edb33b5d5601e2e90aa4c72
+  github.com/diku-dk/cpprandom 1.1.9 #2e56f6982d048cdefd30472a1d069dd9a468c6a2
+  github.com/diku-dk/lys 0.1.2 #12db2747f9fd2a2f22be02347699bd5376959af0
+  github.com/diku-dk/segmented 0.2.7 #0cde0f3ae830f8436af2e019db700890bdf3b8dd
 }

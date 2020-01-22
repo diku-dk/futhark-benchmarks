@@ -32,8 +32,8 @@ entry sort_f32 = radix_sort_float f32.num_bits f32.get_bit
 
 entry sort_perm_i32 [n] (xs: [n]i32) =
   zip xs (iota n)
-  |> radix_sort_int_by_key (.1) i32.num_bits i32.get_bit
-  |> map (.2)
+  |> radix_sort_int_by_key (.0) i32.num_bits i32.get_bit
+  |> map (.1)
 
 -- ==
 -- entry: sort_perm_f32
@@ -42,5 +42,5 @@ entry sort_perm_i32 [n] (xs: [n]i32) =
 
 entry sort_perm_f32 [n] (xs: [n]f32) =
   zip xs (iota n)
-  |> radix_sort_float_by_key (.1) f32.num_bits f32.get_bit
-  |> map (.2)
+  |> radix_sort_float_by_key (.0) f32.num_bits f32.get_bit
+  |> map (.1)

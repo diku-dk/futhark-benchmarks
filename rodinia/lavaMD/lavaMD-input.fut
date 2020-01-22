@@ -102,21 +102,21 @@ let main (boxes1d: i32) (par_per_box: i32) (num_neighbors: i32):
 
   in ( alpha,
 
+       (unzip4(box_coefs)).0,
        (unzip4(box_coefs)).1,
        (unzip4(box_coefs)).2,
        (unzip4(box_coefs)).3,
-       (unzip4(box_coefs)).4,
 
+       (map (map (.0)) box_nnghs),
        (map (map (.1)) box_nnghs),
        (map (map (.2)) box_nnghs),
        (map (map (.3)) box_nnghs),
-       (map (map (.4)) box_nnghs),
 
        box_num_nghbs,
 
+       (map (map (.0)) rv),
        (map (map (.1)) rv),
        (map (map (.2)) rv),
        (map (map (.3)) rv),
-       (map (map (.4)) rv),
 
        qv)

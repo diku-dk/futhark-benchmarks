@@ -38,7 +38,7 @@ let distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
   let switched (x: date) (i: i32) =
     i == 0 || unsafe !(same_date x dates[i - 1])
   let switches = map2 switched dates (iota n)
-  in ((unzip (filter (.1) (zip switches dates))).2,
+  in ((unzip (filter (.0) (zip switches dates))).1,
       map (\x -> x-1) (scan (+) 0 (map i32.bool switches)))
 
 let run_calibration({today,
