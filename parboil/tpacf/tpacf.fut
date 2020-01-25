@@ -110,4 +110,4 @@ let main [numD][numRs][numR]
       let res[i*3+2] = rr[i+1]
       in (res, dd, rr, dr)
 
-  in res : [60]i32
+  in res :> [60]i32

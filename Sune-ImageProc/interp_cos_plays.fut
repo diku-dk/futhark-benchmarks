@@ -168,7 +168,7 @@ let run2 [sx][sy][sz][dims1][N]
 module vector_2 = cat_vector vector_1 vector_1
 module v4 = cat_vector vector_2 vector_2
 type vec4 't = v4.vector t
-let mkv4 't arr = v4.from_array (arr : [v4.length]t)
+let mkv4 't arr = v4.from_array (arr :> [v4.length]t)
 
 let myfunVct (s: i32) (scale: real) (offset: real) (pt: real) : 
              (vec4 real, vec4 i32) =

@@ -29,7 +29,7 @@ let mkX (k2p2: i32) (N: i32) (f: f32) : [k2p2][N]f32 =
                      in  if i % 2 == 0 then f32.sin angle else f32.cos angle
               ) (map (+1) (iota N))
         ) (2 ... k2p2-1)
-  ) : [k2p2][N]f32
+  ) :> [k2p2][N]f32
 
 -- | compute the actual number of values that precisely
 --   encapsulate the first n valid values of y.
@@ -75,7 +75,7 @@ let findSplit [N] (n: i32) (y: [N]f32) : i32 =
     let Ap' = unflatten n m (gauss_jordan n Ap)
 
     -- Drop the identity matrix at the front.
-    in Ap'[0:n,n:n * 2] : [n][n]f32
+    in Ap'[0:n,n:n * 2] :> [n][n]f32
 --------------------------------------------------
 --------------------------------------------------
 

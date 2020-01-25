@@ -17,5 +17,5 @@ let main [img_width] [img_height] (histo_width: i32) (histo_height: i32)
   let histo = replicate (histo_height*histo_width) 0
   let flat = img_height*img_width
   in reduce_by_index histo sat_add_u8 0
-                     (flatten img : [flat]i32)
+                     (flatten img :> [flat]i32)
                      (replicate flat 1)

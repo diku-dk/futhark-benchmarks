@@ -77,7 +77,7 @@ entry rule101_uninit (world: rule101_world [][]) =
  rule101.uninit world
 
 let flatten_to [n][m] 't (k: i32) (xs: [n][m]t): [k]t =
-  flatten xs : [k]t
+  flatten xs :> [k]t
 
 -- Just a simple test to force the program to be compiled.
 let main [n][m] (base_pattern: [n][m]i32) (_repeats: i32) (k: i32) =

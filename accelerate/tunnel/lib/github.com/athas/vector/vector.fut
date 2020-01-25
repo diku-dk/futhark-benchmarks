@@ -163,7 +163,7 @@ module cat_vector (X: vector) (Y: vector): vector = {
   let set i v (xs, ys) = if i < X.length then (X.set i v xs, ys)
                          else (xs, Y.set (i-X.length) v ys)
   let length = X.length + Y.length
-  let to_array 't (xs, ys) = X.to_array xs ++ Y.to_array ys : [length]t
+  let to_array 't (xs, ys) = X.to_array xs ++ Y.to_array ys :> [length]t
   let from_array 't as = let xs = X.from_array (take X.length as)
                          let ys = Y.from_array (take Y.length (drop X.length as))
                          in (xs, ys)

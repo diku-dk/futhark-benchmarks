@@ -198,10 +198,10 @@ let lud_perimeter_lower [b][m] (diag: [b][b]f32, mat: [m][m][b][b]f32): *[m][b][
 
 let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat: [mp1][mp1][b][b]f32 ): *[][][b][b]f32 =
   let m = mp1 - 1
-  let top_slice0= top_per[1:mp1] : [m][b][b]f32 in
+  let top_slice0= top_per[1:mp1] :> [m][b][b]f32 in
   let top_slice = map transpose top_slice0 in
-  let lft_slice = lft_per[1:mp1] : [m][b][b]f32 in
-  let mat_slice = mat[1:mp1,1:mp1] : [m][m][b][b]f32 in
+  let lft_slice = lft_per[1:mp1] :> [m][b][b]f32 in
+  let mat_slice = mat[1:mp1,1:mp1] :> [m][m][b][b]f32 in
   map (\(mat_arr: [m][b][b]f32, lft: [b][b]f32): [m][b][b]f32  ->
         map (\ (mat_blk: [b][b]f32, top: [b][b]f32): [b][b]f32  ->
                 map  (\ (mat_row: [b]f32, lft_row: [b]f32): [b]f32  ->
@@ -217,7 +217,7 @@ let lud_internal [mp1][b] (top_per: [mp1][b][b]f32, lft_per: [mp1][b][b]f32, mat
 let block_size: i32 = 32
 
 let pad_to [n] 'a (m: i32) (x: a) (arr: [n]a) : [m]a =
-  arr ++ replicate (m - n) x : [m]a
+  arr ++ replicate (m - n) x :> [m]a
 
 --------------------------------------------
 ---- Main Driver:
@@ -229,9 +229,9 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
     -- Maybe pad the input to be a multiple of the block size.
     let padding = n - m
     let mat = if padding != 0
-              then (map (pad_to n 0) mat : [m][n]f32) ++
+              then map (pad_to n 0) mat ++
                    replicate padding (replicate n 0f32)
-              else mat : [n][n]f32
+              else mat :> [n][n]f32
     -------------------------------------------------
     ---- transform matrix in [n/b,n/b,b,b] block ----
     ---- versions for upper and lower parts      ----
@@ -299,7 +299,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
         ----------------------------------------
         let m = length matb - 1 -- new number of blocks.
         let matb = lud_internal(top_per_irreg, lft_per_irreg, matb)
-                   : [m][m][b][b]f32
+                   :> [m][m][b][b]f32
         in (upper, lower, matb )
     ---------------------
     -- LOOP ENDS HERE! --

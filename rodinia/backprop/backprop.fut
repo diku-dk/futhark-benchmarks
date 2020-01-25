@@ -86,17 +86,17 @@ let bpnn_train_kernel [n_in][n_out][n_inp1][n_hid][n_hidp1]
                         ) =
     let (inpweightsP_row0,inpweightsP) = split (1)  input_weights
     let hidden_units = bpnn_layerforward(input_units,
-                                         inpweightsP : [n_in][n_hid]f32,
+                                         inpweightsP :> [n_in][n_hid]f32,
                                          inpweightsP_row0[0])
 
     let (hidweightsP_row0,hidweightsP) = split (1) hidden_weights
     let output_units = bpnn_layerforward(hidden_units,
-                                         hidweightsP : [n_hid][n_out]f32,
+                                         hidweightsP :> [n_hid][n_out]f32,
                                          hidweightsP_row0[0])
 
     let (out_err, output_delta) = bpnn_output_error(target, output_units)
     let (hid_err, hidden_delta) = bpnn_hidden_error(output_delta,
-                                                    hidweightsP  : [n_hid][n_out]f32,
+                                                    hidweightsP :> [n_hid][n_out]f32,
                                                     hidden_units)
 
     let (hidden_weights, hidden_prev_weights) =
