@@ -37,8 +37,8 @@ module mk_fft (R: real): {
         let (i0s, v0s, i1s, v1s) =
           unsafe (unzip4 (map (fft_iteration forward ns input') ix))
         in (scatter output'
-                    (i0s ++ i1s : [n]i32)
-                    (v0s ++ v1s : [n]complex),
+                    (i0s ++ i1s :> [n]i32)
+                    (v0s ++ v1s :> [n]complex),
             input')
     in res
 

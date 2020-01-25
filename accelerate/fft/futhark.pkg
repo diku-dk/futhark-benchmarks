@@ -1,5 +1,5 @@
 require {
   github.com/diku-dk/complex 0.1.2 #790bf261a6a36a9454b55f3f8109ac5cb1f4bf6e
   github.com/athas/matte 0.1.1 #24f332e6ff8b5872b950cfcbead9b2f7c6571490
-  github.com/diku-dk/fft 0.1.6 #377d089ad88a8d37b23a6e8a1056ba63b160c830
+  github.com/diku-dk/fft 0.1.7 #efde5475c7c5a2935be00280f304544ff59b8fee
 }

@@ -28,9 +28,9 @@ let common_main [n][e] (step: step_fn [][])
 
         -- Make the sizes obvious.
         let updating_graph_mask' =
-          updating_graph_mask' : *[n]bool
+          updating_graph_mask' :> *[n]bool
         let cost' =
-          cost' : *[n]i32
+          cost' :> *[n]i32
 
         let step2_inds = map2 (\x i -> if x then i else -1) updating_graph_mask' (iota n)
 

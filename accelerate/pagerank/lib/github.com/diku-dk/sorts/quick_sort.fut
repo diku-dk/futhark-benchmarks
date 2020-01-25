@@ -30,14 +30,14 @@ local let step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]
   let sgms_szs : []i32 = map (\sgm -> sgm.sz) sgms
   let idxs = replicated_iota sgms_szs
   let m = length idxs
-  let idxs = idxs : [m]i32
+  let idxs = idxs :> [m]i32
 
   -- find the indexes into values in segments; after a value equal to
   -- a pivot has moved, it will no longer be part of a segment (it
   -- need not be moved again).
   let is =
     let is1 = segmented_replicate sgms_szs (map (\x -> x.start) sgms)
-              : [m]i32
+              :> [m]i32
     let fs = map2 (!=) is1 (rotate (i32.negate 1) is1)
     let is2 = segmented_iota fs
     in map2 (+) is1 is2
@@ -54,7 +54,7 @@ local let step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]
     in flags with [0] = true
 
   -- compute partition sizes for each segment
-  let pszs = segmented_reduce tripadd (0,0,0) flags orders : [k](i32,i32,i32)
+  let pszs = segmented_reduce tripadd (0,0,0) flags orders :> [k](i32,i32,i32)
 
   -- compute the new segments
   let sgms' =

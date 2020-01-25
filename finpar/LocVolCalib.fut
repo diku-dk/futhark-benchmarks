@@ -37,8 +37,8 @@ let initOperator [n] (x: [n]f32): ([n][3]f32,[n][3]f32) =
   let dxl      = x[n-1] - x[n-2]
   let dx_high  = [[-1.0 / dxl, 1.0 / dxl, 0.0 ]]
   let dxx_high = [[0.0, 0.0, 0.0 ]]
-  let dx     = dx_low ++ dx_mid ++ dx_high : [n][3]f32
-  let dxx    = dxx_low ++ dxx_mid ++ dxx_high : [n][3]f32
+  let dx     = dx_low ++ dx_mid ++ dx_high :> [n][3]f32
+  let dxx    = dxx_low ++ dxx_mid ++ dxx_high :> [n][3]f32
   in  (dx, dxx)
 
 let setPayoff [numX][numY] (strike: f32, myX: [numX]f32, _myY: [numY]f32): *[numY][numX]f32 =
@@ -199,8 +199,8 @@ let value(numX: i32, numY: i32, numT: i32, s0: f32, strike: f32, t: f32, alpha: 
   let (myDy, myDyy) = initOperator(myY)
   let myResult = setPayoff(strike, myX, myY)
   let numT' = numT - 1
-  let myTimeline_neighbours = reverse (zip (init myTimeline : [numT']f32)
-                                           (tail myTimeline : [numT']f32))
+  let myTimeline_neighbours = reverse (zip (init myTimeline :> [numT']f32)
+                                           (tail myTimeline :> [numT']f32))
   let myResult = loop (myResult) for (tnow,tnext) in myTimeline_neighbours do
                  let (myMuX, myVarX, myMuY, myVarY) =
                    updateParams(myX, myY, tnow, alpha, beta, nu)

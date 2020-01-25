@@ -79,7 +79,7 @@ let mkX_no_trend [N] (k2p2m1: i32) (f: f32) (mappingindices: [N]i32): [k2p2m1][N
                  ) (iota nm)
     let Ap' = gauss_jordan n m Ap
     -- Drop the identity matrix at the front!
-    in (unflatten n m Ap')[0:n,n:2*n] : [n][n]f32
+    in (unflatten n m Ap')[0:n,n:2*n] :> [n][n]f32
 --------------------------------------------------
 --------------------------------------------------
 

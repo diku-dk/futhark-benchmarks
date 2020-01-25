@@ -228,10 +228,9 @@ let correlateDeltas [num_und][num_dates]
                    : [num_dates][num_und]f32 =
   map (\zi: [num_und]f32  ->
          map (\(j: i32): f32  ->
-                let jp1 = j+1
                 let x = map2 (*)
-                             (unsafe take (j+1) zi : [jp1]f32)
-                             (unsafe take (j+1) md_c[j] : [jp1]f32)
+                             (unsafe take (j+1) zi)
+                             (unsafe take (j+1) md_c[j])
                 in  f32.sum x)
              (iota num_und))
       zds
@@ -313,9 +312,9 @@ let payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
 
 
 let genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]f32): f32 =
-  if      contract == 1 then unsafe payoff1(md_disct, md_detval, xss : [1][1]f32)
-  else if contract == 2 then unsafe payoff2(md_disct, xss : [5][3]f32)
-  else if contract == 3 then unsafe payoff3(md_disct, xss : [367][3]f32)
+  if      contract == 1 then unsafe payoff1(md_disct, md_detval, xss :> [1][1]f32)
+  else if contract == 2 then unsafe payoff2(md_disct, xss :> [5][3]f32)
+  else if contract == 3 then unsafe payoff3(md_disct, xss :> [367][3]f32)
   else 0.0
 
 -- Entry point
@@ -333,7 +332,7 @@ let main [k][num_bits][num_models][num_und][num_dates][num_discts]
         (bb_data: [3][num_dates]f32)
          : []f32 =
   let sobvctsz  = num_dates*num_und
-  let dir_vs = dir_vs : [sobvctsz][num_bits]i32
+  let dir_vs = dir_vs :> [sobvctsz][num_bits]i32
   let sobol_mat = map_stream (\chunk (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
                                 sobolChunk dir_vs (unsafe ns[0]) chunk)
                              (iota num_mc_it)
