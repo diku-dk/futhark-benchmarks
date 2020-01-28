@@ -12,52 +12,41 @@
 -- compiled input @ data/2048.in.gz
 -- output @ data/2048.out.gz
 
--------------------------------------------
----- Translation of: lud_diagonal_omp -----
--------------------------------------------
-----
----- limitted parallelism, cannot efficiently
----- parallelize in the manner of rodinia-cuda
----------------------------------------------------------------------
----------------------------------------------------------------------
 
-let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =  -- CORRECT
-    let a_cols = copy(transpose(a)) in
-    let b2 = 2*b in
-    let a_rc = map (\ (i: i32): [b2]f32  ->
-                        map (\ (j: i32): f32  ->
-                                if j < b
-                                then unsafe a[i,j  ]
-                                else unsafe a_cols[i,j-b]
-                           ) (iota(b2) )
-                  ) (iota(b) )
-    let a_rc = loop a_rc for i < b do
-        let row_col =
-            map (\ (j: i32): f32  ->
-                    if j < b
-                    then
-                        if j < i then 0.0f32 else
-                        let sum = loop sum=0.0f32 for k < i do
-                            sum + a_rc[k,i+b]*a_rc[k,j]
-                        in  a_rc[i,j]-sum
-                    else
-                        let j = j - b in
-                        if j < (i+1) then 0.0f32 else
-                        let aii = loop aii=a_rc[i,i] for k < i do
-                            aii - (a_rc[k,i+b]*a_rc[k,i])
-                        in
-                        let sum = loop sum=0.0f32 for k < i do
-                            sum + a_rc[k,j+b]*a_rc[k,i]
-                        in  (a_rc[i,j+b]-sum) / aii
-               ) (iota(b2) )
-        in
-        let a_rc[i] = row_col in
-        a_rc
-    in map (\ (i: i32): [b]f32  ->
-            map (\ (j: i32): f32  ->
-                    if (i <= j) then a_rc[i,j] else a_rc[j,i+b]
-               ) (iota(b) )
-          ) (iota(b) )
+let dotprod [n] (a: [n]f32) (b: [n]f32): f32 =
+  map2 (*) a b
+       |> reduce (+) 0
+
+
+-------------------------------------------
+---- lud_diagonal_omp -----
+--
+-- This version should be tuned and run with FUTHARK_INCREMENTAL_FLATTENING=1
+-------------------------------------------
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
+  map2 (\_ mat ->
+          let mat = copy mat
+          in loop mat for i < b-1 do
+             let col = map (\j -> if j > i then
+                                    unsafe (mat[j,i] - (dotprod mat[j,:i] mat[:i,i])) / mat[i,i]
+                                  else
+                                    mat[j,i])
+                           (iota b)
+            let mat[:,i] = col
+
+            let row = map (\j -> if j > i then
+                                   mat[i+1, j] - (dotprod mat[:i+1, j] mat[i+1, :i+1])
+                                 else
+                                   mat[i+1, j])
+                          (iota b)
+            let mat[i+1] = row
+
+            in mat
+       ) (iota (opaque 1)) [a]
+       |> head
+
 ------------------------------
 ------------------------------
 ---- LUD Perimeter Upper -----
