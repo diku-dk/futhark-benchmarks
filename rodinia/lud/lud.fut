@@ -26,9 +26,9 @@ let dotprod [n] (a: [n]f32) (b: [n]f32): f32 =
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
-  map2 (\_ mat ->
+  map1 (\mat ->
           let mat = copy mat
-          in loop mat for i < b-1 do
+          in loop (mat: *[b][b]f32) for i < b-1 do
              let col = map (\j -> if j > i then
                                     unsafe (mat[j,i] - (dotprod mat[j,:i] mat[:i,i])) / mat[i,i]
                                   else
@@ -44,7 +44,7 @@ let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
             let mat[i+1] = row
 
             in mat
-       ) (iota (opaque 1)) [a]
+       ) (unflatten (opaque 1) b a)
        |> head
 
 ------------------------------
