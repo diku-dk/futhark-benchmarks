@@ -24,7 +24,7 @@ let node_work [n][e] (tid: i32,
   let n_edges = nodes_n_edges[tid]
   let graph_mask[tid] = false
   let (cost, updating_graph_mask) =
-    loop ((cost, updating_graph_mask)) for i in steps start_index n_edges 1 do
+    loop ((cost, updating_graph_mask)) for i in start_index..<start_index+n_edges do
       let id = edges_dest[i]
       let visited = graph_visited[id]
       in if ! visited
