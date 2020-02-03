@@ -272,6 +272,9 @@ type text_content = (i32, i32, i32)
 -- Due to FFT limitations we always the size up to a power of 2.
 let to_pow2 x = t32 (2 ** f32.ceil (f32.log2 (r32 x)))
 
+-- Because we will shadow 'state' in a moment.
+type sized_state [n] = state [n]
+
 -- Run as ./smoothlife -R -w 256 -h 256
 -- Uses default config, since lys does not support any kind of custom
 -- configuration atm
@@ -280,15 +283,14 @@ module lys: lys with text_content = text_content = {
   type~ state = {state: state [], h: i32, w: i32}
 
   let init (seed: u32) (h: i32) (w: i32): state =
-    let size = to_pow2 (i32.min h w)
+    let size = to_pow2 (i32.max h w)
     let conf = make_conf_simple 0.1
     in {state=init size conf seed, h, w}
 
-  let step _ (s: state) = s with state = step s.state
-
   -- Cut it down to requested size.
   let render (s: state) =
-    let screen = render s.state
+    let size = to_pow2 (i32.max s.h s.w)
+    let screen = render (s.state :> sized_state [size])
     in map (take s.w) screen |> take s.h
 
   -- Resizes can occur even with the -R flag to lys (at least on my machine,
@@ -304,8 +306,9 @@ module lys: lys with text_content = text_content = {
       if key == SDLK_SPACE
       then init s.state.seed (length s.state.world) (length s.state.world[0])
       else s
-    case #step td ->
-      step td s
+    case #step _ ->
+      let size = to_pow2 (i32.max s.h s.w)
+      in s with state = step (s.state :> sized_state [size])
     case _ -> s
 
   type text_content = text_content
