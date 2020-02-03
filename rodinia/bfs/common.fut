@@ -15,9 +15,9 @@ let common_main [n][e] (step: step_fn [][])
                        (edges_dest: [e]i32) : [n]i32 =
     let source = 0
     let is_source = map (==source) (iota n)
-    let (graph_mask, graph_visited, cost) = (pick is_source (replicate n true) (replicate n false),
-                                             pick is_source (replicate n true) (replicate n false),
-                                             pick is_source (replicate n 0) (replicate n (-1)))
+    let (graph_mask, graph_visited, cost) = (copy is_source,
+                                             copy is_source,
+                                             map (\x -> if x then 0 else -1) is_source)
     let (cost,_,_,_,_) =
       loop (cost, graph_mask, graph_visited, updating_graph_mask, continue) =
            (cost, graph_mask, graph_visited, replicate n false, true)
