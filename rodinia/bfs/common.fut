@@ -9,7 +9,7 @@ type^ step_fn [n][e] = (cost: *[n]i32)
                     -> (updating_graph_mask: *[n]bool)
                     -> (*[n]i32, *[n]bool, *[n]bool)
 
-let common_main [n][e] (step: step_fn [][])
+let common_main [n][e] (step: step_fn [n][e])
                        (nodes_start_index: [n]i32)
                        (nodes_n_edges: [n]i32)
                        (edges_dest: [e]i32) : [n]i32 =
