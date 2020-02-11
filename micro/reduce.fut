@@ -22,10 +22,10 @@
 -- input { 10000000 }
 -- input { 100000000 }
 
-entry sum_iota_i8  = iota >-> map i8.i32 >-> i8.sum
-entry sum_iota_i32 = iota >-> i32.sum
-entry sum_iota_f32 = iota >-> map r32 >-> f32.sum
-entry sum_iota_f64 = iota >-> map r64 >-> f64.sum
+entry sum_iota_i8  n = n |> iota |> map i8.i32 |> i8.sum
+entry sum_iota_i32 n = n |> iota |> i32.sum
+entry sum_iota_f32 n = n |> iota |> map r32 |> f32.sum
+entry sum_iota_f64 n = n |> iota |> map r64 |> f64.sum
 
 -- ==
 -- entry: sum_i8 sum_i32
@@ -114,10 +114,10 @@ let mat4_mul (+) (*) (a0,a1,a2,a3) (b0,b1,b2,b3) =
 let mat4 x = (x, x, x, x)
 let mat4' f a b c d = (f a, f b, f c, f d)
 
-entry prod_iota_mat4_i8  = iota >-> map (i8.i32 >-> mat4) >-> reduce (mat4_mul  (i8.+)  (i8.*)) (1, 0, 0, 1)
-entry prod_iota_mat4_i32 = iota >-> map mat4              >-> reduce (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1)
-entry prod_iota_mat4_f32 = iota >-> map (r32 >-> mat4)    >-> reduce (mat4_mul (f32.+) (f32.*)) (1, 0, 0, 1)
-entry prod_iota_mat4_f64 = iota >-> map (r64 >-> mat4)    >-> reduce (mat4_mul (f64.+) (f64.*)) (1, 0, 0, 1)
+entry prod_iota_mat4_i8  n = n |> iota |> map (i8.i32 >-> mat4) |> reduce (mat4_mul  (i8.+)  (i8.*)) (1, 0, 0, 1)
+entry prod_iota_mat4_i32 n = n |> iota |> map mat4              |> reduce (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1)
+entry prod_iota_mat4_f32 n = n |> iota |> map (r32 >-> mat4)    |> reduce (mat4_mul (f32.+) (f32.*)) (1, 0, 0, 1)
+entry prod_iota_mat4_f64 n = n |> iota |> map (r64 >-> mat4)    |> reduce (mat4_mul (f64.+) (f64.*)) (1, 0, 0, 1)
 
 entry prod_mat4_i8 as bs cs ds  = map4 (mat4' i8.i32) as bs cs ds |> reduce (mat4_mul  (i8.+)  (i8.*)) (1, 0, 0, 1)
 entry prod_mat4_i32 as bs cs ds = map4 (mat4'     id) as bs cs ds |> reduce (mat4_mul (i32.+) (i32.*)) (1, 0, 0, 1)
@@ -154,10 +154,10 @@ let lss 't (t: t) (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
 -- input { 10000000 } auto output
 -- input { 100000000 } auto output
 
-entry lss_iota_i8  = iota >-> map  i8.i32 >-> lss 0 (const true) (<=)
-entry lss_iota_i32 = iota >-> map i32.i32 >-> lss 0 (const true) (<=)
-entry lss_iota_f32 = iota >-> map     r32 >-> lss 0 (const true) (<=)
-entry lss_iota_f64 = iota >-> map     r64 >-> lss 0 (const true) (<=)
+entry lss_iota_i8  n = n |> iota |> map  i8.i32 |> lss 0 (const true) (<=)
+entry lss_iota_i32 n = n |> iota |> map i32.i32 |> lss 0 (const true) (<=)
+entry lss_iota_f32 n = n |> iota |> map     r32 |> lss 0 (const true) (<=)
+entry lss_iota_f64 n = n |> iota |> map     r64 |> lss 0 (const true) (<=)
 
 -- ==
 -- entry: lss_i8 lss_i32 lss_f32 lss_f64
