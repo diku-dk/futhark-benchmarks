@@ -44,9 +44,7 @@ let main [n][d]
         (threshold: i32) (k: i32) (max_iterations: i32)
         (points: [n][d]f32): ([][]f32, i32) =
   -- Assign arbitrary initial cluster centres.
-  let cluster_centres = map (\(i: i32): [d]f32  ->
-                               unsafe points[i])
-                            (iota k)
+  let cluster_centres = take k points
   -- Also assign points arbitrarily to clusters.
   let membership = map (%k) (iota n)
   let delta = threshold + 1
