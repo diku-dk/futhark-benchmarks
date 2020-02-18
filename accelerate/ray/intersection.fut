@@ -27,7 +27,7 @@ let check_ray [n] 'object
             : bool =
   loop hit = false for i < n do
     if !hit then
-      let (new_hit,dist') = distance_to (unsafe objects[i]) orig dir
+      let (new_hit,dist') = distance_to objects[i] orig dir
       in if new_hit && dist' < dist then true else hit
     else hit
 
