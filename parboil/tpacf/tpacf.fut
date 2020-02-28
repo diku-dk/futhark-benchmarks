@@ -100,14 +100,8 @@ let main [numD][numRs][numR]
                                (doComputeSelf random numBins numBins2 binb,
                                 doCompute datapoints random numBins numBins2 binb))
                                randompoints)
-  let (res,_,_,_) = loop (res, dd, rr, dr) =
-                         (replicate (numBins*3) 0i32,
-                          doComputeSelf datapoints numBins numBins2 binb,
-                          sumBins rrs,
-                          sumBins drs) for i < numBins do
-      let res[i*3] = dd[i+1]
-      let res[i*3+1] = dr[i+1]
-      let res[i*3+2] = rr[i+1]
-      in (res, dd, rr, dr)
 
-  in res :> [60]i32
+  let dd = doComputeSelf datapoints numBins numBins2 binb
+  let rr = sumBins rrs
+  let dr = sumBins drs
+  in [dd, dr, rr] |> transpose |> init |> tail |> flatten_to 60
