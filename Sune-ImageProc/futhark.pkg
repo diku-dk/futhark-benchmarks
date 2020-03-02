@@ -1,3 +1,0 @@
-require {
-  github.com/athas/vector 0.4.5 #70aee3855895f2c9b19f767f4a45dca367f94351
-}
