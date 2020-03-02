@@ -83,7 +83,7 @@ module edge_handling (mapper: edge_handling_mapper) = {
     then (i, 1, if b == 2 then -1.0 else 1.0)
     else if j == g - 1
     then (i, g - 2, if b == 2 then -1.0 else 1.0)
-    else (0, 0, 0.0) -- This is not supposed to happen.
+    else assert false (0, 0, 0.0) -- This is not supposed to happen.
 
   let handle
     (i: i32) (j: i32) (g: i32) (b: i32)
