@@ -18,64 +18,73 @@ let bins_per_dec: f64 = 5.0
 let numBins: i32 = 20
 
 let iota32 (num: i32): [num]f64 =
-  map r64 (iota num)
+  map f64.i32 (iota num)
 
 let sumBins [numBins][numBinss] (bins: [numBinss][numBins]i32): *[numBins]i32 =
   map1 i32.sum (transpose bins)
 
 let log10 (num: f64): f64 = f64.log(num) / f64.log(10.0)
 
-let doCompute [num1][num2][numBBins]
-              (data1: [num1]vec3)
-              (data2: [num2]vec3)
+let doCompute [numD][numBBins]
+              (datapoints: [numD]vec3)
+              (random: [numD]vec3)
               (numBins: i32)
               (numBins2: i32)
               (binb: [numBBins]f64)
              : [numBins2]i32 =
-  let one_value (xOuter, yOuter, zOuter) =
-    loop dBins = replicate numBins2 0i32
-    for (xInner, yInner, zInner) in data2 do
-      let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
-      let (min,max) =
-        loop (min, max) = (0, numBins) while (min+1) < max do
-          let k = (min+max) / 2
-          in unsafe if dot >= binb[k]
-                    then (min, k)
-                    else (k, max)
-
-      let index = unsafe if dot >= binb[min]
-                  then min
-                  else if dot < binb[max]
-                      then max+1
-                      else max
-
-      in unsafe dBins with [index] = dBins[index] + 1i32
-  in map one_value data1 |> sumBins
-
-let doComputeSelf [numD][numBBins]
-                  (data: [numD]vec3)
-                  (numBins: i32)
-                  (numBins2: i32)
-                  (binb: [numBBins]f64)
-                 : [numBins2]i32 =
-  let one_value (xOuter, yOuter, zOuter) index =
-    loop dBins = replicate numBins2 0i32
-    for (xInner, yInner, zInner) in unsafe drop (index+1) data do
-      let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
-      let (min,max) = loop (min, max) = (0, numBins) while (min+1) < max do
+  let f k =
+    let i = k / numD
+    let j = k % numD
+    let (xOuter, yOuter, zOuter) = datapoints[i]
+    let (xInner, yInner, zInner) = random[j]
+    let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
+    let (min,max) =
+      loop (min, max) = (0, numBins) while (min+1) < max do
         let k = (min+max) / 2
         in unsafe if dot >= binb[k]
                   then (min, k)
                   else (k, max)
 
-      let index = unsafe if dot >= binb[min]
-                  then min
-                  else if dot < binb[max]
-                      then max+1
-                      else max
+    let index = unsafe if dot >= binb[min]
+                then min
+                else if dot < binb[max]
+                    then max+1
+                    else max
 
-      in unsafe dBins with [index] = dBins[index] + 1i32
-  in map2 one_value data (iota numD) |> sumBins
+    in index
+
+  let l = numD * numD
+  in reduce_by_index (replicate numBins2 0) (+) 0 (tabulate l f) (replicate l 1)
+
+let doComputeSelf [numD][numBBins]
+                  (datapoints: [numD]vec3)
+                  (numBins: i32)
+                  (numBins2: i32)
+                  (binb: [numBBins]f64)
+                 : [numBins2]i32 =
+  let f k =
+    let i = k / numD
+    let j = k % numD
+    in
+    if j > i then -1
+    else let (xOuter, yOuter, zOuter) = datapoints[i]
+         let (xInner, yInner, zInner) = datapoints[j]
+         let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
+         let (min,max) = loop (min, max) = (0, numBins) while (min+1) < max do
+           let k = (min+max) / 2
+           in unsafe if dot >= binb[k]
+                     then (min, k)
+                     else (k, max)
+
+         let index = unsafe if dot >= binb[min]
+                     then min
+                     else if dot < binb[max]
+                         then max+1
+                         else max
+
+         in index
+  let l = numD * numD
+  in reduce_by_index (replicate numBins2 0) (+) 0 (tabulate l f) (replicate l 1)
 
 let fixPoints (ra: f64) (dec: f64): vec3 =
   let rarad = dec2rad(ra)
@@ -83,12 +92,13 @@ let fixPoints (ra: f64) (dec: f64): vec3 =
   let cd = f64.cos(decrad)
   in (f64.cos(rarad)*cd, f64.sin(rarad)*cd, f64.sin(decrad))
 
-let main [numD][numRs][numR]
+let main [numD][numRs]
          (datapointsx: [numD]f64)
          (datapointsy: [numD]f64)
-         (randompointsx: [numRs][numR]f64)
-         (randompointsy: [numRs][numR]f64)
+         (randompointsx: [numRs][numD]f64)
+         (randompointsy: [numRs][numD]f64)
         : *[60]i32 =
+  unsafe
   let numBins2 = numBins + 2
   let binb = map (\k ->
                     f64.cos((10.0 ** (log10(min_arcmin) + k*1.0/bins_per_dec))
@@ -96,11 +106,10 @@ let main [numD][numRs][numR]
                  (iota32(numBins + 1))
   let datapoints = map2 fixPoints datapointsx datapointsy
   let randompoints = map2 (map2 fixPoints) randompointsx randompointsy
-  let (rrs, drs) = unzip (map (\(random: [numR]vec3) ->
-                               (doComputeSelf random numBins numBins2 binb,
-                                doCompute datapoints random numBins numBins2 binb))
+  let (drs, rrs) = unzip (map (\random ->
+                                 (doCompute datapoints random numBins numBins2 binb,
+                                  doComputeSelf random numBins numBins2 binb))
                                randompoints)
-
   let dd = doComputeSelf datapoints numBins numBins2 binb
   let rr = sumBins rrs
   let dr = sumBins drs
