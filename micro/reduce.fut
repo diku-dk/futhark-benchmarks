@@ -161,10 +161,10 @@ entry lss_iota_f64 n = n |> iota |> map     r64 |> lss 0 (const true) (<=)
 
 -- ==
 -- entry: lss_i8 lss_i32 lss_f32 lss_f64
--- random input { [10000]i32 [10000]i32 [10000]i32 [10000]i32 } auto output
--- random input { [100000]i32 [100000]i32 [100000]i32 [100000]i32 } auto output
--- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 } auto output
--- no_python random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 } auto output
+-- random input { [10000]i32 } auto output
+-- random input { [100000]i32 } auto output
+-- random input { [1000000]i32 } auto output
+-- no_python random input { [10000000]i32 } auto output
 
 entry lss_i8  = map  i8.i32 >-> lss 0 (const true) (<=)
 entry lss_i32 = map i32.i32 >-> lss 0 (const true) (<=)
