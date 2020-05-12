@@ -1,5 +1,5 @@
-256 -- population size
-128 -- number of iterations of the convergence loop
+128 -- population size
+424 -- number of iterations of the convergence loop
 196 -- number of swaption quotes (NUM_SWAP_QUOTES)
 [
         [1.0, 6.0, 1.0, 1.052],
