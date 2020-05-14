@@ -10,15 +10,15 @@ entry main [m'][N'] (_trend: i32) (k': i32) (n': i32) (_freq: f32)
     let K = 2*k+2
 
     -- 1. mkX
-    let mkX_flops = 7*K*N
+    let mkX_flops = 8*K*N
     let mkX_words = N*(K+1)
 
     -- 2. Xsqr = map (matmul_filt Xh Xth) Yh
-    let bmmm_flops = 3*m*n*K*K
+    let bmmm_flops = 4*m*n*K*K
     let bmmm_words = 2*m*n*K
 
     -- 3. batch matrix inversion; Xinv = map mat_inv Xsqr
-    let bminv_flops = 8*m*K*K
+    let bminv_flops = 3*m*K*K
     let bminv_words = 4*m*K*K
 
     -- 4. 1st mat-mat-mult; beta0 : [m][2k+2]f32 = map (matvecmul_row_filt Xh) Yh
@@ -38,10 +38,10 @@ entry main [m'][N'] (_trend: i32) (k': i32) (n': i32) (_freq: f32)
     let filtpad_words = 4*m*N
 
     -- 8. (hs, nss, sigmas) = map2 (... redomap o redomap ...)
-    let sgmred_flops = 4*m*n + 4*m
+    let sgmred_flops = 8*m*n -- 4*m*n + 4*m
     let sgmred_words = m * (2*n+3)
 
-    -- 9. moving-sums-fst; MO_fsts = ...
+    -- 9. moving-sums-fst; MO_fsts = ...  I AM HERE!!!
     let hmax = u64.i32 <| t32 <| (r32 <| i32.u64 n) * hfrac
     let mvsfst_flops = m * (1 + hmax)
     let mvsfst_words = m * (4 + hmax)
