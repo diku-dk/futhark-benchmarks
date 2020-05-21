@@ -78,8 +78,8 @@ let mkKDtree [m] [d] (height: i32) (q: i32) (m' : i32)
 --                          |> unzip
 
          let inputT = transpose input
-         let lbs = map (reduce_comm f32.min f32.highest) inputT |> intrinsics.opaque
-         let ubs = map (reduce_comm f32.max f32.lowest ) inputT |> intrinsics.opaque
+         let lbs = map (reduce_comm f32.min f32.highest) inputT |> opaque
+         let ubs = map (reduce_comm f32.max f32.lowest ) inputT |> opaque
          let lubs = lbs ++ ubs
 
          let num_pads = m' - m
