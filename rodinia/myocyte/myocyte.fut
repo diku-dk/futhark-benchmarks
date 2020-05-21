@@ -1092,11 +1092,13 @@ let parameters(): i32 = 16
 
 let main (repeat: i32) (eps: f32) (workload: i32)
          (xmax: i32) (y0: [91]f32) (params: [16]f32): (bool, [workload][91]f32) =
-  let (oks, y_res) = unzip (
-    map  (\(i: i32): (bool,[91]f32)  ->
+  let (oks, y_res) =
+    unzip <|
+    #[sequential_inner]
+    map (\(i: i32): (bool,[91]f32)  ->
             let add_fact = r32(i % repeat)*eps
             let y_row = map (+add_fact) y0
-          in solver(xmax, params, y_row)
-        ) (iota workload))
+            in solver(xmax, params, y_row))
+    (iota workload)
 
   in ( and (opaque oks), y_res )

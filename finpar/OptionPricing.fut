@@ -342,5 +342,5 @@ let main [k][num_bits][num_models][num_und][num_dates][num_discts]
                          let bd_row = map4 (blackScholes bb_row) md_cs md_vols md_drifts md_sts
                          in map3 (genericPayoff contract_number) md_discts md_detvals bd_row)
                       bb_mat
-  let payoff    = reduce (map2 (+)) (replicate num_models 0.0) payoffs
+  let payoff    = #[sequential_inner] reduce (map2 (+)) (replicate num_models 0.0) payoffs
   in  map (/r32 num_mc_it) payoff
