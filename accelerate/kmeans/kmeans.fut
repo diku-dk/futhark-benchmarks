@@ -16,6 +16,9 @@ type point = (f32,f32)
 let add_points ((x1,y1): point) ((x2,y2): point): point =
   (x1+x2, y1+y2)
 
+let scale_point ((x,y): point) (s: f32) : point =
+  (x*s, y*s)
+
 let euclid_dist_2 ((x1,y1): point) ((x2,y2): point): f32 =
   (x2-x1)**2.0f32 + (y2-y1)**2.0f32
 
@@ -23,32 +26,22 @@ let closest_point (p1: (i32, f32)) (p2: (i32, f32)): (i32, f32) =
   if p1.1 < p2.1 then p1 else p2
 
 let find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
-  let (i, _) = reduce_comm closest_point (0, euclid_dist_2 pt pts[0])
-                           (zip (0..<k) (map (euclid_dist_2 pt) pts))
+  let (i, _) = foldl closest_point
+                     (0, euclid_dist_2 pt pts[0])
+                     (zip (0..<k) (map (euclid_dist_2 pt) pts))
   in i
 
 let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point =
-  let (cluster_counts, cluster_points) =
-    unzip <| map unzip (map (\cluster ->
-                 map2 (\point_cluster point ->
-                        if cluster == point_cluster
-                        then (1, point)
-                        else (0, (0, 0)))
-                     membership points)
-               (0..<k))
   let cluster_sizes =
-    map (opaque >-> i32.sum) cluster_counts
-  let new_centre count my_points =
-    let (x,y) = reduce_comm add_points (0, 0) my_points
-    in (x / r32 count, y / r32 count)
-  let cluster_centres =
-    map2 new_centre (opaque cluster_sizes) cluster_points
-  in cluster_centres
+    reduce_by_index (replicate k 0) (+) 0 membership (replicate n 1)
+  let cluster_sums =
+    reduce_by_index (replicate k (0,0)) add_points (0,0) membership points
+  in map2 scale_point cluster_sums (map (1/) (map r32 cluster_sizes))
 
 let continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
   let changed ((x1,y1), (x2,y2)) =
     f32.abs (x1-x2) > 0.01 || f32.abs(y1-y2) > 0.01
-  in any changed (zip old_centres (opaque cur_centres))
+  in (any changed (zip old_centres cur_centres))
 
 let main [n] (k: i32) (points_in: [n][2]f32): ([][2]f32, i32) =
   -- Transform from 2D-array to array of pairs.
