@@ -1,6 +1,0 @@
-!*.c
-/*.o
-/fluid-visualize-densities
-/fluid-benchmark
-/fluid-demo
-
