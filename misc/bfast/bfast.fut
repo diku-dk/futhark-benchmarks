@@ -52,12 +52,12 @@ let findSplit [N] (n: i32) (y: [N]f32) : i32 =
   let gauss_jordan [nm] (n:i32) (A: *[nm]f32): [nm]f32 =
     let m = nm / n in
     loop A for i < n do
-      let v1 = unsafe A[i]
+      let v1 = #[unsafe] A[i]
 
       let A' = map (\ind -> let (k, j) = (ind / m, ind % m)
-                            let x = unsafe (A[j] / v1) in
+                            let x = #[unsafe] (A[j] / v1) in
                                 if k < n-1  -- Ap case
-                                then unsafe ( A[(k+1)*m+j] - A[(k+1)*m+i] * x )
+                                then #[unsafe] ( A[(k+1)*m+j] - A[(k+1)*m+i] * x )
                                 else x      -- irow case
                    ) (iota (n*m))
       in  scatter A (iota (n*m)) A'
@@ -67,7 +67,7 @@ let findSplit [N] (n: i32) (y: [N]f32) : i32 =
     let nm = n*m
     -- Pad the matrix with the identity matrix.
     let Ap = map (\ind -> let (i, j) = (ind / m, ind % m)
-                          in  if j < n then unsafe ( A[i,j] )
+                          in  if j < n then #[unsafe] ( A[i,j] )
                                        else if j == n+i
                                             then 1.0
                                             else 0.0
@@ -103,9 +103,9 @@ let bfast [N] (Nmn: i32) (f: f32) (k: i32) (n: i32)
   let m    = n -- findSplit n y   -- n
   let flgs = map (\v -> !(f32.isnan v)) y
 
-  let flgsh = unsafe (flgs[:m])
-  let yh    = unsafe (y[:m])
-  let Xh    = unsafe (X[:,:m])
+  let flgsh = #[unsafe] (flgs[:m])
+  let yh    = #[unsafe] (y[:m])
+  let Xh    = #[unsafe] (X[:,:m])
 
   -- line 2, beta-hat computation
   -- fit linear regression model:
@@ -125,15 +125,15 @@ let bfast [N] (Nmn: i32) (f: f32) (k: i32) (n: i32)
 
   -- moving sums:
   let h = t32 ( (r32 m) * hfrac )
-  let MO_fst = reduce (+) 0 ( unsafe (y_error[n-h+1 : n+1]) )
+  let MO_fst = reduce (+) 0 ( #[unsafe] (y_error[n-h+1 : n+1]) )
   let MO_ini = map (\j ->
                       if j == 0 then MO_fst
-                      else  unsafe (-y_error[n-h+j] + y_error[n+j])
+                      else  #[unsafe] (-y_error[n-h+j] + y_error[n+j])
                    ) (iota Nmn)
   let MO = scan (+) 0 MO_ini
 
   -- line 5: sigma
-  let tmp = map (\ a -> a*a ) (unsafe (y_error[:m]))
+  let tmp = map (\ a -> a*a ) (#[unsafe] (y_error[:m]))
 
   let sigma = reduce (+) 0 tmp
   let sigma = f32.sqrt ( sigma / (r32 (n-2*k-2)) )

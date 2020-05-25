@@ -32,7 +32,7 @@ let escape_to_rgba (limit: i32) (palette: []argb.colour) ((z, n): (c32, i32)): a
        let mag     = c32.mag z
        let smooth  = f32.log2 (f32.log2 mag)
        let ix      = t32 (f32.sqrt (r32 n + 1 - smooth) * scale + shift) % length palette
-    in unsafe palette[ix]
+    in #[unsafe] palette[ix]
 
 let render (palette: []argb.colour)
            (screenX: i32) (screenY: i32)

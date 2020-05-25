@@ -9,7 +9,7 @@ let plus_scan [n] (x: [n]i32): [n]i32 =
   scan (+) 0 x
 
 let plus_prescan [n] (x: [n]i32): [n]i32 =
-  let xshifted = map (\(i: i32): i32  -> if i == 0 then 0 else unsafe x[i - 1]) (iota n)
+  let xshifted = map (\(i: i32): i32  -> if i == 0 then 0 else x[i - 1]) (iota n)
   in scan (+) 0 xshifted
 
 let permute [n] (a: [n]u32, index: [n]i32): [n]u32 =

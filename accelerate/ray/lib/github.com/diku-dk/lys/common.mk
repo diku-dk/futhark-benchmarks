@@ -1,38 +1,19 @@
+.PHONY: all run clean
+
 PROGNAME?=lys
-LYS_BACKEND?=opencl
-PROG_FUT_DEPS:=$(shell ls *.fut; find lib -name \*.fut)
 
 all: $(PROGNAME)
 
-PKG_CFLAGS=$(shell pkg-config --cflags sdl2 SDL2_ttf)
-NOWARN_CFLAGS=-std=c11 -O
-CFLAGS?=$(NOWARN_CFLAGS) $(PKG_CFLAGS) -Wall -Wextra -pedantic -DLYS_BACKEND_$(LYS_BACKEND)
-BASE_LDFLAGS=-lm -lSDL2 -lSDL2_ttf
-
-OS=$(shell uname -s)
-ifeq ($(OS),Darwin)
-OPENCL_LDFLAGS?=-framework OpenCL
-else
-OPENCL_LDFLAGS?=-lOpenCL
-endif
-
-ifeq ($(LYS_BACKEND),opencl)
-LDFLAGS?=$(OPENCL_LDFLAGS) $(BASE_LDFLAGS)
-else ifeq ($(LYS_BACKEND),cuda)
-LDFLAGS?=$(BASE_LDFLAGS) -lcuda -lnvrtc
-else ifeq ($(LYS_BACKEND),c)
-LDFLAGS?=$(BASE_LDFLAGS)
-else
-$(error Unknown LYS_BACKEND: $(LYS_BACKEND).  Must be 'opencl', 'cuda', or 'c')
-endif
+LYS_TTF=1
 
 ifeq ($(shell test futhark.pkg -nt lib; echo $$?),0)
 $(PROGNAME):
 	futhark pkg sync
 	@make # The sync might have resulted in a new Makefile.
 else
-$(PROGNAME): $(PROGNAME)_wrapper.o $(PROGNAME)_printf.h lib/github.com/diku-dk/lys/liblys.c lib/github.com/diku-dk/lys/liblys.h
-	gcc lib/github.com/diku-dk/lys/liblys.c -I. -DPROGHEADER='"$(PROGNAME)_wrapper.h"' -DPRINTFHEADER='"$(PROGNAME)_printf.h"' $(PROGNAME)_wrapper.o -o $@ $(CFLAGS) $(LDFLAGS)
+include lib/github.com/diku-dk/lys/setup_flags.mk
+$(PROGNAME): $(PROGNAME)_wrapper.o $(PROGNAME)_printf.h lib/github.com/diku-dk/lys/liblys.c lib/github.com/diku-dk/lys/liblys.h lib/github.com/diku-dk/lys/context_setup.c lib/github.com/diku-dk/lys/context_setup.h lib/github.com/diku-dk/lys/main.c
+	gcc lib/github.com/diku-dk/lys/liblys.c lib/github.com/diku-dk/lys/context_setup.c lib/github.com/diku-dk/lys/main.c -I. -DPROGHEADER='"$(PROGNAME)_wrapper.h"' -DPRINTFHEADER='"$(PROGNAME)_printf.h"' $(PROGNAME)_wrapper.o -o $@ $(CFLAGS) $(LDFLAGS)
 endif
 
 $(PROGNAME)_printf.h: $(PROGNAME)_wrapper.c

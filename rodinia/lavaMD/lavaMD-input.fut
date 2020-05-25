@@ -69,7 +69,7 @@ let main (boxes1d: i32) (par_per_box: i32) (num_neighbors: i32):
                     let number = (z * boxes1d * boxes1d) + (y * boxes1d) + x
                     in ( (x, y, z, number), cur_nn+1)
               else  ( (0, 0, 0, 0     ), cur_nn  )
-            in unsafe let box_nngh[cur_nn] = cur_elem
+            in let box_nngh[cur_nn] = cur_elem
                in (box_nngh, next_cur_nn)
 
           let (box_nngh, cur_nn) = box_nngh_cur_nn

@@ -57,7 +57,7 @@ let getneighbors [diameter] (se: [diameter][diameter]i32) (radius: i32): [](f64,
 let findIndex [Nparticles] (CDF: [Nparticles]f64) (value: f64): i32 =
   i32.min (Nparticles-1)
           (loop x = 0 while x < Nparticles &&
-                            value < unsafe CDF[x]
+                            value < #[unsafe] CDF[x]
            do x + 1)
 
 let particleFilter [IszX][IszY][Nfr]
@@ -98,8 +98,8 @@ let particleFilter [IszX][IszY][Nfr]
                    --- occurs in practice.
                    in if indX >= IszX || indY >= IszY then (0,0) else (indX, indY)
         ) objxy
-      in (map2 (-) (map (\(i,j) -> (unsafe I[i,j,k]-100)**2) ind)
-                   (map (\(i,j) -> (unsafe I[i,j,k]-228)**2) ind))
+      in (map2 (-) (map (\(i,j) -> (#[unsafe] I[i,j,k]-100)**2) ind)
+                   (map (\(i,j) -> (#[unsafe] I[i,j,k]-228)**2) ind))
          |> map r64
          |> map (/50)
          |> f64.sum
@@ -121,7 +121,7 @@ let particleFilter [IszX][IszY][Nfr]
     let u = map (r64 >-> (/r64 Nparticles) >-> (+u1)) (iota Nparticles)
     let (xj, yj) = u
                    |> map (\u' -> let i = findIndex CDF u'
-                                  in unsafe (arrayX[i], arrayY[i]))
+                                  in #[unsafe] (arrayX[i], arrayY[i]))
                    |> unzip
 
     in (xj, yj, distances, seed, seed0)

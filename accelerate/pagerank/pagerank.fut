@@ -40,7 +40,7 @@ let calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
 let calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *[n]f32 =
   let froms = map (\(x: link) -> x.from) links
   let tos = map (\(x: link) -> x.to) links
-  let get_rank (i: i32) = unsafe if sizes[i] == 0 then 0f32
+  let get_rank (i: i32) = #[unsafe] if sizes[i] == 0 then 0f32
                                  else ranks[i] / f32.i32 sizes[i]
   let contributions = map get_rank froms
   let page_flags = map2 (!=) tos (rotate (-1) tos)

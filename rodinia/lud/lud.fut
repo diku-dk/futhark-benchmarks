@@ -30,7 +30,7 @@ let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
           let mat = copy mat
           in loop (mat: *[b][b]f32) for i < b-1 do
              let col = map (\j -> if j > i then
-                                    unsafe (mat[j,i] - (dotprod mat[j,:i] mat[:i,i])) / mat[i,i]
+                                    #[unsafe] (mat[j,i] - (dotprod mat[j,:i] mat[:i,i])) / mat[i,i]
                                   else
                                     mat[j,i])
                            (iota b)
@@ -133,7 +133,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
                 map  (\ (j_b: i32): [b][b]f32  ->
                         map (\ (i: i32): [b]f32  ->
                                 map  (\ (j: i32): f32  ->
-                                        unsafe mat[i_b*b+i, j_b*b + j]
+                                        #[unsafe] mat[i_b*b+i, j_b*b + j]
                                     ) (iota(b) )
                            ) (iota(b) )
                     ) (iota(num_blocks) )
@@ -188,7 +188,7 @@ let main [m] (mat: [m][m]f32): [m][m]f32 =
                           map  (\ (j_ind: i32): f32  ->
                                 let (ii, jj) = (i_ind/b, j_ind/b)
                                 let ( i,  j) = (i_ind - ii*b, j_ind - jj*b)
-                                in  unsafe matb[ii,jj,i,j]
+                                in  #[unsafe] matb[ii,jj,i,j]
                                ) (iota n)
                          ) (iota n)
     in take m (map (take m) ret_padded)

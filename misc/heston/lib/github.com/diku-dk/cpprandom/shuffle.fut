@@ -35,15 +35,12 @@ module mk_shuffle (E: rng_engine) : shuffle with rng = E.rng = {
 
   module dist = uniform_int_distribution i32 E
 
-  -- The unsafes in this function are necessary to avoid bounds checks
-  -- that are always true (because we control the indices), but the
-  -- compiler is not smart enough to see that.
   let shuffle' [n] 't rngs (xs: [n]t) =
     let (rngs', keys) = map (dist.rand (0, n - 1)) rngs |> unzip
-    let get_bit i x = unsafe i32.get_bit i keys[x]
+    let get_bit i x = i32.get_bit i keys[x]
     let num_bits = t32 (f32.log2 (r32 n))
     let xs' = radix_sort num_bits get_bit (iota n) |>
-              map (\i -> unsafe xs[i])
+              map (\i -> xs[i])
     in (rngs', xs')
 
   let shuffle [n] 't rng (xs: [n]t) =

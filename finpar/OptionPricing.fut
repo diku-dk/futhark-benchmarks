@@ -48,7 +48,7 @@ let sobolRecI [num_bits][n] (sob_dir_vs: [n][num_bits]i32, prev: [n]i32, x: i32)
 
 let recM [n][num_bits] (sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
   let bit = index_of_least_significant_0 i
-  in map (\row -> unsafe row[bit]) sob_dirs
+  in map (\row -> #[unsafe] row[bit]) sob_dirs
 
 let sobolRecMap [n][num_bits] (sob_fact:  f32, dir_vs: [n][num_bits]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
   -- the if inside may be particularly ugly for
@@ -187,7 +187,7 @@ let brownianBridgeDates [num_dates]
   let bbrow = replicate num_dates 0.0
   let bbrow[ bi[0]-1 ] = sd[0] * gauss[0]
   let bbrow = loop bbrow for i in 1..<num_dates do
-    unsafe
+    #[unsafe]
     let j  = li[i] - 1
     let k  = ri[i] - 1
     let l  = bi[i] - 1
@@ -202,7 +202,7 @@ let brownianBridgeDates [num_dates]
   -- This can be written as map-reduce, but it
   --   needs delayed arrays to be mapped nicely!
   in loop bbrow for ii in 1..<num_dates do
-       unsafe
+       #[unsafe]
        let i = num_dates - ii
        let bbrow[i] = bbrow[i] - bbrow[i-1]
        in  bbrow
@@ -229,8 +229,8 @@ let correlateDeltas [num_und][num_dates]
   map (\zi: [num_und]f32  ->
          map (\(j: i32): f32  ->
                 let x = map2 (*)
-                             (unsafe take (j+1) zi)
-                             (unsafe take (j+1) md_c[j])
+                             (#[unsafe] take (j+1) zi)
+                             (#[unsafe] take (j+1) md_c[j])
                 in  f32.sum x)
              (iota num_und))
       zds
@@ -272,10 +272,10 @@ let fminPayoff(xs: []f32): f32 =
      then if a < c then a else c
      else if b < c then b else c
 
-let trajInner(amount: f32, ind: i32, disc: []f32): f32 = amount * unsafe disc[ind]
+let trajInner(amount: f32, ind: i32, disc: []f32): f32 = amount * #[unsafe] disc[ind]
 
 let payoff1(md_disct: []f32, md_detval: []f32, xss: [1][1]f32): f32 =
-  let detval = unsafe md_detval[0]
+  let detval = #[unsafe] md_detval[0]
   let amount = ( xss[0,0] - 4000.0 ) * detval
   let amount0= if (0.0 < amount) then amount else 0.0
   in  trajInner(amount0, 0, md_disct)
@@ -312,9 +312,9 @@ let payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
 
 
 let genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]f32): f32 =
-  if      contract == 1 then unsafe payoff1(md_disct, md_detval, xss :> [1][1]f32)
-  else if contract == 2 then unsafe payoff2(md_disct, xss :> [5][3]f32)
-  else if contract == 3 then unsafe payoff3(md_disct, xss :> [367][3]f32)
+  if      contract == 1 then #[unsafe] payoff1(md_disct, md_detval, xss :> [1][1]f32)
+  else if contract == 2 then #[unsafe] payoff2(md_disct, xss :> [5][3]f32)
+  else if contract == 3 then #[unsafe] payoff3(md_disct, xss :> [367][3]f32)
   else 0.0
 
 -- Entry point
@@ -334,7 +334,7 @@ let main [k][num_bits][num_models][num_und][num_dates][num_discts]
   let sobvctsz  = num_dates*num_und
   let dir_vs = dir_vs :> [sobvctsz][num_bits]i32
   let sobol_mat = map_stream (\chunk (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
-                                sobolChunk dir_vs (unsafe ns[0]) chunk)
+                                sobolChunk dir_vs (#[unsafe] ns[0]) chunk)
                              (iota num_mc_it)
   let gauss_mat = map ugaussian sobol_mat
   let bb_mat    = map (brownianBridge num_und bb_inds bb_data) gauss_mat

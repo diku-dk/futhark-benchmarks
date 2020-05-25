@@ -17,7 +17,7 @@
 
 let next [nx][ny][nz] (c0: f32) (c1: f32) (A0: [nx][ny][nz]f32) (i: i32) (j: i32) (k: i32): f32 =
   -- We map the edge to itself.
-  unsafe if i == 0 || i == nx-1 || j == 0 || j == ny-1 || k == 0 || k == nz-1
+  #[unsafe] if i == 0 || i == nx-1 || j == 0 || j == ny-1 || k == 0 || k == nz-1
   then A0[i,j,k]
   else (A0[i,j,k+1] + A0[i,j,k-1] +
         A0[i,j-1,k] + A0[i,j+1,k] +

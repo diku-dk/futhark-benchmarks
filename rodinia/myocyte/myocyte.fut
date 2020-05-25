@@ -21,7 +21,7 @@ let fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
 let ecc [equs][pars] (timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
                       parameter: [pars]f32, parameter_offset: i32, finavalu: *[equs]f32 ): *[equs]f32 =
-  unsafe
+  #[unsafe]
   -- variable references
   let offset_1  = initvalu_offset
   let offset_2  = initvalu_offset+1
@@ -502,7 +502,7 @@ let cam [equs][pars] (_timeinst:  f32, initvalu: [equs]f32,
                       initvalu_offset: i32,
                       parameter: [pars]f32, parameter_offset: i32,
                       finavalu: *[equs]f32, ca: f32 ): (f32, *[equs]f32) =
-  unsafe
+  #[unsafe]
 
   -- input data and output data variable references
   let offset_1  = initvalu_offset
@@ -701,7 +701,7 @@ let fin [equs][pars]
         initvalu_offset_Dyad: i32, initvalu_offset_SL: i32,
         initvalu_offset_Cyt: i32, parameter: [pars]f32,
         finavalu: *[equs]f32, jcaDyad: f32, jcaSL: f32, jcaCyt: f32 ): *[equs]f32 =
-  unsafe
+  #[unsafe]
 
   let btotDyad      = parameter[2]
   let caMKiitotDyad = parameter[3]
@@ -789,7 +789,7 @@ let master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f
             else -- if (ii == 2) then -- cam function for Cyt
                 ( 76, 11, 37 )
 
-        let inp_val = unsafe (initvalu[ind]*1e3f32)
+        let inp_val = #[unsafe] (initvalu[ind]*1e3f32)
         let (res_val, finavalu) = cam(  timeinst, initvalu, initvalu_offset, parameter,
                                         parameter_offset, finavalu, inp_val )
 
@@ -981,7 +981,7 @@ let embedded_fehlberg_7_8 [equs][pars]
         else if (ii == 11) then timeinst
         else -- if (ii == 12) then
           timeinst + h
-    in unsafe let finavalu_temp[ii] = master( timeinst_temp, initvalu_temp, parameter )
+    in #[unsafe] let finavalu_temp[ii] = master( timeinst_temp, initvalu_temp, parameter )
               in finavalu_temp
   --------------
   -- end loop --

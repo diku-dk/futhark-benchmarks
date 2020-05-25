@@ -51,7 +51,6 @@ let toGreyscale [h][w] (img: [h][w]i32): [h][w]f32 =
   map (\row -> map (255.0*) (map luminanceOfRGBA32 row)) img
 
 let gaussianX [h][w] (img: [h][w]f32): [h][w]f32 =
-  unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
               let a = img[clamp(0,x-2,h-1),y] * (1.0 / 16.0)
@@ -64,10 +63,8 @@ let gaussianX [h][w] (img: [h][w]f32): [h][w]f32 =
       (iota h)
 
 let gaussianY [h][w] (img: [h][w]f32): [h][w]f32 =
-  unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
-              unsafe
               let a = img[x,clamp(0,y-2,w-1)] * (1.0 / 16.0)
               let b = img[x,clamp(0,y-1,w-1)] * (4.0 / 16.0)
               let c = img[x,clamp(0,y+0,w-1)] * (6.0 / 16.0)
@@ -78,10 +75,8 @@ let gaussianY [h][w] (img: [h][w]f32): [h][w]f32 =
      (iota h)
 
 let gradiantMagDir [h][w] (low: f32) (img: [h][w]f32): [h][w](f32,i32) =
-  unsafe
   map (\(x: i32): [w](f32,i32)  ->
         map (\(y: i32): (f32,i32)  ->
-              unsafe
               let v0 = img[clamp(0, x-1, h-1), clamp(0, y-1, w-1)]
               let v1 = img[clamp(0, x+0, h-1), clamp(0, y-1, w-1)]
               let v2 = img[clamp(0, x+1, h-1), clamp(0, y-1, w-1)]
@@ -113,7 +108,6 @@ let gradiantMagDir [h][w] (low: f32) (img: [h][w]f32): [h][w](f32,i32) =
       (iota h)
 
 let nonMaximumSuppression [h][w] (low: f32) (high: f32) (magdir: [h][w](f32,i32)): [h][w]f32 =
-  unsafe
   map (\(x: i32): [w]f32  ->
         map (\(y: i32): f32  ->
               let (mag, dir) = magdir[x,y]

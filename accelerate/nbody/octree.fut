@@ -27,7 +27,7 @@ let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
   let edge delta_c delta_p : i32 = (delta_c / 3) - (delta_p / 3)
   let get_delta ptr = match ptr
                       case #leaf _i -> u64.num_bits + 2 -- u32.num_bits + 1
-                      case #inner i -> unsafe inners[i].delta_node
+                      case #inner i -> inners[i].delta_node
   let edges =
     map (\n ->
            let left_edge = edge (get_delta n.left) n.delta_node
@@ -47,9 +47,9 @@ let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
   let octree =
     map2 (\i rp ->
            -- Always relative to root.
-           let radix_parent = unsafe inners[rp]
-           let edges' = unsafe edges[rp]
-           let beginning = unsafe ranges[rp]
+           let radix_parent = inners[rp]
+           let edges' = edges[rp]
+           let beginning = ranges[rp]
 
            let node_level = (radix_parent.delta_node) / 3 - root_delta / 3
            let left_edge = edges'.left
@@ -72,7 +72,7 @@ let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
            let body = if is_leaf then
                       --- if we are a leaf, child will be a pointer to
                       --- a node in the leaf array, so this is safe.
-                      let b = unsafe L[unpack child]
+                      let b = L[unpack child]
                         in b with position = vec3.scale b.mass b.position
                       else {position = vec (0, 0, 0),
                             mass = 0.0,
@@ -84,7 +84,7 @@ let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
                   let parent' = -1
                   let (parent', _) =
                     loop (parent', ridx) while parent' == -1 do -- O(3)
-                      let parent_ridx = unsafe inners[ridx].parent
+                      let parent_ridx = inners[ridx].parent
                       in if parent_ridx == -1 -- octree root is parent
                         then (0, parent_ridx)
                          else
@@ -92,8 +92,8 @@ let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
                           -- be a pointer to a node in the radix tree,
                           -- which are assumed to be valid.
                           let parent_lchild =
-                            unsafe unpack inners[parent_ridx].left
-                          let parent_edges = unsafe edges[parent_ridx]
+                            unpack inners[parent_ridx].left
+                          let parent_edges = edges[parent_ridx]
 
                           let is_left = parent_lchild == ridx
                           let edge_weight = if is_left then
@@ -102,7 +102,7 @@ let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
                           in if edge_weight != 0 -- find parent in
                                                  -- range
                              then
-                              let start = unsafe ranges[parent_ridx]
+                              let start = ranges[parent_ridx]
                               in (if is_left
                                  then start
                                  else start +
@@ -127,7 +127,6 @@ let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
                      --- index into to_check with lvl.
                      --- child_idx should also stay between 0 and 7 when
                      --- loop condition is true.
-                     unsafe --- large unsafe expression.
                      if to_check[lvl] == 2 then -- check left edge
                        if edges[ridx].left != 0 then
                          let start = ranges[ridx]
@@ -200,7 +199,7 @@ let mk_accelerator [n] (bodies: [n]body) : ([]octnode, f32, i32, [n]body) =
   -- (6)-(7).
   let octree = mk_octree bodies inners
   let root_delta = inners[0].delta_node
-  let accelerator = unsafe
+  let accelerator =
     let root_leaf_delta = u64.num_bits + 2 - root_delta
     let lvl =  (root_leaf_delta + 3 - 1) / 3
     in loop octree for i in (lvl .. lvl-1 ... 0) do

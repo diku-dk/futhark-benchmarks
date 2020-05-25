@@ -88,9 +88,9 @@ module mk_linalg (T: field): linalg with t = T.t = {
       let irow = A[0]
       let Ap = A[1:n]
       let v1 = irow[i]
-      in  map (\k -> map (\j -> let x = unsafe( T.(irow[j] / v1) ) in
+      in  map (\k -> map (\j -> let x = T.(irow[j] / v1) in
                                 if k < n-1  -- Ap case
-                                then unsafe( T.(Ap[k,j] - Ap[k,i] * x) )
+                                then T.(Ap[k,j] - Ap[k,i] * x)
                                 else x      -- irow case
                          ) (iota m)
               ) (iota n)
@@ -99,7 +99,7 @@ module mk_linalg (T: field): linalg with t = T.t = {
     -- Pad the matrix with the identity matrix.
     let twon = 2*n
     let Ap = map2 (\row i ->
-                    map (\j -> if j < n then unsafe( row[j] )
+                    map (\j -> if j < n then row[j]
                                      else if j == n+i
                                           then T.i32 1
                                           else T.i32 0

@@ -8,9 +8,14 @@ module m = import "lys"
 
 type^ state = m.lys.state
 
-entry init (seed: u32) (h: i32) (w: i32): state = m.lys.init seed h w
+entry init (seed: u32) (h: i32) (w: i32): state =
+  m.lys.init seed h w
 
-entry resize (h: i32) (w: i32) (s: state): state = m.lys.resize h w s
+entry grab_mouse: bool =
+  m.lys.grab_mouse
+
+entry resize (h: i32) (w: i32) (s: state): state =
+  m.lys.resize h w s
 
 entry key (e: i32) (key: i32) (s: state): state =
   let e' = if e == 0 then #keydown {key} else #keyup {key}
@@ -34,6 +39,3 @@ entry text_format: []u8 = m.lys.text_format ()
 
 entry text_content (render_duration: f32) (s: state): m.lys.text_content =
   m.lys.text_content render_duration s
-
-entry grab_mouse: bool =
-  m.lys.grab_mouse

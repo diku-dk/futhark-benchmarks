@@ -18,17 +18,17 @@ let move [n] (epsilon: f32) (theta: f32)
   let (acceleration, _, _, _) =
   loop (acc, cur, prev, to_check) = ({x=0f32, y=0f32, z=0f32}, 0, -1, 1)
   while to_check > 0 do
-    let from_child = prev != -1 && unsafe t[prev].parent == cur
-    let current = unsafe t[cur]
+    let from_child = prev != -1 && t[prev].parent == cur
+    let current = t[cur]
     in
     if from_child then -- prev is my child => just move to next node
       --- index 'i' of child will be found before 'i' goes out of bounds.
-      let j = loop i = 0 while (unsafe (current.children)[i]) != prev do
+      let j = loop i = 0 while (current.children)[i] != prev do
                          (i + 1)
       let next_cur =
-        if j == 7 || (unsafe (current.children)[j + 1]) == -1
+        if j == 7 || ((current.children)[j + 1]) == -1
           then current.parent
-        else unsafe (current.children)[j + 1] --- j must be less than 7
+        else (current.children)[j + 1] --- j must be less than 7
       in (acc, next_cur, cur, to_check)
     else -- prev is my parent
       --let s = side_max / 2.0f32**(f32.i32 current.tree_level)

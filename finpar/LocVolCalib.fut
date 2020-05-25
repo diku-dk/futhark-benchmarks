@@ -27,7 +27,6 @@ let initOperator [n] (x: [n]f32): ([n][3]f32,[n][3]f32) =
   let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]]
   let dxx_low = [[0.0, 0.0, 0.0]]
   let dx_mids = map (\i ->
-                       unsafe
                        let dxl = x[i] - x[i-1]
                        let dxu = x[i+1] - x[i]
                        in ([ -dxu/dxl/(dxl+dxu), (dxu/dxl - dxl/dxu)/(dxl+dxu),      dxl/dxu/(dxl+dxu) ],
@@ -59,7 +58,7 @@ let updateParams [numX][numY]
   in  ( myMuX, myVarX, myMuY, myVarY )
 
 let tridagSeq [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
-  unsafe
+  #[unsafe]
   let (y,b) = loop ((y, b)) for i in 1..<n do
               let beta = a[i] / b[i-1]
               let b[i] = b[i] - beta*c[i-1]
@@ -71,7 +70,7 @@ let tridagSeq [n] (a:  [n]f32, b: *[n]f32, c: [n]f32, y: *[n]f32 ): *[n]f32 =
      in  y
 
 let tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
-  unsafe
+  #[unsafe]
   ----------------------------------------------------
   -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --
   --   solved by scan with 2x2 matrix mult operator --
@@ -142,12 +141,12 @@ let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
   map3 (\mu_row var_row result_row ->
           map5 (\dx dxx mu var j ->
                   let c1 = if 0 < j
-                           then (mu*dx[0] + 0.5*var*dxx[0]) * unsafe result_row[j-1]
+                           then (mu*dx[0] + 0.5*var*dxx[0]) * #[unsafe] result_row[j-1]
                            else 0.0
                   let c3 = if j < (m-1)
-                           then (mu*dx[2] + 0.5*var*dxx[2]) * unsafe result_row[j+1]
+                           then (mu*dx[2] + 0.5*var*dxx[2]) * #[unsafe] result_row[j+1]
                            else 0.0
-                  let c2 =      (mu*dx[1] + 0.5*var*dxx[1]) * unsafe result_row[j  ]
+                  let c2 =      (mu*dx[1] + 0.5*var*dxx[1]) * #[unsafe] result_row[j  ]
                   in  c1 + c2 + c3)
                myD myDD mu_row var_row (iota m))
        myMu myVar result

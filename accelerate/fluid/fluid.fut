@@ -115,7 +115,7 @@ module edge_handling_lin_solve = edge_handling({
     ((s0, s1, a, c): info [g]):
     f32 =
     -- A stencil.
-    unsafe ((s0[i, j] + a *
+    #[unsafe] ((s0[i, j] + a *
              (  s1[(i - 1), j]
               + s1[(i + 1), j]
               + s1[i, (j - 1)]
@@ -159,8 +159,8 @@ module edge_handling_advect = edge_handling({
     (g: i32)
     ((s0, u, v, time_step0): info [g]):
     f32 =
-    let x = r32 i - time_step0 * unsafe u[i, j]
-    let y = r32 j - time_step0 * unsafe v[i, j]
+    let x = r32 i - time_step0 * #[unsafe] u[i, j]
+    let y = r32 j - time_step0 * #[unsafe] v[i, j]
 
     let x = if x < 0.5 then 0.5 else x
     let x = if x > r32 (g - 2) + 0.5 then r32 (g - 2) + 0.5 else x
@@ -177,7 +177,7 @@ module edge_handling_advect = edge_handling({
     let t1 = y - r32 j0
     let t0 = 1.0 - t1
 
-    in unsafe (s0' * (t0 * s0[i0, j0] + t1 * s0[i0, j1])
+    in #[unsafe] (s0' * (t0 * s0[i0, j0] + t1 * s0[i0, j1])
                + s1 * (t0 * s0[i1, j0] + t1 * s0[i1, j1]))
 })
 
@@ -205,7 +205,7 @@ module edge_handling_project_top = edge_handling({
     (g: i32)
     ((u0, v0): info [g]):
     f32 =
-    unsafe (-0.5 * (  u0[i + 1, j]
+    #[unsafe] (-0.5 * (  u0[i + 1, j]
                     - u0[i - 1, j]
                     + v0[i, j + 1]
                     - v0[i, j - 1]) / r32 g)
@@ -220,7 +220,7 @@ module edge_handling_project_bottom = edge_handling({
     (g: i32)
     ((p0, s0, i0d, j0d, i1d, j1d): info [g]):
     f32 =
-    unsafe (s0[i, j] - 0.5 * r32 (g - 2)
+    #[unsafe] (s0[i, j] - 0.5 * r32 (g - 2)
             * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
 })
 
@@ -301,7 +301,7 @@ let draw_densities [g]
   let ks = 1..2...g_minus_two
   in map (\(i: i32): [g_minus_two][3]i8  ->
             map (\(j: i32): [3]i8  ->
-                   let value = clamp (255.0 * unsafe ds[i, j])
+                   let value = clamp (255.0 * #[unsafe] ds[i, j])
                    in [value, value, value]) ks) ks
 
 let draw_one_frame [g]

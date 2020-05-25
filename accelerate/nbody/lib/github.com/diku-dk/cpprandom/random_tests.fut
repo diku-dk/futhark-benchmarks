@@ -81,8 +81,8 @@ entry test_i32_pcg32 (x: i32) (n: i32) =
 
 -- ==
 -- entry: test_f32_rand
--- compiled input { 0 10000 } output { 50.383465f32 }
--- compiled input { 1 10000 } output { 50.43502f32 }
+-- compiled input { 0 10000 } output { 50.719204f32 }
+-- compiled input { 1 10000 } output { 50.019245f32 }
 
 module test_f32_rand_m =
  mktest (uniform_real_distribution f32 minstd_rand)
