@@ -45,28 +45,28 @@ let step [n][e]
   -- since the number of edges are irregular, and since we want to construct a
   -- nested array.
   let e_max = i32.maximum nodes_n_edges
-  let active_costs = map (\tid -> unsafe cost[tid]) active_indices
+  let active_costs = map (\tid -> #[unsafe] cost[tid]) active_indices
 
-  -- let start_indices = map (\tid -> unsafe nodes_start_index[tid]) active_indices
-  -- let act_num_edges = map (\tid -> unsafe nodes_n_edges[tid]    ) active_indices
-  -- let active_costs  = map (\tid -> unsafe cost[tid]+1           ) active_indices
+  -- let start_indices = map (\tid -> #[unsafe] nodes_start_index[tid]) active_indices
+  -- let act_num_edges = map (\tid -> #[unsafe] nodes_n_edges[tid]    ) active_indices
+  -- let active_costs  = map (\tid -> #[unsafe] cost[tid]+1           ) active_indices
   -- let e_max = i32.maximum act_num_edges
 
   let flat_len = e_max * n_indices
   let changes = map (\ii -> let row = ii / e_max
                             let col = ii % e_max
-                            -- let n_edges     = unsafe act_num_edges[row]
-                            let tid     = unsafe active_indices[row]
-                            let n_edges = unsafe nodes_n_edges[tid]
-                            in  unsafe
+                            -- let n_edges     = #[unsafe] act_num_edges[row]
+                            let tid     = #[unsafe] active_indices[row]
+                            let n_edges = #[unsafe] nodes_n_edges[tid]
+                            in  #[unsafe]
                                 if col < n_edges
-                                then -- let start_index = unsafe start_indices[row]
-                                     let start_index = unsafe nodes_start_index[tid]
+                                then -- let start_index = #[unsafe] start_indices[row]
+                                     let start_index = #[unsafe] nodes_start_index[tid]
                                      let edge_index  = col+start_index
-                                     let node_id = unsafe edges_dest[edge_index]
-                                     in  if !(unsafe graph_visited[node_id])
+                                     let node_id = #[unsafe] edges_dest[edge_index]
+                                     in  if !(#[unsafe] graph_visited[node_id])
                                          then (node_id, active_costs[row]+1)
-                                         -- then (node_id, unsafe cost[tid] + 1)
+                                         -- then (node_id, #[unsafe] cost[tid] + 1)
                                          else (-1, -1)
                                 else (-1, -1)
                     ) (iota flat_len)

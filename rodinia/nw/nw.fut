@@ -21,7 +21,7 @@ let fInd (y:i32) (x:i32): i32 = y*(B+1) + x
 let max3 (x:int, y:int, z:int) = if x < y 
                                  then if y < z then z else y
                                  else if x < z then z else x
-let mkVal [l2][l] (y:i32) (x:i32) (pen:int) (inp_l:[l2]int) (ref_l:[l][l]int) : int = unsafe
+let mkVal [l2][l] (y:i32) (x:i32) (pen:int) (inp_l:[l2]int) (ref_l:[l][l]int) : int = #[unsafe]
   max3( ( (inp_l[fInd (y-1) (x-1)])) + ( ref_l[y-1, x-1])
       , ( (inp_l[fInd y (x-1)])) - pen
       , ( (inp_l[fInd (y-1) x])) - pen
@@ -46,19 +46,19 @@ let intraBlockPar [lensq][len] (penalty: int)
 
   -- index_nw =  base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x;
   let index_nw =  len * B * b_y + B * b_x                
-  let inp_l[0] = unsafe inputsets[index_nw]
+  let inp_l[0] = #[unsafe] inputsets[index_nw]
 
   --index_w   = base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x + ( cols );
   let index_w = len*B*b_y + B*b_x + len 
   -- SCORE((tx + 1), 0) = input_itemsets_d[index_w + cols * tx];
   let inp_l = scatter inp_l (map (\tx->(tx+1)*(B+1)) (iota B))
-                      (map (\tx->unsafe inputsets[index_w+len*tx]) (iota B))
+                      (map (\tx->#[unsafe] inputsets[index_w+len*tx]) (iota B))
 
   --index_n   = base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x + tx + ( 1 );
   let index_n = len*B*b_y + B*b_x + 1
   -- SCORE(0, (tx + 1)) = input_itemsets_d[index_n];
   let inp_l = scatter inp_l (map (+1) (iota B))
-                      (map (\tx->unsafe inputsets[index_n+tx]) (iota B))
+                      (map (\tx->#[unsafe] inputsets[index_n+tx]) (iota B))
 
   let inp_l = loop inp_l for m < B do
         let (inds, vals) = unzip (
@@ -99,7 +99,7 @@ let updateBlocks [q][lensq] (len: i32) (blk: i32)
 
                  let b_y = mk_b_y bx
                  let b_x = mk_b_x bx
-                 let v = unsafe block_inp[bx, ty, tx]    
+                 let v = #[unsafe] block_inp[bx, ty, tx]    
                  let ind = (B*b_y + 1 + ty) * len + (B*b_x + tx + 1)
                  in  (ind, v)
         ) (iota (blk*B*B)) )

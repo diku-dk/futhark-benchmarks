@@ -278,8 +278,8 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
                        (x *! x_minus_i))))
           let (ws, coeff_ks) = unzip (map mk_w_and_coeff_k day_count_fractions)
           in map2 (\minus_ikk m ->
-                   let w = unsafe ws[m]
-                   let coeff_k = unsafe coeff_ks[m]
+                   let w = #[unsafe] ws[m]
+                   let coeff_k = #[unsafe] coeff_ks[m]
                    in w * c64.re (coeff_k *! c64.exp (x *! minus_ikk)))
                   minus_ik maturity_for_quote)
 
@@ -288,7 +288,7 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
        let res = map (foldl (+) (int 0))
                      (transpose (map2 iter x w))
        in map3 (\moneyness resk m ->
-               let day_count_fraction = unsafe day_count_fractions[m]
+               let day_count_fraction = #[unsafe] day_count_fractions[m]
                let sigma_sqrtt = R.sqrt (sigma2 day_count_fraction * day_count_fraction)
                let bs = bs_control moneyness sigma_sqrtt
                in if moneyness * f0 <= real 0.0

@@ -145,12 +145,12 @@ let compute_flux [nnb][nel][ndim]
                 let (flux_i_density, flux_i_density_energy, flux_i_momentum_x, flux_i_momentum_y, flux_i_momentum_z) = loop_res
                 let normal_len = f32.sqrt(normal_x*normal_x + normal_y*normal_y + normal_z*normal_z)
                 in if (0 <= nb) -- a legitimate neighbor
-                then let density_nb    = unsafe variables[var_density,    nb]
-                             let momentum_nb_x = unsafe variables[var_momentum+0, nb]
-                     let momentum_nb_y = unsafe variables[var_momentum+1, nb]
-                     let momentum_nb_z = unsafe variables[var_momentum+2, nb]
+                then let density_nb    = #[unsafe] variables[var_density,    nb]
+                             let momentum_nb_x = #[unsafe] variables[var_momentum+0, nb]
+                     let momentum_nb_y = #[unsafe] variables[var_momentum+1, nb]
+                     let momentum_nb_z = #[unsafe] variables[var_momentum+2, nb]
                      let momentum_nb   = (momentum_nb_x, momentum_nb_y, momentum_nb_z)
-                     let density_energy_nb = unsafe variables[var_density_energy, nb]
+                     let density_energy_nb = #[unsafe] variables[var_density_energy, nb]
                      let velocity_nb = compute_velocity(density_nb, momentum_nb)
                      let speed_sqd_nb= compute_speed_sqd(velocity_nb)
                      let pressure_nb = compute_pressure(density_nb, density_energy_nb, speed_sqd_nb)

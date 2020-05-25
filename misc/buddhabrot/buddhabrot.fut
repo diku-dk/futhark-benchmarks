@@ -16,7 +16,6 @@ let divergence (radius: f32) (limit: i32) (c0: c32): ([limit]c32, bool) =
   let (trajectory, _, i) =
     loop (trajectory, c, i) = (trajectory, c0, 0)
     while i < limit && c32.mag c < radius do
-      unsafe
       let c' = c32.(c0+ c * c)
       let trajectory[i] = c'
       in (trajectory, c', i + 1)

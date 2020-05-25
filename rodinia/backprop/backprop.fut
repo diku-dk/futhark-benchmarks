@@ -37,7 +37,7 @@ let bpnn_hidden_error [no][nh] (delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]
 
 let bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
   let lyext = map( \(k: i32): f32  ->
-                        if k < 1 then 1.0 else unsafe ly[k-1])
+                        if k < 1 then 1.0 else #[unsafe] ly[k-1])
                  (iota nly)
   in unzip (map (\(w_row: []f32, oldw_row: []f32, lyk: f32)  ->
                     unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32): (f32,f32)  ->
@@ -188,7 +188,7 @@ let bpnn_create (n_in: i32) (n_inp1: i32) (n_hid: i32)
 let consColumn [m][n] (mat: [m][n]f32, col: [m]f32): [m][]f32 =
   let np1 = n+1
   in map (\(matrow, colelm)  ->
-            map (\k -> if k < 1 then colelm else unsafe matrow[k-1])
+            map (\k -> if k < 1 then colelm else #[unsafe] matrow[k-1])
                 (iota np1))
           (zip mat col)
 

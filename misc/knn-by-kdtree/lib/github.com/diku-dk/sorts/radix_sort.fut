@@ -60,7 +60,7 @@ local let by_key_wrapper [n] 't sorter key num_bits get_bit (xs: [n]t) : [n]t =
   map key xs
   |> with_indices
   |> sorter num_bits (\i (k, _) -> get_bit i k)
-  |> map (\(_, i) -> unsafe xs[i]) -- OK because '0<=i<n'.
+  |> map (\(_, i) -> xs[i]) -- OK because '0<=i<n'.
 
 -- | Like `radix_sort`, but sort based on key function.
 let radix_sort_by_key [n] 't 'k

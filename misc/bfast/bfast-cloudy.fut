@@ -11,7 +11,7 @@ let logplus (x: f32) : f32 =
   then f32.log x else 1
 
 let adjustValInds [N] (n : i32) (ns : i32) (Ns : i32) (val_inds : [N]i32) (ind: i32) : i32 =
-    if ind < Ns - ns then (unsafe val_inds[ind+ns]) - n else -1
+    if ind < Ns - ns then (#[unsafe] val_inds[ind+ns]) - n else -1
 
 let filterPadWithKeys [n] 't
            (p : (t -> bool))
@@ -59,10 +59,10 @@ let mkX_no_trend [N] (k2p2m1: i32) (f: f32) (mappingindices: [N]i32): [k2p2m1][N
     loop A for i < n do
       let v1 = A[i]
       let A' = map (\ind -> let (k, j) = (ind / m, ind % m)
-                            in if v1 == 0.0 then unsafe A[k*m+j] else
-                            let x = unsafe (A[j] / v1) in
+                            in if v1 == 0.0 then #[unsafe] A[k*m+j] else
+                            let x = #[unsafe] (A[j] / v1) in
                                 if k < n-1  -- Ap case
-                                then unsafe ( A[(k+1)*m+j] - A[(k+1)*m+i] * x )
+                                then #[unsafe] ( A[(k+1)*m+j] - A[(k+1)*m+i] * x )
                                 else x      -- irow case
                    ) (iota nm)
       in  scatter A (iota nm) A'
@@ -72,7 +72,7 @@ let mkX_no_trend [N] (k2p2m1: i32) (f: f32) (mappingindices: [N]i32): [k2p2m1][N
     let nm = n*m
     -- Pad the matrix with the identity matrix.
     let Ap = map (\ind -> let (i, j) = (ind / m, ind % m)
-                          in  if j < n then unsafe ( A[i,j] )
+                          in  if j < n then #[unsafe] ( A[i,j] )
                                        else if j == n+i
                                             then 1.0
                                             else 0.0
@@ -174,7 +174,7 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
     map2 (\yh y_error ->
             let ns    = map (\ye -> if !(f32.isnan ye) then 1 else 0) yh
                         |> reduce (+) 0
-            let sigma = map (\i -> if i < ns then unsafe y_error[i] else 0.0) (iota n)
+            let sigma = map (\i -> if i < ns then #[unsafe] y_error[i] else 0.0) (iota n)
                         |> map (\ a -> a*a ) |> reduce (+) 0.0
             let sigma = f32.sqrt ( sigma / (r32 (ns-k2p2)) )
             let h     = t32 ( (r32 ns) * hfrac )
@@ -186,14 +186,14 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   ---------------------------------------------
   let hmax = reduce_comm (i32.max) 0 hs
   let MO_fsts = zip3 y_errors nss hs |>
-    map (\(y_error, ns, h) -> unsafe
-            map (\i -> if i < h then unsafe y_error[i + ns-h+1] else 0.0) (iota hmax)
+    map (\(y_error, ns, h) -> #[unsafe]
+            map (\i -> if i < h then #[unsafe] y_error[i + ns-h+1] else 0.0) (iota hmax)
             |> reduce (+) 0.0 
         ) |> opaque
 
   let Nmn = N-n
   let BOUND = map (\q -> let t   = n+1+q
-                         let time = unsafe mappingindices[t-1]
+                         let time = #[unsafe] mappingindices[t-1]
                          let tmp = logplus ((r32 time) / (r32 mappingindices[N-1]))
                          in  lam * (f32.sqrt tmp)
                   ) (iota Nmn)
@@ -205,7 +205,7 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
     map (\ ( (Ns,ns,sigma, h), (MO_fst,y_error,val_inds) ) ->
             let MO = map (\j -> if j >= Ns-ns then 0.0
                                 else if j == 0 then MO_fst
-                                else unsafe (-y_error[ns-h+j] + y_error[ns+j])
+                                else #[unsafe] (-y_error[ns-h+j] + y_error[ns+j])
                          ) (iota Nmn) |> scan (+) 0.0
 	    
             let MO' = map (\mo -> mo / (sigma * (f32.sqrt (r32 ns))) ) MO

@@ -1,3 +1,3 @@
 require {
-  github.com/diku-dk/cpprandom 1.1.9 #2e56f6982d048cdefd30472a1d069dd9a468c6a2
+  github.com/diku-dk/cpprandom 1.2.1 #869304710af3a023683d6670316d55dafd973c71
 }

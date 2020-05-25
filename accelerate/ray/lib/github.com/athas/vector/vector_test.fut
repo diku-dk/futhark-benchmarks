@@ -26,3 +26,39 @@ entry error (xs: []i32) =
   xs
   |> vector_8.from_array
   |> vector_8.to_array
+
+-- ==
+-- entry: foldl_add
+-- input { [1,2,3,4,5,6,7,8] }
+-- output { 36 }
+entry foldl_add (xs: [vector_8.length]i32) =
+  xs
+  |> vector_8.from_array
+  |> vector_8.foldl (+) 0
+
+-- ==
+-- entry: foldr_add
+-- input { [1,2,3,4,5,6,7,8] }
+-- output { 36 }
+entry foldr_add (xs: [vector_8.length]i32) =
+  xs
+  |> vector_8.from_array
+  |> vector_8.foldr (+) 0
+
+-- ==
+-- entry: foldl_sub
+-- input { [1,2,3,4,5,6,7,8] }
+-- output { -36 }
+entry foldl_sub (xs: [vector_8.length]i32) =
+  xs
+  |> vector_8.from_array
+  |> vector_8.foldl (-) 0
+
+-- ==
+-- entry: foldr_sub
+-- input { [1,2,3,4,5,6,7,8] }
+-- output { -4 }
+entry foldr_sub (xs: [vector_8.length]i32) =
+  xs
+  |> vector_8.from_array
+  |> vector_8.foldr (-) 0

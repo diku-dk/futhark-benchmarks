@@ -74,6 +74,12 @@ module type vector = {
   -- | Set the element at some position.
   val set 'a: i32 -> a -> vector a -> vector a
 
+  -- | Perform a left-fold over the vector's elements.
+  val foldl 'a 'b : (b -> a -> b) -> b -> vector a -> b
+
+  -- | Perform a right-fold over the vector's elements.
+  val foldr 'a 'b : (a -> b -> b) -> b -> vector a -> b
+
   -- | The length of vectors.
   val length : i32
 
@@ -111,6 +117,8 @@ module any_vector(P: { val length : i32 }) : vector = {
   let replicate a = stdreplicate length a
   let get i a = a[i]
   let set i v a = copy a with [i] = v
+  let foldl = foldl -- Prelude foldl.
+  let foldr = foldr -- Prelude foldr.
   let to_array = id
   let from_array = id
 }
@@ -133,6 +141,8 @@ module vector_1 : vector = {
   let get _ a = a
   let set _ x _ = x
   let length = 1i32
+  let foldl f b x = f b x
+  let foldr f b x = f x b
   let to_array a = stdreplicate length a
   let from_array as = as[0]
 }
@@ -142,6 +152,10 @@ module vector_1 : vector = {
 -- `cat_vector vector_1 vector_1` produces a module that defines
 -- length-2 vectors.  The implementation of `map` and `reduce` is
 -- sequential.
+--
+-- The `foldl` implementation is unrolled, so beware code explosion if
+-- you use a large vector or a complex fold function.  You can always
+-- use an ordinary `loop` and `get` instead.
 module cat_vector (X: vector) (Y: vector): vector = {
   type vector 'a = (X.vector a, Y.vector a)
 
@@ -163,6 +177,8 @@ module cat_vector (X: vector) (Y: vector): vector = {
   let set i v (xs, ys) = if i < X.length then (X.set i v xs, ys)
                          else (xs, Y.set (i-X.length) v ys)
   let length = X.length + Y.length
+  let foldl f b (xs, ys) = Y.foldl f (X.foldl f b xs) ys
+  let foldr f b (xs, ys) = X.foldr f (Y.foldr f b ys) xs
   let to_array 't (xs, ys) = X.to_array xs ++ Y.to_array ys :> [length]t
   let from_array 't as = let xs = X.from_array (take X.length as)
                          let ys = Y.from_array (take Y.length (drop X.length as))

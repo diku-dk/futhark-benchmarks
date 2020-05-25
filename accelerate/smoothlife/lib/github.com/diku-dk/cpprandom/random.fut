@@ -170,7 +170,8 @@ module linear_congruential_engine (T: integral) (P: {
     in (rand (T.u32 seed')).0
 
   let split_rng (n: i32) (x: rng): [n]rng =
-    map (\i -> x T.^ T.i32 (hash i)) (iota n)
+    let (x, _) = rand x
+    in map (\i -> x T.^ T.i32 (hash i)) (iota n)
 
   let join_rng [n] (xs: [n]rng): rng =
     reduce (T.^) (T.i32 0) xs
@@ -211,7 +212,6 @@ module subtract_with_carry_engine (T: integral) (P: {
               k: i32}
 
   let rand ({x, carry, k}: rng): (rng, t) =
-    unsafe
     let short_index = k - short_lag
     let short_index = if short_index < 0
                       then short_index + long_lag
@@ -318,7 +318,7 @@ module shuffle_order_engine (K: {val k: i32}) (E: rng_engine)
     let (rng,x) = E.rand rng
     let i = i32.i64 (int.to_i64 x) % K.k
     let (rng,y) = E.rand rng
-    in unsafe ((rng, (copy table) with [i] = y), table[i])
+    in ((rng, (copy table) with [i] = y), table[i])
 
   let min = E.min
   let max = E.max

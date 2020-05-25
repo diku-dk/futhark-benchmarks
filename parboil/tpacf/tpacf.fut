@@ -41,11 +41,11 @@ let doCompute [numD][numBBins]
     let (min,max) =
       loop (min, max) = (0, numBins) while (min+1) < max do
         let k = (min+max) / 2
-        in unsafe if dot >= binb[k]
+        in #[unsafe] if dot >= binb[k]
                   then (min, k)
                   else (k, max)
 
-    let index = unsafe if dot >= binb[min]
+    let index = #[unsafe] if dot >= binb[min]
                 then min
                 else if dot < binb[max]
                     then max+1
@@ -72,11 +72,11 @@ let doComputeSelf [numD][numBBins]
          let dot = xOuter * xInner + yOuter * yInner + zOuter * zInner
          let (min,max) = loop (min, max) = (0, numBins) while (min+1) < max do
            let k = (min+max) / 2
-           in unsafe if dot >= binb[k]
+           in #[unsafe] if dot >= binb[k]
                      then (min, k)
                      else (k, max)
 
-         let index = unsafe if dot >= binb[min]
+         let index = #[unsafe] if dot >= binb[min]
                      then min
                      else if dot < binb[max]
                          then max+1
@@ -98,7 +98,6 @@ let main [numD][numRs]
          (randompointsx: [numRs][numD]f64)
          (randompointsy: [numRs][numD]f64)
         : *[60]i32 =
-  unsafe
   let numBins2 = numBins + 2
   let binb = map (\k ->
                     f64.cos((10.0 ** (log10(min_arcmin) + k*1.0/bins_per_dec))

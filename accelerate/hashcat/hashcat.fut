@@ -69,7 +69,7 @@ let md5_chunk ((a0,b0,c0,d0): md5) (block: [16]u32): md5 =
                            (3u32*u32.i32 i + 5u32) % 16u32)
       else                (c ^ (b | !d),
                            (7u32*u32.i32 i)        % 16u32)
-    in (d, b + rotate_left(a + f + ks[i] + unsafe block[i32.u32 g], rs[i]), b, c)
+    in (d, b + rotate_left(a + f + ks[i] + #[unsafe] block[i32.u32 g], rs[i]), b, c)
 
 let initial_chunk = (0x67452301_u32,
                      0xefcdab89_u32,
@@ -90,7 +90,7 @@ let first_true [n] (bools : [n]bool): i32 =
 type dict [n] = [n][16]u32
 
 let mk_block (bs: []u8) ((i,k): (i32,i32)): [16]u32 =
-  unsafe
+  #[unsafe]
   let k = i32.min 64 k -- Truncate past first block.
   let one_bit = [0x80u8, 0u8, 0u8, 0u8]
   let block = replicate 64 0u8

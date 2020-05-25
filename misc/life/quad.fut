@@ -18,7 +18,7 @@ module quad_rules: rules_and_visuals = {
              1i8,1i8,1i8,1i8,1i8,0i8,0i8,
              2i8,0i8,2i8,2i8,2i8,2i8,2i8,
              0i8,2i8,1i8,2i8,3i8,3i8,3i8]
-    in unsafe t[neighbours]
+    in #[unsafe] t[neighbours]
 
   let init (b: bool) =
     if b then 0i8 else 1i8
@@ -31,7 +31,7 @@ module quad_rules: rules_and_visuals = {
                    argb.black,
                    argb.red,
                    argb.blue]
-    in unsafe colours[i32.i8 c]
+    in #[unsafe] colours[i32.i8 c]
 }
 
 module quad = gen_life_vis quad_rules quad_rules

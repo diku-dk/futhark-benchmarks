@@ -45,12 +45,12 @@ let main [number_boxes][par_per_box][num_neighbors]
                 let acc = (0.0,0.0,0.0,0.0)
                 in loop(acc) for k < box_num_nghbs'+1 do
                           let pointer = if (k > 0)
-                                        then let (_,_,_,num) = unsafe box_nnghs[k-1, l] in num
+                                        then let (_,_,_,num) = #[unsafe] box_nnghs[k-1, l] in num
                                         else l
 
-                          let (_,_,_,first_j) = unsafe box_coefs[pointer]
-                          let rB = unsafe rv[first_j]
-                          let qB = unsafe qv[first_j]
+                          let (_,_,_,first_j) = #[unsafe] box_coefs[pointer]
+                          let rB = #[unsafe] rv[first_j]
+                          let qB = #[unsafe] qv[first_j]
                           ---------------------------------------------------------
                           -- Important note: rB and qB are invariant to the      --
                           -- second map on rA -> can be blocked in shared memory --
