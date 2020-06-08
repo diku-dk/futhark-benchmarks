@@ -14,12 +14,16 @@ The recommended method for running all benchmarks is
 
     futhark bench * --backend=opencl --ignore-files /lib/
 
-This uses the OpenCL compiler backend, and ignores the test suites of
-any embedded libraries (which are usually too small to be useful
+This uses the `opencl` backend, and ignores the test suites of any
+embedded libraries (which are usually too small to be useful
 benchmarks, and would merely be noise).  You can replace `opencl` with
 another backend.  While the `c` backend is likely too slow to be
 practical for many of the benchmarks, the `cuda` backend should
 perform fine.
+
+You can also add `--ignore-files /micro/` to ignore the
+microbenchmarks of single language constructs, which are often not
+very interesting, but do take a long time to run.
 
 If necessary, you can use `--pass-option` to pass more options to the
 generated Futhark programs.  This may be necessary if you are using
