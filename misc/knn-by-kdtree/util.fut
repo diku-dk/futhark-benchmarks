@@ -1,3 +1,5 @@
+let log2 x = (loop (y,c) = (x,0) while y > 1 do (y >> 1, c+1)).1
+
 let partition2Ind [n] (cs: [n]bool) : ([n]i32, i32) =
     let tfs = map (\f -> if f then 1 else 0) cs
     let isT = scan (+) 0 tfs
