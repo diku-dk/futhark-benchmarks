@@ -24,7 +24,6 @@ let accel (epsilon: f32) (x: pointmass) (y: pointmass): velocity =
   in vec3.scale s r
 
 let advance_body (time_step: f32) (body: body) (acc: acceleration): body =
-  let acceleration = vec3.scale body.mass acc
   let position = vec3.(body.position + scale time_step body.velocity)
-  let velocity = vec3.(body.velocity + scale time_step acceleration)
+  let velocity = vec3.(body.velocity + scale time_step acc)
   in {position, mass=body.mass, velocity}
