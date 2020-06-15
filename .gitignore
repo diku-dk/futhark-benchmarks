@@ -18,6 +18,7 @@
 !.gitignore
 !/**/
 !*.fut
+!*.fut.tuning
 !Makefile
 !futhark.pkg
 !**/data/*.gz
