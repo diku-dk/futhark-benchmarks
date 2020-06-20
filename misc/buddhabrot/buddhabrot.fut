@@ -32,8 +32,8 @@ let trajectories (rng: rng) (limit: i32) (radius: f32)
   in (rand.join_rng rngs, map sample_point points)
 
 -- This colouring function makes no sense, but it creates a cool retro effect.
-let colourise(max_visits: i32) (visits: i32): i32 =
-  i32.u32 (f32.to_bits ((r32 visits) / (r32 max_visits) * 255.0))
+let colourise(max_visits: i32) (visits: i32): argb.colour =
+  f32.to_bits ((r32 visits) / (r32 max_visits) * 255.0)
 
 let pixel_pos screenX screenY field c =
   let (xmin, ymin, xmax, ymax) = field

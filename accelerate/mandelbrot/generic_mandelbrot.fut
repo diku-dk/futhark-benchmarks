@@ -11,7 +11,7 @@ module mandelbrot(real: real): {
     (screenX: i32) -> (screenY: i32) ->
     (xcentre: real.t) -> (ycentre: real.t) -> (width: real.t) ->
     (limit: i32) -> (radius: real.t) ->
-    [screenY][screenX]i32
+    [screenY][screenX]argb.colour
 } = {
 type real = real.t
 module complex = mk_complex real
@@ -108,7 +108,7 @@ let escape_to_colour (limit: i32) (points: i32)
 let render_mandelbrot (screenX: i32) (screenY: i32)
                       (xcentre: real) (ycentre: real) (width: real)
                       (limit: i32) (radius: real)
-                      : [screenY][screenX]i32 =
+                      : [screenY][screenX]argb.colour =
   let aspect_ratio = real.(int screenX / int screenY)
   let (xmin,ymin) = (real.(xcentre - width/int 2),
                      real.(ycentre - (int 1/aspect_ratio)*width/int 2))

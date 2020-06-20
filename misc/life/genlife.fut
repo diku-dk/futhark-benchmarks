@@ -85,7 +85,7 @@ module type visualisation = {
 
   -- Render the game world in ARGB format.  Alpha value is probably
   -- ignored.
-  val render [n][m]: [n][m]cell -> [n][m]i32
+  val render [n][m]: [n][m]cell -> [n][m]argb.colour
 }
 
 module gen_visualisation (V: visuals) : visualisation with cell = V.cell = {
@@ -97,7 +97,7 @@ module gen_visualisation (V: visuals) : visualisation with cell = V.cell = {
   let uninit [n][m] (world: [n][m]cell): [n][m]bool =
     map (\row -> map V.uninit row) world
 
-  let render [n][m] (world: [n][m]cell): [n][m]i32 =
+  let render [n][m] (world: [n][m]cell): [n][m]argb.colour =
     map (\ages -> map V.colour ages) world
 }
 

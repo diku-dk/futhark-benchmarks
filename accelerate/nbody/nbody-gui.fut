@@ -43,10 +43,13 @@ let rotation (x_rotation: f32) (y_rotation: f32): rotation =
 let inverse_rotation (x_rotation: f32) (y_rotation: f32): rotation =
   rotmult (rotate_y_matrix y_rotation) (rotate_x_matrix x_rotation)
 
+import "lib/github.com/athas/matte/colour"
+
 -- FIXME: This rendering is terrible because it is not FoV-aware.
 let render_point (h: i32) (w: i32)
                  {x=x_ul: f32, y=y_ul: f32} {x=x_br: f32, y=y_br: f32}
-                 (max_mass: f32) ({x,y,z=_}:position) (m: f32): (i32, i32) =
+                 (max_mass: f32) ({x,y,z=_}:position) (m: f32):
+                 (i32, argb.colour) =
   -- Draw nothing if the point is outside the viewport.
   if x < x_ul || x > x_br || y < y_ul || y > y_br then (-1, 0)
   else
@@ -58,14 +61,13 @@ let render_point (h: i32) (w: i32)
   let y'' = t32(y' * r32(h))
   let intensity = if m >= max_mass
                   then 255
-                  else 128 + t32((m / max_mass) * 128f32)
+                  else 128 + u32.f32((m / max_mass) * 128)
   let colour = intensity * 0x10000 +
                intensity * 0x100 +
                0xFF
   in (y''*w + x'', colour)
 
 import "lib/github.com/diku-dk/lys/lys"
-import "lib/github.com/athas/matte/colour"
 import "lib/github.com/diku-dk/cpprandom/random"
 
 module rnge = pcg32

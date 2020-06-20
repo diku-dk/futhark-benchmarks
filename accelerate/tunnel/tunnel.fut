@@ -77,7 +77,7 @@ entry main (time: f32) (h: i32) (w: i32) =
   -- Hack to avoid returning something gigantic.
   let frame = render time h w
   let frame_flat = flatten frame
-  in frame_flat[frame_flat[0] % length frame_flat]
+  in frame_flat[i32.u32 (frame_flat[0] % u32.i32 (length frame_flat))]
 
 import "lib/github.com/diku-dk/lys/lys"
 

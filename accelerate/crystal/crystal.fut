@@ -99,4 +99,5 @@ entry main(field_size: i32) (scale: f32) (degree: i32)
   let frames = tabulate n_steps (\step_i ->
                       let time = r32(step_i) * time_delta
                       in render_frame field_size scale degree time)
-  in map (\frame -> [(flatten frame)[0] % length (flatten frame)]) frames
+  in map (\frame -> [i32.u32 (frame[0,0] % u32.i32 (length (flatten frame)))])
+         frames
