@@ -24,24 +24,24 @@ module type colour = {
 
 -- | A colour representation that encodes the four RGBA channels as a
 -- byte each in a 32-bit word, using the order A-R-G-B.
-module argb_colour: colour with colour = i32 = {
+module argb_colour: colour with colour = u32 = {
   -- ARGB storage.
-  type colour = i32
+  type colour = u32
 
   let clamp_channel (x: f32): f32 =
     if x < 0f32 then 0f32 else if x > 1f32 then 1f32 else x
 
   let from_rgba (r: f32) (g: f32) (b: f32) (a: f32): colour =
-    ((t32 (clamp_channel a * 255f32) << 24) |
-     (t32 (clamp_channel r * 255f32) << 16) |
-     (t32 (clamp_channel g * 255f32) << 8)  |
-     (t32 (clamp_channel b * 255f32)))
+    ((u32.f32 (clamp_channel a * 255) << 24) |
+     (u32.f32 (clamp_channel r * 255) << 16) |
+     (u32.f32 (clamp_channel g * 255) << 8)  |
+     (u32.f32 (clamp_channel b * 255)))
 
   let to_rgba (x: colour): (f32,f32,f32,f32) =
-    (r32 ((x>>16) & 0xFF) / 255f32,
-     r32 ((x>>8) & 0xFF) / 255f32,
-     r32 ((x>>0) & 0xFF) / 255f32,
-     r32 ((x>>24) & 0xFF) / 255f32)
+    (f32.u32 ((x>>16) & 0xFF) / 255,
+     f32.u32 ((x>>8) & 0xFF) / 255,
+     f32.u32 ((x>>0) & 0xFF) / 255,
+     f32.u32 ((x>>24) & 0xFF) / 255)
 }
 
 -- | A colour representation and a host of useful functions and constants.

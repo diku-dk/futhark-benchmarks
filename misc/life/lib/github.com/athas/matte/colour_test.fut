@@ -13,5 +13,5 @@ entry basic_mix =
 
 -- ==
 -- entry: is_argb
--- input {} output {0xFF000000}
-entry is_argb: i32 = argb.black
+-- input {} output {0xFF000000u32}
+entry is_argb: u32 = argb.black
