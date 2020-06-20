@@ -7,7 +7,7 @@ void lys_setup_futhark_context(const char *deviceopt, bool device_interactive,
   *futcfg = futhark_context_config_new();
   assert(*futcfg != NULL);
 
-#if defined(LYS_BACKEND_opencl) || defined(LYS_BACKEND_cuda)
+#if defined(FUTHARK_BACKEND_opencl) || defined(FUTHARK_BACKEND_cuda)
   if (deviceopt != NULL) {
     futhark_context_config_set_device(*futcfg, deviceopt);
   }
@@ -15,7 +15,7 @@ void lys_setup_futhark_context(const char *deviceopt, bool device_interactive,
   (void)deviceopt;
 #endif
 
-#ifdef LYS_BACKEND_opencl
+#ifdef FUTHARK_BACKEND_opencl
   if (device_interactive) {
     futhark_context_config_select_device_interactively(*futcfg);
   }
@@ -26,7 +26,7 @@ void lys_setup_futhark_context(const char *deviceopt, bool device_interactive,
   *futctx = futhark_context_new(*futcfg);
   assert(*futctx != NULL);
 
-#ifdef LYS_BACKEND_opencl
+#ifdef FUTHARK_BACKEND_opencl
   cl_device_id device;
   assert(clGetCommandQueueInfo(futhark_context_get_command_queue(*futctx),
                                CL_QUEUE_DEVICE, sizeof(cl_device_id), &device, NULL)

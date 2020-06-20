@@ -28,7 +28,7 @@ struct lys_context {
   SDL_Surface *surface;
   int width;
   int height;
-  int32_t *data;
+  uint32_t *data;
   int64_t last_time;
   bool running;
   bool grab_mouse;

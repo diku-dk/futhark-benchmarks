@@ -2,7 +2,7 @@
 --
 -- Making use of Lys requires hooking into (or duplicating) its custom
 -- Makefile rules, so you should also read the [usage
--- section](https://github.com/diku-dk/lys/blob/master/README.md#usage)
+-- section](https://github.com/diku-dk/lys/blob/master/README.md#general-usage)
 -- of the README.
 --
 -- On the Futhark side, you need to define a module called `lys` that

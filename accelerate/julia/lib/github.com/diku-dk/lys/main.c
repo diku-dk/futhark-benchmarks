@@ -104,7 +104,7 @@ void loop_iteration(struct lys_context *ctx, struct lys_text *text) {
   if (*(text->text_buffer) != '\0') {
     int32_t text_colour;
     FUT_CHECK(ctx->fut,
-              futhark_entry_text_colour(ctx->fut, (int32_t*) &text_colour,
+              futhark_entry_text_colour(ctx->fut, (uint32_t*) &text_colour,
                                         ctx->state));
     draw_text(ctx, text->font, text->font_size, text->text_buffer, text_colour, 10, 10);
   }
@@ -198,9 +198,9 @@ void do_bench(struct futhark_context *fut, int height, int width, int n, const c
       state = new_state;
     }
     if (do_render) {
-      struct futhark_i32_2d *out_arr;
+      struct futhark_u32_2d *out_arr;
       FUT_CHECK(fut, futhark_entry_render(fut, &out_arr, state));
-      FUT_CHECK(fut, futhark_free_i32_2d(fut, out_arr));
+      FUT_CHECK(fut, futhark_free_u32_2d(fut, out_arr));
     }
   }
   futhark_context_sync(fut);
@@ -213,26 +213,25 @@ void do_bench(struct futhark_context *fut, int height, int width, int n, const c
   FUT_CHECK(fut, futhark_free_opaque_state(fut, state));
 }
 
+void usage(char **argv) {
+  printf("Usage: %s options...\n", argv[0]);
+  puts("Options:");
+  puts("  -?      Print this help and exit.");
+  puts("  -w INT  Set the initial width of the window.");
+  puts("  -h INT  Set the initial height of the window.");
+  puts("  -R      Disallow resizing the window.");
+  puts("  -d DEV  Set the computation device.");
+  puts("  -r INT  Maximum frames per second.");
+  puts("  -i      Select execution device interactively.");
+  puts("  -b <render|step>  Benchmark program.");
+}
+
 int main(int argc, char** argv) {
   int width = INITIAL_WIDTH, height = INITIAL_HEIGHT, max_fps = 60;
   bool allow_resize = true;
   char *deviceopt = NULL;
   bool device_interactive = false;
   char *benchopt = NULL;
-
-  if (argc > 1 && strcmp(argv[1], "--help") == 0) {
-    printf("Usage: %s options...\n", argv[0]);
-    puts("Options:");
-    puts("  -w INT  Set the initial width of the window.");
-    puts("  -h INT  Set the initial height of the window.");
-    puts("  -R      Disallow resizing the window.");
-    puts("  -d DEV  Set the computation device.");
-    puts("  -r INT  Maximum frames per second.");
-    puts("  -i      Select execution device interactively.");
-    puts("  -b <render|step>  Benchmark program.");
-    puts("  --help  Print this help and exit.");
-    return 0;
-  }
 
   int c;
   while ( (c = getopt(argc, argv, "w:h:r:Rd:b:i")) != -1) {
@@ -276,8 +275,12 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
       }
       break;
+    case '?':
+      usage(argv);
+      return EXIT_SUCCESS;
     default:
       fprintf(stderr, "unknown option: %c\n", c);
+      usage(argv);
       return EXIT_FAILURE;
     }
   }

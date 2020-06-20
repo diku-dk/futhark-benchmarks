@@ -19,7 +19,7 @@ endif
 
 NOWARN_CFLAGS=-std=c11 -O
 
-CFLAGS?=$(NOWARN_CFLAGS) $(PKG_CFLAGS) -Wall -Wextra -pedantic -DLYS_BACKEND_$(LYS_BACKEND)
+CFLAGS?=$(NOWARN_CFLAGS) $(PKG_CFLAGS) -Wall -Wextra -pedantic
 ifeq ($(LYS_TTF),1)
 CFLAGS+= -DLYS_TTF
 endif
