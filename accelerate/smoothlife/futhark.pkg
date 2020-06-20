@@ -1,6 +1,6 @@
 require {
   github.com/diku-dk/fft 0.1.8 #c3276ba1c11449a570d8fa1852fcfe634651e4f4
-  github.com/athas/matte 0.1.1 #24f332e6ff8b5872b950cfcbead9b2f7c6571490
+  github.com/athas/matte 0.1.2 #2ce1a39b29c329504cb2d849e305cbcc17f701d5
   github.com/diku-dk/cpprandom 1.2.1 #869304710af3a023683d6670316d55dafd973c71
   github.com/diku-dk/lys 0.1.8 #bc6079ec1570407eb1bb64d866ccd407a87a1d3c
   github.com/diku-dk/segmented 0.3.1 #f128a9716093038694e7d4be63b351d700c84f68
