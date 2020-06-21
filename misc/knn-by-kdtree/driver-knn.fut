@@ -35,7 +35,7 @@ let propagate [m][q][d][n] (ref_pts: [m][d]f32) (indir: [m]i32)
 -- ==
 -- entry: main
 --
--- compiled random input { 256i32 [2097152][7]f32 [10000000][7]f32 }
+-- no_gtx780 no_k40 compiled random input { 256i32 [2097152][7]f32 [10000000][7]f32 }
 -- output @ valid-data/knn-ppl-256-m-2097152-n-10000000-d-7-k-5.out.gz
 
 entry main [m][d][n] (defppl: i32) (refs: [m][d]f32) (queries: [n][d]f32) =
@@ -44,6 +44,3 @@ entry main [m][d][n] (defppl: i32) (refs: [m][d]f32) (queries: [n][d]f32) =
     let (_knn_inds, knn_dsts, _visited, _num_leaves, _loop_count) =
             propagate refs_pts indir (zip3 median_dims median_vals clanc_eqdim) queries
     in  knn_dsts[:(n/64)]
-
-    --in  (clanc_eqdim, _ppl, num_inner_nodes, num_leaves, height)
-    --in  (knn_inds[:16], knn_dsts[:16], visited, loop_count)
