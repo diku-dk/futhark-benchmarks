@@ -200,7 +200,7 @@ let main (outer_loop_count: i32) (numX: i32) (numY: i32) (numT: i32)
          (s0: f32) (t: f32) (alpha: f32) (nu: f32) (beta: f32): []f32 =
   let strikes = map (\i -> 0.001*r32 i) (iota outer_loop_count)
   let res =
-    #[incremental_flattening_only_inner]
+    #[incremental_flattening(only_inner)]
     map (\x -> value(numX, numY, numT, s0, x, t, alpha, nu, beta))
     strikes
   in res

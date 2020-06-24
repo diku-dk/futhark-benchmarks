@@ -250,10 +250,8 @@ let step [size] (state: state [size]): state [size] =
   let aaf = fft.fft2_re aa
   let nf = map2 (map2 (complex.*)) aaf state.krf
   let mf = map2 (map2 (complex.*)) aaf state.kdf
-  let n = #[incremental_flattening_only_inner]
-          map (\x -> complex.re x / state.kflr) (fft.ifft2 nf |> flatten)
-  let m = #[incremental_flattening_only_inner]
-          map (\x -> complex.re x / state.kfld) (fft.ifft2 mf |> flatten)
+  let n = map (\x -> complex.re x / state.kflr) (fft.ifft2 nf |> flatten)
+  let m = map (\x -> complex.re x / state.kfld) (fft.ifft2 mf |> flatten)
   let aa' = snm state.conf (take (length n) n) (take (length n) m) |> unflatten r c
 
   let timestep f g =
