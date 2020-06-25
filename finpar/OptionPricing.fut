@@ -48,7 +48,7 @@ let sobolRecI [num_bits][n] (sob_dir_vs: [n][num_bits]i32, prev: [n]i32, x: i32)
 
 let recM [n][num_bits] (sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
   let bit = index_of_least_significant_0 i
-  in map (\row -> #[unsafe] row[bit]) sob_dirs
+  in #[unsafe] sob_dirs[:,bit]
 
 let sobolRecMap [n][num_bits] (sob_fact:  f32, dir_vs: [n][num_bits]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
   -- the if inside may be particularly ugly for
