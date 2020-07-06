@@ -28,7 +28,6 @@ let log10 (num: f64): f64 = f64.log(num) / f64.log(10.0)
 let doCompute [numD][numBBins]
               (datapoints: [numD]vec3)
               (random: [numD]vec3)
-              (numBins: i32)
               (numBins2: i32)
               (binb: [numBBins]f64)
              : [numBins2]i32 =
@@ -58,7 +57,6 @@ let doCompute [numD][numBBins]
 
 let doComputeSelf [numD][numBBins]
                   (datapoints: [numD]vec3)
-                  (numBins: i32)
                   (numBins2: i32)
                   (binb: [numBBins]f64)
                  : [numBins2]i32 =
@@ -106,10 +104,10 @@ let main [numD][numRs]
   let datapoints = map2 fixPoints datapointsx datapointsy
   let randompoints = map2 (map2 fixPoints) randompointsx randompointsy
   let (drs, rrs) = unzip (map (\random ->
-                                 (doCompute datapoints random numBins numBins2 binb,
-                                  doComputeSelf random numBins numBins2 binb))
+                                 (doCompute datapoints random numBins2 binb,
+                                  doComputeSelf random numBins2 binb))
                                randompoints)
-  let dd = doComputeSelf datapoints numBins numBins2 binb
+  let dd = doComputeSelf datapoints numBins2 binb
   let rr = sumBins rrs
   let dr = sumBins drs
   in [dd, dr, rr] |> transpose |> init |> tail |> flatten_to 60
