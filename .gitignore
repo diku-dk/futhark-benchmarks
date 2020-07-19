@@ -21,6 +21,7 @@
 !*.fut.tuning
 !Makefile
 !futhark.pkg
+!README.md
 !**/data/*.gz
 !**/lib
 !**/lib/**
