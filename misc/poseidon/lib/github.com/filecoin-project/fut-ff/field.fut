@@ -422,7 +422,6 @@ let sub (a: t) (b: t) : t =
   -- Be paranoid and fail if the provided value for r^2 mod p is incorrect.
   let field_r2_is_correct = assert (final_reduce FIELD_R2 == R_MOD_P) true
 
-                                   #[noinline]
   let (a: t) - (b: t): t =
     let old = copy a in
     let res = sub a b in
@@ -448,10 +447,8 @@ let sub (a: t) (b: t) : t =
     let res = add a b in
     if res >= FIELD_P then sub res (copy FIELD_P) else res
 
-#[noinline]
   let (a: t) + (b: t) = if p_is_small then add_cheap a b else add_expensive a b
 
-#[noinline]
   let square (x: t): t =
     let _ = assert false "unimplemented" in
     -- This implementation is failing with large enough values, example test case:
