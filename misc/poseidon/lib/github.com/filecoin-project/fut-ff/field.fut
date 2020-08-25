@@ -187,11 +187,14 @@ module type field = {
   val FIELD_P_DIFF: t
   val FIELD_INV: s
 
+  val p_is_small: bool
+
   val from_string [n]: [n]u8 -> t
 --  val make: (() -> []s) -> t
 
   val from_u64s [n]: [n]u64 -> t
   val to_u64s: t -> [LIMBS]u64
+  val in_field: t -> bool
 
   val mont_from_u64s [n]: [n]u64 -> t
   val mont_to_u64s: t -> [LIMBS]u64
@@ -259,17 +262,29 @@ module big_field (M: fieldtype): field = {
   let (a: t) > (b: t) : bool =  b < a
   let (a: t) <= (b: t) : bool = !(b < a)
 
+  -- add is commutative because the two values (op and carry) which depend on either a or b
+  -- are unaffected if a and b are reversed.
   let add (a: t) (b: t): t =
-  let r: *t = copy zero in
-  let carry = M.zero in
-  let op (carry, r) (i, (a', b')) =
-  let new = M.(a' + b' + carry) in
-  let carry = bool_t M.(a' > new) in
-         (carry, LVec.set i new r)
-  let (_, r) = LVec.foldl op (carry, r) (LVec.zip LVec.iota (LVec.zip a b))
-  in r
+    let r: *t = copy zero in
+    let carry = M.zero in
+    -- op is commutative:
+    let op (carry, r) (i, (a', b')) =
+      -- a' and b' can be switched without affecting new because
+      -- M.+ is defined to be + of a module of type integral, which is commutative.
+      let new = M.(a' + b' + carry) in
+      -- Note that the carry check could also have used b'.
+      -- If a' + b' overflows then both a' and b' are greater than new:
+      -- an overflowed sum cannot be greater than either of of its summands.
+      -- If a' + b' does not overflow, then neither a' nor b' is greater than new;
+      -- by definition, a non-overlowing sum is greater than either of its summands.
+      -- Therefore, the choice of a' (vs b') is arbitrary and does not affect the result.
+      let carry = bool_t M.(a' > new) in
+      (carry, LVec.set i new r)
+    -- Because op is commutative, the result is oblivious to the ordering of a and b when zipping.
+    let (_, r) = LVec.foldl op (carry, r) (LVec.zip LVec.iota (LVec.zip a b))
+    in r
 
-let sub (a: t) (b: t) : t =
+  let sub (a: t) (b: t) : t =
     let op (borrow, r) (i, (a', b')) =
       let new = M.(a' - (b' + borrow)) in
       let borrow = bool_t M.(if borrow > zero then a' <= new else a' < new) in
@@ -427,26 +442,45 @@ let sub (a: t) (b: t) : t =
     let res = sub a b in
     if old >= b then res else add res (copy FIELD_P)
 
+  -- If add_expensive has been called, we can assume that the field is not 'small',
+  -- which means addition can potentially overflow the underlying bignum.
   let add_expensive (a: t) (b: t): t =
     -- Both inputs must be in field.
     let fzero = FIELD_P == zero in
     -- (Can move or remove this check eventually, as long as the invariant is otherwise enforced.)
     let _ = if fzero then () else assert ((a < FIELD_P) && (b < FIELD_P)) () in
+    -- res is independent of the ordering of a and b if add is commutative (see add).
     let res = add a b in
     if fzero then res else -- special case for simple bignum (make own module? or at least abstract this check)
+      -- if add really does implement unchecked bignum addition, then res >= a implies res >= b,
+      -- so choice of a in the test below is irrelevant.
     if res >= a then -- Can we skip this check and instead check the carry? (would need to return it)
-    (if res >= FIELD_P then
-       sub res (copy FIELD_P) else res) else
+      -- Since res >= a (or b), add did not overflow the limbs.
+      (if res >= FIELD_P then
+         -- At most one subtraction effects the modulus.
+         sub res (copy FIELD_P) else res) else
+      -- Since the field is not 'small', res could be less than a (or b).
+      -- In that case, the addition was enough to actually overflow the limbs.
+      -- Then we need to compensate for the difference the field modulus and the underlying bignum capacity.
+      -- This amount (FIELD_P_DIFF) needs to be added back in so the overflow is effectively relative to the modulus.
       add res (copy FIELD_P_DIFF)
 
+  -- add_cheap is commutative (and must be so + will be).
   let add_cheap (a: t) (b: t): t =
     -- Both inputs must be in field.
     let fzero = FIELD_P == zero in
     -- (Can move or remove this check eventually, as long as the invariant is otherwise enforced.)
     let _ = if fzero then () else assert ((a < FIELD_P) && (b < FIELD_P)) () in
+
+    -- add_cheap is commutative iff add is (see add).
     let res = add a b in
     if res >= FIELD_P then sub res (copy FIELD_P) else res
 
+  -- + should be commutative for use with reduce_comm and associative for use with reduce.
+  -- Note that for bls12_381, p_is_small is true — so, for that field in particular, it suffices
+  -- to show that add_cheap is commutative.
+  -- Note also that if + correctly implements adition, then it will be associative and commutative
+  -- by definition, so further hand-waving is mostly superfluous.
   let (a: t) + (b: t) = if p_is_small then add_cheap a b else add_expensive a b
 
   let square (x: t): t =
@@ -496,6 +530,10 @@ let sub (a: t) (b: t) : t =
 
   let from_u64s [n] (limbs: [n]u64): t =
     assert i32.((length limbs) == LIMBS) (LVec.map M.from_u64 (LVec.from_array (limbs :> [LVec.length]u64)) :> t)
+
+  -- For use in tests, return true if its argument is actually in the field.
+  let in_field (x: t): bool =
+    (x < FIELD_P)
 
   let to_u64s (limbs: t): [LIMBS]u64 =
     LVec.to_array (LVec.map M.to_u64 limbs) :> [LIMBS]u64

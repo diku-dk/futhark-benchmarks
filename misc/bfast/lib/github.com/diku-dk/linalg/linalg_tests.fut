@@ -2,7 +2,7 @@
 
 import "linalg"
 
-module linalg_i32 = mk_linalg i32
+module linalg_i32 = mk_linalg { open i32 let fma a b c : i32 = a * b + c }
 module linalg_f32 = mk_linalg f32
 
 -- ==
@@ -31,6 +31,8 @@ entry test_cross = linalg_i32.cross
 
 -- ==
 -- entry: test_inv
+-- input { [[0.0f32, 1.0f32], [1.0f32, 0.0f32]] }
+-- output { [[0.0f32, 1.0f32], [1.0f32, 0.0f32]] }
 -- input { [[1.0f32, 2.0f32, 1.0f32], [2.0f32, 1.0f32, 1.0f32], [1.0f32, 1.0f32, 2.0f32]] }
 -- output { [[-0.25f32, 0.75f32, -0.25f32], [0.75f32, -0.25f32, -0.25f32], [-0.25f32, -0.25f32, 0.75f32]] }
 

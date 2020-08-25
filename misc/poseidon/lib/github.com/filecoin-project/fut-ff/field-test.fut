@@ -26,3 +26,41 @@ entry bls12_381_test_xxx =
 entry bls12_381_sum_regression (a: [4]u64) (b: [4]u64) =
   bls12_381.(to_u64s ((from_u64s a) + (from_u64s b)))
 
+-- Test commutativity of +
+-- ==
+-- entry: bls12_381_commutative_plus
+-- random input { [10000][4]u64 [10000][4]u64 }
+-- output { true }
+
+entry bls12_381_commutative_plus [n] (a: [n][4]u64) (b: [n][4]u64) =
+  reduce (&&) true (map (\p ->
+                           let x = bls12_381.(from_u64s p.0) in
+                           let y = bls12_381.(from_u64s p.1) in
+                           if bls12_381.(in_field x && in_field y)
+                           then bls12_381.(x + y == y + x)
+                           else true)
+                        (zip a b))
+
+-- Test associativity of +
+-- ==
+-- entry: bls12_381_associative_plus
+-- random input { [10000][4]u64 [10000][4]u64 [10000][4]u64 }
+-- output { true }
+
+entry bls12_381_associative_plus [n] (a: [n][4]u64) (b: [n][4]u64) (c: [n][4]u64) =
+  reduce (&&) true (map (\p ->
+                           let x = bls12_381.(from_u64s p.0) in
+                           let y = bls12_381.(from_u64s p.1.0) in
+                           let z = bls12_381.(from_u64s p.1.1) in
+                           if bls12_381.(in_field x && in_field y)
+                           then bls12_381.((x + y) + z == x + (y + z))
+                           else true)
+                        (zip a (zip b c)))
+
+-- Test that bls12_381 P is small, simplifying commutativity analysis for bls12_381.+
+-- ==
+-- entry: bls12_381_p_is_small
+-- input {}
+-- output { true }
+
+entry bls12_381_p_is_small = bls12_381.p_is_small

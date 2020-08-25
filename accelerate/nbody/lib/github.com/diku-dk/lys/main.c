@@ -26,6 +26,7 @@ void loop_start(struct lys_context *ctx, struct lys_text *text) {
   text->text_format = malloc(sizeof(char) * (text_format_len + 1));
   assert(text->text_format != NULL);
   FUT_CHECK(ctx->fut, futhark_values_u8_1d(ctx->fut, text_format_array, (unsigned char*) text->text_format));
+  FUT_CHECK(ctx->fut, futhark_context_sync(ctx->fut));
   text->text_format[text_format_len] = '\0';
   FUT_CHECK(ctx->fut, futhark_free_u8_1d(ctx->fut, text_format_array));
 
