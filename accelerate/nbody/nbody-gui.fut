@@ -183,7 +183,7 @@ module lys : lys with text_content = info = {
        , rotating = {x=0, y=0}
        , zooming = 0
        , rng
-       , paused = true
+       , paused = false
        , solver = #bruteforce
        , theta = 0.5
        , attractor = #none
