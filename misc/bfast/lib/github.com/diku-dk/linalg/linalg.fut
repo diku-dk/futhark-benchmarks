@@ -5,6 +5,7 @@
 -- it by name from outside.  This is because it is not a stable
 -- interface, as we may add new members in minor versions.
 local module type linalg = {
+  -- | The scalar type.
   type t
   -- | Dot product.
   val dotprod [n]: [n]t -> [n]t -> t
@@ -42,7 +43,12 @@ module type field = {
   val *: t -> t -> t
   val /: t -> t -> t
 
+  val negate: t -> t
+  val <: t -> t -> bool
+
   val i32: i32 -> t
+  val abs: t -> t
+  val fma: t -> t -> t -> t
 }
 
 -- | Given some numeric type, produce a linalg module.
@@ -83,17 +89,26 @@ module mk_linalg (T: field): linalg with t = T.t = {
     |> map (flatten_to (n*q)) -- [m*p][n*q]
 
   -- Matrix inversion is implemented with Gauss-Jordan.
-  let gauss_jordan [n][m] (A: [n][m]t): [n][m]t =
-    loop A for i < n do
-      let irow = A[0]
-      let Ap = A[1:n]
-      let v1 = irow[i]
-      in  map (\k -> map (\j -> let x = T.(irow[j] / v1) in
-                                if k < n-1  -- Ap case
-                                then T.(Ap[k,j] - Ap[k,i] * x)
-                                else x      -- irow case
-                         ) (iota m)
-              ) (iota n)
+  let gauss_jordan [m] [n] (A:[m][n]t) =
+    loop A for i < i32.min m n do
+    -- Find nonzero value.
+    let (j,_) = map (\row -> row[i]) A
+                |> map T.abs
+                |> zip (iota m)
+                |> drop i
+                |> reduce_comm (\(i,a) (j,b) ->
+                                  if a T.< b
+                                  then (j,b)
+                                  else if b T.< a then (i,a)
+                                  else if j < i then (j, b)
+                                  else (i, a))
+                               (0, T.i32 0)
+    let f = T.((i32 1-A[i,i]) / A[j,i])
+    let irow = map2 (T.fma f) A[j] A[i]
+    in map (\j -> if j == i
+                  then irow
+                  else let f = T.negate A[j,i]
+                       in map2 (T.fma f) irow A[j]) (iota m)
 
   let inv [n] (A: [n][n]t): [n][n]t =
     -- Pad the matrix with the identity matrix.

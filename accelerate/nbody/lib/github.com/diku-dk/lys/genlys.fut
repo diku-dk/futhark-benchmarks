@@ -32,10 +32,10 @@ entry step (td: f32) (s: state): state =
 
 entry render (s: state) = m.lys.render s
 
-entry text_colour (s: state): m.argb.colour =
+entry text_colour (s: state): u32 =
   m.lys.text_colour s
 
 entry text_format: []u8 = m.lys.text_format ()
 
-entry text_content (render_duration: f32) (s: state): m.lys.text_content =
+entry text_content (render_duration: f32) (s: state) =
   m.lys.text_content render_duration s
