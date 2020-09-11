@@ -115,8 +115,8 @@ module any_vector(P: { val length : i32 }) : vector = {
   let vunzip = transpose
   let iota = iota length
   let replicate a = stdreplicate length a
-  let get i a = a[i]
-  let set i v a = copy a with [i] = v
+  let get (i: i32) a = a[i]
+  let set (i: i32) v a = copy a with [i] = v
   let foldl = foldl -- Prelude foldl.
   let foldr = foldr -- Prelude foldr.
   let to_array = id
