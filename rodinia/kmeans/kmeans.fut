@@ -20,9 +20,11 @@ let euclid_dist_2 [d] (pt1: [d]f32) (pt2: [d]f32): f32 =
 let closest_point (p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
   if p1.1 < p2.1 then p1 else p2
 
+
 let find_nearest_point [k][d] (pts: [k][d]f32) (pt: [d]f32): i32 =
-  let (i, _) = foldl closest_point (0, f32.inf)
-                     (zip (iota k) (map (euclid_dist_2 pt) pts))
+  let (i, _) = foldl (\acc (i, p) -> closest_point acc (i, euclid_dist_2 pt p))
+                     (0, f32.inf)
+                     (zip (0..<k) pts)
   in i
 
 let add_centroids [d] (x: [d]f32) (y: [d]f32): *[d]f32 =
