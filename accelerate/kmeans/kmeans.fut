@@ -26,9 +26,9 @@ let closest_point (p1: (i32, f32)) (p2: (i32, f32)): (i32, f32) =
   if p1.1 < p2.1 then p1 else p2
 
 let find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
-  let (i, _) = foldl closest_point
+  let (i, _) = foldl (\acc (i, p) -> closest_point acc (i, euclid_dist_2 pt p))
                      (0, f32.inf)
-                     (zip (0..<k) (map (euclid_dist_2 pt) pts))
+                     (zip (0..<k) pts)
   in i
 
 let centroids_of [n] (k: i32) (points: [n]point) (membership: [n]i32): [k]point =
