@@ -22,21 +22,21 @@ let closest_point (p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
 
 
 let find_nearest_point [k][d] (pts: [k][d]f32) (pt: [d]f32): i32 =
-  let (i, _) = foldl (\acc (i, p) -> closest_point acc (i, euclid_dist_2 pt p))
+  let (i, _) = foldl (\acc (i, p) -> closest_point acc (i32.i64 i, euclid_dist_2 pt p))
                      (0, f32.inf)
-                     (zip (0..<k) pts)
+                     (zip (indices pts) pts)
   in i
 
 let add_centroids [d] (x: [d]f32) (y: [d]f32): *[d]f32 =
   map2 (+) x y
 
-let centroids_of [n][d] (k: i32) (points: [n][d]f32) (membership: [n]i32): [k][d]f32 =
+let centroids_of [n][d] (k: i64) (points: [n][d]f32) (membership: [n]i32): [k][d]f32 =
   let points_in_clusters =
-    reduce_by_index (replicate k 0) (+) 0 membership (replicate n 1)
+    reduce_by_index (replicate k 0) (+) 0 (map i64.i32 membership) (replicate n 1)
 
   let cluster_sums =
     reduce_by_index (replicate k (replicate d 0)) (map2 (+)) (replicate d 0)
-                    membership
+                    (map i64.i32 membership)
                     points
 
   in map2 (\point n -> map (/r32 (if n == 0 then 1 else n)) point)
@@ -45,10 +45,12 @@ let centroids_of [n][d] (k: i32) (points: [n][d]f32) (membership: [n]i32): [k][d
 let main [n][d]
         (threshold: i32) (k: i32) (max_iterations: i32)
         (points: [n][d]f32): ([][]f32, i32) =
+  let k = i64.i32 k
+
   -- Assign arbitrary initial cluster centres.
   let cluster_centres = take k points
   -- Also assign points arbitrarily to clusters.
-  let membership = map (%k) (iota n)
+  let membership = map i32.i64 (map (%k) (iota n))
   let delta = threshold + 1
   let i = 0
   let (_,cluster_centres,_,i) =

@@ -1,4 +1,3 @@
 require {
   github.com/filecoin-project/fut-ff 0.1.9 #801985c67955a9baf29a34128f548e0eb7a9a1e5
-  github.com/athas/vector 0.6.1 #e83612b92245a619ee516c87070eba1894e7e463
 }
