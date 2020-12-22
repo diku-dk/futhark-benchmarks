@@ -14,7 +14,7 @@ module relative_distance(R: real): distance with real = R.t = {
     let norm (price: real) (quote: real) =
       R.(let rel = (price - quote) / quote
          in rel * rel)
-    in R.sum (opaque (map2 norm observed prices))
+    in R.sum (map2 norm observed prices)
 }
 
 -- | An absolute distance measure.
@@ -25,5 +25,5 @@ module absolute_distance(R: real): distance with real = R.t = {
     let norm (price: real) (quote: real) =
       R.(let dif = price - quote
          in dif * dif)
-    in R.sum (opaque (map2 norm observed prices))
+    in R.sum (map2 norm observed prices)
 }
