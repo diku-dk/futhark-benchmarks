@@ -57,7 +57,7 @@ let sobolRecMap [n][num_bits] (sob_fact:  f32, dir_vs: [n][num_bits]i32, (lb_inc
                             then sobolIndI(dir_vs,lb_inc+1)
                             else recM(dir_vs,k+lb_inc))
                      (map i32.i64 (iota (i64.i32 (ub_exc-lb_inc))))
-  let vct_ints = scan (\x y -> map2 (^) x y) (replicate n 0) contribs
+  let vct_ints = scan (map2 (^)) (replicate n 0) contribs
   in  map (\xs -> map (\x -> f32.i32 x * sob_fact) xs) vct_ints
 
 let sobolReci2 [n][num_bits] (sob_dirs: [n][num_bits]i32, prev: [n]i32, i: i32): [n]i32=
@@ -72,7 +72,7 @@ let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32) (n: i32) (chunk: i64
                        if k==0 then sob_beg
                        else recM(dir_vs, i32.i64 k+n))
                     (iota chunk)
-  let vct_ints= scan (\x y -> map2 (^) x y) (replicate len 0) contrbs
+  let vct_ints= scan (map2 (^)) (replicate len 0) contrbs
   in map (\xs -> map (\x -> f32.i32(x) * sob_fact) xs) vct_ints
 
 ----------------------------------------
