@@ -72,7 +72,7 @@ let erfc(x: real): real =
   let x = R.abs x
 
   let t = int 1/(int 1 + p*x)
-  let y = int 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*R.exp(negate x*x)
+  let y = int 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*R.exp(neg (x*x))
 
   in sign*y
 
@@ -89,11 +89,11 @@ let erf (x: real): real =
   let t3 = t * t2
   let t4 = t *t3
   let t5 = t * t4
-  in int 1 - (a1 * t + a2 * t2 + a3 * t3 + a4 * t4 + a5 * t5) * R.exp (negate x * x)
+  in int 1 - (a1 * t + a2 * t2 + a3 * t3 + a4 * t4 + a5 * t5) * R.exp (neg (x * x))
 
 let pnorm (x: real): real =
   let u = x / R.sqrt (int 2)
-  let erf = if u < int 0 then negate (erf (negate u)) else erf u
+  let erf = if u < int 0 then neg (erf (neg u)) else erf u
   in real 0.5 * (int 1 + erf)
 
 let ugaussian_pdf (x: real) =
@@ -179,7 +179,7 @@ module normal_true: pricer_parameter = {
   let psi_bs (minus_half_sigma2_t: c64) (i: c64) (xi: c64) =
     c64.exp (xi *! i +! minus_half_sigma2_t *! xi *! xi)
 
-  let moneyness_f (k: real) = negate k
+  let moneyness_f (k: real) = neg k
 }
 
 module normal_false: pricer_parameter = {
@@ -209,11 +209,11 @@ module normal_false: pricer_parameter = {
   let psi_bs (minus_half_sigma2_t: c64) (i: c64) (xi: c64) =
     c64.exp (minus_half_sigma2_t *! xi *! (i *! xi))
 
-  let moneyness_f (k: real) = negate (R.log k)
+  let moneyness_f (k: real) = neg (R.log k)
 }
 
 let bs_control (moneyness: real) (sigma_sqrtt: real) =
-  let d1 = negate (R.log moneyness) / sigma_sqrtt + real 0.5 * sigma_sqrtt
+  let d1 = neg (R.log moneyness) / sigma_sqrtt + real 0.5 * sigma_sqrtt
   in pnorm d1 - moneyness * pnorm (d1 - sigma_sqrtt)
 
 type quote = {strike: real, maturity: i32}
@@ -253,7 +253,7 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
           else let eta = int (-1)
                let eps = real 1e-2
                let two_da_time_eps = psi_h day_count_fraction (c64.mk eps eta) -!
-                                     psi_h day_count_fraction (c64.mk (negate eps) eta)
+                                     psi_h day_count_fraction (c64.mk (neg eps) eta)
                let two_db_time_eps = psi_h day_count_fraction (c64.mk_im (eta + eps)) -!
                                      psi_h day_count_fraction (c64.mk_im (eta - eps))
                in real 0.5 * (c64.im (two_da_time_eps -! i *! two_db_time_eps)) /
@@ -263,7 +263,7 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
             c64.mk_re (real (-0.5) * day_count_fraction * sigma2 day_count_fraction)
           in c64.exp (minus_half_sigma2_t *! (xi *! (i +! xi))))
        let moneyness = map (/f0) strikes
-       let minus_ik = map (\k -> c64.mk_im (negate (R.log k))) moneyness
+       let minus_ik = map (\k -> c64.mk_im (neg (R.log k))) moneyness
 
        let iter (xj: real) (wj: real): [num_quotes]real =
          (let x = c64.mk_re xj
@@ -294,8 +294,8 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
                in if moneyness * f0 <= real 0.0
                   then df * R.max (real 0.0) (f0 * (real 1.0 - moneyness))
                   else if moneyness < real 0.0
-                  then (let scale = if ap1 then R.sqrt (negate moneyness) else int 1
-                        in negate f0 * df * scale * resk / R.pi +
+                  then (let scale = if ap1 then R.sqrt (neg moneyness) else int 1
+                        in neg f0 * df * scale * resk / R.pi +
                          bs + moneyness - int 1)
                   else (let lb = R.max (int 0) (int 1 - moneyness)
                         let scale = if ap1 then R.sqrt moneyness else int 1

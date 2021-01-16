@@ -43,7 +43,7 @@ module type field = {
   val *: t -> t -> t
   val /: t -> t -> t
 
-  val negate: t -> t
+  val neg: t -> t
   val <: t -> t -> bool
 
   val i32: i32 -> t
@@ -106,7 +106,7 @@ module mk_linalg (T: field): linalg with t = T.t = {
     let f = T.((i32 1-A[i,i]) / A[j,i])
     let irow = map2 (T.fma f) A[j] A[i]
     in tabulate m (\j ->
-                     let f = T.negate A[j,i]
+                     let f = T.neg A[j,i]
                      in map2 (\x y -> if j == i then x else T.fma f x y)
                              irow A[j])
 

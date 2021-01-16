@@ -38,7 +38,7 @@ local let step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]
   let is =
     let is1 = segmented_replicate sgms_szs (map (\x -> x.start) sgms)
               :> [m]i64
-    let fs = map2 (!=) is1 (rotate (i64.negate 1) is1)
+    let fs = map2 (!=) is1 (rotate (-1) is1)
     let is2 = segmented_iota fs
     in map2 (+) is1 is2
 
@@ -50,7 +50,7 @@ local let step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]
 
   -- compute segment descriptor
   let flags =
-    let flags = map2 (!=) idxs (rotate (i64.negate 1) idxs)
+    let flags = map2 (!=) idxs (rotate (-1) idxs)
     in flags with [0] = true
 
   -- compute partition sizes for each segment

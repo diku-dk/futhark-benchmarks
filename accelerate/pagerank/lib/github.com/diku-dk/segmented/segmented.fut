@@ -70,7 +70,7 @@ let segmented_iota [n] (flags:[n]bool) : [n]i64 =
 let expand 'a 'b (sz: a -> i64) (get: a -> i64 -> b) (arr:[]a) : []b =
   let szs = map sz arr
   let idxs = replicated_iota szs
-  let iotas = segmented_iota (map2 (!=) idxs (rotate (i64.negate 1) idxs))
+  let iotas = segmented_iota (map2 (!=) idxs (rotate (-1) idxs))
   in map2 (\i j -> get arr[i] j) idxs iotas
 
 -- | Expansion function equivalent to performing a segmented reduction
@@ -85,7 +85,7 @@ let expand_reduce 'a 'b (sz: a -> i64) (get: a -> i64 -> b)
                         (op: b -> b -> b) (ne:b) (arr:[]a) : []b =
   let szs = map sz arr
   let idxs = replicated_iota szs
-  let flags = map2 (!=) idxs (rotate (i64.negate 1) idxs)
+  let flags = map2 (!=) idxs (rotate (-1) idxs)
   let iotas = segmented_iota flags
   let vs = map2 (\i j -> get arr[i] j) idxs iotas
   in segmented_reduce op ne flags vs
