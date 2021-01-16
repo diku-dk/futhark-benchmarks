@@ -1,3 +1,3 @@
 require {
-  github.com/diku-dk/segmented 0.4.0 #87080c975603fe49937f911855c0aa3aa821469b
+  github.com/diku-dk/segmented 0.4.1 #11e997de8a0ee96154be3b3c71028abaa72adce6
 }
