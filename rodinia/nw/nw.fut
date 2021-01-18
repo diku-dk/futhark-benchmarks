@@ -16,7 +16,7 @@
 let B : i64 = 32
 
 let fInd (y:i32) (x:i32): i32 = y*(i32.i64 B+1) + x
-let max3 (x:i32, y:i32, z:i32) = if x < y 
+let max3 (x:i32, y:i32, z:i32) = if x < y
                                  then if y < z then z else y
                                  else if x < z then z else x
 let mkVal [l2][l] (y:i32) (x:i32) (pen:i32) (inp_l:[l2]i32) (ref_l:[l][l]i32) : i32 = #[unsafe]
@@ -24,10 +24,10 @@ let mkVal [l2][l] (y:i32) (x:i32) (pen:i32) (inp_l:[l2]i32) (ref_l:[l][l]i32) : 
       , ( (inp_l[fInd y (x-1)])) - pen
       , ( (inp_l[fInd (y-1) x])) - pen
       )
-    
+
 let intraBlockPar [lensq][len] (penalty: i32)
-                               (inputsets: [lensq]i32) 
-                               (reference2: [len][len]i32) 
+                               (inputsets: [lensq]i32)
+                               (reference2: [len][len]i32)
                                (b_y: i64) (b_x: i64)
                                : [B][B]i32 =
   -- index   =   base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x + tx + ( cols + 1 );
@@ -44,11 +44,11 @@ let intraBlockPar [lensq][len] (penalty: i32)
   let inp_l = replicate ((B+1)*(B+1)) 0i32
 
   -- index_nw =  base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x;
-  let index_nw =  len * B * b_y + B * b_x                
+  let index_nw =  len * B * b_y + B * b_x
   let inp_l[0] = #[unsafe] inputsets[index_nw]
 
   --index_w   = base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x + ( cols );
-  let index_w = len*B*b_y + B*b_x + len 
+  let index_w = len*B*b_y + B*b_x + len
   -- SCORE((tx + 1), 0) = input_itemsets_d[index_w + cols * tx];
   let inp_l = scatter inp_l (map (\tx->(tx+1)*(B+1)) (iota B))
                       (map (\tx->#[unsafe] inputsets[index_w+len*tx]) (iota B))
@@ -86,9 +86,9 @@ let intraBlockPar [lensq][len] (penalty: i32)
 
 
 let updateBlocks [q][lensq] (len: i32) (blk: i64)
-                            (mk_b_y: (i32 -> i32)) 
-                            (mk_b_x: (i32 -> i32)) 
-                            (block_inp: [q][B][B]i32) 
+                            (mk_b_y: (i32 -> i32))
+                            (mk_b_x: (i32 -> i32))
+                            (block_inp: [q][B][B]i32)
                             (inputsets:  *[lensq]i32) =
   let (inds, vals) = unzip (
     tabulate (blk*B*B) (\gid ->
@@ -105,10 +105,10 @@ let updateBlocks [q][lensq] (len: i32) (blk: i64)
   in  scatter inputsets inds vals
 
 
--- `len-1` should be a multiple of 16 
-let main [lensq] (penalty : i32) 
-                 (inputsets : *[lensq]i32) 
-                 (reference : *[lensq]i32) : [lensq]i32 =
+-- `len-1` should be a multiple of 16
+let main [lensq] (penalty : i32)
+                 (inputsets : *[lensq]i32)
+                 (reference : *[lensq]i32) : *[lensq]i32 =
   let len = i32.f32 (f32.sqrt (f32.i64 lensq))
   let worksize = len - 1
   let block_width = worksize / i32.i64 B
