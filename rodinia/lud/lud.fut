@@ -58,9 +58,9 @@ let lud_perimeter_upper [m][b] (diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f
     let a2s =
         map  (\a1: [b][b]f32  ->
               map  (\row0: [b]f32  ->   -- Upper
-                    loop row=replicate b 0.0f32 for i < b do
+                    loop row = copy row0 for i < b do
                     let sum = (loop sum=0.0f32 for k < i do sum + diag[i,k] * row[k])
-                    let row[i] = row0[i] - sum
+                    let row[i] = row[i] - sum
                     in  row
                    ) a1
              ) a1s
@@ -76,10 +76,10 @@ let lud_perimeter_upper [m][b] (diag: [b][b]f32, a0s: [m][b][b]f32): *[m][b][b]f
 let lud_perimeter_lower [b][m] (diag: [b][b]f32, mat: [m][b][b]f32): *[m][b][b]f32 =
   map (\blk: [b][b]f32  ->
         map  (\ (row0: [b]f32): *[b]f32  ->   -- Lower
-                loop row=replicate b 0.0f32 for j < b do
+                loop row = copy row0 for j < b do
                         let sum = loop sum=0.0f32 for k < j do
                             sum + diag[k,j] * row[k]
-                        let row[j] = (row0[j] - sum) / diag[j,j]
+                        let row[j] = (row[j] - sum) / diag[j,j]
                         in  row
             ) blk
       ) mat
