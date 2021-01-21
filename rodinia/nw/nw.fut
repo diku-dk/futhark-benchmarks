@@ -12,7 +12,7 @@
 -- compiled input @ data/medium.in.gz
 -- output @ data/medium.out.gz
 
-let B0: i64 = 32
+let B0: i64 = 64
 
 let fInd (B: i64) (y:i32) (x:i32): i32 = y*(i32.i64 B+1) + x
 let max3 (x:i32, y:i32, z:i32) = if x < y
