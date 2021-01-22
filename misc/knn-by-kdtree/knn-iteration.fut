@@ -2,6 +2,7 @@ import "lib/github.com/diku-dk/sorts/radix_sort"
 
 import "brute-force"
 import "kd-traverse"
+import "util"
 
 let sortQueriesByLeavesRadix [n] (num_bits: i32) (leaves: [n]i32) : ([n]i32, [n]i32) =
   unzip <| radix_sort_by_key (\(l,_) -> l) num_bits i32.get_bit (zip leaves (map i32.i64 (iota n)))

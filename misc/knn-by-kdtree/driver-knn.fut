@@ -1,5 +1,7 @@
 import "buildKDtree"
 import "knn-iteration"
+import "util"
+import "kd-traverse"
 
 let k = 5i64
 

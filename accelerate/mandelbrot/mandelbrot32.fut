@@ -1,6 +1,7 @@
 -- Mandelbrot visualisation with 32-bit floats.
 
 import "generic_mandelbrot"
+import "lib/github.com/athas/matte/colour"
 
 module mandelbrot = mandelbrot f32
 
