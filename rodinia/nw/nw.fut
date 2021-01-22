@@ -30,28 +30,28 @@ let intraBlockPar [lensq][len] (B: i64)
                                (reference2: [len][len]i32)
                                (b_y: i64) (b_x: i64)
                                : [B][B]i32 =
-  -- index   =   base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x + tx + ( cols + 1 );
-  -- for ( int ty = 0 ; ty < BLOCK_SIZE ; ty++)
-  --   REF(ty, tx) =  reference_d[index + cols * ty];
-
   let ref_l = reference2[b_y * B + 1: b_y * B + 1 + B,
                          b_x * B + 1: b_x * B + 1 + B] :> [B][B]i32
 
   let inputsets' = unflatten len len inputsets
 
+  -- inp_l is the working memory
   let inp_l = replicate ((B+1)*(B+1)) 0i32
               |> unflatten (B+1) (B+1)
 
-  -- Insert the column to the left of the block
+  -- Initialize inp_l with the already processed the column to the left of this
+  -- block
   let inp_l[0:B+1, 0] = inputsets'[b_y * B : b_y * B + B + 1, b_x * B]
 
-  -- Insert the row above the block
+  -- Initialize inp_l with the already processed the row to above this block
   let inp_l[0, 1:B+1] = inputsets'[b_y * B, b_x * B + 1 : b_x * B + B + 1]
 
   let inp_l = flatten inp_l
 
+  -- Process the first half (anti-diagonally) of the block
   let inp_l = loop inp_l for m < B do
         let (inds, vals) = unzip (
+            -- tabulate over the m'th anti-diagonal before the middle
             tabulate B (\tx ->  (
                     if tx > m then (-1, 0)
                     else let ind_x = i32.i64 (tx + 1)
@@ -60,16 +60,18 @@ let intraBlockPar [lensq][len] (B: i64)
                          in  (i64.i32 (fInd B ind_y ind_x), v))))
         in  scatter inp_l inds vals
 
+  -- Process the second half (anti-diagonally) of the block
   let inp_l = loop inp_l for m < B-1 do
         let m = B - 2 - m
         let (inds, vals) = unzip (
-            map (\tx ->  (
+            -- tabulate over the m'th anti-diagonal after the middle
+            tabulate B (\tx ->  (
                     if tx > m then (-1, 0)
                     else let ind_x = i32.i64 (tx + B - m)
                          let ind_y = i32.i64 (B - tx)
                          let v = mkVal B ind_y ind_x penalty inp_l ref_l
                          in  (i64.i32 (fInd B ind_y ind_x), v) )
-                ) (iota B) )
+                ))
         in  scatter inp_l inds vals
 
   let inp_l2 = unflatten (B+1) (B+1) inp_l
@@ -97,21 +99,25 @@ let updateBlocks [q][lensq] (B: i64)
   in  scatter inputsets inds vals
 
 
--- `len-1` should be a multiple of B0
 let main [lensq] (penalty : i32)
                  (inputsets : *[lensq]i32)
                  (reference : *[lensq]i32) : *[lensq]i32 =
   let len = i32.f32 (f32.sqrt (f32.i64 lensq))
   let worksize = len - 1
   let B = i64.min (i64.i32 worksize) B0
+
+  -- worksize should be a multiple of B0
+  let B = assert (i64.i32 worksize % B == 0) B
+
   let block_width = trace <| worksize / i32.i64 B
   let reference2 = unflatten (i64.i32 len) (i64.i32 len) reference
 
-  -- First loop BEGINS
+  -- First anti-diagonal half of the entire input matrix
   let inputsets =
     loop inputsets for blk < block_width do
         let blk = i64.i32 (blk + 1)
         let block_inp =
+          -- Process an anti-diagonal of independent blocks
           tabulate blk (\b_x ->
                 let b_y = blk-1-b_x
                 in  intraBlockPar B penalty inputsets reference2 b_y b_x
@@ -120,13 +126,13 @@ let main [lensq] (penalty : i32)
         let mkBY bx = i32.i64 (blk - 1) - bx
         let mkBX bx = bx
         in  updateBlocks B len blk mkBY mkBX block_inp inputsets
-  -- First loop ENDS
 
-  -- Second loop BEGINS
+  -- Second anti-diagonal half of the entire input matrix
   let inputsets =
     loop inputsets for blk < block_width-1 do
         let blk = i64.i32 (block_width - 1 - blk)
         let block_inp =
+          -- Process an anti-diagonal of independent blocks
           tabulate blk (\bx ->
                 let b_y = i64.i32 block_width - 1 - bx
                 let b_x = bx + i64.i32 block_width - blk
@@ -136,6 +142,5 @@ let main [lensq] (penalty : i32)
         let mkBY bx = block_width - 1 - bx
         let mkBX bx = bx + block_width - i32.i64 blk
         in  updateBlocks B len blk mkBY mkBX block_inp inputsets
-    -- Second loop ENDS
 
   in  inputsets
