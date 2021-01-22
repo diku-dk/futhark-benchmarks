@@ -34,12 +34,8 @@ let intraBlockPar [lensq][len] (B: i64)
   -- for ( int ty = 0 ; ty < BLOCK_SIZE ; ty++)
   --   REF(ty, tx) =  reference_d[index + cols * ty];
 
-  let ref_l = replicate (B*B) 0
-  let ref_l = loop ref_l for i < B do
-                scatter ref_l (map (\tid->i*B+tid) (iota B))
-                        (tabulate B (\j -> reference2[i+b_y*B+1,
-                                                      b_x*B+1+j]))
-  let ref_l = unflatten B B ref_l
+  let ref_l = reference2[b_y * B + 1: b_y * B + 1 + B,
+                         b_x * B + 1: b_x * B + 1 + B] :> [B][B]i32
 
   let inp_l = replicate ((B+1)*(B+1)) 0i32
 
