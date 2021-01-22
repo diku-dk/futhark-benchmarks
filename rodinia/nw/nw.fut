@@ -37,23 +37,18 @@ let intraBlockPar [lensq][len] (B: i64)
   let ref_l = reference2[b_y * B + 1: b_y * B + 1 + B,
                          b_x * B + 1: b_x * B + 1 + B] :> [B][B]i32
 
+  let inputsets' = unflatten len len inputsets
+
   let inp_l = replicate ((B+1)*(B+1)) 0i32
+              |> unflatten (B+1) (B+1)
 
-  -- index_nw =  base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x;
-  let index_nw =  len * B * b_y + B * b_x
-  let inp_l[0] = #[unsafe] inputsets[index_nw]
+  -- Insert the column to the left of the block
+  let inp_l[0:B+1, 0] = inputsets'[b_y * B : b_y * B + B + 1, b_x * B]
 
-  --index_w   = base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x + ( cols );
-  let index_w = len*B*b_y + B*b_x + len
-  -- SCORE((tx + 1), 0) = input_itemsets_d[index_w + cols * tx];
-  let inp_l = scatter inp_l (map (\tx->(tx+1)*(B+1)) (iota B))
-                      (map (\tx->#[unsafe] inputsets[index_w+len*tx]) (iota B))
+  -- Insert the row above the block
+  let inp_l[0, 1:B+1] = inputsets'[b_y * B, b_x * B + 1 : b_x * B + B + 1]
 
-  --index_n   = base + cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x + tx + ( 1 );
-  let index_n = len*B*b_y + B*b_x + 1
-  -- SCORE(0, (tx + 1)) = input_itemsets_d[index_n];
-  let inp_l = scatter inp_l (map (+1) (iota B))
-                      (map (\tx->#[unsafe] inputsets[index_n+tx]) (iota B))
+  let inp_l = flatten inp_l
 
   let inp_l = loop inp_l for m < B do
         let (inds, vals) = unzip (
