@@ -35,13 +35,9 @@ let intraBlockPar [lensq][len] (B: i64)
 
   let inputsets' = unflatten len len inputsets
 
-  let B1 = B+1
-
-  let inp_l' = (copy inputsets'[b_y * B : b_y * B + B + 1, b_x * B : b_x * B + B + 1]) :> *[B1][B1]i32
-
   -- inp_l is the working memory
-  let inp_l = replicate (B1*B1) 0i32
-              |> unflatten B1 B1
+  let inp_l = replicate ((B+1)*(B+1)) 0i32
+              |> unflatten (B+1) (B+1)
 
   -- Initialize inp_l with the already processed the column to the left of this
   -- block
@@ -50,8 +46,7 @@ let intraBlockPar [lensq][len] (B: i64)
   -- Initialize inp_l with the already processed the row to above this block
   let inp_l[0, 1:B+1] = inputsets'[b_y * B, b_x * B + 1 : b_x * B + B + 1]
 
-
-  let inp_l = assert (inp_l' == inp_l) (flatten inp_l)
+  let inp_l = flatten inp_l
 
   -- Process the first half (anti-diagonally) of the block
   let inp_l = loop inp_l for m < B do
@@ -130,6 +125,22 @@ let main [lensq] (penalty : i32)
 
         let mkBY bx = i32.i64 (blk - 1) - bx
         let mkBX bx = bx
+        in  updateBlocks B len blk mkBY mkBX block_inp inputsets
+
+  -- Second anti-diagonal half of the entire input matrix
+  let inputsets =
+    loop inputsets for blk < block_width-1 do
+        let blk = i64.i32 (block_width - 1 - blk)
+        let block_inp =
+          -- Process an anti-diagonal of independent blocks
+          tabulate blk (\bx ->
+                let b_y = i64.i32 block_width - 1 - bx
+                let b_x = bx + i64.i32 block_width - blk
+                in  intraBlockPar B penalty inputsets reference2 b_y b_x
+          )
+
+        let mkBY bx = block_width - 1 - bx
+        let mkBX bx = bx + block_width - i32.i64 blk
         in  updateBlocks B len blk mkBY mkBX block_inp inputsets
 
   in  inputsets
