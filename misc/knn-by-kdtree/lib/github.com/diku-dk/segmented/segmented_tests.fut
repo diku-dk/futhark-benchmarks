@@ -41,7 +41,7 @@ entry test_replicated_iota (repl:[]i64) : []i64 =
 -- ==
 -- entry: test_segmented_iota
 -- input { [false,false,false,true,false,false,false] }
--- output { [0i64,1i64,2i64,0i64,1i64,2i64,3] }
+-- output { [0i64,1i64,2i64,0i64,1i64,2i64,3i64] }
 -- input { [false] } output { [0i64] }
 -- input { [true] } output { [0i64] }
 -- input { empty([0]bool) } output { empty([0]i64) }
