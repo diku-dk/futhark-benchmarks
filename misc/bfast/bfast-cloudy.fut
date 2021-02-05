@@ -1,10 +1,10 @@
 -- BFAST-irregular: version handling obscured observations (e.g., clouds)
 -- ==
+-- compiled input @ data/sahara-cloudy.in.gz
 -- compiled input @ data/peru.in.gz
 -- output @ data/peru.out.gz
 -- compiled input @ data/africa.in.gz 
 -- output @ data/africa.out.gz
--- compiled input @ data/sahara-cloudy.in.gz
 
 let isnan32new (x: f32) = f32.isnan x
 
