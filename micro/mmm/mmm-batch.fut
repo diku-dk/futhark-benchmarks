@@ -1,8 +1,10 @@
 -- ==
 --
--- compiled random input {[256][256][16][16]f32 [256][256][16][16]f32} auto output
---
 -- compiled random input {[64][128][32][32]f32 [64][128][32][32]f32} auto output
+
+-- Alternatively try this with default_tile_size=8 and default_reg_tile_size=2
+-- compiled random input {[256][256][16][16]f32 [256][256][16][16]f32} auto output
+
 
 let main [a][b][m][n][q]  (A0: [a][b][m][q]f32) 
                           (B0: [a][b][q][n]f32)
