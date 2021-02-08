@@ -1,7 +1,5 @@
--- requires "type DTYPE = f32/64" and "let INNER_DIM : i64 = ..."
--- to be set in the caller file.
-
-import "typeinst"
+-- requires "type DTYPE = f32/64" from typeinst32/64.fut
+import "typeinst32"
 
 let tridagPar [n] (a:  [n]DTYPE, b: [n]DTYPE, c: [n]DTYPE, y: [n]DTYPE ): *[n]DTYPE =
   #[unsafe]

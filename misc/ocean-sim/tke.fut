@@ -1,21 +1,5 @@
+import "typeinst32"
 import "tridiag"
-import "typeinst"
-
-let tridagSeqOld [m] (a:  [m]DTYPE, b: [m]DTYPE, c: [m]DTYPE, y: [m]DTYPE ): *[m]DTYPE =
-   let cp = map (\i -> if i==0 then c[0]/b[0] else 0) (indices c)
-   let yp = map (\i -> if i==0 then y[0]/b[0] else 0) (indices y)
-   let (cp_full, yp_full) =
-      loop (cp, yp) for i in 1..<m do
-         let norm_factor = 1.0 / (b[i] - a[i] * cp[i-1])
-         let cp[i] = c[i] * norm_factor
-         let yp[i] = (y[i] - a[i] * yp[i-1]) * norm_factor
-         in (cp, yp)
-   let solution = replicate m (0.0 : DTYPE)
-   let solution[m-1] = yp_full[m-1]
-   let inds = reverse (init (indices y))
-   in loop (solution) for i in inds do
-      let solution[i] = yp_full[i] - cp_full[i] * solution[i+1]
-      in solution
 
 let tridiag [xdim][ydim][zdim] (a: [xdim][ydim][zdim]DTYPE) (b: [xdim][ydim][zdim]DTYPE) (c: [xdim][ydim][zdim]DTYPE) (y: [xdim][ydim][zdim]DTYPE): *[xdim][ydim][zdim]DTYPE =
    map4 (\as bs cs ys ->
@@ -65,6 +49,11 @@ let map3D 't [xdim] [ydim] [zdim] (arr: [xdim][ydim][zdim]t) (f : t -> i32 -> i3
 -- entry: main
 --
 -- compiled random input { [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200]f32 [200]f32 [200]f32 [200]f32 [100]f32 [100]f32 [200]f32 [200]f32 [200][200]i32 [200][200][100]f32 [200][200][100]f32 [200][200][100]f32 [200][200]f32}
+--
+-- compiled input @ data/tke32-small.in
+-- output @ data/tke32-small.out
+--
+
 entry main [xdim][ydim][zdim]
         (tketau: * [xdim][ydim][zdim]DTYPE)
         (tketaup1:*[xdim][ydim][zdim]DTYPE)
