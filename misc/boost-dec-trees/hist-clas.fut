@@ -54,3 +54,6 @@ let train_class [n][d] (data: [n][d]f32) (labels: [n]f32) (max_depth: i64) (n_ro
 
 entry main [n][d] (data: [n][d]f32) (labels: [n]f32) =
   train_class data labels 6 100 0.5 0.1 0
+
+-- ToDo: check that the code is up to date, i.e., with the new repository
+--       at https://github.com/KristianMH/FutharkGBDT
