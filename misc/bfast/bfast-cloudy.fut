@@ -2,7 +2,6 @@
 -- ==
 -- compiled input @ data/sahara-cloudy.in.gz
 -- compiled input @ data/peru.in.gz
--- output @ data/peru.out.gz
 -- compiled input @ data/africa.in.gz 
 -- output @ data/africa.out.gz
 
