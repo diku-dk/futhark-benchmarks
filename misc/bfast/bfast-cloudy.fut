@@ -2,7 +2,7 @@
 -- ==
 -- compiled input @ data/sahara-cloudy.in.gz
 -- compiled input @ data/peru.in.gz
--- compiled input @ data/africa.in.gz 
+-- no_gtx780 compiled input @ data/africa.in.gz
 -- output @ data/africa.out.gz
 
 let isnan32new (x: f32) = f32.isnan x
