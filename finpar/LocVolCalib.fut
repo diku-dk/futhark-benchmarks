@@ -76,9 +76,7 @@ let tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
                           (b2*a0 + b3*a2)*value,
                           (b2*a1 + b3*a3)*value))
                   (1.0,  0.0, 0.0, 1.0) mats
-  let b    = map (\(t0,t1,t2,t3) ->
-                    (t0*b0 + t1) / (t2*b0 + t3))
-                 scmt
+  let b    = map (\(t0,t1,t2,t3) -> (t0*b0 + t1) / (t2*b0 + t3)) scmt
   ------------------------------------------------------
   -- Recurrence 2: y[i] = y[i] - (a[i]/b[i-1])*y[i-1] --
   --   solved by scan with linear func comp operator  --
@@ -89,15 +87,9 @@ let tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
                      then (y[i], 0.0-a[i]/b[i-1])
                      else (0.0,  1.0))
                   (iota n)
-  let cfuns= scan (\(a: (f32,f32)) (b: (f32,f32)): (f32,f32)  ->
-                     let (a0,a1) = a
-                     let (b0,b1) = b
-                     in ( b0 + b1*a0, a1*b1 ))
+  let cfuns= scan (\(a0,a1) (b0,b1) -> (b0 + b1*a0, a1*b1))
                   (0.0, 1.0) lfuns
-  let y    = map (\(tup: (f32,f32)): f32  ->
-                    let (a,b) = tup
-                    in a + b*y0)
-                 cfuns
+  let y    = map (\(a,b)  -> a + b*y0) cfuns
   ------------------------------------------------------
   -- Recurrence 3: backward recurrence solved via     --
   --             scan with linear func comp operator  --
@@ -109,23 +101,16 @@ let tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
                         then (y[i]/b[i], 0.0-c[i]/b[i])
                         else (0.0,       1.0))
                  (iota n)
-  let cfuns= scan (\(a: (f32,f32)) (b: (f32,f32)): (f32,f32)  ->
-                     let (a0,a1) = a
-                     let (b0,b1) = b
-                     in (b0 + b1*a0, a1*b1))
+  let cfuns= scan (\(a0,a1) (b0,b1) -> (b0 + b1*a0, a1*b1))
                   (0.0, 1.0) lfuns
-  let y    = map (\(tup: (f32,f32)): f32  ->
-                    let (a,b) = tup
-                    in a + b*yn)
-                 cfuns
-  let y    = map (\i -> y[n-i-1]) (iota n)
+  let y    = map (\(a,b) -> a + b*yn) cfuns
+  let y    = reverse y
   in y
 
 let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
                            myMu:   [n][m]f32,  myVar: [n][m]f32,
                            result: [n][m]f32)
                   : *[n][m]f32 =
-  -- 0 <= i < m AND 0 <= j < n
   map3 (\mu_row var_row result_row ->
           map5 (\dx dxx mu var j ->
                   let c1 = if 0 < j
@@ -161,20 +146,18 @@ let rollback
   : [numY][numX]f32 =
   let dtInv = 1.0/(tnext-tnow)
   -- explicitX
-  let u = explicitMethod( myDx, myDxx, myMuX, myVarX, myResult )
-  let u = map2 (map2 (\u_el res_el  -> dtInv*res_el + 0.5*u_el))
-               u myResult
+  let u = explicitMethod(myDx, myDxx, myMuX, myVarX, myResult)
+  let u = map2 (map2 (\u_el res_el  -> dtInv*res_el + 0.5*u_el)) u myResult
   -- explicitY
   let myResultTR = transpose(myResult)
   let v = explicitMethod(myDy, myDyy, myMuY, myVarY, myResultTR)
   let u = map2 (map2 (+)) u (transpose v)
   -- implicitX
-  let u = implicitMethod( myDx, myDxx, myMuX, myVarX, u, dtInv )
+  let u = implicitMethod(myDx, myDxx, myMuX, myVarX, u, dtInv)
   -- implicitY
-  let y = map2 (\u_row v_row ->
-                  map2 (\u_el v_el -> dtInv*u_el - 0.5*v_el) u_row v_row)
+  let y = map2 (map2 (\u_el v_el -> dtInv*u_el - 0.5*v_el))
                (transpose u) v
-  let myResultTR = implicitMethod( myDy, myDyy, myMuY, myVarY, y, dtInv )
+  let myResultTR = implicitMethod(myDy, myDyy, myMuY, myVarY, y, dtInv)
   in transpose myResultTR
 
 let value(numX: i64, numY: i64, numT: i64, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =
