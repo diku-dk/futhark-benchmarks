@@ -151,7 +151,7 @@ type^ anim 'a = time -> img a
 
 let universeR: region = const true
 let emptyR: region = const false
-let compR: region -> region = lift1 (!)
+let compR: region -> region = lift1 (\x -> !x)
 let intersectR: region -> region -> region = lift2 (&&)
 let unionR: region -> region -> region = lift2 (||)
 let xorR: region -> region -> region = lift2 (\x y -> bool.i32 (i32.bool x ^ i32.bool y))
