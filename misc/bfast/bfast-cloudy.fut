@@ -228,11 +228,12 @@ entry main [m][N] (trend: i32) (k: i32) (n32: i32) (freq: f32)
             |> reduce (+) 0.0 
         ) |> opaque
 
+  let m = N-n
   let BOUND = map (\q -> let t   = n+1+q
                          let time = #[unsafe] mappingindices[t-1]
                          let tmp = logplus ((r32 time) / (r32 mappingindices[N-1]))
                          in  lam * (f32.sqrt tmp)
-                  ) (iota (N-n))
+                  ) (iota m)
 
   ---------------------------------------------
   -- 8. moving sums computation:             --
@@ -240,10 +241,10 @@ entry main [m][N] (trend: i32) (k: i32) (n32: i32) (freq: f32)
   let (_MOs, _MOs_NN, breaks, means) = zip (zip4 Nss nss sigmas hs) (zip3 MO_fsts y_errors val_indss) |>
     map (\ ( (Ns:i32, ns:i32, sigma:f32, h:i32), (MO_fst,y_error,val_inds) ) ->
           --let Nmn = N - n
-          let MO = map (\(j:i32) -> if j >= Ns-ns then 0.0
-                                    else if j == 0i32 then MO_fst
+          let MO = map (\j -> if j >= Ns-ns then 0.0
+                                    else if j == 0 then MO_fst
                                     else #[unsafe] (-y_error[ns-h+j] + y_error[ns+j])
-                       ) (map i32.i64 (iota (N-n))) |> scan (+) 0.0
+                       ) (map i32.i64 (iota m)) |> scan (+) 0.0
 	    
           let MO' = map (\mo -> mo / (sigma * (f32.sqrt (f32.i32 ns))) ) MO
 	        let (is_break, fst_break) = 
@@ -252,13 +253,13 @@ entry main [m][N] (trend: i32) (k: i32) (n32: i32) (freq: f32)
                                              then ( (f32.abs mo') > 1.0001f32 * b, j )
                                              -- then ( (f32.abs ((f32.abs mo') - b)) > 0.0001, j)
 				                             else ( false, j )
-		             ) MO' BOUND (map i32.i64 (indices BOUND))
+		             ) MO' BOUND (map i32.i64 (iota m))
 		        |> reduce (\ (b1,i1) (b2,i2) -> 
                                 if b1 then (b1,i1) 
                                 else if b2 then (b2, i2)
                                 else (b1,i1) 
               	      ) (false, -1i32)
-	        let mean = map2 (\x j -> if j < Ns - ns then x else 0.0 ) MO' (map i32.i64 (iota (N-n)))
+	        let mean = map2 (\x j -> if j < Ns - ns then x else 0.0 ) MO' (map i32.i64 (iota m))
 			            |> reduce (+) 0.0
 
 	        let fst_break' = if !is_break then -1i32
@@ -267,8 +268,8 @@ entry main [m][N] (trend: i32) (k: i32) (n32: i32) (freq: f32)
                                   in  ((adj_break-1) / 2) * 2 + 1
           let fst_break' = if ns <=5 || Ns-ns <= 5 then -2i32 else fst_break'
 
-            let val_inds' = map (adjustValInds (i32.i64 n) ns Ns val_inds) (map i32.i64 (iota (N-n)))
-            let MO'' = scatter (replicate (N-n) f32.nan) (map i64.i32 val_inds') MO'
+            let val_inds' = map (adjustValInds (i32.i64 n) ns Ns val_inds) (map i32.i64 (iota m))
+            let MO'' = scatter (replicate m f32.nan) (map i64.i32 val_inds') MO'
             in (MO'', MO', fst_break', mean)
         ) |> unzip4
 
