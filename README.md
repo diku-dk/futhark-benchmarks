@@ -10,7 +10,7 @@ instructions on how to do that.
 
 Some of the benchmarks depend on large datasets that are managed with
 [git-annex](https://git-annex.branchable.com/).  To retrieve them, run
-`git-annex sync --content --no-commit --no-push`.
+`git-annex get`.
 
 The recommended method for running all benchmarks is
 
@@ -59,14 +59,14 @@ using [git-annex](https://git-annex.branchable.com/), which you must install.
 
 * **To add a dataset:** First place the dataset on a publicly
   accessible webserver.  We use [ERDA](https://erda.dk), which is run
-  by UCPH.  Then run `git annex addurl URL`.  For example:
+  by UCPH.  Then run `git-annex addurl URL`.  For example:
 
   ```
-  git annex addurl https://sid.erda.dk/share_redirect/FlhwY8rtfk/xsbench/small.in.gz
+  git-annex addurl https://sid.erda.dk/share_redirect/FlhwY8rtfk/xsbench/small.in.gz
   ```
 
   You may need `--no-check-gitignore`.  You may need to fix the file
   name with `git mv` in case the webserver does a redirection that
   confuses `git-annex`.
 
-  After this, run `git annex sync`.
+  After this, run `git-annex sync`.
