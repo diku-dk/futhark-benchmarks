@@ -8,6 +8,10 @@ instructions on how to do that.
 
 ## Running benchmarks
 
+Some of the benchmarks depend on large datasets that are managed with
+[git-annex](https://git-annex.branchable.com/).  To retrieve them, run
+`git-annex sync --content --no-push`.
+
 The recommended method for running all benchmarks is
 
     futhark bench * --backend=opencl --ignore-files /lib/
