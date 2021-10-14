@@ -68,3 +68,5 @@ using [git-annex](https://git-annex.branchable.com/), which you must install.
   You may need `--no-check-gitignore`.  You may need to fix the file
   name with `git mv` in case the webserver does a redirection that
   confuses `git-annex`.
+
+  After this, run `git annex sync`.
