@@ -3,6 +3,8 @@
 -- ==
 -- input @ data/small.in.gz
 -- output { 945990i64 }
+-- input @ data/large.in.gz
+-- output { 952131i64 }
 
 type nuclide_grid_point =
   { energy: f64,

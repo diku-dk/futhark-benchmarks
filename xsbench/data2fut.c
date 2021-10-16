@@ -129,16 +129,21 @@ SimulationData binary_read(FILE* fp)
 }
 
 int main(int argc, char** argv) {
+  assert(argc == 2);
+
   int64_t n_isotopes = 355;
   int64_t n_gridpoints = 11303;
   int64_t grid_type = UNIONIZED;
   int64_t hash_bins = 10000;
   int64_t lookups = 17000000;
-  const char *HM = "small";
+
+  const char *HM = argv[1];
 
   if (strcmp(HM, "small") == 0) {
     n_isotopes = 68;
-  } else {
+  } else if (strcmp(HM, "large") == 0) {
+    n_isotopes = 355;
+  } else{
     fprintf(stderr, "Unknown problem size: %s\n", HM);
   }
 

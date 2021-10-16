@@ -14,5 +14,5 @@ $ ./data2fut < XS_data.dat > futhark.in
 ```
 
 You may need to modify `data2fut.c`.  I only tested that it could
-handle the small dataset.  The small dataset is also the only one that
-is stored in the repository, as the big one takes hundreds of MiB.
+handle the small and large datasets.  The bigger ones require an
+impractical amount of memory.
