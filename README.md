@@ -62,11 +62,15 @@ using [git-annex](https://git-annex.branchable.com/), which you must install.
   by UCPH.  Then run `git-annex addurl URL`.  For example:
 
   ```
-  git-annex addurl https://sid.erda.dk/share_redirect/FlhwY8rtfk/xsbench/small.in.gz
+  git-annex addurl --no-check-gitignore https://sid.erda.dk/share_redirect/FlhwY8rtfk/xsbench/small.in.gz --file=small.in.gz
   ```
 
-  You may need `--no-check-gitignore`.  You may need to fix the file
-  name with `git mv` in case the webserver does a redirection that
-  confuses `git-annex`.
+  You may need `--no-check-gitignore`.  Note the seemingly redundant
+  `--file=small.in.gz`.  This is because some webservers (such as
+  ERDA) perform a redirect that otherwise confuses `git-annex` about
+  what the destination file should be called.  You can always fix it
+  afterwards with `git mv`, of course.  There is a script
+  [add-data.sh](add-data.sh) that does some of this automatically.
+  **Read it before running it.**
 
   After this, run `git-annex sync`.
