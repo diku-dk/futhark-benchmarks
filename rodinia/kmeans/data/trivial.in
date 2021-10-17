@@ -1,15 +1,1 @@
--- Threshold
-0
--- Number of clusters
-3
--- Max iterations
-500
--- Points
-[
- [ 0.0f32, 0.0f32 ],
- [ 5.0f32, 5.0f32 ],
- [ 2.0f32, -1.0f32 ],
- [ 10.0f32, 10.0f32 ],
- [ -5.0f32, -5.0f32 ],
- [ -5.0f32, 0.0f32 ]
-]
+../../../.git/annex/objects/ZQ/XG/SHA256E-s206--d34bc5667b4f9138a0782ac5320972bfe36422b51943bfc767f3fa8779befb87.in/SHA256E-s206--d34bc5667b4f9138a0782ac5320972bfe36422b51943bfc767f3fa8779befb87.in

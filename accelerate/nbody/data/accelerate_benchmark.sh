@@ -1,18 +1,1 @@
-#!/bin/sh
-
-accelerate_benchmark() {
-    n_bodies="$1"
-    time_step="$2"
-    epsilon="$3"
-    
-    echo "Accelerate with n_bodies=$n_bodies, time_step=$time_step, and epsilon=$epsilon."
-    accelerate-nbody --test=False --benchmark=True \
-                     --bodies="$n_bodies" \
-                     --timestep="$time_step" \
-                     --epsilon="$epsilon"
-}
-
-accelerate_benchmark 100 1.0 50.0
-accelerate_benchmark 1000 1.0 50.0
-accelerate_benchmark 10000 1.0 50.0
-accelerate_benchmark 100000 1.0 50.0
+../../../.git/annex/objects/gQ/8x/SHA256E-s517--89a7d6e6ed575404e9e93875e2beba2275232651b376b81ac2fb9a587621d1eb.sh/SHA256E-s517--89a7d6e6ed575404e9e93875e2beba2275232651b376b81ac2fb9a587621d1eb.sh
