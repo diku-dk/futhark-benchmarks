@@ -145,6 +145,7 @@ int main(int argc, char** argv) {
     n_isotopes = 355;
   } else{
     fprintf(stderr, "Unknown problem size: %s\n", HM);
+    return 1;
   }
 
   assert(sizeof(NuclideGridPoint) == 6*sizeof(double));

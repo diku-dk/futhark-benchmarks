@@ -1,3 +1,7 @@
+-- ==
+-- input @ data/small.in.gz output { 880018i64 }
+-- input @ data/large.in.gz output { 358389i64 }
+
 type input =
   { lookups: i64,
     doppler: i32
@@ -20,14 +24,10 @@ let c_mul (A: rs_complex) (B: rs_complex) : rs_complex =
   let d = B.i
   in {r=a*c - b*d, i=a*d + b*c}
 
-let c_div (A: rs_complex) (B: rs_complex) : rs_complex =
-  let a = A.r
-  let b = A.i
-  let c = B.r
-  let d = B.i
+let c_div ({r=a,i=b}: rs_complex) ({r=c,i=d}: rs_complex) : rs_complex =
   let denom = c*c + d*d
   in {r = (a*c + b*d) / denom,
-      i = (b*b - d*d) / denom}
+      i = (b*c - a*d) / denom}
 
 let c_abs (A: rs_complex) : f64 =
   f64.sqrt(A.r*A.r + A.i*A.i)
@@ -39,9 +39,7 @@ let fast_exp (x: f64) : f64 =
   let x = x * x let x = x * x  let x = x * x let x = x * x
                                              in x
 
-let fast_cexp (z: rs_complex) : rs_complex =
-  let x = z.r
-  let y = z.i
+let fast_cexp ({r=x,i=y}: rs_complex) : rs_complex =
   let t1 = fast_exp x
   let t2 = f64.cos y
   let t3 = f64.sin y
@@ -112,18 +110,13 @@ let pick_mat (seed: seed) : (i32, seed) =
        else (i+1, true)
   in (i32.i64 (i%12), seed)
 
-let argmax [n] (xs: [n]f64): i64 =
-  let max (x1, y1) (x2, y2) =
-    if y1 < y2 then (x2, y2) else (x1, y1)
-  in reduce max (-1, -f64.inf) (zip (iota n) xs) |> (.0)
-
 let calculate_sig_T (nuc: i32) (E: f64) (data: simulation_data)
   : [4]rs_complex =
   let f i =
     let phi = data.pseudo_K0RS[nuc,i] * f64.sqrt E
     let phi = match i case 1 -> phi - -(f64.atan phi)
                       case 2 -> phi - f64.atan (3*phi/(3-phi*phi))
-                      case 3 -> phi - f64.atan(phi*(15-phi*phi)/(15-60*phi*phi))
+                      case 3 -> phi - f64.atan(phi*(15-phi*phi)/(15-6*phi*phi))
                       case _ -> phi
     let phi = 2 * phi
     in {r=f64.cos phi, i = -f64.sin(phi)}
@@ -247,6 +240,11 @@ let calculate_macro_xs (mat: i32) (E: f64) (input: input)
       macro_xs.2 + micro_xs.2 * data.concs[mat,i],
       macro_xs.3 + micro_xs.3 * data.concs[mat,i])
 
+let argmax [n] (xs: [n]f64): i64 =
+  let max (x1, y1) (x2, y2) =
+    if y1 < y2 then (x2, y2) else (x1, y1)
+  in reduce max (-1, -f64.inf) (zip (iota n) xs) |> (.0)
+
 let run_event_based_simulation (inp: input) (sd: simulation_data) =
   let f i =
     let seed = fast_forward_LCG STARTING_SEED (2*i)
@@ -264,18 +262,18 @@ let run_event_based_simulation (inp: input) (sd: simulation_data) =
 let main lookups doppler
          n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs =
   let complex a = {r=a[0], i=a[1]}
-  let unpack_pole l_value cs : pole =
+  let unpack_pole l_value (cs: [4][2]f64) : pole =
     {l_value,
      mp_ea = complex cs[0],
      mp_rt = complex cs[1],
      mp_ra = complex cs[2],
      mp_rf = complex cs[3]}
   let poles = map2 (map2 unpack_pole) poles_ls poles_cs
-  let unpack_window f64s i32s : window =
+  let unpack_window (f64s: [3]f64) (i32s: [2]i32) : window =
     {T=f64s[0], A=f64s[1], F=f64s[2], start=i32s[0], end=i32s[1]}
   let windows = map2 (map2 unpack_window) windows_f64s windows_i32s
   let input =
     {lookups, doppler} : input
   let sd =
     {n_windows, poles, windows, pseudo_K0RS, num_nucs, mats, concs} : simulation_data
-  in run_event_based_simulation input sd
+  in run_event_based_simulation input sd % 999983
