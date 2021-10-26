@@ -187,15 +187,19 @@ let run_event_based_simulation [length_num_nucs]
     let seed = fast_forward_LCG STARTING_SEED (2*i)
     let (p_energy, seed) = LCG_random_double seed
     let (mat, _seed) = pick_mat seed
-    let macro_xs_vector = calculate_macro_xs p_energy mat
-                                             sd.num_nucs
-                                             sd.concs
-                                             sd.unionized_energy_array
-                                             sd.index_grid
-                                             sd.nuclide_grid
-                                             sd.mats
-                                             inp.grid_type
-                                             inp.hash_bins
+    in calculate_macro_xs p_energy mat
+                          sd.num_nucs
+                          sd.concs
+                          sd.unionized_energy_array
+                          sd.index_grid
+                          sd.nuclide_grid
+                          sd.mats
+                          inp.grid_type
+                          inp.hash_bins
+  in tabulate inp.lookups f
+
+let verification =
+  let f (macro_xs_vector: (f64,f64,f64,f64,f64)) =
     let macro_xs_vector =
       [macro_xs_vector.0,
        macro_xs_vector.1,
@@ -203,7 +207,7 @@ let run_event_based_simulation [length_num_nucs]
        macro_xs_vector.3,
        macro_xs_vector.4]
     in #[sequential] #[unroll] argmax macro_xs_vector + 1
-  in tabulate inp.lookups f |> i64.sum
+  in map f >-> i64.sum >-> (%999983)
 
 let main n_isotopes n_gridpoints grid_type hash_bins lookups
          num_nucs concs mats nuclide_grid index_grid unionized_energy_array =
@@ -218,4 +222,4 @@ let main n_isotopes n_gridpoints grid_type hash_bins lookups
   let nuclide_grid = map (map unpack_nuclide) nuclide_grid
   let sd : simulation_data [][][][][] =
     {num_nucs, concs, mats, nuclide_grid, index_grid, unionized_energy_array}
-  in #[unsafe] run_event_based_simulation inputs sd % 999983
+  in #[unsafe] verification (run_event_based_simulation inputs sd)
