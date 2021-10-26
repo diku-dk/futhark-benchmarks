@@ -1,6 +1,12 @@
 -- ==
+-- entry: main
 -- input @ data/small.in.gz output { 880018i64 }
 -- input @ data/large.in.gz output { 358389i64 }
+
+-- ==
+-- entry: diff
+-- input @ data/small.in.gz
+-- input @ data/large.in.gz
 
 type input =
   { lookups: i64,
@@ -80,7 +86,7 @@ let fast_forward_LCG (seed: seed) (n: i64) : seed =
   let c = 1 : u64
   let n = u64.i64 n % m
   let (_, _, _, a_new, c_new) =
-    loop (n, a, c, a_new, c_new) = (n, a, c, 1, 0) while n > 0 do
+    loop (n, a, c, a_new, c_new) = (n, a, c, 1, 0) for _i < 64-u64.clz n do
     let (a_new, c_new) =
       if n & 1 == 1
       then (a_new * a, c_new * a + c)
@@ -103,11 +109,11 @@ let mat_dist_probs =
 let pick_mat (seed: seed) : (i32, seed) =
   let (roll, seed) = LCG_random_double seed
   let (i,_) =
-    loop (i, continue) = (0,true) while i < 12 && continue do
-    let running = mat_dist_probs[i]
-    in if roll < running
-       then (i, false)
-       else (i+1, true)
+    loop (j, continue) = (0,true) for i < 12 do
+      if !continue then (j, continue)
+      else if roll < mat_dist_probs[i]
+      then (i, false)
+      else (i+1, true)
   in (i32.i64 (i%12), seed)
 
 let calculate_sig_T (nuc: i32) (E: f64) (data: simulation_data)
@@ -228,11 +234,11 @@ let calculate_micro_xs (nuc: i32) (E: f64) (data: simulation_data)
   let sigE = sigT - sigA
   in (sigT, sigA, sigF, sigE)
 
-let calculate_macro_xs (mat: i32) (E: f64) (input: input)
+let calculate_macro_xs (mat: i32) (E: f64) (doppler: i32)
                        (data: simulation_data) : (f64, f64, f64, f64) =
   loop macro_xs = (0,0,0,0) for i < data.num_nucs[mat] do
   let nuc = data.mats[mat,i]
-  let micro_xs = if input.doppler == 1
+  let micro_xs = if doppler == 1
                  then calculate_micro_xs_doppler nuc E data
                  else calculate_micro_xs nuc E data
   in (macro_xs.0 + micro_xs.0 * data.concs[mat,i],
@@ -245,22 +251,27 @@ let argmax [n] (xs: [n]f64): i64 =
     if y1 < y2 then (x2, y2) else (x1, y1)
   in reduce max (-1, -f64.inf) (zip (iota n) xs) |> (.0)
 
-let run_event_based_simulation (inp: input) (sd: simulation_data) =
+let run_event_based_simulation lookups doppler (sd: simulation_data) =
   let f i =
     let seed = fast_forward_LCG STARTING_SEED (2*i)
     let (E, seed) = LCG_random_double seed
     let (mat, _seed) = pick_mat seed
-    let macro_xs_vector = calculate_macro_xs mat E inp sd
+    in calculate_macro_xs mat E doppler sd
+  in tabulate lookups f
+
+let verification =
+  let f (macro_xs_vector: (f64,f64,f64,f64)) =
     let macro_xs_vector =
       [macro_xs_vector.0,
        macro_xs_vector.1,
        macro_xs_vector.2,
        macro_xs_vector.3]
     in #[sequential] #[unroll] argmax macro_xs_vector + 1
-  in tabulate inp.lookups f |> i64.sum
+  in map f >-> i64.sum >-> (%999983)
 
-let main lookups doppler
-         n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs =
+let unpack lookups doppler
+           n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs:
+           (input, simulation_data)=
   let complex a = {r=a[0], i=a[1]}
   let unpack_pole l_value (cs: [4][2]f64) : pole =
     {l_value,
@@ -272,8 +283,20 @@ let main lookups doppler
   let unpack_window (f64s: [3]f64) (i32s: [2]i32) : window =
     {T=f64s[0], A=f64s[1], F=f64s[2], start=i32s[0], end=i32s[1]}
   let windows = map2 (map2 unpack_window) windows_f64s windows_i32s
-  let input =
-    {lookups, doppler} : input
-  let sd =
-    {n_windows, poles, windows, pseudo_K0RS, num_nucs, mats, concs} : simulation_data
-  in run_event_based_simulation input sd % 999983
+  let input = {lookups, doppler}
+  let sd = {n_windows, poles, windows, pseudo_K0RS, num_nucs, mats, concs}
+  in (input, sd)
+
+let main lookups doppler
+         n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs =
+  let (input, sd) = unpack lookups doppler
+                           n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs
+  in #[unsafe] verification (run_event_based_simulation input.lookups input.doppler sd)
+
+entry diff lookups doppler
+           n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs =
+  let (input, sd) = unpack lookups doppler
+                           n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs
+  in vjp (run_event_based_simulation input.lookups input.doppler)
+         sd
+         (replicate input.lookups (1,1,1,1))
