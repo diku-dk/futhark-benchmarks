@@ -137,7 +137,7 @@ let fast_forward_LCG (seed: seed) (n: i64) : seed =
   let c = 1 : u64
   let n = u64.i64 n % m
   let (_, _, _, a_new, c_new) =
-    loop (n, a, c, a_new, c_new) = (n, a, c, 1, 0) while n > 0 do
+    loop (n, a, c, a_new, c_new) = (n, a, c, 1, 0) for _i < 64-u64.clz n do
     let (a_new, c_new) =
       if n & 1 == 1
       then (a_new * a, c_new * a + c)
@@ -160,11 +160,11 @@ let mat_dist_probs =
 let pick_mat (seed: seed) : (i32, seed) =
   let (roll, seed) = LCG_random_double seed
   let (i,_) =
-    loop (i, continue) = (0,true) while i < 12 && continue do
-    let running = mat_dist_probs[i]
-    in if roll < running
-       then (i, false)
-       else (i+1, true)
+    loop (j, continue) = (0,true) for i < 12 do
+      if !continue then (j, continue)
+      else if roll < mat_dist_probs[i]
+      then (i, false)
+      else (i+1, true)
   in (i32.i64 (i%12), seed)
 
 let argmax [n] (xs: [n]f64): i64 =
