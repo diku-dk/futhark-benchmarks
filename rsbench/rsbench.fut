@@ -3,11 +3,6 @@
 -- input @ data/small.in.gz output { 880018i64 }
 -- input @ data/large.in.gz output { 358389i64 }
 
--- ==
--- entry: diff
--- input @ data/small.in.gz
--- input @ data/large.in.gz
-
 type input =
   { lookups: i64,
     doppler: i32
@@ -292,11 +287,3 @@ let main lookups doppler
   let (input, sd) = unpack lookups doppler
                            n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs
   in #[unsafe] verification (run_event_based_simulation input.lookups input.doppler sd)
-
-entry diff lookups doppler
-           n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs =
-  let (input, sd) = unpack lookups doppler
-                           n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs
-  in vjp (run_event_based_simulation input.lookups input.doppler)
-         sd
-         (replicate input.lookups (1,1,1,1))
