@@ -209,17 +209,25 @@ let verification =
     in #[sequential] #[unroll] argmax macro_xs_vector + 1
   in map f >-> i64.sum >-> (%999983)
 
-let main n_isotopes n_gridpoints grid_type hash_bins lookups
-         num_nucs concs mats nuclide_grid index_grid unionized_energy_array =
+let unpack n_isotopes n_gridpoints grid_type hash_bins lookups
+           num_nucs concs mats nuclide_grid index_grid unionized_energy_array
+           : (inputs, simulation_data [][][][][]) =
   let grid_type = match grid_type : i64
                   case 0 -> #unionized
                   case 1 -> #nuclide
                   case _ -> #hash
-  let inputs : inputs = {n_isotopes, n_gridpoints, grid_type, hash_bins, lookups}
+  let inputs = {n_isotopes, n_gridpoints, grid_type, hash_bins, lookups}
   let unpack_nuclide (arr: [6]f64) =
     {energy = arr[0], total_xs = arr[1], elastic_xs = arr[2],
      absorbtion_xs = arr[3], fission_xs = arr[4], nu_fission_xs = arr[5]}
   let nuclide_grid = map (map unpack_nuclide) nuclide_grid
-  let sd : simulation_data [][][][][] =
+  let sd =
     {num_nucs, concs, mats, nuclide_grid, index_grid, unionized_energy_array}
+  in (inputs, sd)
+
+let main n_isotopes n_gridpoints grid_type hash_bins lookups
+         num_nucs concs mats nuclide_grid index_grid unionized_energy_array =
+  let (inputs, sd) =
+    unpack n_isotopes n_gridpoints grid_type hash_bins lookups
+           num_nucs concs mats nuclide_grid index_grid unionized_energy_array
   in #[unsafe] verification (run_event_based_simulation inputs sd)
