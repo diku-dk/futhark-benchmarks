@@ -41,7 +41,7 @@ type inputs =
 let grid_search [n] (quarry: f64) (A: [n]f64) : i64 =
   let lowerLimit = 0
   let upperLimit = n-1
-  in (.0) <| loop (lowerLimit, upperLimit) while upperLimit - lowerLimit > 1 do
+  in (.0) <| loop (lowerLimit, upperLimit) for _i < 64-i64.clz n do
              let examinationPoint = lowerLimit + ( (upperLimit - lowerLimit) / 2 )
              in if A[examinationPoint] > quarry
 		   then (lowerLimit, examinationPoint)
@@ -50,7 +50,7 @@ let grid_search [n] (quarry: f64) (A: [n]f64) : i64 =
 let grid_search_nuclide [n] (quarry: f64) (A: [n]nuclide_grid_point) (low: i64) (high: i64) : i64 =
   let lowerLimit = low
   let upperLimit = high
-  in (.0) <| loop (lowerLimit, upperLimit) while upperLimit - lowerLimit > 1 do
+  in (.0) <| loop (lowerLimit, upperLimit) for _i < 64-i64.clz n do
              let examinationPoint = lowerLimit + ( (upperLimit - lowerLimit) / 2 )
              in if A[examinationPoint].energy > quarry
 		   then (lowerLimit, examinationPoint)
