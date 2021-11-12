@@ -20,18 +20,19 @@ let dotprod [n] (a: [n]f32) (b: [n]f32): f32 =
 let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
   map (\mat ->
          let mat = copy mat
-         in loop (mat: *[b][b]f32) for i < b-1 do
+         in #[unsafe]
+            loop (mat: *[b][b]f32) for i < b-1 do
             let col = map (\j -> if j > i then
-                                   #[unsafe] (mat[j,i] - (dotprod mat[j,:i] mat[:i,i])) / mat[i,i]
+                                   (mat[j,i] - (dotprod mat[j,:i] mat[:i,i])) / mat[i,i]
                                  else
-                                   #[unsafe] mat[j,i])
+                                   mat[j,i])
                           (iota b)
             let mat[:,i] = col
 
             let row = map (\j -> if j > i then
-                                   #[unsafe] mat[i+1, j] - (dotprod mat[:i+1, j] mat[i+1, :i+1])
+                                   mat[i+1, j] - (dotprod mat[:i+1, j] mat[i+1, :i+1])
                                  else
-                                   #[unsafe] mat[i+1, j])
+                                   mat[i+1, j])
                           (iota b)
             let mat[i+1] = row
 
