@@ -1,1 +1,2 @@
-default_threshold=10000
+main.suff_outer_par_0=2000000000
+main.suff_outer_par_1=50

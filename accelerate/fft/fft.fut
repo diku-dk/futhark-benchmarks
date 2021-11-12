@@ -14,6 +14,9 @@
 -- output @ data/1024x1024.out
 -- compiled input @ data/128x128.in
 -- output @ data/128x128.out
+-- compiled random input { 10i32 [2048][2048][3]u8 }
+-- compiled random input { 10i32 [4096][4096][3]u8 }
+-- compiled random input { 10i32 [8192][8192][3]u8 }
 
 import "lib/github.com/diku-dk/complex/complex"
 

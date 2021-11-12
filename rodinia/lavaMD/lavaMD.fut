@@ -6,6 +6,11 @@
 -- output @ data/3_boxes.out
 -- compiled input @ data/10_boxes.in.gz
 -- output @ data/10_boxes.out.gz
+-- compiled script input { gen_input 4096i64 512i64 100i64 }
+
+module Gen = import "lavaMD-input"
+
+entry gen_input = Gen.gen_input
 
 let dot ((ax,ay,az), (bx,by,bz)): f32 =
   ax*bx + ay*by + az*bz

@@ -5,6 +5,9 @@
 --
 -- compiled input @ data/medium.in.gz
 -- output @ data/medium.out
+-- compiled random input { 100i32 30f32 90f32 [1710560]f32 [1710560]f32 }
+-- compiled random input { 100i32 30f32 90f32 [5710560]f32 [5710560]f32 }
+
 
 let emptyRecord: (i32, f32) = (0, 0.0f32)
 

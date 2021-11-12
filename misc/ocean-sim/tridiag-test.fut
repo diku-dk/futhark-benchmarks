@@ -4,12 +4,13 @@ import "tridiag"
 let INNER_DIM : i64 = 115
 
 -- ==
--- entry: tridagNested tridagNestedConst tridagNestedSeq tridagNestedSeqConst 
+-- entry: tridagNested tridagNestedConst tridagNestedSeq tridagNestedSeqConst
 --
 -- compiled input @ data/tridiag32-small.in
 -- output @ data/tridiag32-small.out
 --
 -- compiled random input { [57600][115]f32 [57600][115]f32 [57600][115]f32 [57600][115]f32 }
+-- compiled random input { [576000][115]f32 [576000][115]f32 [576000][115]f32 [576000][115]f32 }
 
 
 entry tridagNested [n][m] (a: [n][m]DTYPE) (b: [n][m]DTYPE) (c: [n][m]DTYPE) (y: [n][m]DTYPE): *[n][m]DTYPE =

@@ -24,6 +24,8 @@
 --
 -- compiled input @ data/lena512.in
 -- output @ data/lena512.out
+--
+-- random input { 50f32 100f32 [8192][8192]i32 }
 
 let luminanceOfRGBA32(p: i32): f32 =
   let r = i8.i32(p >> 24)

@@ -1,10 +1,10 @@
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
-let sobolDirVcts(): [30]i32 = 
-  [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
-    524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
-    512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
+let sobolDirVcts(): [30]i32 =
+  [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576,
+    524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024,
+    512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ]
 
 let sobolInd(dirVct:  [30]i32, n: i64 ): i32 =
   let n_gray = (n >> 1) ^ n
@@ -17,34 +17,34 @@ let sobolInd(dirVct:  [30]i32, n: i64 ): i32 =
 
 -----------------------
 -----------------------
-let main (boxes1d: i64) (par_per_box: i64) (num_neighbors: i64):
+entry gen_input (number_boxes: i64) (par_per_box: i64) (num_neighbors: i64):
                         (f32,
-                         []i32,
-                         []i32,
-                         []i32,
-                         []i32,
+                         [number_boxes]i32,
+                         [number_boxes]i32,
+                         [number_boxes]i32,
+                         [number_boxes]i32,
 
-                         [][]i32,
-                         [][]i32,
-                         [][]i32,
-                         [][]i32,
+                         [num_neighbors][number_boxes]i32,
+                         [num_neighbors][number_boxes]i32,
+                         [num_neighbors][number_boxes]i32,
+                         [num_neighbors][number_boxes]i32,
 
-                         []i32,
+                         [number_boxes]i32,
 
-                         [][]f32,
-                         [][]f32,
-                         [][]f32,
-                         [][]f32,
+                         [number_boxes][par_per_box]f32,
+                         [number_boxes][par_per_box]f32,
+                         [number_boxes][par_per_box]f32,
+                         [number_boxes][par_per_box]f32,
 
-                         [][]f32) =
-  let number_boxes = boxes1d * boxes1d * boxes1d
+                         [number_boxes][par_per_box]f32) =
+  let boxes1d = i64.f64 (f64.i64 number_boxes ** (1f64/3f64))
   let alpha        = 0.5
   let dirVct       = sobolDirVcts()
 
   ----------------------------------------
   -- 1. Initialize boxs' data structure --
   ----------------------------------------
-  let boxes = 
+  let boxes =
     tabulate number_boxes
         (\nh  ->
           let k = nh % boxes1d
@@ -92,7 +92,7 @@ let main (boxes1d: i64) (par_per_box: i64) (num_neighbors: i64):
                            let s3= sobolInd(dirVct, n+2)
                            let s4= sobolInd(dirVct, n+3)
                            let s5= sobolInd(dirVct, n+4)
-                           in (f32.i32(s5%10 + 1) / 10.0, 
+                           in (f32.i32(s5%10 + 1) / 10.0,
                                ( f32.i32(s1%10 + 1) / 10.0, f32.i32(s2%10 + 1) / 10.0
                                , f32.i32(s3%10 + 1) / 10.0, f32.i32(s4%10 + 1) / 10.0 )
                               )
