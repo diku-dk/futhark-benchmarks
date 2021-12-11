@@ -16,7 +16,7 @@ type ray = {orig: point, dir: point}
 
 type^ bvh [n] = bvh [n] triangle
 
-let aabb_hit ({min, max}: aabb) ({orig, dir}: ray) (tmin: f32) (tmax: f32): bool =
+def aabb_hit ({min, max}: aabb) ({orig, dir}: ray) (tmin: f32) (tmax: f32): bool =
   -- Unrolled loop.
   let iter min' max' origin' dir' tmin tmax =
     let invD = 1 / dir'
@@ -36,9 +36,9 @@ let aabb_hit ({min, max}: aabb) ({orig, dir}: ray) (tmin: f32) (tmax: f32): bool
                     iter min.z max.z orig.z dir.z tmin tmax
                   in !(tmax <= tmin)
 
-let EPSILON: f32 = 0.0001
+def EPSILON: f32 = 0.0001
 
-let triangle_hit ({orig=o,dir=d}: ray) ({a,b,c,index=_}: triangle) : f32 =
+def triangle_hit ({orig=o,dir=d}: ray) ({a,b,c,index=_}: triangle) : f32 =
   let e1 = b vec3.- a
   let e2 = c vec3.- a
   let pvec = vec3.cross d e2
@@ -65,7 +65,7 @@ let triangle_hit ({orig=o,dir=d}: ray) ({a,b,c,index=_}: triangle) : f32 =
            else -- Distance along the ray, i.e. intersect at o + t * d
              vec3.dot e2 qvec * invDet
 
-let triangle_aabb ({a,b,c,index=_}: triangle) : aabb =
+def triangle_aabb ({a,b,c,index=_}: triangle) : aabb =
   {min = {x=a.x `f32.min` b.x `f32.min` c.x,
           y=a.y `f32.min` b.y `f32.min` c.y,
           z=a.z `f32.min` b.z `f32.min` c.z},
@@ -73,7 +73,7 @@ let triangle_aabb ({a,b,c,index=_}: triangle) : aabb =
           y=a.y `f32.max` b.y `f32.max` c.y,
           z=a.z `f32.max` b.z `f32.max` c.z}}
 
-let bvh_hit [n] (bvh: bvh [n]) (r: ray) : i32 =
+def bvh_hit [n] (bvh: bvh [n]) (r: ray) : i32 =
   let contains aabb = aabb_hit aabb r 0 f32.inf
   let closest_hit (j, t_max) i t =
     let h = triangle_hit r t
@@ -83,7 +83,7 @@ let bvh_hit [n] (bvh: bvh [n]) (r: ray) : i32 =
   let (j, _) = bvh_fold contains closest_hit (-1, f32.inf) bvh
   in if j == -1 then -1 else bvh.L[j].index
 
-let main [npoints][ntriangles][nrays]
+def main [npoints][ntriangles][nrays]
          (points_enc: [npoints][3]f32)
          (triangles_enc: [ntriangles][3]i32)
          (rays_enc: [nrays][2][3]f32)

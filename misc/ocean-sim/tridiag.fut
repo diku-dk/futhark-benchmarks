@@ -1,7 +1,7 @@
 -- requires "type DTYPE = f32/64" from typeinst32/64.fut
 import "typeinst32"
 
-let tridagPar [n] (a:  [n]DTYPE, b: [n]DTYPE, c: [n]DTYPE, y: [n]DTYPE ): *[n]DTYPE =
+def tridagPar [n] (a:  [n]DTYPE, b: [n]DTYPE, c: [n]DTYPE, y: [n]DTYPE ): *[n]DTYPE =
   #[unsafe]
   ----------------------------------------------------
   -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --
@@ -66,7 +66,7 @@ let tridagPar [n] (a:  [n]DTYPE, b: [n]DTYPE, c: [n]DTYPE, y: [n]DTYPE ): *[n]DT
   in y
 
 
-let tridagSeq [m] (a:  [m]DTYPE, b: [m]DTYPE, c: [m]DTYPE, y: [m]DTYPE ): *[m]DTYPE =
+def tridagSeq [m] (a:  [m]DTYPE, b: [m]DTYPE, c: [m]DTYPE, y: [m]DTYPE ): *[m]DTYPE =
    let cp = map (\i -> if i==0 then c[0]/b[0] else 0) (indices c)
    let yp = map (\i -> if i==0 then y[0]/b[0] else 0) (indices y)
    let (cp_full, yp_full) = 

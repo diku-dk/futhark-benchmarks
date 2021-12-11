@@ -20,19 +20,19 @@
 -- compiled input @ data/image.in.gz
 -- output @ data/image.out.gz
 
-let indexN(_rows: i64, i: i32): i32 =
+def indexN(_rows: i64, i: i32): i32 =
   if i == 0 then i else i - 1
 
-let indexS(rows: i64, i: i32): i32 =
+def indexS(rows: i64, i: i32): i32 =
   if i == i32.i64 rows-1 then i else i + 1
 
-let indexW(_cols: i64, j: i32): i32 =
+def indexW(_cols: i64, j: i32): i32 =
   if j == 0 then j else j - 1
 
-let indexE(cols: i64, j: i32): i32 =
+def indexE(cols: i64, j: i32): i32 =
   if j == i32.i64 cols-1 then j else j + 1
 
-let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
+def do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows][cols]f32 =
   let r1 = 0
   let r2 = rows - 1
   let c1 = 0
@@ -102,7 +102,7 @@ let do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
                          f32.log(pixel)*255.0)) image
   in image
 
-let main [rows][cols] (image: [rows][cols]u8): [rows][cols]f32 =
+def main [rows][cols] (image: [rows][cols]u8): [rows][cols]f32 =
   let niter = 100
   let lambda = 0.5
   in do_srad(niter, lambda, image)

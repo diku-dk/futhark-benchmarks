@@ -12,35 +12,35 @@ type window = {T: f64, A: f64, F: f64, start: i32, end: i32}
 
 type rs_complex = {r: f64, i: f64}
 
-let c_add (A: rs_complex) (B: rs_complex) : rs_complex =
+def c_add (A: rs_complex) (B: rs_complex) : rs_complex =
   {r=A.r + B.r, i=A.i + B.i}
 
-let c_sub (A: rs_complex) (B: rs_complex) : rs_complex =
+def c_sub (A: rs_complex) (B: rs_complex) : rs_complex =
   {r=A.r - B.r, i=A.i - B.i}
 
-let c_mul (A: rs_complex) (B: rs_complex) : rs_complex =
+def c_mul (A: rs_complex) (B: rs_complex) : rs_complex =
   let a = A.r
   let b = A.i
   let c = B.r
   let d = B.i
   in {r=a*c - b*d, i=a*d + b*c}
 
-let c_div ({r=a,i=b}: rs_complex) ({r=c,i=d}: rs_complex) : rs_complex =
+def c_div ({r=a,i=b}: rs_complex) ({r=c,i=d}: rs_complex) : rs_complex =
   let denom = c*c + d*d
   in {r = (a*c + b*d) / denom,
       i = (b*c - a*d) / denom}
 
-let c_abs (A: rs_complex) : f64 =
+def c_abs (A: rs_complex) : f64 =
   f64.sqrt(A.r*A.r + A.i*A.i)
 
-let fast_exp (x: f64) : f64 =
+def fast_exp (x: f64) : f64 =
   let x = 1 + x * 0.000244140625
   let x = x * x let x = x * x  let x = x * x let x = x * x
   let x = x * x let x = x * x  let x = x * x let x = x * x
   let x = x * x let x = x * x  let x = x * x let x = x * x
                                              in x
 
-let fast_cexp ({r=x,i=y}: rs_complex) : rs_complex =
+def fast_cexp ({r=x,i=y}: rs_complex) : rs_complex =
   let t1 = fast_exp x
   let t2 = f64.cos y
   let t3 = f64.sin y
@@ -73,9 +73,9 @@ type~ simulation_data =
 
 type seed = u64
 
-let STARTING_SEED : seed = 1070
+def STARTING_SEED : seed = 1070
 
-let fast_forward_LCG (seed: seed) (n: i64) : seed =
+def fast_forward_LCG (seed: seed) (n: i64) : seed =
   let m = 9223372036854775808 : u64
   let a = 2806196910506780709 : u64
   let c = 1 : u64
@@ -89,19 +89,19 @@ let fast_forward_LCG (seed: seed) (n: i64) : seed =
     in (n>>1, a * a, c * (a+1), a_new, c_new)
   in (a_new * seed + c_new) % m
 
-let LCG_random_double (seed: seed) : (f64, seed) =
+def LCG_random_double (seed: seed) : (f64, seed) =
   let m = 9223372036854775808
   let a = 2806196910506780709
   let c = 1
   let seed = (a * seed + c) % m
   in (f64.u64 seed / f64.u64 m, seed)
 
-let mat_dist : [12]f64 =
+def mat_dist : [12]f64 =
   [0.140, 0.052, 0.275, 0.134, 0.154, 0.064, 0.066, 0.055, 0.008, 0.015, 0.025, 0.013]
-let mat_dist_probs =
+def mat_dist_probs =
   [0] ++ scan (+) 0 (drop 1 mat_dist)
 
-let pick_mat (seed: seed) : (i32, seed) =
+def pick_mat (seed: seed) : (i32, seed) =
   let (roll, seed) = LCG_random_double seed
   let (i,_) =
     loop (j, continue) = (0,true) for i < 12 do
@@ -111,7 +111,7 @@ let pick_mat (seed: seed) : (i32, seed) =
       else (i+1, true)
   in (i32.i64 (i%12), seed)
 
-let calculate_sig_T (nuc: i32) (E: f64) (data: simulation_data)
+def calculate_sig_T (nuc: i32) (E: f64) (data: simulation_data)
   : [4]rs_complex =
   let f i =
     let phi = data.pseudo_K0RS[nuc,i] * f64.sqrt E
@@ -123,7 +123,7 @@ let calculate_sig_T (nuc: i32) (E: f64) (data: simulation_data)
     in {r=f64.cos phi, i = -f64.sin(phi)}
   in [f 0, f 1, f 2, f 3]
 
-let fast_nuclear_W (Z: rs_complex) : rs_complex =
+def fast_nuclear_W (Z: rs_complex) : rs_complex =
   if c_abs Z < 6
   then let prefactor = {r=0, i=8.124330e+01}
        let an = [ 2.758402e-01,
@@ -187,7 +187,7 @@ let fast_nuclear_W (Z: rs_complex) : rs_complex =
           ((a `c_div` (Z2 `c_sub` b)) `c_add` (c `c_div` (Z2 `c_sub` d)))
   in W
 
-let calculate_micro_xs_doppler (nuc: i32) (E: f64) (data: simulation_data)
+def calculate_micro_xs_doppler (nuc: i32) (E: f64) (data: simulation_data)
   : (f64, f64, f64, f64) =
   let spacing = 1 / f64.i32 data.n_windows[nuc]
   let window = i32.min (data.n_windows[nuc]-1) (i32.f64 (E / spacing))
@@ -208,7 +208,7 @@ let calculate_micro_xs_doppler (nuc: i32) (E: f64) (data: simulation_data)
   let sigE = sigT - sigA
   in (sigT, sigA, sigF, sigE)
 
-let calculate_micro_xs (nuc: i32) (E: f64) (data: simulation_data)
+def calculate_micro_xs (nuc: i32) (E: f64) (data: simulation_data)
   : (f64, f64, f64, f64) =
   let spacing = 1 / f64.i32 data.n_windows[nuc]
   let window = i32.min (data.n_windows[nuc]-1) (i32.f64 (E / spacing))
@@ -229,7 +229,7 @@ let calculate_micro_xs (nuc: i32) (E: f64) (data: simulation_data)
   let sigE = sigT - sigA
   in (sigT, sigA, sigF, sigE)
 
-let calculate_macro_xs (mat: i32) (E: f64) (doppler: i32)
+def calculate_macro_xs (mat: i32) (E: f64) (doppler: i32)
                        (data: simulation_data) : (f64, f64, f64, f64) =
   loop macro_xs = (0,0,0,0) for i < data.num_nucs[mat] do
   let nuc = data.mats[mat,i]
@@ -241,12 +241,12 @@ let calculate_macro_xs (mat: i32) (E: f64) (doppler: i32)
       macro_xs.2 + micro_xs.2 * data.concs[mat,i],
       macro_xs.3 + micro_xs.3 * data.concs[mat,i])
 
-let argmax [n] (xs: [n]f64): i64 =
+def argmax [n] (xs: [n]f64): i64 =
   let max (x1, y1) (x2, y2) =
     if y1 < y2 then (x2, y2) else (x1, y1)
   in reduce max (-1, -f64.inf) (zip (iota n) xs) |> (.0)
 
-let run_event_based_simulation lookups doppler (sd: simulation_data) =
+def run_event_based_simulation lookups doppler (sd: simulation_data) =
   let f i =
     let seed = fast_forward_LCG STARTING_SEED (2*i)
     let (E, seed) = LCG_random_double seed
@@ -254,7 +254,7 @@ let run_event_based_simulation lookups doppler (sd: simulation_data) =
     in calculate_macro_xs mat E doppler sd
   in tabulate lookups f
 
-let verification =
+def verification =
   let f (macro_xs_vector: (f64,f64,f64,f64)) =
     let macro_xs_vector =
       [macro_xs_vector.0,
@@ -264,7 +264,7 @@ let verification =
     in #[sequential] #[unroll] argmax macro_xs_vector + 1
   in map f >-> i64.sum >-> (%999983)
 
-let unpack lookups doppler
+def unpack lookups doppler
            n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs:
            (input, simulation_data)=
   let complex a = {r=a[0], i=a[1]}
@@ -282,7 +282,7 @@ let unpack lookups doppler
   let sd = {n_windows, poles, windows, pseudo_K0RS, num_nucs, mats, concs}
   in (input, sd)
 
-let main lookups doppler
+def main lookups doppler
          n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs =
   let (input, sd) = unpack lookups doppler
                            n_windows poles_ls poles_cs windows_f64s windows_i32s pseudo_K0RS num_nucs mats concs

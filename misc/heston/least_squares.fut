@@ -58,17 +58,17 @@ module mk_least_squares (real: real) (rand: rng_engine)
   module random_i32 = uniform_int_distribution i32 rand
   module random_real = uniform_real_distribution real rand
 
-  let nrand (d: random_real.distribution) (rng: rand.rng) (n: i64) =
+  def nrand (d: random_real.distribution) (rng: rand.rng) (n: i64) =
     let rngs = rand.split_rng n rng
     let (rngs', xs) = unzip (map (\rng -> random_real.rand d rng) rngs)
     in (rand.join_rng rngs', xs)
 
-  let fixed_value (v: real) =
+  def fixed_value (v: real) =
     (true, v, {lower_bound=real.i32 0,
                upper_bound=real.i32 0,
                initial_value=real.i32 0})
 
-  let optimize_value (r: range) =
+  def optimize_value (r: range) =
     (false, real.i32 0, r)
 
   -- Parameterisation of how the randomised search takes place.
@@ -79,26 +79,26 @@ module mk_least_squares (real: real) (rand: rng_engine)
   type termination = {max_iterations: i32, max_global: i32, target: real}
 
   type status = i32 -- Pretend it's opaque!
-  let max_iterations_reached: status = 0
-  let max_global_reached: status = 1
-  let target_reached: status = 2
+  def max_iterations_reached: status = 0
+  def max_global_reached: status = 1
+  def target_reached: status = 2
 
   type result [n] = {x0: [n]real, f: real, num_feval: i32, status: status}
 
-  let active_vars [num_vars] [num_active]
+  def active_vars [num_vars] [num_active]
                   (vars_to_free_vars: [num_vars]i32)
                   (variables: [num_vars]optimization_variable)
                   (xs: [num_active]real) =
     map2 (\fv (fixed,x,_) -> if fixed then x else #[unsafe] xs[fv])
          vars_to_free_vars variables
 
-  let min_and_idx (a:real,a_i:i32) (b:real,b_i:i32) =
+  def min_and_idx (a:real,a_i:i32) (b:real,b_i:i32) =
     if      real.(a < b)    then (a,a_i)
     else if real.(b < a)    then (b,b_i)
     else if i32.(a_i < b_i) then (a, a_i)
     else                         (b, b_i)
 
-  let optimize [num_vars] [num_free_vars]
+  def optimize [num_vars] [num_free_vars]
                (objective: []real -> real)
                (vars_to_free_vars: [num_vars]i32)
                (variables: [num_vars]optimization_variable)
@@ -186,7 +186,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
                  else 1337 -- never reached
     in {x0=x0, f=fx0, num_feval=ncalls, status=status}
 
-  let least_squares [num_vars]
+  def least_squares [num_vars]
       (variables: [num_vars]optimization_variable)
       (objective: [num_vars]real -> real)
       (max_global: i32)

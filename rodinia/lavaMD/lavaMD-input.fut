@@ -1,12 +1,12 @@
 ------------------------------------------
 -- Util: Sobol random number generation --
 ------------------------------------------
-let sobolDirVcts(): [30]i32 = 
+def sobolDirVcts(): [30]i32 = 
   [ 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 
     524288,    262144,    131072,    65536,    32768,    16384,    8192,    4096,    2048,    1024, 
     512,       256,       128,       64,       32,       16,       8,       4,       2,       1      ] 
 
-let sobolInd(dirVct:  [30]i32, n: i64 ): i32 =
+def sobolInd(dirVct:  [30]i32, n: i64 ): i32 =
   let n_gray = (n >> 1) ^ n
   let res = 0
   in loop (res) for (i, v) in zip (iota 30) dirVct do
@@ -17,7 +17,7 @@ let sobolInd(dirVct:  [30]i32, n: i64 ): i32 =
 
 -----------------------
 -----------------------
-let main (boxes1d: i64) (par_per_box: i64) (num_neighbors: i64):
+def main (boxes1d: i64) (par_per_box: i64) (num_neighbors: i64):
                         (f32,
                          []i32,
                          []i32,

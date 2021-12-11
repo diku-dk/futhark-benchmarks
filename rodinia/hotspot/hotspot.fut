@@ -13,30 +13,30 @@
 -- output @ data/1024.out
 
 -- Maximum power density possible (say 300W for a 10mm x 10mm chip)
-let max_pd: f32 = 3.0e6
+def max_pd: f32 = 3.0e6
 
 -- Required precision in degrees
-let precision: f32 = 0.001
+def precision: f32 = 0.001
 
-let spec_heat_si: f32 = 1.75e6
+def spec_heat_si: f32 = 1.75e6
 
-let k_si: f32 = 100.0
+def k_si: f32 = 100.0
 
 -- Capacitance fitting factor
-let factor_chip: f32 = 0.5
+def factor_chip: f32 = 0.5
 
 -- Chip parameters
-let t_chip: f32 = 0.0005
-let chip_height: f32 = 0.016
-let chip_width: f32 = 0.016
+def t_chip: f32 = 0.0005
+def chip_height: f32 = 0.016
+def chip_width: f32 = 0.016
 
 -- Ambient temperature assuming no package at all
-let amb_temp: f32 = 80.0
+def amb_temp: f32 = 80.0
 
 -- Single iteration of the transient solver in the grid model.
 -- advances the solution of the discretized difference equations by
 -- one time step
-let single_iteration [row][col]
+def single_iteration [row][col]
                     (temp: [row][col]f32, power: [row][col]f32,
                      cap: f32, rx: f32, ry: f32, rz: f32,
                      step: f32): [row][col]f32 =
@@ -112,5 +112,5 @@ entry render_frame [row][col] (temp: [row][col]f32): [row][col][3]i8 =
                 temp_r)
          temp
 
-let main [row][col] (num_iterations: i32) (temp: [row][col]f32) (power: [row][col]f32): [][]f32 =
+def main [row][col] (num_iterations: i32) (temp: [row][col]f32) (power: [row][col]f32): [][]f32 =
   compute_tran_temp num_iterations temp power

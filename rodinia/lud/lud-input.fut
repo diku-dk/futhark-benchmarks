@@ -2,7 +2,7 @@
 --
 -- Algorithm from Rodinia.
 
-let main (n: i64): [n][n]f32 =
+def main (n: i64): [n][n]f32 =
   let lambda = -0.001
   let f (p: i64) =
     (if p >= n

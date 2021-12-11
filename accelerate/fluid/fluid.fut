@@ -34,14 +34,14 @@
 -- General helper functions.
 ------------------------------------------------------------
 
-let clamp (x: f32): i8 =
+def clamp (x: f32): i8 =
   if x < 0.0
   then 0i8
   else if x > 255.0
   then 255i8
   else i8.f32 x
 
-let inside
+def inside
   (i: i32)
   (j: i32)
   (g: i32):
@@ -49,7 +49,7 @@ let inside
   i >= 1 && i <= g - 2
   && j >= 1 && j <= g - 2
 
-let in_outside_corner
+def in_outside_corner
   (i: i32)
   (j: i32)
   (g: i32):
@@ -63,7 +63,7 @@ module type edge_handling_mapper = {
 }
 
 module edge_handling (mapper: edge_handling_mapper) = {
-  let corner_index_neighbors
+  def corner_index_neighbors
     (i: i32) (j: i32) (g: i32): (i32, i32, i32, i32) =
     if i == 0 && j == 0
     then (1, 0, 0, 1)
@@ -73,7 +73,7 @@ module edge_handling (mapper: edge_handling_mapper) = {
     then (g - 2, 0, g - 1, 1)
     else (g - 2, g - 1, g - 1, g - 2)
 
-  let outermost_inner_index
+  def outermost_inner_index
     (i: i32) (j: i32) (g: i32) (b: i32): (i32, i32, f32) =
     if i == 0
     then (1, j, if b == 1 then -1.0 else 1.0)
@@ -85,7 +85,7 @@ module edge_handling (mapper: edge_handling_mapper) = {
     then (i, g - 2, if b == 2 then -1.0 else 1.0)
     else (0, 0, 0.0) -- This is not supposed to happen.
 
-  let handle
+  def handle
     (i: i32) (j: i32) (g: i64) (b: i32)
     (info: mapper.info []): f32 =
     if inside i j (i32.i64 g)
@@ -108,7 +108,7 @@ module edge_handling (mapper: edge_handling_mapper) = {
 module edge_handling_lin_solve = edge_handling({
   type info [g] = ([g][g]f32, [g][g]f32, f32, f32)
 
-  let inner
+  def inner
     (i: i32)
     (j: i32)
     (g: i64)
@@ -123,7 +123,7 @@ module edge_handling_lin_solve = edge_handling({
 
 })
 
-let lin_solve [g]
+def lin_solve [g]
   (n_solver_steps: i32)
   (s0: [g][g]f32)
   (b: i32)
@@ -138,7 +138,7 @@ let lin_solve [g]
         (0..<g)
 
 
-let diffuse [g]
+def diffuse [g]
   (s: [g][g]f32)
   (b: i32)
   (n_solver_steps: i32)
@@ -153,7 +153,7 @@ let diffuse [g]
 module edge_handling_advect = edge_handling({
   type info [g] = ([g][g]f32, [g][g]f32, [g][g]f32, f32)
 
-  let inner
+  def inner
     (i: i32)
     (j: i32)
     (g: i64)
@@ -181,7 +181,7 @@ module edge_handling_advect = edge_handling({
                + s1 * (t0 * s0[i1, j0] + t1 * s0[i1, j1]))
 })
 
-let advect [g]
+def advect [g]
   (s0: [g][g]f32)
   (u: [g][g]f32)
   (v: [g][g]f32)
@@ -199,7 +199,7 @@ let advect [g]
 module edge_handling_project_top = edge_handling({
   type info [g] = ([g][g]f32, [g][g]f32)
 
-  let inner
+  def inner
     (i: i32)
     (j: i32)
     (g: i64)
@@ -214,7 +214,7 @@ module edge_handling_project_top = edge_handling({
 module edge_handling_project_bottom = edge_handling({
   type info [g] = ([g][g]f32, [g][g]f32, i32, i32, i32, i32)
 
-  let inner
+  def inner
     (i: i32)
     (j: i32)
     (g: i64)
@@ -224,7 +224,7 @@ module edge_handling_project_bottom = edge_handling({
             * (p0[i + i0d, j + j0d] - p0[i + i1d, j + j1d]))
 })
 
-let project [g]
+def project [g]
   (n_solver_steps: i32)
   (u0: [g][g]f32)
   (v0: [g][g]f32):
@@ -262,7 +262,7 @@ let project [g]
 -- Step function.
 ------------------------------------------------------------
 
-let step [g]
+def step [g]
   (u0: [g][g]f32)
   (v0: [g][g]f32)
   (d0: [g][g]f32)
@@ -294,7 +294,7 @@ let step [g]
 -- Visualisation.
 ------------------------------------------------------------
 
-let draw_densities [g]
+def draw_densities [g]
   (ds: [g][g]f32)
   (g_minus_two: i64):
   [g_minus_two][g_minus_two][3]i8 =
@@ -304,7 +304,7 @@ let draw_densities [g]
                    let value = clamp (255.0 * #[unsafe] ds[i, j])
                    in [value, value, value]) ks) ks
 
-let draw_one_frame [g]
+def draw_one_frame [g]
   (u0: [g][g]f32)
   (v0: [g][g]f32)
   (d0: [g][g]f32)
@@ -337,7 +337,7 @@ entry draw_one_frame_raw [g]
 -- Benchmarking.
 ------------------------------------------------------------
 
-let get_end_frame [g]
+def get_end_frame [g]
   (u0: [g][g]f32)
   (v0: [g][g]f32)
   (d0: [g][g]f32)
@@ -351,7 +351,7 @@ let get_end_frame [g]
     step u0 v0 d0 n_solver_steps time_step
          diffusion_rate viscosity
 
-let main [g]
+def main [g]
   (u0: [g][g]f32)
   (v0: [g][g]f32)
   (d0: [g][g]f32)

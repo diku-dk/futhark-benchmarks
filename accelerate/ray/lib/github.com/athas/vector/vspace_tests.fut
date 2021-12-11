@@ -4,7 +4,7 @@ import "vspace"
 import "vector"
 
 module vec3 = mk_vspace_3d f64
-let unvec3 ({x,y,z}: vec3.vector) = (x,y,z)
+def unvec3 ({x,y,z}: vec3.vector) = (x,y,z)
 
 -- ==
 -- entry: test_add

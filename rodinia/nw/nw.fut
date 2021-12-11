@@ -12,19 +12,19 @@
 -- compiled input @ data/medium.in.gz
 -- output @ data/medium.out.gz
 
-let B0: i64 = 64
+def B0: i64 = 64
 
-let fInd (B: i64) (y:i32) (x:i32): i32 = y*(i32.i64 B+1) + x
-let max3 (x:i32, y:i32, z:i32) = if x < y
+def fInd (B: i64) (y:i32) (x:i32): i32 = y*(i32.i64 B+1) + x
+def max3 (x:i32, y:i32, z:i32) = if x < y
                                  then if y < z then z else y
                                  else if x < z then z else x
-let mkVal [l2][l] (y:i32) (x:i32) (pen:i32) (inp_l:[l2][l2]i32) (ref_l:[l][l]i32) : i32 = #[unsafe]
+def mkVal [l2][l] (y:i32) (x:i32) (pen:i32) (inp_l:[l2][l2]i32) (ref_l:[l][l]i32) : i32 = #[unsafe]
   max3( ( (inp_l[y - 1, x - 1])) + ( ref_l[y-1, x-1])
       , ( (inp_l[y, x - 1])) - pen
       , ( (inp_l[y - 1, x])) - pen
       )
 
-let intraBlockPar [len] (B: i64)
+def intraBlockPar [len] (B: i64)
                                (penalty: i32)
                                (inputsets: [len][len]i32)
                                (reference2: [len][len]i32)
@@ -86,7 +86,7 @@ let intraBlockPar [len] (B: i64)
   in  inp_l2[1:B+1,1:B+1] :> [B][B]i32
 
 
-let updateBlocks [q][len] (B: i64)
+def updateBlocks [q][len] (B: i64)
                             (blk: i64)
                             (mk_b_y: (i32 -> i32))
                             (mk_b_x: (i32 -> i32))
@@ -108,7 +108,7 @@ let updateBlocks [q][len] (B: i64)
   in  scatter_2d inputsets inds vals
 
 
-let main [len] (penalty : i32)
+def main [len] (penalty : i32)
                  (inputsets : *[len][len]i32)
                  (reference : *[len][len]i32) : *[len][len]i32 =
   #[unsafe]

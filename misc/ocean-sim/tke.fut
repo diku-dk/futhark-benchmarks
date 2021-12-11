@@ -1,17 +1,17 @@
 import "typeinst32"
 import "tridiag"
 
-let tridiag [xdim][ydim][zdim] (a: [xdim][ydim][zdim]DTYPE) (b: [xdim][ydim][zdim]DTYPE) (c: [xdim][ydim][zdim]DTYPE) (y: [xdim][ydim][zdim]DTYPE): *[xdim][ydim][zdim]DTYPE =
+def tridiag [xdim][ydim][zdim] (a: [xdim][ydim][zdim]DTYPE) (b: [xdim][ydim][zdim]DTYPE) (c: [xdim][ydim][zdim]DTYPE) (y: [xdim][ydim][zdim]DTYPE): *[xdim][ydim][zdim]DTYPE =
    map4 (\as bs cs ys ->
         map4 (\a b c y ->
             tridagPar (a,b,c,y)
         ) as bs cs ys
    ) a b c y
 
-let limiter (cr: DTYPE) : DTYPE =
+def limiter (cr: DTYPE) : DTYPE =
     real_max 0 (real_max (real_min 1 (2 * cr)) (real_min 2 cr))
 
-let calcflux
+def calcflux
     (velfac: DTYPE)
     (velS: DTYPE)
     (dt_tracer: DTYPE)
@@ -37,7 +37,7 @@ let calcflux
     in scaledVel * (varSP1 + varS) * 0.5 - (real_abs scaledVel) * ((1.0 - cr) + uCFL * cr) * rj * 0.5
 
 
-let map3D 't [xdim] [ydim] [zdim] (arr: [xdim][ydim][zdim]t) (f : t -> i32 -> i32 -> i32 -> t) =
+def map3D 't [xdim] [ydim] [zdim] (arr: [xdim][ydim][zdim]t) (f : t -> i32 -> i32 -> i32 -> t) =
     map2(\ square i -> 
             map2(\ row j ->
                     map2 (\ el k -> f el i j k)

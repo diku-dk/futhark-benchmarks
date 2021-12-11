@@ -1,4 +1,4 @@
-let array f n m =
+def array f n m =
   let n64 = i64.i32 n
   let m64 = i64.i32 m
   in map (\i -> replicate m64 (f i)) (iota n64)
@@ -86,13 +86,13 @@ entry sum_i64 n m xs: []i64 = unflatten (i64.i32 n) (i64.i32 m) xs |> map i64.su
 -- no_python random input { 1000000 10 [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
 -- no_python random input { 10000000 1 [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
 
-let mat4_mul (+) (*) (a0,a1,a2,a3) (b0,b1,b2,b3) =
+def mat4_mul (+) (*) (a0,a1,a2,a3) (b0,b1,b2,b3) =
   ((b0*a0 + b1*a2),
    (b0*a1 + b1*a3),
    (b2*a0 + b3*a2),
    (b2*a1 + b3*a3))
 
-let mat4' f a b c d = (f a, f b, f c, f d)
+def mat4' f a b c d = (f a, f b, f c, f d)
 
 entry prod_mat4_i32 n m as bs cs ds =
   let ass = unflatten (i64.i32 n) (i64.i32 m) as

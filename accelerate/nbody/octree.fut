@@ -5,7 +5,7 @@ import "radixtree"
 module vec3 = mk_vspace_3d f32
 type vec3 = vec3.vector
 
-let vec (x, y, z) : vec3 = {x,y,z}
+def vec (x, y, z) : vec3 = {x,y,z}
 
 type mass = f32
 type position = vec3.vector
@@ -21,7 +21,7 @@ type octnode = {body: body,
                is_leaf: bool}
 
 -- | takes radix tree, assumes mortons are sorted.
-let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
+def mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
   -- (6)-(7) from karras2012. In addition, we also assign child pointers.
   let root_delta = inners[0].delta_node
   let edge delta_c delta_p : i32 = (delta_c / 3) - (delta_p / 3)
@@ -165,14 +165,14 @@ let mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
 
 -- | Expands a 10-bit integer into 30 bits by inserting 2 zeros after
 -- each bit.
-let expand_bits (v: u32) : u32 =
+def expand_bits (v: u32) : u32 =
   let v = (v * 0x00010001) & 0xFF0000FF
   let v = (v * 0x00000101) & 0x0F00F00F
   let v = (v * 0x00000011) & 0xC30C30C3
   let v = (v * 0x00000005) & 0x49249249
   in v
 
-let morton_3D {x,y,z} : u32 =
+def morton_3D {x,y,z} : u32 =
   let x = f32.min (f32.max(x * 1024) 0) 1023
   let y = f32.min (f32.max(y * 1024) 0) 1023
   let z = f32.min (f32.max(z * 1024) 0) 1023
@@ -181,7 +181,7 @@ let morton_3D {x,y,z} : u32 =
   let zz = expand_bits (u32.f32 z)
   in xx * 4 + yy * 2 + zz
 
-let mk_accelerator [n] (bodies: [n]body) : ([]octnode, f32, i32, [n]body) =
+def mk_accelerator [n] (bodies: [n]body) : ([]octnode, f32, i32, [n]body) =
   let x_max = f32.maximum (map (.position.x) bodies)
   let y_max = f32.maximum (map (.position.y) bodies)
   let z_max = f32.maximum (map (.position.z) bodies)

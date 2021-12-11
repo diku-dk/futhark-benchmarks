@@ -20,7 +20,7 @@ import "objects"
 import "intersection"
 import "lights"
 
-let cast_view_rays (sizeX: i64) (sizeY: i64) (fov: i32) (eye_dir: position)
+def cast_view_rays (sizeX: i64) (sizeY: i64) (fov: i32) (eye_dir: position)
                  : [sizeY][sizeX]direction =
   let eye_vector = vec3.(normalise eye_dir)
   let vp_right = vec3.normalise (vec3.cross eye_vector {x=0,y=1,z=0})
@@ -40,7 +40,7 @@ let cast_view_rays (sizeX: i64) (sizeY: i64) (fov: i32) (eye_dir: position)
     in vec3.(normalise (eye_vector + xcomp + ycomp))
   in map (\y -> map (cast y) (iota sizeX)) (reverse (iota sizeY))
 
-let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
+def hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
              : (position, direction, argb.colour, f32) =
   let point = orig vec3.+ vec3.scale dist dir
   let normal = sphere_normal sph point
@@ -48,7 +48,7 @@ let hit_sphere (sph: sphere) (dist: f32) (orig: position) (dir: direction)
   let shine = sph.shine
   in (point, normal, colour, shine)
 
-let hit_plane (pln: plane) (dist: f32) (orig: position) (dir: direction)
+def hit_plane (pln: plane) (dist: f32) (orig: position) (dir: direction)
             : (position, direction, argb.colour, f32) =
   let point = orig vec3.+ vec3.scale dist dir
   let normal = pln.normal
@@ -63,7 +63,7 @@ let hit_plane (pln: plane) (dist: f32) (orig: position) (dir: direction)
 -- little bit since the original formulation is recursive, so I'm not
 -- sure the optics are exactly the same.  We are also able to escape
 -- early, in case a ray fails to collide with anyting.
-let trace_ray (limit: i32) ({spheres,planes}: objects [][]) (lights: lights [])
+def trace_ray (limit: i32) ({spheres,planes}: objects [][]) (lights: lights [])
               (ambient: argb.colour) (orig_point: position) (orig_dir: direction) =
   let dummy_sphere = {position={x=0.0, y=0.0, z=0.0},
                       colour=argb.black,
@@ -107,7 +107,7 @@ let trace_ray (limit: i32) ({spheres,planes}: objects [][]) (lights: lights [])
         visibility * shine)
   in refl_colour
 
-let make_objects (time: f32): objects [][] =
+def make_objects (time: f32): objects [][] =
   {spheres = [{position={x= 40.0 * f32.sin time, y= -80.0, z=0.0},
                radius=20.0,
                colour=argb.from_rgba 1.0 0.3 1.0 1.0,
@@ -137,7 +137,7 @@ let make_objects (time: f32): objects [][] =
               colour=argb.white,
               shine=0.2}]}
 
-let main (sizeX: i32) (sizeY: i32) (fov: i32)
+def main (sizeX: i32) (sizeY: i32) (fov: i32)
          (eye_pos_X: f32) (eye_pos_Y: f32) (eye_pos_Z: f32)
          (eye_dir_A: f32) (eye_dir_B: f32)
          (limit: i32) (time: f32) =

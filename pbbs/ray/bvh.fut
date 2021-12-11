@@ -5,14 +5,14 @@ import "prim"
 
 -- | Expands a 10-bit integer into 30 bits by inserting 2 zeros after
 -- each bit.
-let expand_bits (v: u32) : u32 =
+def expand_bits (v: u32) : u32 =
   let v = (v * 0x00010001) & 0xFF0000FF
   let v = (v * 0x00000101) & 0x0F00F00F
   let v = (v * 0x00000011) & 0xC30C30C3
   let v = (v * 0x00000005) & 0x49249249
   in v
 
-let morton_3D {x,y,z} : u32 =
+def morton_3D {x,y,z} : u32 =
   let x = f32.min (f32.max(x * 1024) 0) 1023
   let y = f32.min (f32.max(y * 1024) 0) 1023
   let z = f32.min (f32.max(z * 1024) 0) 1023
@@ -27,7 +27,7 @@ type inner = {aabb: aabb, left:ptr, right:ptr, parent:i32}
 
 type~ bvh [n] 't = {L: [n]t, I: []inner}
 
-let bvh_mk [n] 't (bbf: t -> aabb) (ts: [n]t) : bvh [n] t =
+def bvh_mk [n] 't (bbf: t -> aabb) (ts: [n]t) : bvh [n] t =
   let centers = map (bbf >-> aabb_center) ts
   let x_max = f32.maximum (map (.x) centers)
   let y_max = f32.maximum (map (.y) centers)
@@ -58,7 +58,7 @@ let bvh_mk [n] 't (bbf: t -> aabb) (ts: [n]t) : bvh [n] t =
                map (update inners) inners
   in {L = ts, I = inners}
 
-let bvh_fold [n] 'a 'b (contains: aabb -> bool) (op: b -> i32 -> a -> b) (init: b) (t: bvh [n] a) : b =
+def bvh_fold [n] 'a 'b (contains: aabb -> bool) (op: b -> i32 -> a -> b) (init: b) (t: bvh [n] a) : b =
   (.0) <|
   loop (acc, cur, prev) = (init, 0, #inner (-1))
   while cur != -1 do

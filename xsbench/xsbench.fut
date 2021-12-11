@@ -38,7 +38,7 @@ type inputs =
     lookups: i64
   }
 
-let grid_search [n] (quarry: f64) (A: [n]f64) : i64 =
+def grid_search [n] (quarry: f64) (A: [n]f64) : i64 =
   let lowerLimit = 0
   let upperLimit = n-1
   in (.0) <| loop (lowerLimit, upperLimit) for _i < 64-i64.clz n do
@@ -47,7 +47,7 @@ let grid_search [n] (quarry: f64) (A: [n]f64) : i64 =
 		   then (lowerLimit, examinationPoint)
 		   else (examinationPoint, upperLimit)
 
-let grid_search_nuclide [n] (quarry: f64) (A: [n]nuclide_grid_point) (low: i64) (high: i64) : i64 =
+def grid_search_nuclide [n] (quarry: f64) (A: [n]nuclide_grid_point) (low: i64) (high: i64) : i64 =
   let lowerLimit = low
   let upperLimit = high
   in (.0) <| loop (lowerLimit, upperLimit) for _i < 64-i64.clz n do
@@ -58,7 +58,7 @@ let grid_search_nuclide [n] (quarry: f64) (A: [n]nuclide_grid_point) (low: i64) 
 
 type xs_vector = (f64,f64,f64,f64,f64)
 
-let calculate_micro_xs [n_isotopes] [n_gridpoints]
+def calculate_micro_xs [n_isotopes] [n_gridpoints]
                        (p_energy: f64) (nuc: i32)
                        (index_data: [][n_isotopes]i32)
                        (nuclide_grids: [][n_gridpoints]nuclide_grid_point)
@@ -99,7 +99,7 @@ let calculate_micro_xs [n_isotopes] [n_gridpoints]
       high.fission_xs - f * (high.fission_xs - low.fission_xs),
       high.nu_fission_xs - f * (high.nu_fission_xs - low.nu_fission_xs))
 
-let calculate_macro_xs [n_isotopes] [n_gridpoints] [max_num_nucs]
+def calculate_macro_xs [n_isotopes] [n_gridpoints] [max_num_nucs]
                        (p_energy: f64) (mat: i32)
                        (num_nucs: []i32)
                        (concs: [][max_num_nucs]f64)
@@ -129,9 +129,9 @@ let calculate_macro_xs [n_isotopes] [n_gridpoints] [max_num_nucs]
 
 type seed = u64
 
-let STARTING_SEED : seed = 1070
+def STARTING_SEED : seed = 1070
 
-let fast_forward_LCG (seed: seed) (n: i64) : seed =
+def fast_forward_LCG (seed: seed) (n: i64) : seed =
   let m = 9223372036854775808 : u64
   let a = 2806196910506780709 : u64
   let c = 1 : u64
@@ -145,19 +145,19 @@ let fast_forward_LCG (seed: seed) (n: i64) : seed =
     in (n>>1, a * a, c * (a+1), a_new, c_new)
   in (a_new * seed + c_new) % m
 
-let LCG_random_double (seed: seed) : (f64, seed) =
+def LCG_random_double (seed: seed) : (f64, seed) =
   let m = 9223372036854775808
   let a = 2806196910506780709
   let c = 1
   let seed = (a * seed + c) % m
   in (f64.u64 seed / f64.u64 m, seed)
 
-let mat_dist : [12]f64 =
+def mat_dist : [12]f64 =
   [0.140, 0.052, 0.275, 0.134, 0.154, 0.064, 0.066, 0.055, 0.008, 0.015, 0.025, 0.013]
-let mat_dist_probs =
+def mat_dist_probs =
   [0] ++ scan (+) 0 (drop 1 mat_dist)
 
-let pick_mat (seed: seed) : (i32, seed) =
+def pick_mat (seed: seed) : (i32, seed) =
   let (roll, seed) = LCG_random_double seed
   let (i,_) =
     loop (j, continue) = (0,true) for i < 12 do
@@ -167,12 +167,12 @@ let pick_mat (seed: seed) : (i32, seed) =
       else (i+1, true)
   in (i32.i64 (i%12), seed)
 
-let argmax [n] (xs: [n]f64): i64 =
+def argmax [n] (xs: [n]f64): i64 =
   let max (x1, y1) (x2, y2) =
     if y1 < y2 then (x2, y2) else (x1, y1)
   in reduce max (-1, -f64.inf) (zip (iota n) xs) |> (.0)
 
-let run_event_based_simulation [length_num_nucs]
+def run_event_based_simulation [length_num_nucs]
                                [length_unionized_energy_array]
                                [max_num_nucs]
                                [n_isotopes]
@@ -198,7 +198,7 @@ let run_event_based_simulation [length_num_nucs]
                           inp.hash_bins
   in tabulate inp.lookups f
 
-let verification =
+def verification =
   let f (macro_xs_vector: (f64,f64,f64,f64,f64)) =
     let macro_xs_vector =
       [macro_xs_vector.0,
@@ -209,7 +209,7 @@ let verification =
     in #[sequential] #[unroll] argmax macro_xs_vector + 1
   in map f >-> i64.sum >-> (%999983)
 
-let unpack n_isotopes n_gridpoints grid_type hash_bins lookups
+def unpack n_isotopes n_gridpoints grid_type hash_bins lookups
            num_nucs concs mats nuclide_grid index_grid unionized_energy_array
            : (inputs, simulation_data [][][][][]) =
   let grid_type = match grid_type : i64
@@ -225,7 +225,7 @@ let unpack n_isotopes n_gridpoints grid_type hash_bins lookups
     {num_nucs, concs, mats, nuclide_grid, index_grid, unionized_energy_array}
   in (inputs, sd)
 
-let main n_isotopes n_gridpoints grid_type hash_bins lookups
+def main n_isotopes n_gridpoints grid_type hash_bins lookups
          num_nucs concs mats nuclide_grid index_grid unionized_energy_array =
   let (inputs, sd) =
     unpack n_isotopes n_gridpoints grid_type hash_bins lookups

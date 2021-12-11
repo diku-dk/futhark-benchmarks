@@ -5,7 +5,7 @@
 -- no_gtx780 compiled input @ data/africa.in.gz
 -- output @ data/africa.out.gz
 
-let isnan32new (x: f32) = f32.isnan x
+def isnan32new (x: f32) = f32.isnan x
 
 --let isnan32new (x: f32) = 
 --  let x = f32.to_bits x
@@ -13,14 +13,14 @@ let isnan32new (x: f32) = f32.isnan x
 --  let significand = x & 0b11111111111111111111111
 --  in exponent == 0b11111111 && significand != 0 
 
-let logplus (x: f32) : f32 =
+def logplus (x: f32) : f32 =
   if x > (f32.exp 1)
   then f32.log x else 1
 
-let adjustValInds [N] (n : i32) (ns : i32) (Ns : i32) (val_inds : [N]i32) (ind: i32) : i32 =
+def adjustValInds [N] (n : i32) (ns : i32) (Ns : i32) (val_inds : [N]i32) (ind: i32) : i32 =
     if ind < Ns - ns then (#[unsafe] val_inds[ind+ns]) - n else -1
 
-let filterPadWithKeys [n] 't
+def filterPadWithKeys [n] 't
            (p : (t -> bool))
            (dummy : t)           
            (arr : [n]t) : ([n](t,i32), i32) =
@@ -33,7 +33,7 @@ let filterPadWithKeys [n] 't
   in  (zip rs ks, i) 
 
 -- | builds the X matrices; first result dimensions of size 2*k+2
-let mkX_with_trend [N] (k2p2: i64) (f: f32) (mappingindices: [N]i32): [k2p2][N]f32 =
+def mkX_with_trend [N] (k2p2: i64) (f: f32) (mappingindices: [N]i32): [k2p2][N]f32 =
   map (\ i ->
         map (\ind ->
                 if i == 0 then 1f32
@@ -45,7 +45,7 @@ let mkX_with_trend [N] (k2p2: i64) (f: f32) (mappingindices: [N]i32): [k2p2][N]f
             ) mappingindices
       ) (map i32.i64 (iota k2p2))
 
-let mkX_no_trend [N] (k2p2m1: i64) (f: f32) (mappingindices: [N]i32): [k2p2m1][N]f32 =
+def mkX_no_trend [N] (k2p2m1: i64) (f: f32) (mappingindices: [N]i32): [k2p2m1][N]f32 =
   map (\ i ->
         map (\ind ->
                 if i == 0 then 1f32
@@ -89,7 +89,7 @@ let mkX_no_trend [N] (k2p2m1: i64) (f: f32) (mappingindices: [N]i32): [k2p2m1][N
 --    in (unflatten n m Ap')[0:n,n:2*n] :> [n][n]f32
 --
 
-let gauss_jordan [nm] (n:i32) (m:i32) (A: *[nm]f32): [nm]f32 =
+def gauss_jordan [nm] (n:i32) (m:i32) (A: *[nm]f32): [nm]f32 =
   loop A for i < n do
       let v1 = #[unsafe] A[i64.i32 i]
       let A' = map (\ind -> let (k, j) = (ind / m, ind % m)
@@ -101,7 +101,7 @@ let gauss_jordan [nm] (n:i32) (m:i32) (A: *[nm]f32): [nm]f32 =
                    ) (map i32.i64 (iota nm))
       in  scatter A (iota nm) A'
 
-let mat_inv [n0] (A: [n0][n0]f32): [n0][n0]f32 =
+def mat_inv [n0] (A: [n0][n0]f32): [n0][n0]f32 =
     let n = i32.i64 n0
     let m = 2*n
     let nm= n*m
@@ -119,19 +119,19 @@ let mat_inv [n0] (A: [n0][n0]f32): [n0][n0]f32 =
 --------------------------------------------------
 --------------------------------------------------
 
-let dotprod [n] (xs: [n]f32) (ys: [n]f32): f32 =
+def dotprod [n] (xs: [n]f32) (ys: [n]f32): f32 =
   reduce (+) 0.0 <| map2 (*) xs ys
 
-let matvecmul_row [n][m] (xss: [n][m]f32) (ys: [m]f32) =
+def matvecmul_row [n][m] (xss: [n][m]f32) (ys: [m]f32) =
   map (dotprod ys) xss
 
-let dotprod_filt [n] (vct: [n]f32) (xs: [n]f32) (ys: [n]f32) : f32 =
+def dotprod_filt [n] (vct: [n]f32) (xs: [n]f32) (ys: [n]f32) : f32 =
   f32.sum (map3 (\v x y -> x * y * if (isnan32new v) then 0.0 else 1.0) vct xs ys)
 
-let matvecmul_row_filt [n][m] (xss: [n][m]f32) (ys: [m]f32) =
+def matvecmul_row_filt [n][m] (xss: [n][m]f32) (ys: [m]f32) =
     map (\xs -> map2 (\x y -> if (isnan32new y) then 0 else x*y) xs ys |> f32.sum) xss
 
-let matmul_filt [n][p][m] (xss: [n][p]f32) (yss: [p][m]f32) (vct: [p]f32) : [n][m]f32 =
+def matmul_filt [n][p][m] (xss: [n][p]f32) (yss: [p][m]f32) (vct: [p]f32) : [n][m]f32 =
   map (\xs -> map (dotprod_filt vct xs) (transpose yss)) xss
 
 ----------------------------------------------------

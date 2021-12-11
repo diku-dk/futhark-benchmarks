@@ -10,10 +10,10 @@ type config = { xcentre: f64
               , limit: i32
               , radius: f64 }
 
-let cfg (xcentre, ycentre, width, limit, radius) : config =
+def cfg (xcentre, ycentre, width, limit, radius) : config =
   {xcentre, ycentre, width, limit, radius}
 
-let presets: []config =
+def presets: []config =
   [cfg (-0.7,                   0.0,                             3.067,                  100,   16.0),
    cfg (0.20508818500545423,    0.9014915666351141   * 900/1440, 6.375321937544527e-6,   629,   256.0),
    cfg (0.4510757067879078,     0.6144133202705898   * 900/1440, 7.632248223018773e-5,   399,   4.0),
@@ -33,23 +33,23 @@ module lys : lys with text_content = text_content = {
                , width: i64
                , mouse: (i32, i32) }
 
-  let init _ height width : state =
+  def init _ height width : state =
     {config = presets[0], precision = 32,
      height, width, mouse = (0,0)}
 
-  let resize height width (s: state) = s with height = height with width = width
+  def resize height width (s: state) = s with height = height with width = width
 
-  let diff (x1: i32, y1: i32) (x2, y2) = (x2 - x1, y2 - y1)
-  let move (s: state) (dx: i32, dy: i32) =
+  def diff (x1: i32, y1: i32) (x2, y2) = (x2 - x1, y2 - y1)
+  def move (s: state) (dx: i32, dy: i32) =
     let aspect_ratio = f64.i64 s.width / f64.i64 s.height
     let x_per_pixel = s.config.width / f64.i64 s.width
     let height = s.config.width*(1/aspect_ratio)
     let y_per_pixel = height / f64.i64 s.height
     in s.config with xcentre = s.config.xcentre - x_per_pixel * f64.i32 dx
                 with ycentre = s.config.ycentre - y_per_pixel * f64.i32 dy
-  let grab_mouse = false
+  def grab_mouse = false
 
-  let event (e: event) (s: state) =
+  def event (e: event) (s: state) =
     match e
     case #keydown {key} ->
       if key >= '0' && key <= '9'
@@ -73,12 +73,12 @@ module lys : lys with text_content = text_content = {
     case _ -> s
 
   type text_content = text_content
-  let text_format () = "FPS: %d; bits: %d; iterations: %d; radius: %.1f"
-  let text_content (fps: f32) (s: state) = (i32.f32 (f32.round fps), s.precision,
+  def text_format () = "FPS: %d; bits: %d; iterations: %d; radius: %.1f"
+  def text_content (fps: f32) (s: state) = (i32.f32 (f32.round fps), s.precision,
                                             s.config.limit, f32.f64 s.config.radius)
-  let text_colour _ = argb.white
+  def text_colour _ = argb.white
 
-  let render (s: state) =
+  def render (s: state) =
     if s.precision == 32
     then mandelbrot32.render_mandelbrot s.width s.height
                                         s.config.xcentre s.config.ycentre

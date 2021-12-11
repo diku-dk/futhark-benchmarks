@@ -13,12 +13,12 @@
 -- compiled input @ data/1000000.in
 -- output @ data/1000000.out
 
-let thefunction(x: f64, omegan: f64, select: i32): f64 =
+def thefunction(x: f64, omegan: f64, select: i32): f64 =
   if select == 0 then (x+1.0) ** x
   else if select == 1 then (x+1.0)**x * f64.cos(omegan*x)
   else (x+1.0)**x * f64.sin(omegan*x)
 
-let TrapezoidIntegrate(x0: f64, x1: f64, nsteps: i32, omegan: f64, select: i32): f64 =
+def TrapezoidIntegrate(x0: f64, x1: f64, nsteps: i32, omegan: f64, select: i32): f64 =
   let x = x0
   let dx = (x1-x0) / f64.i32 nsteps
   let rvalue = thefunction(x0, omegan, select) / 2.0
@@ -28,7 +28,7 @@ let TrapezoidIntegrate(x0: f64, x1: f64, nsteps: i32, omegan: f64, select: i32):
                       in (x, rvalue + thefunction(x,omegan,select)))
   in (rvalue + thefunction(x1,omegan,select) / 2.0) * dx
 
-let main(array_rows: i64): ([array_rows]f64,[array_rows]f64) =
+def main(array_rows: i64): ([array_rows]f64,[array_rows]f64) =
   let omega = 3.1415926535897932
   let first = [(TrapezoidIntegrate (0.0, 2.0, 1000, 0.0, 0) / 2.0,
                 0.0) -- never set in reference implementation

@@ -12,7 +12,7 @@ import "generic_mandelbrot"
 
 module mandelbrot = mandelbrot f32
 
-let main (screenX: i32) (screenY: i32)
+def main (screenX: i32) (screenY: i32)
          (xcentre: f32) (ycentre: f32) (width: f32)
          (depth: i32) (radius: f32) =
   -- Hack to avoid returning something gigantic.

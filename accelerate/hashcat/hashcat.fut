@@ -17,16 +17,16 @@
 
 type md5 = (u32, u32, u32, u32)
 
-let us32 (x: i32) = u32.i32 x
+def us32 (x: i32) = u32.i32 x
 
-let rs: [64]u32 =
+def rs: [64]u32 =
   map us32
   [ 7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,
     5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,
     4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,
     6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21 ]
 
-let ks: [64]u32 =
+def ks: [64]u32 =
   [ 0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee ,
     0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501 ,
     0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be ,
@@ -44,21 +44,21 @@ let ks: [64]u32 =
     0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1 ,
     0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391 ]
 
-let rotate_left(x: u32, c: u32): u32 = (x << c) | (x >> (32u32 - c))
+def rotate_left(x: u32, c: u32): u32 = (x << c) | (x >> (32u32 - c))
 
-let bytes(x: u32): [4]u8 = [u8.u32(x),
+def bytes(x: u32): [4]u8 = [u8.u32(x),
                             u8.u32(x >> 8u32),
                             u8.u32(x >> 16u32),
                             u8.u32(x >> 24u32)]
 
-let unbytes(bs: [4]u8): u32 =
+def unbytes(bs: [4]u8): u32 =
   u32.u8(bs[0]) +
   (u32.u8(bs[1]) << 8u32) +
   (u32.u8(bs[2]) << 16u32) +
   (u32.u8(bs[3]) << 24u32)
 
 -- Process 512 bits of the input.
-let md5_chunk ((a0,b0,c0,d0): md5) (block: [16]u32): md5 =
+def md5_chunk ((a0,b0,c0,d0): md5) (block: [16]u32): md5 =
   loop (a,b,c,d) = (a0,b0,c0,d0) for i < 64 do
     let (f,g) =
       if      i < 16 then ((b & c) | (!b & d),
@@ -71,16 +71,16 @@ let md5_chunk ((a0,b0,c0,d0): md5) (block: [16]u32): md5 =
                            (7u32*u32.i32 i)        % 16u32)
     in (d, b + rotate_left(a + f + ks[i] + #[unsafe] block[i32.u32 g], rs[i]), b, c)
 
-let initial_chunk = (0x67452301_u32,
+def initial_chunk = (0x67452301_u32,
                      0xefcdab89_u32,
                      0x98badcfe_u32,
                      0x10325476_u32)
 
-let md5s [n] (bs: [n][16]u32): [n]md5 =
+def md5s [n] (bs: [n][16]u32): [n]md5 =
   map (md5_chunk initial_chunk) bs
 
 
-let first_true [n] (bools : [n]bool): i32 =
+def first_true [n] (bools : [n]bool): i32 =
   (reduce_comm (\p (i,x) -> if x then (i,x) else p)
                (-1,false)
                (zip (map i32.i64 (iota n)) bools)).0
@@ -89,7 +89,7 @@ let first_true [n] (bools : [n]bool): i32 =
 
 type dict [n] = [n][16]u32
 
-let mk_block (bs: []u8) ((i,k): (i64,i64)): [16]u32 =
+def mk_block (bs: []u8) ((i,k): (i64,i64)): [16]u32 =
   #[unsafe]
   let k = i64.min 64 k -- Truncate past first block.
   let one_bit = [0x80u8, 0u8, 0u8, 0u8]
@@ -99,7 +99,7 @@ let mk_block (bs: []u8) ((i,k): (i64,i64)): [16]u32 =
   let block[64-8:64-4] = bytes (u32.i64(k*8))
   in map unbytes (unflatten 16 4 block)
 
-let md5_blocks [n][k] (bs: [k]u8) (offsets: [n]i64): [n][16]u32 =
+def md5_blocks [n][k] (bs: [k]u8) (offsets: [n]i64): [n][16]u32 =
   let lengths = map (\(i, j) -> if i > j then k-i else j-i)
                     (zip offsets (rotate 1 offsets))
   in map (mk_block bs) (zip offsets lengths)

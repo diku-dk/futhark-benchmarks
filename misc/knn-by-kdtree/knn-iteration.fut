@@ -4,10 +4,10 @@ import "brute-force"
 import "kd-traverse"
 import "util"
 
-let sortQueriesByLeavesRadix [n] (num_bits: i32) (leaves: [n]i32) : ([n]i32, [n]i32) =
+def sortQueriesByLeavesRadix [n] (num_bits: i32) (leaves: [n]i32) : ([n]i32, [n]i32) =
   unzip <| radix_sort_by_key (\(l,_) -> l) num_bits i32.get_bit (zip leaves (map i32.i64 (iota n)))
 
-let iterationSorted [q][n][d][k][N][num_leaves][ppl]
+def iterationSorted [q][n][d][k][N][num_leaves][ppl]
             (STEP: i32) (h: i32)
             (kd_tree: [q](i32,f32,i32))
             (leaves:  [num_leaves][ppl][d]f32)

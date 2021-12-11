@@ -9,40 +9,40 @@
 -- compiled input @ data/fvcorr.domn.193K.toa.gz
 -- output @ data/fvcorr.domn.193K.out.gz
 
-let gamma: f32 = 1.4
-let iterations: i32 = 2000
+def gamma: f32 = 1.4
+def iterations: i32 = 2000
 
-let rk: i32 = 3	-- 3rd order rk
-let ff_mach: f32 = 1.2
-let deg_angle_of_attack: f32 = 0.0
+def rk: i32 = 3	-- 3rd order rk
+def ff_mach: f32 = 1.2
+def deg_angle_of_attack: f32 = 0.0
 
 -- not options
-let var_density: i32 = 0
-let var_momentum: i32= 1
-let var_density_energy: i32 = var_momentum + 3 --var_momentum+NDIM
-let nvar: i32 = var_density_energy + 1
+def var_density: i32 = 0
+def var_momentum: i32= 1
+def var_density_energy: i32 = var_momentum + 3 --var_momentum+NDIM
+def nvar: i32 = var_density_energy + 1
 
 -- short functions
-let compute_velocity(density: f32, momentum: (f32,f32,f32)): (f32,f32,f32) =
+def compute_velocity(density: f32, momentum: (f32,f32,f32)): (f32,f32,f32) =
     let (momentum_x, momentum_y, momentum_z) = momentum
     in  (momentum_x / density, momentum_y / density, momentum_z / density)
 
-let compute_speed_sqd(velocity: (f32,f32,f32)): f32 =
+def compute_speed_sqd(velocity: (f32,f32,f32)): f32 =
     let (velocity_x, velocity_y, velocity_z) = velocity
     in velocity_x*velocity_x + velocity_y*velocity_y + velocity_z*velocity_z
 
-let compute_pressure(density: f32, density_energy: f32, speed_sqd: f32): f32 =
+def compute_pressure(density: f32, density_energy: f32, speed_sqd: f32): f32 =
     (gamma-1.0) * (density_energy - 0.5*density*speed_sqd)
 
-let compute_speed_of_sound(density: f32, pressure: f32): f32 =
+def compute_speed_of_sound(density: f32, pressure: f32): f32 =
     f32.sqrt( gamma * pressure / density )
 
 --
-let initialize_variables (nelr: i64) (ff_variable: [5]f32): [5][nelr]f32 = --[#nvar]float ff_variable
+def initialize_variables (nelr: i64) (ff_variable: [5]f32): [5][nelr]f32 = --[#nvar]float ff_variable
     map (\(x: f32): [nelr]f32  -> replicate nelr x) (ff_variable)
 
 --
-let compute_flux_contribution(_density:  f32,  momentum: (f32,f32,f32), density_energy: f32,
+def compute_flux_contribution(_density:  f32,  momentum: (f32,f32,f32), density_energy: f32,
                               pressure: f32, velocity: (f32,f32,f32) ): ((f32,f32,f32),(f32,f32,f32),(f32,f32,f32),(f32,f32,f32)) =
     let (momentum_x, momentum_y, momentum_z) = momentum
     let (velocity_x, velocity_y, velocity_z) = velocity
@@ -71,7 +71,7 @@ let compute_flux_contribution(_density:  f32,  momentum: (f32,f32,f32), density_
        )
 
 --
-let compute_step_factor [nelr]
+def compute_step_factor [nelr]
                         (variables: [5][nelr]f32, areas: [nelr]f32): [nelr]f32 = -- 5 == nvar
     map2 (\area variables'  ->
             let density    = variables'[var_density]
@@ -88,7 +88,7 @@ let compute_step_factor [nelr]
        ) areas (transpose variables)
 
 --5 == nvar
-let compute_flux [nnb][nel][ndim]
+def compute_flux [nnb][nel][ndim]
                    (elements_surrounding_elements:    [nnb][nel]i32
                 ,   normals: [ndim][nnb][nel]f32
                 ,   variables: [5][nel]f32
@@ -270,7 +270,7 @@ let compute_flux [nnb][nel][ndim]
     )
 
 --
-let time_step [nel]
+def time_step [nel]
              (j:  i32,
               old_variables: [5][nel]f32,
               step_factors: [nel]f32,
@@ -290,7 +290,7 @@ let time_step [nel]
 --------------------------
 ---- MAIN ENTRY POINT ----
 --------------------------
-let main [nel]
+def main [nel]
         (areas:   [nel]f32)
         (elements_surrounding_elements: [4][nel]i32)
         (normals: [3][4][nel]f32 ): [5][nel]f32 =

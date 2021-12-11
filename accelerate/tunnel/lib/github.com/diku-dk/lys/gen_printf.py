@@ -3,7 +3,7 @@
 import sys
 import re
 
-out_file, in_file = sys.argv[1:]
+self_dir, out_file, in_file = sys.argv[1:]
 
 with open(in_file) as f:
     contents = f.read()
@@ -15,7 +15,7 @@ out_vars = ['out{}'.format(i) for i in range(len(types))]
 
 with open(out_file, 'w') as f:
     print('#include <stdio.h>', file=f)
-    print('#include "lib/github.com/diku-dk/lys/liblys.h"', file=f)
+    print('#include "{}/liblys.h"'.format(self_dir), file=f)
     print('', file=f)
     if len(types) == 0:
         print('#define UNUSED(x) (void)(x)', file=f)

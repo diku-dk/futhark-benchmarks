@@ -9,10 +9,10 @@
 -- compiled input @ data/large.in.gz
 -- output @ data/large.out.gz
 
-let sat_add_u8 (x: i32) (y: i32): i32 =
+def sat_add_u8 (x: i32) (y: i32): i32 =
   if x + y > i32.u8 u8.highest then i32.u8 u8.highest else x + y
 
-let main [img_width] [img_height] (histo_width: i32) (histo_height: i32)
+def main [img_width] [img_height] (histo_width: i32) (histo_height: i32)
                                   (img: [img_width][img_height]i32) =
   let histo = replicate (i64.i32 (histo_height*histo_width)) 0
   let flat = img_height*img_width

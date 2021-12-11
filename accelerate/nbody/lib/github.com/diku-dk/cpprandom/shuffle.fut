@@ -15,7 +15,7 @@ local module type shuffle = {
 module mk_shuffle (E: rng_engine) : shuffle with rng = E.rng = {
   type rng = E.rng
 
-  let radix_sort_step [n] 't (xs: [n]t) (get_bit: i32 -> t -> i32)
+  def radix_sort_step [n] 't (xs: [n]t) (get_bit: i32 -> t -> i32)
                                         (digit_n: i32): [n]t =
     let bits = map (get_bit digit_n) xs
     let bits_inv = map (1-) bits
@@ -29,13 +29,13 @@ module mk_shuffle (E: rng_engine) : shuffle with rng = E.rng = {
     let ps_actual = map (\x -> x-1) ps
     in scatter (copy xs) (map i64.i32 ps_actual) xs
 
-  let radix_sort [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
+  def radix_sort [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
                         (xs: [n]t): [n]t =
     loop xs for i < num_bits do radix_sort_step xs get_bit i
 
   module dist = uniform_int_distribution i64 E
 
-  let shuffle' [n] 't rngs (xs: [n]t) =
+  def shuffle' [n] 't rngs (xs: [n]t) =
     let (rngs', keys) = map (dist.rand (0, n - 1)) rngs |> unzip
     let get_bit i x = i64.get_bit i keys[x]
     let num_bits = i32.f64 (f64.ceil (f64.log2 (f64.i64 n)))
@@ -43,7 +43,7 @@ module mk_shuffle (E: rng_engine) : shuffle with rng = E.rng = {
               map (\i -> xs[i])
     in (rngs', xs')
 
-  let shuffle [n] 't rng (xs: [n]t) =
+  def shuffle [n] 't rng (xs: [n]t) =
     let rngs = E.split_rng n rng
     let (rngs', xs') = shuffle' rngs xs
     in (E.join_rng rngs', xs')

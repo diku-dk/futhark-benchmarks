@@ -15,9 +15,9 @@ module mk_fft (R: real): {
   type real = R.t
   type complex = complex.complex
 
-  let radix:i32 = 2
+  def radix:i32 = 2
 
-  let fft_iteration [n] (forward: R.t) (ns: i32) (data: [n]complex) (j: i32)
+  def fft_iteration [n] (forward: R.t) (ns: i32) (data: [n]complex) (j: i32)
                   : (i64, complex, i64, complex) =
     let angle = R.(f64(-2.0) * forward * pi) R.* (R.i32(j % ns)) R./ R.i32(ns * radix)
     let (v0, v1) = (data[j],
@@ -27,7 +27,7 @@ module mk_fft (R: real): {
     let idxD = ((j/ns)*ns*radix) + (j % ns)
     in (i64.i32 idxD, v0, i64.i32 (idxD+ns), v1)
 
-  let fft' [n] (forward: R.t) (input: [n]complex) (bits: i32) : [n]complex =
+  def fft' [n] (forward: R.t) (input: [n]complex) (bits: i32) : [n]complex =
     let bits64 = i64.i32 bits
     let input = copy input
     let output = copy input
@@ -43,7 +43,7 @@ module mk_fft (R: real): {
             input')
     in res
 
-  let log2 (n: i64) : i32 =
+  def log2 (n: i64) : i32 =
     let r = 0
     let (r, _) = loop (r,n) while 1 < n do
       let n = n / 2
@@ -51,28 +51,28 @@ module mk_fft (R: real): {
       in (r,n)
     in r
 
-  let is_power_of_2 (x: i64) = (x & (x - 1)) == 0
+  def is_power_of_2 (x: i64) = (x & (x - 1)) == 0
 
-  let generic_fft [n] (forward: bool) (data: [n](R.t, R.t)): [n](R.t, R.t) =
+  def generic_fft [n] (forward: bool) (data: [n](R.t, R.t)): [n](R.t, R.t) =
     assert (is_power_of_2 n)
            (let bits = log2 n
             let forward' = if forward then R.i32 1 else R.i32 (-1)
             in fft' forward' data bits)
 
-  let fft [n] (data: [n](R.t, R.t)): [n](R.t, R.t) =
+  def fft [n] (data: [n](R.t, R.t)): [n](R.t, R.t) =
     generic_fft true data
 
-  let ifft [n] (data: [n](R.t, R.t)): [n](R.t, R.t) =
+  def ifft [n] (data: [n](R.t, R.t)): [n](R.t, R.t) =
     let nc = complex.mk_re (R.i64 n)
     in map (complex./nc) (generic_fft false data)
 
-  let fft_re [n] (data: [n]R.t): [n](R.t, R.t) =
+  def fft_re [n] (data: [n]R.t): [n](R.t, R.t) =
     fft (map complex.mk_re data)
 
-  let ifft_re [n] (data: [n]R.t): [n](R.t, R.t) =
+  def ifft_re [n] (data: [n]R.t): [n](R.t, R.t) =
     ifft (map complex.mk_re data)
 
-  let generic_fft2 [n][m] (forward: bool) (data: [n][m](R.t, R.t)): [n][m](R.t, R.t) =
+  def generic_fft2 [n][m] (forward: bool) (data: [n][m](R.t, R.t)): [n][m](R.t, R.t) =
     assert (is_power_of_2 n && is_power_of_2 m)
            (let n_bits = log2 n
             let m_bits = log2 m
@@ -81,16 +81,16 @@ module mk_fft (R: real): {
             let data = map (\c -> fft' forward' c n_bits) (transpose data)
             in transpose data)
 
-  let fft2 [n][m] (data: [n][m](R.t, R.t)): [n][m](R.t, R.t) =
+  def fft2 [n][m] (data: [n][m](R.t, R.t)): [n][m](R.t, R.t) =
     generic_fft2 true data
 
-  let ifft2 [n][m] (data: [n][m](R.t, R.t)): [n][m](R.t, R.t) =
+  def ifft2 [n][m] (data: [n][m](R.t, R.t)): [n][m](R.t, R.t) =
     let nc = complex.mk_re (R.i64 (n*m))
     in map (\r -> map (complex./nc) r) (generic_fft2 false data)
 
-  let fft2_re [n][m] (data: [n][m]R.t): [n][m](R.t, R.t) =
+  def fft2_re [n][m] (data: [n][m]R.t): [n][m](R.t, R.t) =
     fft2 (map (\r -> map complex.mk_re r) data)
 
-  let ifft2_re [n][m] (data: [n][m]R.t): [n][m](R.t, R.t) =
+  def ifft2_re [n][m] (data: [n][m]R.t): [n][m](R.t, R.t) =
     ifft2 (map (\r -> map complex.mk_re r) data)
 }

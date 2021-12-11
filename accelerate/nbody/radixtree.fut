@@ -5,14 +5,14 @@
 -- Based on "Maximizing Parallelism in the Construction of BVHs,
 -- Octrees, and k-d Trees" by Tero Karras.
 
-let div_rounding_up x y : i32 = (x + y - 1) / y
+def div_rounding_up x y : i32 = (x + y - 1) / y
 
 type ptr = #leaf i32 | #inner i32
 
 type inner = {delta_node: i32, sfc_code: u32, left:ptr, right:ptr, parent: i32}
 
 -- | `L` must be sorted.
-let mk_radix_tree [n] (L: [n]u32) : []inner =
+def mk_radix_tree [n] (L: [n]u32) : []inner =
 
   let delta (i, j) =
     if j >= 0 && j < i32.i64 n

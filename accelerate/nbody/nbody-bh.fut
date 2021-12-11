@@ -12,7 +12,7 @@
 import "octree"
 import "physics"
 
-let move [n] (epsilon: f32) (theta: f32)
+def move [n] (epsilon: f32) (theta: f32)
              (t: [n]octnode, side_max: f32, root_delta: i32) (x: pointmass)
              : acceleration =
   let (acceleration, _, _, _) =
@@ -56,7 +56,7 @@ let move [n] (epsilon: f32) (theta: f32)
         in (acc, children[0], cur, to_check + num_children - 1)
   in acceleration
 
-let calc_accels [n] (epsilon: f32) (theta: f32) (bodies: [n]body)
+def calc_accels [n] (epsilon: f32) (theta: f32) (bodies: [n]body)
                     : ([n]acceleration, [n]body) =
   let (accelerator, side_max, root_delta, sorted_bodies) =
     mk_accelerator bodies
@@ -64,24 +64,24 @@ let calc_accels [n] (epsilon: f32) (theta: f32) (bodies: [n]body)
           (map pointmass sorted_bodies),
       sorted_bodies)
 
-let advance_bodies [n] (theta: f32) (epsilon: f32) (time_step: f32)
+def advance_bodies [n] (theta: f32) (epsilon: f32) (time_step: f32)
                        (bodies: [n]body): [n]body =
   let (accels, bodies) = calc_accels epsilon theta bodies
   in map2 (advance_body time_step) bodies accels
 
-let advance_bodies_steps [n] (n_steps: i32) (theta: f32) (epsilon: f32) (time_step: f32)
+def advance_bodies_steps [n] (n_steps: i32) (theta: f32) (epsilon: f32) (time_step: f32)
                              (bodies: [n]body): [n]body =
   loop bodies for _i < n_steps do
     advance_bodies theta epsilon time_step bodies
 
-let wrap_body (posx: f32, posy: f32, posz: f32)
+def wrap_body (posx: f32, posy: f32, posz: f32)
               (mass: f32)
               (velx: f32, vely: f32, velz: f32): body =
   {position={x=posx, y=posy, z=posz},
    mass,
    velocity={x=velx, y=vely, z=velz}}
 
-let unwrap_body (b: body): ((f32, f32, f32), f32, (f32, f32, f32)) =
+def unwrap_body (b: body): ((f32, f32, f32), f32, (f32, f32, f32)) =
   ((b.position.x, b.position.y, b.position.z),
    b.mass,
    (b.velocity.x, b.velocity.y, b.velocity.z))

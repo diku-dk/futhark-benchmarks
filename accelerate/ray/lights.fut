@@ -8,7 +8,7 @@ type light = {position: position,
 
 type lights [nlights] = {lights: [nlights]light}
 
-let apply_light ({spheres,planes}: objects [][]) (point: position) (normal: direction)
+def apply_light ({spheres,planes}: objects [][]) (point: position) (normal: direction)
                 (light: light): argb.colour =
   let lp_p = light.position vec3.- point
   let dist = vec3.norm lp_p
@@ -22,7 +22,7 @@ let apply_light ({spheres,planes}: objects [][]) (point: position) (normal: dire
           let refl = argb.from_rgba (r*mag) (g*mag) (b*mag) 1.0
           in refl
 
-let apply_lights [num_lights]
+def apply_lights [num_lights]
                  (objects: objects [][]) ({lights}: lights [num_lights])
                  (point: position) (normal: direction)
                 : argb.colour =

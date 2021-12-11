@@ -7,25 +7,25 @@ type rotation = ((f32, f32, f32),
                  (f32, f32, f32),
                  (f32, f32, f32))
 
-let rotate_point (rotation: rotation) ({x,y,z}: position): position =
+def rotate_point (rotation: rotation) ({x,y,z}: position): position =
   {x= x*rotation.0.0 + y*rotation.1.0 + z*rotation.2.0,
    y= x*rotation.0.1 + y*rotation.1.1 + z*rotation.2.1,
    z= x*rotation.0.2 + y*rotation.1.2 + z*rotation.2.2}
 
-let rotate_points [n] (rotation: rotation) (ps: [n]position): [n]position =
+def rotate_points [n] (rotation: rotation) (ps: [n]position): [n]position =
   map (rotate_point rotation) ps
 
-let rotate_x_matrix (angle: f32): rotation =
+def rotate_x_matrix (angle: f32): rotation =
   ((1f32,        0f32,         0f32),
    (0f32, f32.cos angle, -f32.sin angle),
    (0f32, f32.sin angle,  f32.cos angle))
 
-let rotate_y_matrix (angle: f32): rotation =
+def rotate_y_matrix (angle: f32): rotation =
   ((f32.cos angle,  0f32, f32.sin angle),
    (0f32,           1f32, 0f32),
    (-f32.sin angle, 0f32, f32.cos angle))
 
-let rotmult (x: rotation) (y: rotation): rotation =
+def rotmult (x: rotation) (y: rotation): rotation =
   let dot a b = a.0 * b.0 + a.1 * b.1 + a.2 * b.2
   in ((dot (x.0.0, x.1.0, x.2.0) y.0,
        dot (x.0.1, x.1.1, x.2.1) y.0,
@@ -37,16 +37,16 @@ let rotmult (x: rotation) (y: rotation): rotation =
        dot (x.0.1, x.1.1, x.2.1) y.2,
        dot (x.0.2, x.1.2, x.2.2) y.2))
 
-let rotation (x_rotation: f32) (y_rotation: f32): rotation =
+def rotation (x_rotation: f32) (y_rotation: f32): rotation =
   rotmult (rotate_x_matrix x_rotation) (rotate_y_matrix y_rotation)
 
-let inverse_rotation (x_rotation: f32) (y_rotation: f32): rotation =
+def inverse_rotation (x_rotation: f32) (y_rotation: f32): rotation =
   rotmult (rotate_y_matrix y_rotation) (rotate_x_matrix x_rotation)
 
 import "lib/github.com/athas/matte/colour"
 
 -- FIXME: This rendering is terrible because it is not FoV-aware.
-let render_point (h: i64) (w: i64)
+def render_point (h: i64) (w: i64)
                  {x=x_ul: f32, y=y_ul: f32} {x=x_br: f32, y=y_br: f32}
                  (max_mass: f32) ({x,y,z=_}:position) (m: f32):
                  (i64, argb.colour) =
@@ -74,7 +74,7 @@ module rnge = pcg32
 module dist = uniform_real_distribution f32 rnge
 module norm = normal_distribution f32 rnge
 
-let mk_body_cloud (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
+def mk_body_cloud (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
   let (rng, position) =
     let (rng, angle) = dist.rand (0, 2*f32.pi) rng
     let (rng, z_angle) = dist.rand (0, 2*f32.pi) rng
@@ -87,7 +87,7 @@ let mk_body_cloud (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
   let velocity = {x=0, y=0, z=0}
   in (rng, {position, mass, velocity})
 
-let mk_body_spiral (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
+def mk_body_spiral (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
   let (rng, position) =
     let (rng, length) = dist.rand (0, radius) rng
     let angle = length / 3*f32.pi
@@ -99,7 +99,7 @@ let mk_body_spiral (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
   let velocity = {x=0, y=0, z=0}
   in (rng, {position, mass, velocity})
 
-let mk_body_orbit (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
+def mk_body_orbit (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
   let (rng, position) =
     let (rng, x) = norm.rand {mean=0, stddev=radius} rng
     let (rng, y) = norm.rand {mean=0, stddev=radius/100} rng
@@ -111,7 +111,7 @@ let mk_body_orbit (radius: f32) (rng: rnge.rng) : (rnge.rng, body) =
   let velocity = {x=0, y=position.x/radius*10, z=0}
   in (rng, {position, mass, velocity})
 
-let mk_bodies (mk: (rnge.rng -> (rnge.rng, body))) (rng: rnge.rng) (n: i64)
+def mk_bodies (mk: (rnge.rng -> (rnge.rng, body))) (rng: rnge.rng) (n: i64)
             : (rnge.rng, [n]body) =
   let rngs = rnge.split_rng n rng
   let (rngs, bodies) = unzip (map mk rngs)
@@ -138,16 +138,16 @@ module lys : lys with text_content = info = {
                 , attractor : opt vec3.vector
                 }
 
-  let epsilon : f32 = 50
+  def epsilon : f32 = 50
 
-  let screen_space_to_world_space x y (s: state) =
+  def screen_space_to_world_space x y (s: state) =
     let x_dist = s.br.x - s.ul.x
     let y_dist = s.br.y - s.ul.y
     let x = s.ul.x + (f32.i64 x / f32.i64 s.width) * x_dist
     let y = s.ul.y + (f32.i64 y / f32.i64 s.height) * y_dist
     in rotate_point (inverse_rotation (-s.rotation.x) (-s.rotation.y)) {x,y,z=0}
 
-  let blob x y (s: state) : state =
+  def blob x y (s: state) : state =
     let {x,y,z} = screen_space_to_world_space x y s
     let blob_N = 100
     let move (body: body) = body with position.x = body.position.x + x
@@ -157,7 +157,7 @@ module lys : lys with text_content = info = {
     in s with rng = rng
          with bodies = s.bodies ++ map move bodies
 
-  let maybe_attract [n] (opt_attractor: opt vec3.vector) (td: f32) (bodies: [n]body)
+  def maybe_attract [n] (opt_attractor: opt vec3.vector) (td: f32) (bodies: [n]body)
                       : [n]body =
     match opt_attractor
     case #none -> bodies
@@ -166,7 +166,7 @@ module lys : lys with text_content = info = {
       let accels = map (\b -> accel epsilon (pointmass b) pm) bodies
       in map2 (advance_body td) bodies accels
 
-  let init (seed: u32) (height: i64) (width: i64) : state =
+  def init (seed: u32) (height: i64) (width: i64) : state =
     let n = 10000
     let rng = rnge.rng_from_seed [i32.u32 seed]
     let (rng, bodies) = mk_bodies (mk_body_cloud (f32.min (f32.i64 height) (f32.i64 width))) rng n
@@ -189,7 +189,7 @@ module lys : lys with text_content = info = {
        , attractor = #none
        }
 
-  let move_bodies td (s: state) =
+  def move_bodies td (s: state) =
     s with bodies = if s.paused
                     then s.bodies
                     else maybe_attract s.attractor td
@@ -199,11 +199,11 @@ module lys : lys with text_content = info = {
                           case #bh ->
                             bh.advance_bodies s.theta epsilon 1 s.bodies)
 
-  let handle_rotation td (s: state) =
+  def handle_rotation td (s: state) =
     s with rotation.x = s.rotation.x + td * s.rotating.x
       with rotation.y = s.rotation.y + td * s.rotating.y
 
-  let handle_zoom td (s: state) =
+  def handle_zoom td (s: state) =
     let x_dist = s.br.x - s.ul.x
     let y_dist = s.br.y - s.ul.y
     in s with br = {x = s.br.x - td * x_dist * s.zooming,
@@ -211,7 +211,7 @@ module lys : lys with text_content = info = {
          with ul = {x = s.ul.x + td * x_dist * s.zooming,
                     y = s.ul.y + td * y_dist * s.zooming}
 
-  let event (e: event) (s: state) =
+  def event (e: event) (s: state) =
     match e
 
     case #step td -> s
@@ -269,10 +269,10 @@ module lys : lys with text_content = info = {
 
     case _ -> s
 
-  let resize h w (s: state) =
+  def resize h w (s: state) =
     s with height = h with width = w
 
-  let render (s: state) =
+  def render (s: state) =
     let background = if s.invert then argb.white else argb.black
     let (is, vs) =
       unzip (map2
@@ -285,13 +285,13 @@ module lys : lys with text_content = info = {
        (scatter (replicate (s.height*s.width) background) is vs')
 
   type text_content = info
-  let text_content (fps: f32) (s: state) : info =
+  def text_content (fps: f32) (s: state) : info =
     (fps,
      i32.i64 (length s.bodies),
      match s.solver case #bruteforce -> 0
                     case #bh -> 1,
      s.theta)
-  let grab_mouse = false
-  let text_format () = "FPS: %f\nN: %d\nSolver: %[brute force|Barnes-Hut]\nTheta: %f"
-  let text_colour (s: state) = if s.invert then argb.black else argb.white
+  def grab_mouse = false
+  def text_format () = "FPS: %f\nN: %d\nSolver: %[brute force|Barnes-Hut]\nTheta: %f"
+  def text_colour (s: state) = if s.invert then argb.black else argb.white
 }

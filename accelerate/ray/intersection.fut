@@ -3,7 +3,7 @@ import "objects"
 
 -- Find the nearest point of intersection of a ray by brute force.
 
-let cast_ray [n] 'object
+def cast_ray [n] 'object
              (distance_to: object -> position -> direction -> (bool, f32))
              (objects: [n]object) (dummy: object) (orig: position) (dir: direction)
            : (bool, f32, object) =
@@ -14,14 +14,14 @@ let cast_ray [n] 'object
           then (new_hit, dist, obj)
           else (hit, closest_hit_dist, closest_hit_obj))
 
-let cast_ray_sphere = cast_ray sphere.distance_to
-let cast_ray_plane = cast_ray plane.distance_to
+def cast_ray_sphere = cast_ray sphere.distance_to
+def cast_ray_plane = cast_ray plane.distance_to
 
 -- Look for an object closer than a given minimum distance.  Ideally,
 -- we'd stop as soon as we find an intersection, but AMDs OpenCL
 -- kernel compiler seems to miscompile the resulting while-loop (that
 -- was a fun one to debug).
-let check_ray [n] 'object
+def check_ray [n] 'object
               (distance_to: object -> position -> direction -> (bool, f32))
               (objects: [n]object) (orig: position) (dir: direction) (dist: f32)
             : bool =
@@ -31,5 +31,5 @@ let check_ray [n] 'object
       in if new_hit && dist' < dist then true else hit
     else hit
 
-let check_ray_sphere = check_ray sphere.distance_to
-let check_ray_plane = check_ray plane.distance_to
+def check_ray_sphere = check_ray sphere.distance_to
+def check_ray_plane = check_ray plane.distance_to

@@ -10,22 +10,22 @@
 
 type vec3 = (f64, f64, f64)
 
-let dec2rad(dec: f64): f64 = f64.pi/180.0 * dec
-let rad2dec(rad: f64): f64 = 180.0f64/f64.pi * rad
-let min_arcmin: f64 = 1.0
-let max_arcmin: f64 = 10000.0
-let bins_per_dec: f64 = 5.0
-let numBins: i32 = 20
+def dec2rad(dec: f64): f64 = f64.pi/180.0 * dec
+def rad2dec(rad: f64): f64 = 180.0f64/f64.pi * rad
+def min_arcmin: f64 = 1.0
+def max_arcmin: f64 = 10000.0
+def bins_per_dec: f64 = 5.0
+def numBins: i32 = 20
 
-let iota32 (num: i64): [num]f64 =
+def iota32 (num: i64): [num]f64 =
   map f64.i64 (iota num)
 
-let sumBins [numBins][numBinss] (bins: [numBinss][numBins]i32): *[numBins]i32 =
+def sumBins [numBins][numBinss] (bins: [numBinss][numBins]i32): *[numBins]i32 =
   map1 i32.sum (transpose bins)
 
-let log10 (num: f64): f64 = f64.log(num) / f64.log(10.0)
+def log10 (num: f64): f64 = f64.log(num) / f64.log(10.0)
 
-let doCompute [numD][numBBins]
+def doCompute [numD][numBBins]
               (datapoints: [numD]vec3)
               (random: [numD]vec3)
               (numBins2: i64)
@@ -55,7 +55,7 @@ let doCompute [numD][numBBins]
   let l = numD * numD
   in reduce_by_index (replicate numBins2 0) (+) 0 (tabulate l f) (replicate l 1)
 
-let doComputeSelf [numD][numBBins]
+def doComputeSelf [numD][numBBins]
                   (datapoints: [numD]vec3)
                   (numBins2: i64)
                   (binb: [numBBins]f64)
@@ -84,13 +84,13 @@ let doComputeSelf [numD][numBBins]
   let l = numD * numD
   in reduce_by_index (replicate numBins2 0) (+) 0 (tabulate l f) (replicate l 1)
 
-let fixPoints (ra: f64) (dec: f64): vec3 =
+def fixPoints (ra: f64) (dec: f64): vec3 =
   let rarad = dec2rad(ra)
   let decrad = dec2rad(dec)
   let cd = f64.cos(decrad)
   in (f64.cos(rarad)*cd, f64.sin(rarad)*cd, f64.sin(decrad))
 
-let main [numD][numRs]
+def main [numD][numRs]
          (datapointsx: [numD]f64)
          (datapointsy: [numD]f64)
          (randompointsx: [numRs][numD]f64)

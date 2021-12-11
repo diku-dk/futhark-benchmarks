@@ -19,13 +19,13 @@ module fading_life (F: fading) (R: rules) (V: visuals with cell = R.cell)
 -- The cell, and the amount of time it has been dead.
 type cell = (R.cell, argb.colour, i32)
 
-let dead (c: R.cell): bool = V.uninit c == false
+def dead (c: R.cell): bool = V.uninit c == false
 
   open (gen_life_vis {
 type cell = cell
-let value ((c,_,_): cell) = R.value c
-let weights = R.weights
-let step ((c,col,h): cell) (neighbours: i32) =
+def value ((c,_,_): cell) = R.value c
+def weights = R.weights
+def step ((c,col,h): cell) (neighbours: i32) =
   let c' = R.step c neighbours
   let died = ! (dead c) && dead c'
   in (c',
@@ -34,11 +34,11 @@ let step ((c,col,h): cell) (neighbours: i32) =
 } {
   type cell = cell
 
-let init (b: bool): cell = (V.init b, argb.black, 10000)
+def init (b: bool): cell = (V.init b, argb.black, 10000)
 
-let uninit ((c,_,_): cell) = V.uninit c
+def uninit ((c,_,_): cell) = V.uninit c
 
-let colour ((c,col,h): cell) =
+def colour ((c,col,h): cell) =
   let normal = V.colour c in
   if dead c
   then argb.mix 1f32 col (f32.i32 h * F.dying_speed) normal
@@ -47,4 +47,4 @@ let colour ((c,col,h): cell) =
 
 }
 
-module slow_fader = fading_life { let dying_speed = 0.1f32 }
+module slow_fader = fading_life { def dying_speed = 0.1f32 }

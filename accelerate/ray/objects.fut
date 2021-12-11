@@ -14,7 +14,7 @@ type sphere = {position: position,
 module sphere: object with object = sphere = {
   type object = sphere
 
-  let distance_to (sphere: sphere)
+  def distance_to (sphere: sphere)
                   (origin: position)
                   (direction: direction): (bool, f32) =
     let pos = sphere.position
@@ -28,7 +28,7 @@ module sphere: object with object = sphere = {
        else (true, vec3.norm sep - f32.sqrt (radius*radius - d_cp * d_cp))
 }
 
-let sphere_normal (sphere: sphere) (point: position): direction =
+def sphere_normal (sphere: sphere) (point: position): direction =
   vec3.normalise (point vec3.- sphere.position)
 
 type plane = {position: position,
@@ -41,7 +41,7 @@ type plane_check = plane
 module plane: object with object = plane = {
   type object = plane
 
-  let distance_to (plane: plane)
+  def distance_to (plane: plane)
                   (origin: position)
                   (direction: direction): (bool, f32) =
     let pos = plane.position
@@ -52,7 +52,7 @@ module plane: object with object = plane = {
        else (true, vec3.(dot (pos - origin) normal) / theta)
 }
 
-let checkers (c: argb.colour) ({x,y=_,z}: position): argb.colour =
+def checkers (c: argb.colour) ({x,y=_,z}: position): argb.colour =
   let v1 = i32.f32 (x/100.0) % 2
   let v2 = i32.f32 (z/100.0) % 2
   let v3 = i32.bool (x < 0.0)

@@ -1,4 +1,4 @@
-let array f n m =
+def array f n m =
   let n64 = i64.i32 n
   let m64 = i64.i32 m
   in map (\i -> replicate m64 (f i)) (iota n64)

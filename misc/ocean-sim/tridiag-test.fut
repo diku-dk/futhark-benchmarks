@@ -1,7 +1,7 @@
 import "typeinst32"
 import "tridiag"
 
-let INNER_DIM : i64 = 115
+def INNER_DIM : i64 = 115
 
 -- ==
 -- entry: tridagNested tridagNestedConst tridagNestedSeq tridagNestedSeqConst 

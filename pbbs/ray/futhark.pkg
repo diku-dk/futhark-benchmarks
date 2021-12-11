@@ -1,4 +1,4 @@
 require {
-  github.com/athas/vector 0.7.0 #f5aaa219a02949d1eb2978f81419cf5614abfa3d
+  github.com/athas/vector 0.7.1 #c8f9f029530cb29db9b2957b80e65dbe893c01df
   github.com/diku-dk/sorts 0.4.2 #3b2cfcc0d0256df7cd1f2548f68d85f2453007a0
 }

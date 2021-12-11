@@ -1,5 +1,5 @@
 require {
-  github.com/athas/matte 0.1.2 #2ce1a39b29c329504cb2d849e305cbcc17f701d5
-  github.com/athas/vector 0.7.0 #f5aaa219a02949d1eb2978f81419cf5614abfa3d
-  github.com/diku-dk/lys 0.1.12 #34e5ff985fefac9a9627d49e26a19ef5352e7019
+  github.com/athas/matte 0.1.3 #ec4243a5f64cb818a4289dbc4953460ea19da12c
+  github.com/athas/vector 0.7.1 #c8f9f029530cb29db9b2957b80e65dbe893c01df
+  github.com/diku-dk/lys 0.1.16 #f59d97c25005f04a1b518e092707e1e54e593715
 }

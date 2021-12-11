@@ -10,7 +10,7 @@ import "heston"
 
 module heston64 = heston f64 minstd_rand
 
-let main [num_quotes]
+def main [num_quotes]
          (max_global: i32)
          (num_points: i32)
          (np: i32)

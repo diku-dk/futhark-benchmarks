@@ -7,26 +7,26 @@ import "lib/github.com/athas/matte/colour"
 module quad_rules: rules_and_visuals = {
   type cell = i8
 
-  let value (c: cell) = i32.i8 c
+  def value (c: cell) = i32.i8 c
 
-  let weights: [3][3]i32 = [[1,1,1],
+  def weights: [3][3]i32 = [[1,1,1],
                             [1,1,1],
                             [1,1,1]]
 
-  let step (_c: cell) (neighbours: i32) =
+  def step (_c: cell) (neighbours: i32) =
     let t = [0i8,0i8,0i8,2i8,2i8,3i8,3i8,
              1i8,1i8,1i8,1i8,1i8,0i8,0i8,
              2i8,0i8,2i8,2i8,2i8,2i8,2i8,
              0i8,2i8,1i8,2i8,3i8,3i8,3i8]
     in #[unsafe] t[neighbours]
 
-  let init (b: bool) =
+  def init (b: bool) =
     if b then 0i8 else 1i8
 
-  let uninit (c: cell) =
+  def uninit (c: cell) =
     c != 1i8
 
-  let colour (c: cell) =
+  def colour (c: cell) =
     let colours = [argb.green,
                    argb.black,
                    argb.red,

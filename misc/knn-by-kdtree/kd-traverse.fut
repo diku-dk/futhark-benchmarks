@@ -2,7 +2,7 @@ import "util"
 
 -- give the median dimensions and values for each internal k-d tree node,
 --   finds the leaf to which the query naturally belongs to.
-let findLeaf [q][d] (median_dims: [q]i32) (median_vals: [q]f32)
+def findLeaf [q][d] (median_dims: [q]i32) (median_vals: [q]f32)
                     (height: i32) (query: [d]f32) =
   let leaf =
     loop (node_index) = (0)
@@ -24,7 +24,7 @@ let findLeaf [q][d] (median_dims: [q]i32) (median_vals: [q]f32)
 --         been visited already
 -- Results: the index of the new leaf and the new stack
 --
-let traverseOnce [q] [d] (height: i32)
+def traverseOnce [q] [d] (height: i32)
                  (kd_tree: [q](i32,f32,i32))
                  (query: [d]f32, wnn: f32)
                  (last_leaf: i32, stack: i32, dist: f32) : (i32, i32, f32) =

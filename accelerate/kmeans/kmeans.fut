@@ -13,37 +13,37 @@
 
 type point = (f32,f32)
 
-let add_points ((x1,y1): point) ((x2,y2): point): point =
+def add_points ((x1,y1): point) ((x2,y2): point): point =
   (x1+x2, y1+y2)
 
-let scale_point ((x,y): point) (s: f32) : point =
+def scale_point ((x,y): point) (s: f32) : point =
   (x*s, y*s)
 
-let euclid_dist_2 ((x1,y1): point) ((x2,y2): point): f32 =
+def euclid_dist_2 ((x1,y1): point) ((x2,y2): point): f32 =
   (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)
 
-let closest_point (p1: (i32, f32)) (p2: (i32, f32)): (i32, f32) =
+def closest_point (p1: (i32, f32)) (p2: (i32, f32)): (i32, f32) =
   if p1.1 < p2.1 then p1 else p2
 
-let find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
+def find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
   let (i, _) = foldl (\acc (i, p) -> closest_point acc (i32.i64 i, euclid_dist_2 pt p))
                      (0, f32.inf)
                      (zip (indices pts) pts)
   in i
 
-let centroids_of [n] (k: i64) (points: [n]point) (membership: [n]i32): [k]point =
+def centroids_of [n] (k: i64) (points: [n]point) (membership: [n]i32): [k]point =
   let cluster_sizes =
     reduce_by_index (replicate k 0) (+) 0 (map i64.i32 membership) (replicate n 1)
   let cluster_sums =
     reduce_by_index (replicate k (0,0)) add_points (0,0) (map i64.i32 membership) points
   in map2 scale_point cluster_sums (map (1/) (map r32 cluster_sizes))
 
-let continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
+def continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
   let changed ((x1,y1), (x2,y2)) =
     f32.abs (x1-x2) > 0.01 || f32.abs(y1-y2) > 0.01
   in (any changed (zip old_centres cur_centres))
 
-let main [n] (k: i32) (points_in: [n][2]f32): ([][2]f32, i32) =
+def main [n] (k: i32) (points_in: [n][2]f32): ([][2]f32, i32) =
   let k = i64.i32 k
 
   -- Transform from 2D-array to array of pairs.

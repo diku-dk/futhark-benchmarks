@@ -1,5 +1,5 @@
 type DTYPE = f32
-let real_min = f32.min
-let real_max = f32.max
-let real_abs = f32.abs
-let real_sqrt= f32.sqrt
+def real_min = f32.min
+def real_max = f32.max
+def real_abs = f32.abs
+def real_sqrt= f32.sqrt

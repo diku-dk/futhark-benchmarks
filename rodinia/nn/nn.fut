@@ -6,9 +6,9 @@
 -- compiled input @ data/medium.in.gz
 -- output @ data/medium.out
 
-let emptyRecord: (i32, f32) = (0, 0.0f32)
+def emptyRecord: (i32, f32) = (0, 0.0f32)
 
-let main [numRecords]
+def main [numRecords]
          (resultsCount: i32)
          (lat: f32) (lng: f32)
          (locations_lat: [numRecords]f32)

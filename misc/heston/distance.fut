@@ -10,7 +10,7 @@ module type distance = {
 module relative_distance(R: real): distance with real = R.t = {
   type real = R.t
 
-  let distance [num_observed] (observed: [num_observed]real) (prices: [num_observed]real): real =
+  def distance [num_observed] (observed: [num_observed]real) (prices: [num_observed]real): real =
     let norm (price: real) (quote: real) =
       R.(let rel = (price - quote) / quote
          in rel * rel)
@@ -21,7 +21,7 @@ module relative_distance(R: real): distance with real = R.t = {
 module absolute_distance(R: real): distance with real = R.t = {
   type real = R.t
 
-  let distance [num_observed] (observed: [num_observed]real) (prices: [num_observed]real): real =
+  def distance [num_observed] (observed: [num_observed]real) (prices: [num_observed]real): real =
     let norm (price: real) (quote: real) =
       R.(let dif = price - quote
          in dif * dif)

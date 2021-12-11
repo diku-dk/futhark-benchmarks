@@ -29,7 +29,7 @@
 -- input @ data/64kn_32e-var-1-256-skew.in.gz
 -- output @ data/64kn_32e-var-1-256-skew.out
 
-let core_step [n] [e]
+def core_step [n] [e]
         ( cost: *[n]i32,
           nodes_start_index: [n]i32,
           nodes_n_edges: [n]i32,
@@ -68,7 +68,7 @@ let core_step [n] [e]
   in  (cost', updating_graph_mask')
 
 
-let step [n][e]
+def step [n][e]
         (cost: *[n]i32)
         (nodes_start_index: [n]i32)
         (nodes_n_edges: [n]i32)
@@ -111,4 +111,4 @@ let step [n][e]
 
 import "common"
 
-let main = common_main step
+def main = common_main step

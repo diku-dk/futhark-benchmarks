@@ -8,4 +8,4 @@
 
 module R = import "radix_sort"
 
-let main (xs: []u32) = R.radix_sort xs
+def main (xs: []u32) = R.radix_sort xs

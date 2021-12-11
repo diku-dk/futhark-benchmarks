@@ -28,22 +28,22 @@
 import "lib/github.com/diku-dk/cpprandom/random"
 
 module rnge = linear_congruential_engine i32 {
-  let m = i32.highest
-  let a: i32 = 1103515245
-  let c: i32 = 12345
+  def m = i32.highest
+  def a: i32 = 1103515245
+  def c: i32 = 12345
 }
 
 module norm_rng = normal_distribution f64 rnge
 
 -- | Fills a radius x radius matrix representing the disk
-let strelDisk (radius: i64): [][]i32 =
+def strelDisk (radius: i64): [][]i32 =
   let diameter = radius*2 - 1
   in tabulate_2d diameter diameter
                  (\x y -> let distance = f64.sqrt(f64.i64 (x-radius+1)**2 +
                                                   f64.i64 (y-radius+1)**2)
                           in if distance < f64.i64 radius then 1 else 0)
 
-let getneighbors [diameter] (se: [diameter][diameter]i32) (radius: i64): [](f64,f64) =
+def getneighbors [diameter] (se: [diameter][diameter]i32) (radius: i64): [](f64,f64) =
   let center = radius - 1
   in se
      |> map2 (\x -> map2 (\y v -> (v != 0, (f64.i64 (y-center),
@@ -56,13 +56,13 @@ let getneighbors [diameter] (se: [diameter][diameter]i32) (radius: i64): [](f64,
 
 -- | Finds the first element in the CDF that is greater than or equal
 -- to the provided value and returns that index
-let findIndex [Nparticles] (CDF: [Nparticles]f64) (value: f64): i32 =
+def findIndex [Nparticles] (CDF: [Nparticles]f64) (value: f64): i32 =
   i32.min (i32.i64 Nparticles-1)
           (loop x = 0 while x < i32.i64 Nparticles &&
                             value < #[unsafe] CDF[x]
            do x + 1)
 
-let particleFilter [IszX][IszY][Nfr]
+def particleFilter [IszX][IszY][Nfr]
                    (I: [IszX][IszY][Nfr]i32) (Nparticles: i64) =
   let seed = rnge.rng_from_seed [123] |> rnge.split_rng Nparticles
   let xe = f64.round (f64.i64 IszY / 2)
@@ -127,4 +127,4 @@ let particleFilter [IszX][IszY][Nfr]
     in (xj, yj, distances, seed, seed0)
   in distances
 
-let main = particleFilter
+def main = particleFilter

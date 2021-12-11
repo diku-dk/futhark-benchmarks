@@ -103,24 +103,24 @@ module type vector = {
 -- module that indicates the dimensionality of the vectors you will be
 -- producing.
 module any_vector(P: { val length : i64 }) : vector = {
-  let stdreplicate = replicate
+  def stdreplicate = replicate
 
-  let length = P.length
+  def length = P.length
   type vector 'a = [length]a
-  let map = map
-  let map2 = map2
-  let reduce = reduce
-  let zip = zip
-  let vzip = transpose
-  let vunzip = transpose
-  let iota = iota length
-  let replicate a = stdreplicate length a
-  let get (i: i64) a = a[i]
-  let set (i: i64) v a = copy a with [i] = v
-  let foldl = foldl -- Prelude foldl.
-  let foldr = foldr -- Prelude foldr.
-  let to_array = id
-  let from_array = id
+  def map = map
+  def map2 = map2
+  def reduce = reduce
+  def zip = zip
+  def vzip = transpose
+  def vunzip = transpose
+  def iota = iota length
+  def replicate a = stdreplicate length a
+  def get (i: i64) a = a[i]
+  def set (i: i64) v a = copy a with [i] = v
+  def foldl = foldl -- Prelude foldl.
+  def foldr = foldr -- Prelude foldr.
+  def to_array = id
+  def from_array = id
 }
 
 -- | A module implementing statically-sized single-element vectors.
@@ -128,23 +128,23 @@ module any_vector(P: { val length : i64 }) : vector = {
 module vector_1 : vector = {
   type vector 'a = a
 
-  let stdreplicate = replicate
+  def stdreplicate = replicate
 
-  let map f a = f a
-  let map2 f a b = f a b
-  let reduce f ne a = f ne a
-  let zip a b = (a, b)
-  let vzip = id
-  let vunzip = id
-  let iota = 0i64
-  let replicate a = a
-  let get _ a = a
-  let set _ x _ = x
-  let length = 1i64
-  let foldl f b x = f b x
-  let foldr f b x = f x b
-  let to_array a = stdreplicate length a
-  let from_array as = as[0]
+  def map f a = f a
+  def map2 f a b = f a b
+  def reduce f ne a = f ne a
+  def zip a b = (a, b)
+  def vzip = id
+  def vunzip = id
+  def iota = 0i64
+  def replicate a = a
+  def get _ a = a
+  def set _ x _ = x
+  def length = 1i64
+  def foldl f b x = f b x
+  def foldr f b x = f x b
+  def to_array a = stdreplicate length a
+  def from_array as = as[0]
 }
 
 -- | Concatenation of statically sized vector modules.  This is used
@@ -159,28 +159,28 @@ module vector_1 : vector = {
 module cat_vector (X: vector) (Y: vector): vector = {
   type vector 'a = (X.vector a, Y.vector a)
 
-  let vzip (xs, ys) =
+  def vzip (xs, ys) =
     zip (X.vzip xs) (Y.vzip ys)
 
-  let vunzip v =
+  def vunzip v =
     let (xs, ys) = unzip v
     in (X.vunzip xs, Y.vunzip ys)
 
-  let map f (xs, ys) = (X.map f xs, Y.map f ys)
-  let map2 f (xs_a, ys_a) (xs_b, ys_b) = (X.map2 f xs_a xs_b, Y.map2 f ys_a ys_b)
-  let reduce f ne (xs, ys) = X.reduce f ne xs `f` Y.reduce f ne ys
-  let zip (xs_a, ys_a) (xs_b, ys_b) = (X.zip xs_a xs_b, Y.zip ys_a ys_b)
+  def map f (xs, ys) = (X.map f xs, Y.map f ys)
+  def map2 f (xs_a, ys_a) (xs_b, ys_b) = (X.map2 f xs_a xs_b, Y.map2 f ys_a ys_b)
+  def reduce f ne (xs, ys) = X.reduce f ne xs `f` Y.reduce f ne ys
+  def zip (xs_a, ys_a) (xs_b, ys_b) = (X.zip xs_a xs_b, Y.zip ys_a ys_b)
 
-  let iota = (X.iota, Y.map (+X.length) Y.iota)
-  let replicate a = (X.replicate a, Y.replicate a)
-  let get i (xs, ys) = if i < X.length then X.get i xs else Y.get (i-X.length) ys
-  let set i v (xs, ys) = if i < X.length then (X.set i v xs, ys)
+  def iota = (X.iota, Y.map (+X.length) Y.iota)
+  def replicate a = (X.replicate a, Y.replicate a)
+  def get i (xs, ys) = if i < X.length then X.get i xs else Y.get (i-X.length) ys
+  def set i v (xs, ys) = if i < X.length then (X.set i v xs, ys)
                          else (xs, Y.set (i-X.length) v ys)
-  let length = X.length + Y.length
-  let foldl f b (xs, ys) = Y.foldl f (X.foldl f b xs) ys
-  let foldr f b (xs, ys) = X.foldr f (Y.foldr f b ys) xs
-  let to_array 't (xs, ys) = X.to_array xs ++ Y.to_array ys :> [length]t
-  let from_array 't as = let xs = X.from_array (take X.length as)
+  def length = X.length + Y.length
+  def foldl f b (xs, ys) = Y.foldl f (X.foldl f b xs) ys
+  def foldr f b (xs, ys) = X.foldr f (Y.foldr f b ys) xs
+  def to_array 't (xs, ys) = X.to_array xs ++ Y.to_array ys :> [length]t
+  def from_array 't as = let xs = X.from_array (take X.length as)
                          let ys = Y.from_array (take Y.length (drop X.length as))
                          in (xs, ys)
 }

@@ -75,30 +75,30 @@ module mk_vspace_2d (real: scalar): vspace_2d with real = real.t = {
 
   type vector = {x: real, y: real}
 
-  let zero = {x = real.i32 0, y = real.i32 0}
-  let one  = (real.i32 1)
+  def zero = {x = real.i32 0, y = real.i32 0}
+  def one  = (real.i32 1)
 
-  let map f (v : vector) =
+  def map f (v : vector) =
     {x = f v.x, y = f v.y}
 
-  let map2 f (a : vector) (b : vector) =
+  def map2 f (a : vector) (b : vector) =
     {x = f a.x b.x, y = f a.y b.y}
 
-  let (+) = map2 (real.+)
-  let (-) = map2 (real.-)
-  let (*) = map2 (real.*)
-  let (/) = map2 (real./)
+  def (+) = map2 (real.+)
+  def (-) = map2 (real.-)
+  def (*) = map2 (real.*)
+  def (/) = map2 (real./)
 
-  let dot (a: vector) (b: vector) =
+  def dot (a: vector) (b: vector) =
     real.(a.x*b.x + a.y*b.y)
 
-  let quadrance v = dot v v
+  def quadrance v = dot v v
 
-  let scale (s: real) = map (s real.*)
+  def scale (s: real) = map (s real.*)
 
-  let norm = quadrance >-> real.sqrt
+  def norm = quadrance >-> real.sqrt
 
-  let normalise (v: vector): vector =
+  def normalise (v: vector): vector =
     let l = norm v
     in scale (one real./ l) v
 }
@@ -133,52 +133,52 @@ module mk_vspace_3d(real: real): vspace_3d with real = real.t = {
 
   type vector = {x: real, y: real, z: real}
 
-  let zero = {x = real.i32 0, y = real.i32 0, z = real.i32 0}
-  let one  = real.i32 1
+  def zero = {x = real.i32 0, y = real.i32 0, z = real.i32 0}
+  def one  = real.i32 1
 
-  let map f (v : vector) =
+  def map f (v : vector) =
     {x = f v.x, y = f v.y, z = f v.z}
 
-  let map2 f (a : vector) (b : vector) =
+  def map2 f (a : vector) (b : vector) =
     {x = f a.x b.x, y = f a.y b.y, z = f a.z b.z}
 
-  let (+) = map2 (real.+)
-  let (-) = map2 (real.-)
-  let (*) = map2 (real.*)
-  let (/) = map2 (real./)
+  def (+) = map2 (real.+)
+  def (-) = map2 (real.-)
+  def (*) = map2 (real.*)
+  def (/) = map2 (real./)
 
-  let dot (a: vector) (b: vector) =
+  def dot (a: vector) (b: vector) =
     real.(a.x*b.x + a.y*b.y + a.z*b.z)
 
-  let cross ({x=ax,y=ay,z=az}: vector)
+  def cross ({x=ax,y=ay,z=az}: vector)
             ({x=bx,y=by,z=bz}: vector): vector =
     real.({x=ay*bz-az*by, y=az*bx-ax*bz, z=ax*by-ay*bx})
 
-  let quadrance v = dot v v
+  def quadrance v = dot v v
 
-  let scale (s: real) = map (s real.*)
+  def scale (s: real) = map (s real.*)
 
-  let norm = quadrance >-> real.sqrt
+  def norm = quadrance >-> real.sqrt
 
-  let normalise (v: vector): vector =
+  def normalise (v: vector): vector =
     let l = norm v
     in scale (one real./ l) v
 
-  let rot_x (theta: real) ({x,y,z} : vector) =
+  def rot_x (theta: real) ({x,y,z} : vector) =
     let cos_theta = real.cos theta
     let sin_theta = real.sin theta
     in { x
        , y = real.(cos_theta * y - sin_theta * z)
        , z = real.(sin_theta * y + cos_theta * z)}
 
-  let rot_y (theta: real) ({x,y,z} : vector) =
+  def rot_y (theta: real) ({x,y,z} : vector) =
     let cos_theta = real.cos theta
     let sin_theta = real.sin theta
     in { x = real.(cos_theta * x - sin_theta * z)
        , y
        , z = real.(sin_theta * x + cos_theta * z)}
 
-  let rot_z (theta: real) ({x,y,z} : vector) =
+  def rot_z (theta: real) ({x,y,z} : vector) =
     let cos_theta = real.cos theta
     let sin_theta = real.sin theta
     in { x = real.(cos_theta * x - sin_theta * y)
@@ -197,27 +197,27 @@ module mk_vspace(V: vector) (real: real):
   type real = real.t
   type vector = V.vector real
 
-  let zero = V.replicate (real.i32 0)
-  let one: real.t  = real.i32 1
+  def zero = V.replicate (real.i32 0)
+  def one: real.t  = real.i32 1
 
-  let map = V.map
-  let map2 f a b = V.zip a b |> V.map (uncurry f)
+  def map = V.map
+  def map2 f a b = V.zip a b |> V.map (uncurry f)
 
-  let (+) = map2 (real.+)
-  let (-) = map2 (real.-)
-  let (*) = map2 (real.*)
-  let (/) = map2 (real./)
+  def (+) = map2 (real.+)
+  def (-) = map2 (real.-)
+  def (*) = map2 (real.*)
+  def (/) = map2 (real./)
 
-  let dot (a: vector) (b: vector) =
+  def dot (a: vector) (b: vector) =
     V.reduce (real.+) (real.i32 0) (V.map (uncurry (real.*)) (V.zip a b))
 
-  let scale (s: real) = map (s real.*)
+  def scale (s: real) = map (s real.*)
 
-  let quadrance v = dot v v
+  def quadrance v = dot v v
 
-  let norm = quadrance >-> real.sqrt
+  def norm = quadrance >-> real.sqrt
 
-  let normalise (v: vector): vector =
+  def normalise (v: vector): vector =
     let l = norm v
     in scale (one real./ l) v
 }

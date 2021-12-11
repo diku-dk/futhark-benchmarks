@@ -8,4 +8,4 @@
 
 module R = import "radix_sort_blelloch"
 
-let main [n] (xs: [n]u32) = R.split_radix_sort(xs, 32)
+def main [n] (xs: [n]u32) = R.split_radix_sort(xs, 32)

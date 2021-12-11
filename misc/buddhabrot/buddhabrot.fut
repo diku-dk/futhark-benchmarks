@@ -11,7 +11,7 @@ type rng = rand.rng
 module c32 = mk_complex f32
 type c32 = c32.complex
 
-let divergence (radius: f32) (limit: i64) (c0: c32): ([limit]c32, bool) =
+def divergence (radius: f32) (limit: i64) (c0: c32): ([limit]c32, bool) =
   let trajectory = replicate limit (0.0, 0.0)
   let (trajectory, _, i) =
     loop (trajectory, c, i) = (trajectory, c0, 0)
@@ -21,7 +21,7 @@ let divergence (radius: f32) (limit: i64) (c0: c32): ([limit]c32, bool) =
       in (trajectory, c', i + 1)
   in (trajectory, i == limit)
 
-let trajectories (rng: rng) (limit: i64) (radius: f32)
+def trajectories (rng: rng) (limit: i64) (radius: f32)
                  (npoints: i64) (field: (f32,f32,f32,f32)): (rng, []([limit]c32, bool)) =
   let (xmin, ymin, xmax, ymax) = field
   let mk_point rng = let (rng, x) = dist.rand (xmin, xmax) rng
@@ -32,10 +32,10 @@ let trajectories (rng: rng) (limit: i64) (radius: f32)
   in (rand.join_rng rngs, map sample_point points)
 
 -- This colouring function makes no sense, but it creates a cool retro effect.
-let colourise(max_visits: i32) (visits: i32): argb.colour =
+def colourise(max_visits: i32) (visits: i32): argb.colour =
   f32.to_bits ((f32.i32 visits) / (f32.i32 max_visits) * 255.0)
 
-let pixel_pos screenX screenY field c =
+def pixel_pos screenX screenY field c =
   let (xmin, ymin, xmax, ymax) = field
   let sizex = xmax - xmin
   let sizey = ymax - ymin
@@ -43,7 +43,7 @@ let pixel_pos screenX screenY field c =
   in (i32.f32 ((x - xmin) * (f32.i64 screenX / sizex)),
       i32.f32 ((y - ymin) * (f32.i64 screenY / sizey)))
 
-let row_major screenX _screenY (x, y): i32 =
+def row_major screenX _screenY (x, y): i32 =
   y * i32.i64 screenX + x
 
 type state [n] = { rng: rand.rng
@@ -55,7 +55,7 @@ entry new_state (screenX: i64) (screenY: i64) (seed: i32): state [] =
   , prior_visits = replicate (screenX*screenY) 0
   , iter = 0 }
 
-let visualise (state: state [])
+def visualise (state: state [])
               (screenX: i64) (screenY: i64) (limit: i64) (radius: f32)
               (npoints: i64) (field: (f32,f32,f32,f32)):
              (state [], [screenY][screenX]argb.colour) =

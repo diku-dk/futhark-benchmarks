@@ -1,9 +1,9 @@
 
-let sumSqrsSeq [d] (xs: [d]f32) (ys: [d]f32) : f32 =
+def sumSqrsSeq [d] (xs: [d]f32) (ys: [d]f32) : f32 =
     loop (res) = (0.0f32) for (x,y) in (zip xs ys) do
         let z = x-y in res + z*z
 
-let bruteForce [m][d][k] (query: [d]f32) 
+def bruteForce [m][d][k] (query: [d]f32) 
                          (knns0: [k](i32,f32))
                          (beg: i32, refs : [m][d]f32)
                        : [k](i32,f32) =

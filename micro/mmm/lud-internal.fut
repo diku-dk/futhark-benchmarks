@@ -6,7 +6,7 @@
 -- compiled random input {[256][16][16]f32 [256][16][16]f32 [256][256][16][16]f32} auto output
 
 
-let main [m][b] (top_per: [m][b][b]f32)
+def main [m][b] (top_per: [m][b][b]f32)
                 (lft_per: [m][b][b]f32)
                 (mat_slice: [m][m][b][b]f32 )
               : *[m][m][b][b]f32 =

@@ -32,7 +32,7 @@
 -- compiled input @ data/large.in
 -- output @ data/large.out
 
-let main [numK][numX]
+def main [numK][numX]
          (kx: [numK]f32) (ky: [numK]f32) (kz: [numK]f32)
          (x: [numX]f32) (y: [numX]f32) (z: [numX]f32)
          (phiR: [numK]f32) (phiI: [numK]f32)

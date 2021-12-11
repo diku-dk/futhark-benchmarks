@@ -25,7 +25,7 @@
 -- compiled input @ data/lena512.in
 -- output @ data/lena512.out
 
-let luminanceOfRGBA32(p: i32): f32 =
+def luminanceOfRGBA32(p: i32): f32 =
   let r = i8.i32(p >> 24)
   let g = i8.i32(p >> 16)
   let b = i8.i32(p >> 8)
@@ -34,23 +34,23 @@ let luminanceOfRGBA32(p: i32): f32 =
   let b' = 0.11 * f32.i8(b)
   in (r' + g' + b') / 255.0
 
-let clamp(lower: i64, x: i64, upper: i64): i64 =
+def clamp(lower: i64, x: i64, upper: i64): i64 =
   i64.max lower (i64.min upper x)
 
-let orientUndef: i32 = 0
-let orientPosD: i32 = 64
-let orientVert: i32 = 128
-let orientNegD: i32 = 192
-let orientHoriz: i32 = 255
+def orientUndef: i32 = 0
+def orientPosD: i32 = 64
+def orientVert: i32 = 128
+def orientNegD: i32 = 192
+def orientHoriz: i32 = 255
 
-let edgeNone: f32 = 0.0
-let edgeWeak: f32 = 0.5
-let edgeStrong: f32 = 1.0
+def edgeNone: f32 = 0.0
+def edgeWeak: f32 = 0.5
+def edgeStrong: f32 = 1.0
 
-let toGreyscale [h][w] (img: [h][w]i32): [h][w]f32 =
+def toGreyscale [h][w] (img: [h][w]i32): [h][w]f32 =
   map (\row -> map (255.0*) (map luminanceOfRGBA32 row)) img
 
-let gaussianX [h][w] (img: [h][w]f32): [h][w]f32 =
+def gaussianX [h][w] (img: [h][w]f32): [h][w]f32 =
   map (\x ->
         map (\y ->
               #[unsafe]
@@ -63,7 +63,7 @@ let gaussianX [h][w] (img: [h][w]f32): [h][w]f32 =
             (iota w))
       (iota h)
 
-let gaussianY [h][w] (img: [h][w]f32): [h][w]f32 =
+def gaussianY [h][w] (img: [h][w]f32): [h][w]f32 =
   map (\x ->
         map (\y ->
               #[unsafe]
@@ -76,7 +76,7 @@ let gaussianY [h][w] (img: [h][w]f32): [h][w]f32 =
        (iota w))
      (iota h)
 
-let gradiantMagDir [h][w] (low: f32) (img: [h][w]f32): [h][w](f32,i32) =
+def gradiantMagDir [h][w] (low: f32) (img: [h][w]f32): [h][w](f32,i32) =
   map (\x ->
         map (\y ->
               #[unsafe]
@@ -110,7 +110,7 @@ let gradiantMagDir [h][w] (low: f32) (img: [h][w]f32): [h][w](f32,i32) =
             (iota w))
       (iota h)
 
-let nonMaximumSuppression [h][w] (low: f32) (high: f32) (magdir: [h][w](f32,i32)): [h][w]f32 =
+def nonMaximumSuppression [h][w] (low: f32) (high: f32) (magdir: [h][w](f32,i32)): [h][w]f32 =
   map (\x ->
         map (\y ->
               let (mag, dir) = magdir[x,y]
@@ -131,7 +131,7 @@ let nonMaximumSuppression [h][w] (low: f32) (high: f32) (magdir: [h][w](f32,i32)
             (iota w))
       (iota h)
 
-let selectStrong [h][w] (img: [h][w]f32): []i32 =
+def selectStrong [h][w] (img: [h][w]f32): []i32 =
   let strong = map (\(x: f32): i32  ->
                      if x == edgeStrong then 1 else 0)
                    (flatten img)
@@ -150,7 +150,7 @@ let selectStrong [h][w] (img: [h][w]f32): []i32 =
                (iota n) targetIdx (strong[1:] :> [n]i32))
   in scatter zeros indices' values
 
-let main [h][w] (low: f32) (high: f32) (img: [h][w]i32): []i32 =
+def main [h][w] (low: f32) (high: f32) (img: [h][w]i32): []i32 =
   img
   |> toGreyscale
   |> gaussianX

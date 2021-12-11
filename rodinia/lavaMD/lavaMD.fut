@@ -7,13 +7,13 @@
 -- compiled input @ data/10_boxes.in.gz
 -- output @ data/10_boxes.out.gz
 
-let dot ((ax,ay,az), (bx,by,bz)): f32 =
+def dot ((ax,ay,az), (bx,by,bz)): f32 =
   ax*bx + ay*by + az*bz
 
 -----------------------------------------
 -- Main Computational Kernel of lavaMD --
 -----------------------------------------
-let main [number_boxes][par_per_box][num_neighbors]
+def main [number_boxes][par_per_box][num_neighbors]
              (alpha:  f32)
              (box_coefs_0: [number_boxes]i32)
              (box_coefs_1: [number_boxes]i32)

@@ -13,11 +13,11 @@
 -- output @ data/2048.out.gz
 
 
-let dotprod [n] (a: [n]f32) (b: [n]f32): f32 =
+def dotprod [n] (a: [n]f32) (b: [n]f32): f32 =
   map2 (*) a b
   |> reduce (+) 0
 
-let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
+def lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
   map (\mat ->
          let mat = copy mat
          in #[unsafe]
@@ -40,7 +40,7 @@ let lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
       ) (unflatten (opaque 1) b a)
   |> head
 
-let lud_perimeter_upper [m][b] (diag: [b][b]f32) (a0s: [m][b][b]f32): *[m][b][b]f32 =
+def lud_perimeter_upper [m][b] (diag: [b][b]f32) (a0s: [m][b][b]f32): *[m][b][b]f32 =
     let a1s = map (\ (x: [b][b]f32): [b][b]f32  -> transpose(x)) a0s in
     let a2s =
         map (\a1 ->
@@ -55,7 +55,7 @@ let lud_perimeter_upper [m][b] (diag: [b][b]f32) (a0s: [m][b][b]f32): *[m][b][b]
             ) a1s
     in map transpose a2s
 
-let lud_perimeter_lower [b][m] (diag: [b][b]f32) (mat: [m][b][b]f32): *[m][b][b]f32 =
+def lud_perimeter_lower [b][m] (diag: [b][b]f32) (mat: [m][b][b]f32): *[m][b][b]f32 =
   map (\blk ->
          map (\row0 -> -- Lower
                 #[unsafe]
@@ -67,7 +67,7 @@ let lud_perimeter_lower [b][m] (diag: [b][b]f32) (mat: [m][b][b]f32): *[m][b][b]
              ) blk
       ) mat
 
-let lud_internal [m][b] (top_per: [m][b][b]f32) (lft_per: [m][b][b]f32) (mat_slice: [m][m][b][b]f32): *[m][m][b][b]f32 =
+def lud_internal [m][b] (top_per: [m][b][b]f32) (lft_per: [m][b][b]f32) (mat_slice: [m][m][b][b]f32): *[m][m][b][b]f32 =
   let top_slice = map transpose top_per in
   map2 (\mat_arr lft ->
         map2 (\mat_blk top ->
@@ -81,12 +81,12 @@ let lud_internal [m][b] (top_per: [m][b][b]f32) (lft_per: [m][b][b]f32) (mat_sli
            ) mat_arr top_slice
      ) mat_slice lft_per
 
-let block_size: i64 = 32
+def block_size: i64 = 32
 
-let pad_to [n] 'a (m: i64) (x: a) (arr: [n]a) : [m]a =
+def pad_to [n] 'a (m: i64) (x: a) (arr: [n]a) : [m]a =
   arr ++ replicate (m - n) x :> [m]a
 
-let main [m] (mat: [m][m]f32): [m][m]f32 =
+def main [m] (mat: [m][m]f32): [m][m]f32 =
     let b = block_size
     let num_blocks = (m+b-1) / b -- rounding up
     let n = b * num_blocks

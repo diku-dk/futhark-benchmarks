@@ -4,7 +4,7 @@
 -- neutral element ``ne``, computes the inclusive prefix scan of the
 -- segments of ``as`` specified by the ``flags`` array, where `true`
 -- starts a segment and `false` continues a segment.
-let segmented_scan [n] 't (op: t -> t -> t) (ne: t)
+def segmented_scan [n] 't (op: t -> t -> t) (ne: t)
                           (flags: [n]bool) (as: [n]t): [n]t =
   (unzip (scan (\(x_flag,x) (y_flag,y) ->
                 (x_flag || y_flag,
@@ -17,7 +17,7 @@ let segmented_scan [n] 't (op: t -> t -> t) (ne: t)
 -- of ``as`` specified by the ``flags`` array, where `true` starts a
 -- segment and `false` continues a segment.  One value is returned per
 -- segment.
-let segmented_reduce [n] 't (op: t -> t -> t) (ne: t)
+def segmented_reduce [n] 't (op: t -> t -> t) (ne: t)
                             (flags: [n]bool) (as: [n]t) =
   -- Compute segmented scan.  Then we just have to fish out the end of
   -- each segment.
@@ -41,7 +41,7 @@ let segmented_reduce [n] 't (op: t -> t -> t) (ne: t)
 -- the repetition array. As an example, replicated_iota [2,3,1]
 -- returns the array [0,0,1,1,1,2].
 
-let replicated_iota [n] (reps:[n]i64) : []i64 =
+def replicated_iota [n] (reps:[n]i64) : []i64 =
   let s1 = scan (+) 0 reps
   let s2 = map2 (\i x -> if i==0 then 0 else x)
                 (iota n) (rotate (-1) s1)
@@ -55,7 +55,7 @@ let replicated_iota [n] (reps:[n]i64) : []i64 =
 -- [false,false,false,true,false,false,false] returns the array
 -- [0,1,2,0,1,2,3].
 
-let segmented_iota [n] (flags:[n]bool) : [n]i64 =
+def segmented_iota [n] (flags:[n]bool) : [n]i64 =
   let iotas = segmented_scan (+) 0 flags (replicate n 1)
   in map (\x -> x-1) iotas
 
@@ -67,7 +67,7 @@ let segmented_iota [n] (flags:[n]bool) : [n]i64 =
 -- source. As an example, the expression expand (\x->x) (*) [2,3,1]
 -- returns the array [0,2,0,3,6,0].
 
-let expand 'a 'b (sz: a -> i64) (get: a -> i64 -> b) (arr:[]a) : []b =
+def expand 'a 'b (sz: a -> i64) (get: a -> i64 -> b) (arr:[]a) : []b =
   let szs = map sz arr
   let idxs = replicated_iota szs
   let iotas = segmented_iota (map2 (!=) idxs (rotate (-1) idxs))
@@ -81,7 +81,7 @@ let expand 'a 'b (sz: a -> i64) (get: a -> i64 -> b) (arr:[]a) : []b =
 -- if a segmented reduction (with an appropriate flags vector) is
 -- explicitly followed by a call to expand.
 
-let expand_reduce 'a 'b (sz: a -> i64) (get: a -> i64 -> b)
+def expand_reduce 'a 'b (sz: a -> i64) (get: a -> i64 -> b)
                         (op: b -> b -> b) (ne:b) (arr:[]a) : []b =
   let szs = map sz arr
   let idxs = replicated_iota szs
@@ -94,7 +94,7 @@ let expand_reduce 'a 'b (sz: a -> i64) (get: a -> i64 -> b)
 -- that each element in the result array corresponds to expanding and
 -- reducing the corresponding element in the source array.
 
-let expand_outer_reduce 'a 'b [n] (sz: a -> i64) (get: a -> i64 -> b)
+def expand_outer_reduce 'a 'b [n] (sz: a -> i64) (get: a -> i64 -> b)
                                   (op: b -> b -> b) (ne: b)
                                   (arr: [n]a) : [n]b =
   let sz' x = let s = sz x

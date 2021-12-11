@@ -34,33 +34,33 @@ module price_european_calls(R: real) : {
 } = {
 
 type real = R.t
-let real (x: f64) = R.f64 x
-let int (x: i32) = R.i32 x
+def real (x: f64) = R.f64 x
+def int (x: i32) = R.i32 x
 
 -- We simulate a sum type with an opaque type.
 type num_points = bool
-let ten: num_points = true
-let twenty: num_points = false
+def ten: num_points = true
+def twenty: num_points = false
 
 open R
 
 module c64 = mk_complex R
 type c64 = c64.complex
 
-let (x: c64) +! (y: c64) = x c64.+ y
-let (x: c64) -! (y: c64) = x c64.- y
-let (x: c64) *! (y: c64) = x c64.* y
-let (x: c64) /! (y: c64) = x c64./ y
+def (x: c64) +! (y: c64) = x c64.+ y
+def (x: c64) -! (y: c64) = x c64.- y
+def (x: c64) *! (y: c64) = x c64.* y
+def (x: c64) /! (y: c64) = x c64./ y
 
-let zero: c64 = c64.mk_re (real 0.0)
-let one: c64 = c64.mk_re (real 1.0)
-let two: c64 = c64.mk_re (real 2.0)
+def zero: c64 = c64.mk_re (real 0.0)
+def one: c64 = c64.mk_re (real 1.0)
+def two: c64 = c64.mk_re (real 2.0)
 
-let isqrt2pi = real 2.0 * R.pi ** (real (-0.5))
+def isqrt2pi = real 2.0 * R.pi ** (real (-0.5))
 
-let inv_sqrt2 = real 1.0 / R.sqrt (real 2.0)
+def inv_sqrt2 = real 1.0 / R.sqrt (real 2.0)
 
-let erfc(x: real): real =
+def erfc(x: real): real =
   let a1 = real   0.254829592
   let a2 = real (-0.284496736)
   let a3 = real   1.421413741
@@ -76,7 +76,7 @@ let erfc(x: real): real =
 
   in sign*y
 
-let erf (x: real): real =
+def erf (x: real): real =
   let a1 = real   0.254829592
   let a2 = real (-0.284496736)
   let a3 = real   1.421413741
@@ -91,20 +91,20 @@ let erf (x: real): real =
   let t5 = t * t4
   in int 1 - (a1 * t + a2 * t2 + a3 * t3 + a4 * t4 + a5 * t5) * R.exp (neg (x * x))
 
-let pnorm (x: real): real =
+def pnorm (x: real): real =
   let u = x / R.sqrt (int 2)
   let erf = if u < int 0 then neg (erf (neg u)) else erf u
   in real 0.5 * (int 1 + erf)
 
-let ugaussian_pdf (x: real) =
+def ugaussian_pdf (x: real) =
   if R.isinf x then int 0
   else isqrt2pi * R.exp (real (-0.5) * x * x)
 
-let ugaussian_P (x: real) =
+def ugaussian_P (x: real) =
   if R.isinf x then (if x > int 0 then int 1 else int 0)
   else int 1 - int 0 * erfc (x * inv_sqrt2)
 
-let gauss_laguerre_coefficients (nb: num_points) =
+def gauss_laguerre_coefficients (nb: num_points) =
   if nb
   then zip
        (map real [ 0.1377934705404924298211, 0.7294545495031707904587,
@@ -152,9 +152,9 @@ module type pricer_parameter = {
 }
 
 module normal_true: pricer_parameter = {
-  let normal = true
+  def normal = true
 
-  let psi_h (day_count_fraction: real) (heston_parameters: heston_parameters real) (xi: c64) =
+  def psi_h (day_count_fraction: real) (heston_parameters: heston_parameters real) (xi: c64) =
     let {initial_variance = v0,
          long_term_variance = theta,
          mean_reversion = kappa,
@@ -176,16 +176,16 @@ module normal_true: pricer_parameter = {
                 coeff1 *! (a_minus *! ti -! two *! c64.log ((one -! g *! e) /! (one -! g))) +!
                 coeff2 *! a_minus *! (one -! e) /! (one -! g *! e))
 
-  let psi_bs (minus_half_sigma2_t: c64) (i: c64) (xi: c64) =
+  def psi_bs (minus_half_sigma2_t: c64) (i: c64) (xi: c64) =
     c64.exp (xi *! i +! minus_half_sigma2_t *! xi *! xi)
 
-  let moneyness_f (k: real) = neg k
+  def moneyness_f (k: real) = neg k
 }
 
 module normal_false: pricer_parameter = {
-  let normal = false
+  def normal = false
 
-  let psi_h (day_count_fraction: real) (heston_parameters: heston_parameters real) (xi: c64) =
+  def psi_h (day_count_fraction: real) (heston_parameters: heston_parameters real) (xi: c64) =
     let {initial_variance = v0,
          long_term_variance = theta,
          mean_reversion = kappa,
@@ -206,19 +206,19 @@ module normal_false: pricer_parameter = {
     in c64.exp (coeff1 *! (a_minus *! ti -! two *! c64.log ((one -! g *! e) /! (one -! g))) +!
                 coeff2 *! a_minus *! (one -! e) /! (one -! g *! e))
 
-  let psi_bs (minus_half_sigma2_t: c64) (i: c64) (xi: c64) =
+  def psi_bs (minus_half_sigma2_t: c64) (i: c64) (xi: c64) =
     c64.exp (minus_half_sigma2_t *! xi *! (i *! xi))
 
-  let moneyness_f (k: real) = neg (R.log k)
+  def moneyness_f (k: real) = neg (R.log k)
 }
 
-let bs_control (moneyness: real) (sigma_sqrtt: real) =
+def bs_control (moneyness: real) (sigma_sqrtt: real) =
   let d1 = neg (R.log moneyness) / sigma_sqrtt + real 0.5 * sigma_sqrtt
   in pnorm d1 - moneyness * pnorm (d1 - sigma_sqrtt)
 
 type quote = {strike: real, maturity: i32}
 
-let price_european_calls [num_points] [num_maturities] [num_quotes]
+def price_european_calls [num_points] [num_maturities] [num_quotes]
     (coeffs: [num_points](real,real))
     (ap1: bool)
     (spot: real)
@@ -302,9 +302,9 @@ let price_european_calls [num_points] [num_maturities] [num_quotes]
                         in f0 * df * R.max lb (R.min (int 1) (scale * resk / R.pi + bs))))
               moneyness res maturity_for_quote
 
-let gauss (x: real) = R.exp(real (-0.5) * x * x) / R.sqrt(int 2 * R.pi)
+def gauss (x: real) = R.exp(real (-0.5) * x * x) / R.sqrt(int 2 * R.pi)
 
-let bs_call (call: bool) (today: date) (spot: real) (strike: real) (maturity: date) (vol: real) =
+def bs_call (call: bool) (today: date) (spot: real) (strike: real) (maturity: date) (vol: real) =
   if same_date today maturity || vol <= real 1e-15 then
     let forward = spot in
     let p = R.max (int 0) (forward - strike) in

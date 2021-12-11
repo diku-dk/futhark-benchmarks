@@ -12,14 +12,14 @@
 ----- Ecc MODULE -----
 ----------------------
 
-let pow(x: f32, y: f32): f32 = x ** y
-let log10(x: f32): f32 = f32.log(x) / f32.log(10.0f32)
+def pow(x: f32, y: f32): f32 = x ** y
+def log10(x: f32): f32 = f32.log(x) / f32.log(10.0f32)
 
-let fmod(a: f32, b: f32): f32 = ( a - b * r32(t32(a / b)) )
+def fmod(a: f32, b: f32): f32 = ( a - b * r32(t32(a / b)) )
 
-let fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
+def fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
-let ecc [equs][pars] (timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
+def ecc [equs][pars] (timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
                       parameter: [pars]f32, parameter_offset: i32, finavalu: *[equs]f32 ): *[equs]f32 =
   #[unsafe]
   -- variable references
@@ -498,7 +498,7 @@ let ecc [equs][pars] (timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
 ----- Cam MODULE -----
 ----------------------
 
-let cam [equs][pars] (_timeinst:  f32, initvalu: [equs]f32,
+def cam [equs][pars] (_timeinst:  f32, initvalu: [equs]f32,
                       initvalu_offset: i32,
                       parameter: [pars]f32, parameter_offset: i32,
                       finavalu: *[equs]f32, ca: f32 ): (f32, *[equs]f32) =
@@ -696,7 +696,7 @@ let cam [equs][pars] (_timeinst:  f32, initvalu: [equs]f32,
 ----- Fin MODULE -----
 ----------------------
 
-let fin [equs][pars]
+def fin [equs][pars]
        (initvalu:     [equs]f32, initvalu_offset_ecc: i32,
         initvalu_offset_Dyad: i32, initvalu_offset_SL: i32,
         initvalu_offset_Cyt: i32, parameter: [pars]f32,
@@ -769,7 +769,7 @@ let fin [equs][pars]
 ----- Master MODULE -----
 -------------------------
 
-let master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f32 =
+def master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f32 ): *[equs]f32 =
   let finavalu = replicate equs 0.0f32
   -- ecc function
   let initvalu_offset_ecc  = 0
@@ -814,7 +814,7 @@ let master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f
 ----- embedded_fehlberg_7_8 MODULE -----
 ----------------------------------------
 
-let embedded_fehlberg_7_8 [equs][pars]
+def embedded_fehlberg_7_8 [equs][pars]
                          (timeinst:   f32, h: f32,
                           initvalu: [equs]f32,
                           parameter: [pars]f32 ): (*[equs]f32, *[equs]f32) =
@@ -1003,11 +1003,11 @@ let embedded_fehlberg_7_8 [equs][pars]
 ----- SOLVER MODULE -----
 -------------------------
 
-let min_scale_factor(): f32 = 0.125f32
-let max_scale_factor(): f32 = 4.0f32
-let attempts(): i32         = 12
+def min_scale_factor(): f32 = 0.125f32
+def max_scale_factor(): f32 = 4.0f32
+def attempts(): i32         = 12
 
-let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
+def solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[equs]f32) =
   let err_exponent  = 1.0f32 / 7.0f32
   let h_init = 1.0f32
   let h = h_init
@@ -1087,10 +1087,10 @@ let solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
 ----- MAiN MODULE -----
 -----------------------
 
-let equations (): i32 = 91
-let parameters(): i32 = 16
+def equations (): i32 = 91
+def parameters(): i32 = 16
 
-let main (repeat: i32) (eps: f32) (workload: i64)
+def main (repeat: i32) (eps: f32) (workload: i64)
          (xmax: i32) (y0: [91]f32) (params: [16]f32): (bool, [workload][91]f32) =
   let (oks, y_res) =
     unzip <|

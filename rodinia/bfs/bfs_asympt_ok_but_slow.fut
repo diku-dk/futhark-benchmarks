@@ -28,7 +28,7 @@
 
 import "lib/github.com/diku-dk/segmented/segmented"
 
-let step [n][e]
+def step [n][e]
         (cost: *[n]i32)
         (nodes_start_index: [n]i32)
         (nodes_n_edges: [n]i32)
@@ -90,4 +90,4 @@ let step [n][e]
 
 import "common"
 
-let main = common_main step
+def main = common_main step

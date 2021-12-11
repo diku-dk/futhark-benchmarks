@@ -38,7 +38,7 @@ type state [n] =
   , seed: u32
   }
 
-let default_conf: conf =
+def default_conf: conf =
   { timestep       = 0.1
   , rim            = 1.0
   , disc_radius    = (10.0 / 3.0, 10.0)
@@ -51,10 +51,10 @@ let default_conf: conf =
   , mix_type       = #smooth : sigmoid
   }
 
-let make_conf_simple (timestep: f32): conf =
+def make_conf_simple (timestep: f32): conf =
   default_conf with timestep = timestep
 
-let make_conf (timestep: f32)
+def make_conf (timestep: f32)
               (rim: f32)
               (disc_radius1: f32) (disc_radius2: f32)
               (birth_interval1: f32) (birth_interval2: f32)
@@ -89,7 +89,7 @@ let make_conf (timestep: f32)
   , mix_type = to_sigmoid mix_type
   }
 
-let generate_world (size: i64) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
+def generate_world (size: i64) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
   let (rmin, rmax) = disc
   let num_circles = size * size / i64.f32 (rmax * rmax)
 
@@ -145,7 +145,7 @@ let generate_world (size: i64) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
   let grid = map ((.1) >-> f32.i32) reduced
   in unflatten size size grid
 
-let init (size: i64) (conf: conf) (seed: u32): state [size] =
+def init (size: i64) (conf: conf) (seed: u32): state [size] =
 
   let shift2d 'a [r][c] (arr: [r][c]a): [r][c]a =
     let (mr, mc) = (r / 2, c / 2)
@@ -198,7 +198,7 @@ let init (size: i64) (conf: conf) (seed: u32): state [size] =
      , seed = seed
      }
 
-let apply_sigmoid (s: sigmoid) (x: f32) (a: f32) (ea: f32) =
+def apply_sigmoid (s: sigmoid) (x: f32) (a: f32) (ea: f32) =
   let bounded f =
         if      x < a - ea / 2.0 then 0.0
         else if x > a + ea / 2.0 then 1.0
@@ -218,7 +218,7 @@ let apply_sigmoid (s: sigmoid) (x: f32) (a: f32) (ea: f32) =
     case #sin        -> bounded (\x a ea -> f32.sin (f32.pi * (x - a) / ea)
                                               * 0.5 + 0.5)
 
-let snm [l] (conf: conf) (n: [l]f32) (m: [l]f32): [l]f32 =
+def snm [l] (conf: conf) (n: [l]f32) (m: [l]f32): [l]f32 =
   let (b1, b2) = conf.birth_interval
   let (d1, d2) = conf.death_interval
   let (sn, sm) = conf.step
@@ -243,7 +243,7 @@ let snm [l] (conf: conf) (n: [l]f32) (m: [l]f32): [l]f32 =
                              (sigmoid_mix b2 d2 m)
   in map2 sigmode n m
 
-let step [size] (state: state [size]): state [size] =
+def step [size] (state: state [size]): state [size] =
   let dt = state.conf.timestep
   let aa = state.world
   let (r, c) = (size, size)
@@ -264,14 +264,14 @@ let step [size] (state: state [size]): state [size] =
   let aa'' = map2 (map2 (\a b -> clamp (timestep a b))) (aa' :> [size][size]f32) aa
   in state with world = aa''
 
-let render [size] (state: state [size]): [size][size]argb.colour =
+def render [size] (state: state [size]): [size][size]argb.colour =
   let w = state.world |> flatten
   in map (\v -> argb_colour.from_rgba v v v 0) w |> unflatten size size
 
 type text_content = (i32, i32, i32)
 
 -- Due to FFT limitations we always the size up to a power of 2.
-let to_pow2 x = i64.f32 (2 ** f32.ceil (f32.log2 (f32.i64 x)))
+def to_pow2 x = i64.f32 (2 ** f32.ceil (f32.log2 (f32.i64 x)))
 
 -- Because we will shadow 'state' in a moment.
 type sized_state [n] = state [n]
@@ -283,13 +283,13 @@ import "lib/github.com/diku-dk/lys/lys"
 module lys: lys with text_content = text_content = {
   type~ state = {state: state [], h: i64, w: i64}
 
-  let init (seed: u32) (h: i64) (w: i64): state =
+  def init (seed: u32) (h: i64) (w: i64): state =
     let size = to_pow2 (i64.max h w)
     let conf = make_conf_simple 0.1
     in {state=init size conf seed, h, w}
 
   -- Cut it down to requested size.
-  let render (s: state) =
+  def render (s: state) =
     let size = to_pow2 (i64.max s.h s.w)
     let screen = render (s.state :> sized_state [size])
     in map (take s.w) screen |> take s.h
@@ -297,12 +297,12 @@ module lys: lys with text_content = text_content = {
   -- Resizes can occur even with the -R flag to lys (at least on my machine,
   -- with XMonad). World must be reinit'd on resize, since lys assumes world
   -- and window dimensions are equal
-  let resize (h: i64) (w: i64) (s: state): state =
+  def resize (h: i64) (w: i64) (s: state): state =
     init s.state.seed h w
 
-  let grab_mouse = false
+  def grab_mouse = false
 
-  let event (e: event) (s: state) =
+  def event (e: event) (s: state) =
     match e
     case #keydown {key} ->
       if key == SDLK_SPACE
@@ -314,12 +314,12 @@ module lys: lys with text_content = text_content = {
     case _ -> s
 
   type text_content = text_content
-  let text_format () = "FPS: %d\nWorld: %d by %d"
-  let text_content (fps: f32) (s: state): text_content =
+  def text_format () = "FPS: %d\nWorld: %d by %d"
+  def text_content (fps: f32) (s: state): text_content =
     (i32.f32 fps,
      i32.i64 (length s.state.world),
      i32.i64 (length s.state.world[0]))
-  let text_colour = const argb.yellow
+  def text_colour = const argb.yellow
 }
 
 -- And an entry point for benchmarking.  Measures initialisation and a
@@ -329,6 +329,6 @@ module lys: lys with text_content = text_content = {
 -- compiled input { 256 }
 -- compiled input { 512 }
 -- compiled input { 1024 }
-let main (w: i32) =
+def main (w: i32) =
   let w = i64.i32 w in
   make_conf_simple 0.1 |> (\conf -> init w conf 123) |> iterate 100 step |> (.world)

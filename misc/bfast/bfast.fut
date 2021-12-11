@@ -8,17 +8,17 @@ import "lib/github.com/diku-dk/linalg/linalg"
 module f32linalg = mk_linalg f32
 
 -- f32.round
-let rint (r: f32) : f32 =
+def rint (r: f32) : f32 =
   let r' = f32.i64 (i64.f32 r)
   in  if r - r' < 0.5
       then r' else r' + 1
 
-let logplus (x: f32) : f32 =
+def logplus (x: f32) : f32 =
   if x > (f32.exp 1)
   then f32.log x else 1
 
 -- | builds the X matrices; first result dimensions of size 2*k+2
-let mkX (k2p2: i64) (N: i64) (f: f32) : [k2p2][N]f32 =
+def mkX (k2p2: i64) (N: i64) (f: f32) : [k2p2][N]f32 =
   [ replicate N 1     -- first   row
   , map (f32.i64 >-> (+1)) (iota N) -- second  row
   ] ++
@@ -33,7 +33,7 @@ let mkX (k2p2: i64) (N: i64) (f: f32) : [k2p2][N]f32 =
 
 -- | compute the actual number of values that precisely
 --   encapsulate the first n valid values of y.
-let findSplit [N] (n: i32) (y: [N]f32) : i32 =
+def findSplit [N] (n: i32) (y: [N]f32) : i32 =
   let flgs = map (\v -> if f32.isnan v then 0 else 1) y
   let scnf = scan (+) 0 flgs
   let pairs= map (\(i,v)->(i,v==n))
@@ -49,7 +49,7 @@ let findSplit [N] (n: i32) (y: [N]f32) : i32 =
 -- with intra-blockparallelism                   --
 ---------------------------------------------------
 
-  let gauss_jordan [nm] (n:i64) (A: *[nm]f32): [nm]f32 =
+  def gauss_jordan [nm] (n:i64) (A: *[nm]f32): [nm]f32 =
     let m = nm / n in
     loop A for i < n do
       let v1 = #[unsafe] A[i]
@@ -63,7 +63,7 @@ let findSplit [N] (n: i32) (y: [N]f32) : i32 =
                    ) (map i32.i64 (iota (n*m)))
       in  scatter A (iota (n*m)) A'
 
-  let mat_inv [n] (A: [n][n]f32): [n][n]f32 =
+  def mat_inv [n] (A: [n][n]f32): [n][n]f32 =
     let m = 2*n
     let nm = n*m
     -- Pad the matrix with the identity matrix.
@@ -80,18 +80,18 @@ let findSplit [N] (n: i32) (y: [N]f32) : i32 =
 --------------------------------------------------
 --------------------------------------------------
 
-let dotprod_filt [n] (flgs: [n]bool) (xs: [n]f32) (ys: [n]f32) : f32 =
+def dotprod_filt [n] (flgs: [n]bool) (xs: [n]f32) (ys: [n]f32) : f32 =
     f32.sum (map3 (\flg x y -> if flg then x*y else 0) flgs xs ys)
 
-let matsqr [m] [n] (flgs: [n]bool) (xss: [m][n]f32) : *[m][m]f32 =
+def matsqr [m] [n] (flgs: [n]bool) (xss: [m][n]f32) : *[m][m]f32 =
     map (\xs -> map (\ys -> dotprod_filt flgs xs ys) xss) xss
 
-let matvecmul_row_filt [n][m] (flgs: [m]bool) (xss: [n][m]f32) (ys: [m]f32) =
+def matvecmul_row_filt [n][m] (flgs: [m]bool) (xss: [n][m]f32) (ys: [m]f32) =
     map (dotprod_filt flgs ys) xss
 
 -- | The core of the alg: the computation for a time series
 --   for one pixel.
-let bfast [N] (Nmn: i64) (f: f32) (k: i32) (n: i32)
+def bfast [N] (Nmn: i64) (f: f32) (k: i32) (n: i32)
               (hfrac: f32) (lam: f32)
               (y: [N]f32) :
               [Nmn]f32 =

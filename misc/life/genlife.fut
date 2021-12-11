@@ -29,7 +29,7 @@ module type game_of_life = {
 module gen_life(R: rules): game_of_life with cell = R.cell = {
   type cell = R.cell
 
-  let sum_of_neighbours (nw: cell, n: cell, ne: cell)
+  def sum_of_neighbours (nw: cell, n: cell, ne: cell)
                         (w:  cell, c: cell, e:  cell)
                         (sw: cell, s: cell, se: cell): i32 =
     (R.value nw * R.weights[0,0] +
@@ -45,7 +45,7 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
      R.value se * R.weights[2,2])
 
   -- Note that the world is stored column-major.
-  let all_neighbour_sums [n][m] (world: [n][m]cell): [n][m]i32 =
+  def all_neighbour_sums [n][m] (world: [n][m]cell): [n][m]i32 =
     let ns  = map (rotate (-1)) world
     let ss  = map (rotate   1)  world
     let ws  = rotate      (-1)  world
@@ -59,7 +59,7 @@ module gen_life(R: rules): game_of_life with cell = R.cell = {
              (zip3 nws_r ns_r nes_r) (zip3 ws_r world_r es_r) (zip3 sws_r ss_r ses_r))
             (zip3 nws ns nes) (zip3 ws world es) (zip3 sws ss ses)
 
-  let step [n][m] (world: [n][m]cell): [n][m]cell =
+  def step [n][m] (world: [n][m]cell): [n][m]cell =
     let all_sums = all_neighbour_sums world
     in map2 (\world_r all_sums_r -> map2 R.step world_r all_sums_r) world all_sums
 }
@@ -91,13 +91,13 @@ module type visualisation = {
 module gen_visualisation (V: visuals) : visualisation with cell = V.cell = {
   type cell = V.cell
 
-  let init [n][m] (world: [n][m]bool): [n][m]cell =
+  def init [n][m] (world: [n][m]bool): [n][m]cell =
     map (\row -> map V.init row) world
 
-  let uninit [n][m] (world: [n][m]cell): [n][m]bool =
+  def uninit [n][m] (world: [n][m]cell): [n][m]bool =
     map (\row -> map V.uninit row) world
 
-  let render [n][m] (world: [n][m]cell): [n][m]argb.colour =
+  def render [n][m] (world: [n][m]cell): [n][m]argb.colour =
     map (\ages -> map V.colour ages) world
 }
 

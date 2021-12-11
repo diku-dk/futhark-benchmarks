@@ -14,7 +14,7 @@
 -- compiled random input {f32 f32 [2048][4096]f32 [4096][2048]f32 [2048][2048]f32} auto output
 
 
-let main [m][n][q] (alpha: f32) 
+def main [m][n][q] (alpha: f32) 
                     (beta : f32) 
                     (A: [m][q]f32) 
                     (B: [q][n]f32)

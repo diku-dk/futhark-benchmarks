@@ -18,7 +18,7 @@ module lys: lys with text_content = text_content = {
                , time: f32
    }
 
-  let init _ h w: state =
+  def init _ h w: state =
     { height = h, width = w,
       fov = 100, limit = 4,
       eye = {pos={x=50,y= -100,z= -700}, a=f32.pi/2, b=0},
@@ -26,10 +26,10 @@ module lys: lys with text_content = text_content = {
       sideway_sgn = 0,
       time = 0}
 
-  let resize h w (s: state): state =
+  def resize h w (s: state): state =
     s with height = h with width = w
 
-  let keydown (k: i32) (s: state) =
+  def keydown (k: i32) (s: state) =
     if      k == 'w' then s with forward_sgn = 1
     else if k == 's' then s with forward_sgn = -1
     else if k == 'a' then s with sideway_sgn = -1
@@ -38,29 +38,29 @@ module lys: lys with text_content = text_content = {
     else if k == 'x' then s with limit = s.limit + 1
     else s
 
-  let keyup (k: i32) (s: state) =
+  def keyup (k: i32) (s: state) =
     if      k == 'w' then s with forward_sgn = 0
     else if k == 's' then s with forward_sgn = 0
     else if k == 'a' then s with sideway_sgn = 0
     else if k == 'd' then s with sideway_sgn = 0
     else s
 
-  let grab_mouse = true
+  def grab_mouse = true
 
-  let move_speed: f32 = 1000
-  let forwards td ({pos=_, a,b}: eye) (s: i32) =
+  def move_speed: f32 = 1000
+  def forwards td ({pos=_, a,b}: eye) (s: i32) =
     let amount = move_speed * f32.i32 s * td
     in {x = amount * f32.cos(a) * f32.cos(b),
         y = amount * f32.sin(b),
         z = amount * f32.sin(a) * f32.cos(b)}
 
-  let sideways td ({pos=_, a,b=_}: eye) (s: i32) =
+  def sideways td ({pos=_, a,b=_}: eye) (s: i32) =
     let amount = move_speed * f32.i32 s * td
     in {x = amount * f32.cos(a + f32.pi/2),
         y = 0 : f32,
         z = amount * f32.sin(a + f32.pi/2)}
 
-  let event (e: event) (s: state) =
+  def event (e: event) (s: state) =
     match e
     case #keydown {key} -> keydown key s
     case #keyup {key} -> keyup key s
@@ -79,7 +79,7 @@ module lys: lys with text_content = text_content = {
     case _ -> s
 
 
-  let render (s: state): [][]argb.colour =
+  def render (s: state): [][]argb.colour =
     trace.main (i32.i64 s.width) (i32.i64 s.height) s.fov
                s.eye.pos.x s.eye.pos.y s.eye.pos.z
                s.eye.a s.eye.b
@@ -87,11 +87,11 @@ module lys: lys with text_content = text_content = {
 
   type text_content = text_content
 
-  let text_format () = "FPS: %d; rendering limit: %d"
+  def text_format () = "FPS: %d; rendering limit: %d"
 
-  let text_content (fps: f32) (s: state): text_content =
+  def text_content (fps: f32) (s: state): text_content =
     (i32.f32 fps, s.limit)
 
-  let text_colour = const argb.yellow
+  def text_colour = const argb.yellow
 
 }

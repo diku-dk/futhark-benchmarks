@@ -11,7 +11,7 @@
 --
 -- * `merge_sort`@term@"merge_sort"
 
-local let radix_sort_step [n] 't (xs: [n]t) (get_bit: i32 -> t -> i32)
+local def radix_sort_step [n] 't (xs: [n]t) (get_bit: i32 -> t -> i32)
                                  (digit_n: i32): [n]t =
   let num x = get_bit (digit_n+1) x * 2 + get_bit digit_n x
   let pairwise op (a1,b1,c1,d1) (a2,b2,c2,d2) =
@@ -47,22 +47,22 @@ local let radix_sort_step [n] 't (xs: [n]t) (get_bit: i32 -> t -> i32)
 -- 1.0, 2.0, -1.0, -2.0]`.  Use `radix_sort_int`@term and
 -- `radix_sort_float`@term in the (likely) cases that this is not what
 -- you want.
-let radix_sort [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
+def radix_sort [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
                       (xs: [n]t): [n]t =
   let iters = if n == 0 then 0 else (num_bits+2-1)/2
   in loop xs for i < iters do radix_sort_step xs get_bit (i*2)
 
-let with_indices [n] 'a (xs: [n]a) : [n](a, i64) =
+def with_indices [n] 'a (xs: [n]a) : [n](a, i64) =
   zip xs (iota n)
 
-local let by_key_wrapper [n] 't sorter key num_bits get_bit (xs: [n]t) : [n]t =
+local def by_key_wrapper [n] 't sorter key num_bits get_bit (xs: [n]t) : [n]t =
   map key xs
   |> with_indices
   |> sorter num_bits (\i (k, _) -> get_bit i k)
   |> map (\(_, i : i64) -> xs[i]) -- OK because '0<=i<n'.
 
 -- | Like `radix_sort`, but sort based on key function.
-let radix_sort_by_key [n] 't 'k
+def radix_sort_by_key [n] 't 'k
     (key: t -> k)
     (num_bits: i32) (get_bit: i32 -> k -> i32) (xs: [n]t): [n]t =
   by_key_wrapper radix_sort key num_bits get_bit xs
@@ -70,7 +70,7 @@ let radix_sort_by_key [n] 't 'k
 -- | A thin wrapper around `radix_sort`@term that ensures negative
 -- integers are sorted as expected.  Simply pass the usual `num_bits`
 -- and `get_bit` definitions from e.g. `i32`@term@"/futlib/math".
-let radix_sort_int [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
+def radix_sort_int [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
                           (xs: [n]t): [n]t =
   let get_bit' i x =
     -- Flip the most significant bit.
@@ -79,7 +79,7 @@ let radix_sort_int [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
   in radix_sort num_bits get_bit' xs
 
 -- | Like `radix_sort_int`, but sort based on key function.
-let radix_sort_int_by_key [n] 't 'k
+def radix_sort_int_by_key [n] 't 'k
     (key: t -> k)
     (num_bits: i32) (get_bit: i32 -> k -> i32) (xs: [n]t): [n]t =
   by_key_wrapper radix_sort_int key num_bits get_bit xs
@@ -88,7 +88,7 @@ let radix_sort_int_by_key [n] 't 'k
 -- sorted as expected.  Simply pass the usual `num_bits` and `get_bit`
 -- definitions from `f32`@term@"/futlib/math" and
 -- `f64`@term@"/futlib/math".
-let radix_sort_float [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
+def radix_sort_float [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
                             (xs: [n]t): [n]t =
   let get_bit' i x =
     -- We flip the bit returned if:
@@ -104,7 +104,7 @@ let radix_sort_float [n] 't (num_bits: i32) (get_bit: i32 -> t -> i32)
   in radix_sort num_bits get_bit' xs
 
 -- | Like `radix_sort_float`, but sort based on key function.
-let radix_sort_float_by_key [n] 't 'k
+def radix_sort_float_by_key [n] 't 'k
     (key: t -> k)
     (num_bits: i32) (get_bit: i32 -> k -> i32) (xs: [n]t): [n]t =
   by_key_wrapper radix_sort_float key num_bits get_bit xs

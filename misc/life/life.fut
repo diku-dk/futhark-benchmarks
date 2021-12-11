@@ -77,7 +77,7 @@ entry rule101_uninit (world: rule101_world [][]) =
  rule101.uninit world
 
 -- Just a simple test to force the program to be compiled.
-let main [n][m] (base_pattern: [n][m]i32) (_repeats: i32) (k: i64) =
+def main [n][m] (base_pattern: [n][m]i32) (_repeats: i32) (k: i64) =
   let l = k * m
   let pattern = unflatten (n*k) (m*k)
                 (flatten_3d (replicate k

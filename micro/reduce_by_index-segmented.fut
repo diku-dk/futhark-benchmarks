@@ -1,4 +1,4 @@
-let bins k is = map (%k) is |> map i64.i32
+def bins k is = map (%k) is |> map i64.i32
 
 -- Histogram-like computation.
 -- ==

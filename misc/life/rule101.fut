@@ -14,18 +14,18 @@ import "lib/github.com/athas/matte/colour"
 module rule101_rules: rules_and_visuals_1d = {
   type cell = bool
 
-  let value (b: cell) = i32.bool b
+  def value (b: cell) = i32.bool b
 
-  let weights: [3]i32 = [1,2,2]
+  def weights: [3]i32 = [1,2,2]
 
-  let step (_: cell) (neighbours: i32) =
+  def step (_: cell) (neighbours: i32) =
     neighbours == 2 || neighbours == 3 || neighbours == 4
 
-  let init (b: bool) = b
+  def init (b: bool) = b
 
-  let uninit (c: cell) = c
+  def uninit (c: cell) = c
 
-  let colour (b: cell) = if b
+  def colour (b: cell) = if b
                          then argb.black
                          else argb.white
 }

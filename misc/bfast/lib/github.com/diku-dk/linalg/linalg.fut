@@ -42,13 +42,26 @@ module type field = {
   val -: t -> t -> t
   val *: t -> t -> t
   val /: t -> t -> t
+  val **: t -> t -> t
 
   val neg: t -> t
   val <: t -> t -> bool
 
-  val i32: i32 -> t
+  val i64: i64 -> t
   val abs: t -> t
   val fma: t -> t -> t -> t
+}
+
+-- A field extended with an ordering relation.
+module type ordered_field = {
+  include field
+
+  val ==: t -> t -> bool
+  val <: t -> t -> bool
+  val >: t -> t -> bool
+  val <=: t -> t -> bool
+  val >=: t -> t -> bool
+  val !=: t -> t -> bool
 }
 
 -- | Given some numeric type, produce a linalg module.
@@ -56,74 +69,74 @@ module mk_linalg (T: field): linalg with t = T.t = {
 
   type t = T.t
 
-  let dotprod [n] (xs: [n]t) (ys: [n]t): t =
-    T.(reduce (+) (i32 0) (map2 (*) xs ys))
+  def dotprod [n] (xs: [n]t) (ys: [n]t): t =
+    T.(reduce (+) (i64 0) (map2 (*) xs ys))
 
-  let cross (xs: [3]t) (ys: [3]t): [3]t =
+  def cross (xs: [3]t) (ys: [3]t): [3]t =
     T.([xs[1]*ys[2]-xs[2]*ys[1],
         xs[2]*ys[0]-xs[0]*ys[2],
         xs[0]*ys[1]-xs[1]*ys[0]])
 
-  let matmul [n][p][m] (xss: [n][p]t) (yss: [p][m]t): [n][m]t =
+  def matmul [n][p][m] (xss: [n][p]t) (yss: [p][m]t): [n][m]t =
     map (\xs -> map (dotprod xs) (transpose yss)) xss
 
-  let outer [n][m] (xs: [n]t) (ys: [m]t): [n][m]t =
+  def outer [n][m] (xs: [n]t) (ys: [m]t): [n][m]t =
     matmul (map (\x -> [x]) xs) [ys]
 
-  let matvecmul_row [n][m] (xss: [n][m]t) (ys: [m]t) =
+  def matvecmul_row [n][m] (xss: [n][m]t) (ys: [m]t) =
     map (dotprod ys) xss
 
-  let matvecmul_col [n][m] (xss: [n][m]t) (ys: [n]t) =
+  def matvecmul_col [n][m] (xss: [n][m]t) (ys: [n]t) =
     matmul xss (replicate m ys)
 
-  let kronecker' [m][n][p][q] (xss: [m][n]t) (yss: [p][q]t): [m][n][p][q]t =
+  def kronecker' [m][n][p][q] (xss: [m][n]t) (yss: [p][q]t): [m][n][p][q]t =
     map (map (\x -> map (map (T.*x)) yss)) xss
 
-  let kronecker [m][n][p][q] (xss: [m][n]t) (yss: [p][q]t): [][]t =
+  def kronecker [m][n][p][q] (xss: [m][n]t) (yss: [p][q]t): [][]t =
     kronecker' xss yss        -- [m][n][p][q]
     |> map transpose          -- [m][p][n][q]
     |> flatten                -- [m*p][n][q]
     |> map (flatten_to (n*q)) -- [m*p][n*q]
 
-  let indices_from [n] 't (x: i64) (arr: [n]t) =
+  def indices_from [n] 't (x: i64) (arr: [n]t) =
     zip arr (map (+x) (iota n))
 
-  let argmax arr =
+  def argmax arr =
     reduce_comm (\(a,i) (b,j) ->
                    if a T.< b
                    then (b,j)
                    else if b T.< a then (a,i)
                    else if j < i then (b, j)
                    else (a, i))
-                (T.i32 0, 0)
+                (T.i64 0, 0)
                 (zip arr (indices arr))
 
   -- Matrix inversion is implemented with Gauss-Jordan.
-  let gauss_jordan [m] [n] (A:[m][n]t) =
+  def gauss_jordan [m] [n] (A:[m][n]t) =
     loop A for i < i64.min m n do
     -- Find nonzero value.
     let j = A[i:,i] |> map T.abs |> argmax |> (.1) |> (+i)
-    let f = T.((i32 1-A[i,i]) / A[j,i])
+    let f = T.((i64 1-A[i,i]) / A[j,i])
     let irow = map2 (T.fma f) A[j] A[i]
     in tabulate m (\j ->
                      let f = T.neg A[j,i]
                      in map2 (\x y -> if j == i then x else T.fma f x y)
                              irow A[j])
 
-  let inv [n] (A: [n][n]t): [n][n]t =
+  def inv [n] (A: [n][n]t): [n][n]t =
     -- Pad the matrix with the identity matrix.
     let twon = 2*n
     let Ap = map2 (\row i ->
                     map (\j -> if j < n then row[j]
                                      else if j == n+i
-                                          then T.i32 1
-                                          else T.i32 0
+                                          then T.i64 1
+                                          else T.i64 0
                         ) (iota twon)
                   ) A (iota n)
     let Ap' = gauss_jordan Ap
     -- Drop the identity matrix at the front.
     in Ap'[0:n, n:n*2] :> [n][n]t
 
-  let ols [n][m] (X: [n][m]t) (b: [n]t): [m]t =
+  def ols [n][m] (X: [n][m]t) (b: [n]t): [m]t =
     matvecmul_row (matmul (inv (matmul (transpose X) X)) (transpose X)) b
 }

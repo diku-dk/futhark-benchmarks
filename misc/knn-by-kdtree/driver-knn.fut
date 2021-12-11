@@ -3,9 +3,9 @@ import "knn-iteration"
 import "util"
 import "kd-traverse"
 
-let k = 5i64
+def k = 5i64
 
-let propagate [m][q][d][n] (ref_pts: [m][d]f32) (indir: [m]i32)
+def propagate [m][q][d][n] (ref_pts: [m][d]f32) (indir: [m]i32)
                            (kd_tree: [q](i32,f32,i32))
                            (queries: [n][d]f32) : ([][k]i32, [][k]f32, []i32, i32, i32) = 
   let (median_dims, median_vals, _) = unzip3 kd_tree

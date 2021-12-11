@@ -1,4 +1,5 @@
 #include "liblys.h"
+#include "font_data.h"
 #include PRINTFHEADER
 
 #define _XOPEN_SOURCE
@@ -10,7 +11,6 @@
 
 struct lys_text {
   TTF_Font *font;
-  char* font_path;
   int font_size;
   char* text_format;
   char* text_buffer;
@@ -144,10 +144,14 @@ int font_size_from_dimensions(int width, int height) {
   return font_size;
 }
 
+TTF_Font* open_font(int font_size) {
+  return TTF_OpenFontRW(SDL_RWFromMem(font_data, sizeof(font_data)), true, font_size);
+}
+
 void window_size_updated(struct lys_context *ctx, struct lys_text *text) {
   text->font_size = font_size_from_dimensions(ctx->width, ctx->height);
   TTF_CloseFont(text->font);
-  text->font = TTF_OpenFont(text->font_path, text->font_size);
+  text->font = open_font(text->font_size);
   SDL_ASSERT(text->font != NULL);
 }
 
@@ -294,16 +298,6 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  char font_path_rel[] = "/lib/github.com/diku-dk/lys/Inconsolata-Regular.ttf";
-  char* font_path = malloc(sizeof(char) * strlen(argv[0]) + sizeof(font_path_rel));
-  assert(font_path != NULL);
-  strcpy(font_path, argv[0]);
-  char *last_dash = strrchr(font_path, '/');
-  if (last_dash != NULL) {
-    *last_dash = '\0';
-  }
-  strcat(font_path, font_path_rel);
-
   int sdl_flags = 0;
   if (allow_resize) {
     sdl_flags |= SDL_WINDOW_RESIZABLE;
@@ -330,9 +324,8 @@ int main(int argc, char** argv) {
 
   SDL_ASSERT(TTF_Init() == 0);
 
-  text.font_path = font_path;
   text.font_size = font_size_from_dimensions(ctx.width, ctx.height);
-  text.font = TTF_OpenFont(text.font_path, text.font_size);
+  text.font = open_font(text.font_size);
   SDL_ASSERT(text.font != NULL);
 
   if (benchopt != NULL) {
@@ -346,7 +339,6 @@ int main(int argc, char** argv) {
   }
 
   TTF_CloseFont(text.font);
-  free(font_path);
 
   futhark_context_free(ctx.fut);
   futhark_context_config_free(futcfg);

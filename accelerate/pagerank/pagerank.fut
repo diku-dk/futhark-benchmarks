@@ -28,7 +28,7 @@ import "lib/github.com/diku-dk/segmented/segmented"
 
 -- Calculate ranks from pages without any outbound edges
 -- This defaults to the page contribution / number of pages
-let calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
+def calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
   let zipped = zip sizes ranks
   let weights = map (\(size, rank) -> if size == 0 then rank else 0f32) zipped
   let total = f32.sum weights / f32.i64 n
@@ -37,7 +37,7 @@ let calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
 -- Calculate ranks from all pages
 -- A rank is counted as the contribution of a page / the outbound edges from that page
 -- A contribution is defined as the rank of the page / the inbound edges
-let calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *[n]f32 =
+def calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *[n]f32 =
   let froms = map (\(x: link) -> x.from) links
   let tos = map (\(x: link) -> x.to) links
   let get_rank (i: i32) = #[unsafe] if sizes[i] == 0 then 0f32
@@ -50,7 +50,7 @@ let calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *
                 tos scanned_contributions (rotate 1 page_flags))
   in scatter (replicate n 0f32) page_tos page_contributions
 
-let calculate_ranks [n] (links:[]link) (ranks_in: *[n]f32)
+def calculate_ranks [n] (links:[]link) (ranks_in: *[n]f32)
                         (sizes: [n]i32) (iterations:i32): *[n]f32 =
   loop ranks = ranks_in for _i < iterations do
     let ranks_pages = calculate_page_ranks links ranks sizes
@@ -58,12 +58,12 @@ let calculate_ranks [n] (links:[]link) (ranks_in: *[n]f32)
 
 import "lib/github.com/diku-dk/sorts/radix_sort"
 
-let sort_by_to = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i link.to)
+def sort_by_to = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i link.to)
 
-let sort_by_from = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i link.from)
+def sort_by_from = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i link.from)
 
 -- Compute the number of outbound links for each page.
-let compute_sizes [m] (n: i64) (links: [m]link) =
+def compute_sizes [m] (n: i64) (links: [m]link) =
   let links = sort_by_from links
   let froms = map (\(x: link) -> x.from) links
   let flags = map2 (!=) froms (rotate (-1) froms)
@@ -78,12 +78,12 @@ entry preprocess_graph [m] (links_array: [m][2]i32): ([m]i32, [m]i32, []i32) =
       map (\(x: link) -> x.to) links_by_to,
       compute_sizes (i64.i32 n) links_by_to)
 
-let initial_ranks (n: i64): *[n]f32 =
+def initial_ranks (n: i64): *[n]f32 =
   replicate n (1 / f32.i64 n)
 
-let process_graph [m] [n] (links: [m]link) (sizes: [n]i32) (iterations: i32) =
+def process_graph [m] [n] (links: [m]link) (sizes: [n]i32) (iterations: i32) =
   (calculate_ranks links (initial_ranks n) sizes iterations)
 
-let main [m] (froms: [m]i32) (tos: [m]i32) (sizes: []i32) (iterations: i32) =
+def main [m] (froms: [m]i32) (tos: [m]i32) (sizes: []i32) (iterations: i32) =
   let links = map (\(from, to) -> {from, to}) (zip froms tos)
   in process_graph links sizes iterations

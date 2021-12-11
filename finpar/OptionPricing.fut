@@ -9,12 +9,12 @@
 -- compiled input @ OptionPricing-data/large.in
 -- output @ OptionPricing-data/large.out
 
-let grayCode(x: i32): i32 = (x >> 1) ^ x
+def grayCode(x: i32): i32 = (x >> 1) ^ x
 
 ----------------------------------------
 --- Sobol Generator
 ----------------------------------------
-let testBit(n: i32, ind: i32): bool =
+def testBit(n: i32, ind: i32): bool =
   let t = (1 << ind) in (n & t) == t
 
 -----------------------------------------------------------------
@@ -23,15 +23,15 @@ let testBit(n: i32, ind: i32): bool =
 ----    Currently Futhark hoists it outside, but this will
 ----    not allow fusing the filter with reduce -> redomap,
 -----------------------------------------------------------------
-let xorInds [num_bits] (n: i32) (dir_vs: [num_bits]i32): i32 =
+def xorInds [num_bits] (n: i32) (dir_vs: [num_bits]i32): i32 =
   let reldv_vals = map2 (\dv i -> if testBit(grayCode n,i32.i64 i) then dv else 0)
                         dir_vs (indices dir_vs)
   in reduce (^) 0 reldv_vals
 
-let sobolIndI [m][num_bits] (dir_vs: [m][num_bits]i32, n: i32): [m]i32 =
+def sobolIndI [m][num_bits] (dir_vs: [m][num_bits]i32, n: i32): [m]i32 =
   map (xorInds n) dir_vs
 
-let sobolIndR [m][num_bits] (dir_vs: [m][num_bits]i32) (n: i32): [m]f32 =
+def sobolIndR [m][num_bits] (dir_vs: [m][num_bits]i32) (n: i32): [m]f32 =
   let divisor = 2.0 ** f32.i64(num_bits)
   let arri    = sobolIndI( dir_vs, n )
   in map (\x -> f32.i32(x) / divisor) arri
@@ -39,18 +39,18 @@ let sobolIndR [m][num_bits] (dir_vs: [m][num_bits]i32) (n: i32): [m]f32 =
 --------------------------------
 ---- STRENGTH-REDUCED FORMULA
 --------------------------------
-let index_of_least_significant_0(x: i32): i32 =
+def index_of_least_significant_0(x: i32): i32 =
   loop i = 0 while i < 32 && ((x>>i)&1) != 0 do i + 1
 
-let sobolRecI [num_bits][n] (sob_dir_vs: [n][num_bits]i32, prev: [n]i32, x: i32): [n]i32 =
+def sobolRecI [num_bits][n] (sob_dir_vs: [n][num_bits]i32, prev: [n]i32, x: i32): [n]i32 =
   let bit = index_of_least_significant_0 x
   in map2 (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
 
-let recM [n][num_bits] (sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
+def recM [n][num_bits] (sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
   let bit = index_of_least_significant_0 i
   in #[unsafe] sob_dirs[:,bit]
 
-let sobolRecMap [n][num_bits] (sob_fact:  f32, dir_vs: [n][num_bits]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
+def sobolRecMap [n][num_bits] (sob_fact:  f32, dir_vs: [n][num_bits]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
   -- the if inside may be particularly ugly for
   -- flattening since it introduces control flow!
   let contribs = map (\k -> if k==0
@@ -60,12 +60,12 @@ let sobolRecMap [n][num_bits] (sob_fact:  f32, dir_vs: [n][num_bits]i32, (lb_inc
   let vct_ints = scan (map2 (^)) (replicate n 0) contribs
   in  map (\xs -> map (\x -> f32.i32 x * sob_fact) xs) vct_ints
 
-let sobolReci2 [n][num_bits] (sob_dirs: [n][num_bits]i32, prev: [n]i32, i: i32): [n]i32=
+def sobolReci2 [n][num_bits] (sob_dirs: [n][num_bits]i32, prev: [n]i32, i: i32): [n]i32=
   let col = recM(sob_dirs, i)
   in map2 (^) prev col
 
 -- computes sobol numbers: n,..,n+chunk-1
-let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32) (n: i32) (chunk: i64): [chunk][len]f32 =
+def sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32) (n: i32) (chunk: i64): [chunk][len]f32 =
   let sob_fact= 1.0 / f32.i64(1 << num_bits)
   let sob_beg = sobolIndI(dir_vs, n+1)
   let contrbs = map (\(k: i64): [len]i32  ->
@@ -78,7 +78,7 @@ let sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32) (n: i32) (chunk: i64
 ----------------------------------------
 --- Inverse Gaussian
 ----------------------------------------
-let polyAppr(x: f32,
+def polyAppr(x: f32,
              a0: f32, a1: f32, a2: f32, a3: f32,
              a4: f32, a5: f32, a6: f32, a7: f32,
              b0: f32, b1: f32, b2: f32, b3: f32,
@@ -87,7 +87,7 @@ let polyAppr(x: f32,
   (x*(x*(x*(x*(x*(x*(x*a7+a6)+a5)+a4)+a3)+a2)+a1)+a0) /
   (x*(x*(x*(x*(x*(x*(x*b7+b6)+b5)+b4)+b3)+b2)+b1)+b0)
 
-let smallcase(q: f32): f32 =
+def smallcase(q: f32): f32 =
   q * polyAppr( 0.180625 - q * q,
 
                 3.387132872796366608,
@@ -109,7 +109,7 @@ let smallcase(q: f32): f32 =
                 5226.495278852854561
               )
 
-let intermediate(r: f32): f32 =
+def intermediate(r: f32): f32 =
   polyAppr( r - 1.6,
 
             1.42343711074968357734,
@@ -131,7 +131,7 @@ let intermediate(r: f32): f32 =
             1.05075007164441684324e-9
           )
 
-let tail(r: f32): f32 =
+def tail(r: f32): f32 =
   polyAppr( r - 5.0,
 
             6.6579046435011037772,
@@ -153,7 +153,7 @@ let tail(r: f32): f32 =
             2.04426310338993978564e-5
           )
 
-let ugaussianEl(p: f32): f32 =
+def ugaussianEl(p: f32): f32 =
   let dp = p - 0.5
   in  --if  ( fabs(dp) <= 0.425 )
   if ( ( (dp < 0.0 ) && (0.0 - dp <= 0.425) ) ||
@@ -168,13 +168,13 @@ let ugaussianEl(p: f32): f32 =
 
 -- Transforms a uniform distribution [0,1)
 -- into a gaussian distribution (-inf, +inf)
-let ugaussian [n] (ps: [n]f32): [n]f32 = map ugaussianEl ps
+def ugaussian [n] (ps: [n]f32): [n]f32 = map ugaussianEl ps
 
 
 ---------------------------------
 --- Brownian Bridge
 ---------------------------------
-let brownianBridgeDates [num_dates]
+def brownianBridgeDates [num_dates]
                         (bb_inds: [3][num_dates]i32)
                         (bb_data: [3][num_dates]f32)
                         (gauss: [num_dates]f32): [num_dates]f32 =
@@ -187,27 +187,27 @@ let brownianBridgeDates [num_dates]
   let bbrow = replicate num_dates 0.0
   let bbrow[ bi[0]-1 ] = sd[0] * gauss[0]
   let bbrow = loop bbrow for i in 1..<num_dates do
-    #[unsafe]
-    let j  = li[i] - 1
-    let k  = ri[i] - 1
-    let l  = bi[i] - 1
-    let wk = bbrow[k]
-    let zi = gauss[i]
-    let tmp= rw[i] * wk + sd[i] * zi
-    let bbrow[ l ] = if j == -1
-                     then tmp
-                     else tmp + lw[i] * bbrow[j]
-    in  bbrow
+                #[unsafe]
+  let j  = li[i] - 1
+  let k  = ri[i] - 1
+  let l  = bi[i] - 1
+  let wk = bbrow[k]
+  let zi = gauss[i]
+  let tmp= rw[i] * wk + sd[i] * zi
+  let bbrow[ l ] = if j == -1
+                   then tmp
+                   else tmp + lw[i] * bbrow[j]
+  in  bbrow
 
   -- This can be written as map-reduce, but it
   --   needs delayed arrays to be mapped nicely!
   in loop bbrow for ii in 1..<num_dates do
        #[unsafe]
-       let i = num_dates - ii
-       let bbrow[i] = bbrow[i] - bbrow[i-1]
-       in  bbrow
+let i = num_dates - ii
+let bbrow[i] = bbrow[i] - bbrow[i-1]
+in  bbrow
 
-let brownianBridge [num_dates][k]
+def brownianBridge [num_dates][k]
                    (num_und: i64)
                    (bb_inds: [3][num_dates]i32)
                    (bb_data: [3][num_dates]f32)
@@ -222,7 +222,7 @@ let brownianBridge [num_dates][k]
 --- Black-Scholes
 ---------------------------------
 
-let correlateDeltas [num_und][num_dates]
+def correlateDeltas [num_und][num_dates]
                    (md_c:  [num_und][num_und]f32,
                     zds:   [num_dates][num_und]f32)
                    : [num_dates][num_und]f32 =
@@ -235,13 +235,13 @@ let correlateDeltas [num_und][num_dates]
              (iota num_und))
       zds
 
-let combineVs [num_und]
+def combineVs [num_und]
              (n_row:   [num_und]f32)
              (vol_row: [num_und]f32)
              (dr_row:  [num_und]f32): [num_und]f32 =
   map2 (+) dr_row (map2 (*) n_row vol_row)
 
-let mkPrices [num_und][num_dates]
+def mkPrices [num_und][num_dates]
             (md_starts:    [num_und]f32,
              md_vols: [num_dates][num_und]f32,
              md_drifts: [num_dates][num_und]f32,
@@ -251,7 +251,7 @@ let mkPrices [num_und][num_dates]
   let e_rows = map (\x: [num_und]f32 -> map f32.exp x) c_rows
   in  map (map2 (*) md_starts) (scan (map2 (*)) (replicate num_und 1.0) e_rows)
 
-let blackScholes [num_dates][num_und]
+def blackScholes [num_dates][num_und]
                 (bb_arr: [num_dates][num_und]f32)
                 (md_c: [num_und][num_und]f32)
                 (md_vols: [num_dates][num_und]f32)
@@ -265,22 +265,22 @@ let blackScholes [num_dates][num_und]
 -- PAYOFF FUNCTIONS
 ----------------------------------------
 
-let fminPayoff(xs: []f32): f32 =
+def fminPayoff(xs: []f32): f32 =
   --    MIN( map(/, xss, {3758.05, 11840.0, 1200.0}) )
   let (a,b,c) = (xs[0]/3758.05, xs[1]/11840.0, xs[2]/1200.0)
   in if a < b
      then if a < c then a else c
      else if b < c then b else c
 
-let trajInner(amount: f32, ind: i32, disc: []f32): f32 = amount * #[unsafe] disc[ind]
+def trajInner(amount: f32, ind: i32, disc: []f32): f32 = amount * #[unsafe] disc[ind]
 
-let payoff1(md_disct: []f32, md_detval: []f32, xss: [1][1]f32): f32 =
+def payoff1(md_disct: []f32, md_detval: []f32, xss: [1][1]f32): f32 =
   let detval = #[unsafe] md_detval[0]
   let amount = ( xss[0,0] - 4000.0 ) * detval
   let amount0= if (0.0 < amount) then amount else 0.0
   in  trajInner(amount0, 0, md_disct)
 
-let payoff2 (md_disc: []f32, xss: [5][3]f32): f32 =
+def payoff2 (md_disc: []f32, xss: [5][3]f32): f32 =
   let (date, amount) =
     if 1.0 <= fminPayoff(xss[0]) then (0, 1150.0) else
     if 1.0 <= fminPayoff(xss[1]) then (1, 1300.0) else
@@ -293,7 +293,7 @@ let payoff2 (md_disc: []f32, xss: [5][3]f32): f32 =
     in (4, value)
   in trajInner(amount, date, md_disc)
 
-let payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
+def payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
   let conds  = map (\x ->
                       x[0] <= 2630.6349999999998 ||
                       x[1] <= 8288.0             ||
@@ -311,14 +311,14 @@ let payoff3(md_disct: []f32, xss: [367][3]f32): f32 =
   in price1 + price2
 
 
-let genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]f32): f32 =
+def genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]f32): f32 =
   if      contract == 1 then #[unsafe] payoff1(md_disct, md_detval, xss :> [1][1]f32)
   else if contract == 2 then #[unsafe] payoff2(md_disct, xss :> [5][3]f32)
   else if contract == 3 then #[unsafe] payoff3(md_disct, xss :> [367][3]f32)
   else 0.0
 
 -- Entry point
-let main [k][num_bits][num_models][num_und][num_dates][num_discts]
+def main [k][num_bits][num_models][num_und][num_dates][num_discts]
         (contract_number: i32)
         (num_mc_it: i32)
         (dir_vs: [k][num_bits]i32)

@@ -18,9 +18,9 @@ module heston (real: real)
 } = {
 
 type real = real.t
-let int (x: i32) = real.i32 x
+def int (x: i32) = real.i32 x
 
-let heston_parameters_from_vector (x: [5]real) =
+def heston_parameters_from_vector (x: [5]real) =
   { initial_variance = x[0]
   , long_term_variance = x[1]
   , correlation = x[2]
@@ -34,14 +34,14 @@ module real_distance = absolute_distance real
 
 type quote = {maturity: date, strike: real, quote: real}
 
-let distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
+def distinct_maturities [n] (dates: [n]date): ([]date, [n]i32) =
   let switched (x: date) (i: i32) =
     i == 0 || #[unsafe] !(same_date x dates[i - 1])
   let switches = map2 switched dates (map i32.i64 (iota n))
   in ((unzip (filter (.0) (zip switches dates))).1,
       map (\x -> x-1) (scan (+) 0 (map i32.bool switches)))
 
-let run_calibration({today,
+def run_calibration({today,
                      quotes,
                      max_global,
                      np,
@@ -88,13 +88,13 @@ let run_calibration({today,
   in real_least_squares.least_squares variables objective max_global np
                                       (i32.i64 (length quotes))
 
-let date_of_int(x: i32) =
+def date_of_int(x: i32) =
   let d = x%100
   let m = (x/100)%100
   let y = x/10000
   in date_of_triple (y, m, d)
 
-let default_variables: [5]real_least_squares.optimization_variable =
+def default_variables: [5]real_least_squares.optimization_variable =
   [real_least_squares.optimize_value
    {lower_bound =  real.f64 1e-6, initial_value = real.f64 4e-2, upper_bound = int 1},
    real_least_squares.optimize_value
@@ -107,7 +107,7 @@ let default_variables: [5]real_least_squares.optimization_variable =
    {lower_bound =  real.f64 1e-4, initial_value = real.f64 0.4, upper_bound = int 2}
   ]
 
-let heston [num_quotes]
+def heston [num_quotes]
            (max_global: i32)
            (num_points: i32)
            (np: i32)

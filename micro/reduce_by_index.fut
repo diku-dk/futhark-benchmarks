@@ -1,6 +1,6 @@
-let replicate32 n = replicate (i64.i32 n)
+def replicate32 n = replicate (i64.i32 n)
 
-let bins k is = map (%k) is |> map i64.i32
+def bins k is = map (%k) is |> map i64.i32
 
 -- Simple cases with addition operator, which can be translated
 -- directly to atomic addition.
@@ -50,7 +50,7 @@ entry sum_i32_f32 [n] (k: i32) (is : [n]i32) (vs1 : [n]i32) (vs2 : [n]f32) : ([]
 -- random input { 10000 [1000000]i32 [1000000]i32 } auto output
 -- random input { 100000 [1000000]i32 [1000000]i32 } auto output
 
-let absmax (x: i32) (y: i32): i32 =
+def absmax (x: i32) (y: i32): i32 =
   if i32.abs x < i32.abs y then y else x
 
 entry absmax_i32 [n] (k: i32) (is : [n]i32) (vs : [n]i32) : []i32 =
@@ -81,7 +81,7 @@ entry sum_vec_i32 [n][m] (k: i32) (is : [m]i32) (vs : [n]i32) : [][]i32 =
 -- random input { 10000 [1000000]i32 [1000000]i32 } auto output
 -- random input { 100000 [1000000]i32 [1000000]i32 } auto output
 
-let argmax_op ((x: i32), (i: i32)) ((y: i32), (j: i32)) =
+def argmax_op ((x: i32), (i: i32)) ((y: i32), (j: i32)) =
   if y > x then (y, j)
   else if y < x then (x, i)
   else if i > j then (y, j)

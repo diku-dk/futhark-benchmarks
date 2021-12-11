@@ -12,10 +12,10 @@ type body = {position: position,
              mass: mass,
              velocity: velocity}
 
-let pointmass ({position, mass, velocity=_}: body) : pointmass =
+def pointmass ({position, mass, velocity=_}: body) : pointmass =
   {position, mass}
 
-let accel (epsilon: f32) (x: pointmass) (y: pointmass): velocity =
+def accel (epsilon: f32) (x: pointmass) (y: pointmass): velocity =
   let r = vec3.(y.position - x.position)
   let rsqr = vec3.dot r r + epsilon * epsilon
   let invr = 1.0f32 / f32.sqrt rsqr
@@ -23,7 +23,7 @@ let accel (epsilon: f32) (x: pointmass) (y: pointmass): velocity =
   let s = y.mass * invr3
   in vec3.scale s r
 
-let advance_body (time_step: f32) (body: body) (acc: acceleration): body =
+def advance_body (time_step: f32) (body: body) (acc: acceleration): body =
   let position = vec3.(body.position + scale time_step body.velocity)
   let velocity = vec3.(body.velocity + scale time_step acc)
   in {position, mass=body.mass, velocity}

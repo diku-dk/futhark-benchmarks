@@ -4,9 +4,9 @@ import "lib/github.com/athas/matte/colour"
 module c32 = mk_complex f32
 type c32 = c32.complex
 
-let dot ((x,y): c32) = x*x + y*y
+def dot ((x,y): c32) = x*x + y*y
 
-let julia (screenX: i64) (screenY: i64) (next: f32 -> c32 -> c32)
+def julia (screenX: i64) (screenY: i64) (next: f32 -> c32 -> c32)
           (t: f32) (x0: f32) (y0: f32) (width: f32)
           (limit: i32) (radius: f32)
         : [screenY][screenX](c32, i32) =
@@ -25,7 +25,7 @@ let julia (screenX: i64) (screenY: i64) (next: f32 -> c32 -> c32)
                      do (next t z, i + 1)
   in tabulate_2d screenY screenX pixel
 
-let escape_to_rgba (limit: i32) (palette: []argb.colour) ((z, n): (c32, i32)): argb.colour =
+def escape_to_rgba (limit: i32) (palette: []argb.colour) ((z, n): (c32, i32)): argb.colour =
   if n == limit then argb.black
   else let scale   = 256
        let shift   = 1664
@@ -34,7 +34,7 @@ let escape_to_rgba (limit: i32) (palette: []argb.colour) ((z, n): (c32, i32)): a
        let ix      = i64.f32 (f32.sqrt (f32.i32 n + 1 - smooth) * scale + shift) % length palette
     in #[unsafe] palette[ix]
 
-let render (palette: []argb.colour)
+def render (palette: []argb.colour)
            (screenX: i64) (screenY: i64)
            (next: f32 -> c32 -> c32) (t: f32)
            (x0: f32) (y0: f32) (width: f32)
@@ -46,7 +46,7 @@ let render (palette: []argb.colour)
 import "lib/github.com/diku-dk/lys/lys"
 
 -- | Cubic interpolation.
-let cubic (x0:f32,x1:f32) (y0:f32,y1:f32) (m0:f32,m1:f32) (x:f32) =
+def cubic (x0:f32,x1:f32) (y0:f32,y1:f32) (m0:f32,m1:f32) (x:f32) =
   let h    = x1 - x0
   let t    = (x - x0) / h
   let h_00 = (1.0 + 2.0*t) * (1.0 - t) ** 2.0
@@ -55,7 +55,7 @@ let cubic (x0:f32,x1:f32) (y0:f32,y1:f32) (m0:f32,m1:f32) (x:f32) =
   let h_11 = t ** 2.0 * (t - 1.0)
   in y0 * h_00 + h * m0 * h_10 + y1 * h_01 + h * m1 * h_11
 
-let interp (x0:f32, x1:f32)
+def interp (x0:f32, x1:f32)
            (y0:argb.colour, y1:argb.colour)
            ((mr0,mg0,mb0):(f32,f32,f32),
             (mr1,mg1,mb1):(f32,f32,f32))
@@ -67,7 +67,7 @@ let interp (x0:f32, x1:f32)
                     (cubic (x0,x1) (b0,b1) (mb0,mb1) x)
                     0.0
 
-let ultra (p: f32) =
+def ultra (p: f32) =
   let p0 = 0.0
   let p1 = 0.16
   let p2 = 0.42
@@ -100,10 +100,10 @@ let ultra (p: f32) =
                   interp (p4,p5) (c4,c5) (m4,m5) p
 
 
-let ultra_palette (points: i64) : [points]argb.colour =
+def ultra_palette (points: i64) : [points]argb.colour =
   tabulate points (\ix -> ultra (f32.i64 ix / f32.i64 points))
 
-let golden = (1 + f32.sqrt 5) / 2
+def golden = (1 + f32.sqrt 5) / 2
 
 -- All the 'next' functions are of the form
 --
@@ -112,11 +112,11 @@ let golden = (1 + f32.sqrt 5) / 2
 -- for various 'a' and 'b'.
 type next_fn = {a: f32, b: f32}
 
-let next ({a,b}: next_fn) (t: f32) (z: c32) =
+def next ({a,b}: next_fn) (t: f32) (z: c32) =
   z c32.* z c32.+ c32.mk (a * f32.cos t) (b * f32.sin t)
 
 type preset = (next_fn, f32, f32, f32, i32, f32)
-let presets : []preset =
+def presets : []preset =
   map (\(a,b) -> ({a,b}, 0, 0, 4, 244, 15))
       ([(0.7885, 0.7885),
         (1-golden, 0),
@@ -146,7 +146,7 @@ module lys : lys with text_content = () = {
     , panning: (f32, f32)
     }
 
-  let load_preset (s: state) (p: preset) =
+  def load_preset (s: state) (p: preset) =
     let (f, posX, posY, width, iters, radius) = p
     in s with posX = posX
          with posY = posY
@@ -155,7 +155,7 @@ module lys : lys with text_content = () = {
          with iters = iters
          with radius = radius
 
-  let init _ h w : state =
+  def init _ h w : state =
     let s = { screenX = w
             , screenY = h
             , palette = ultra_palette 2048
@@ -173,7 +173,7 @@ module lys : lys with text_content = () = {
             }
     in load_preset s presets[0]
 
-  let event (e: event) (s: state) =
+  def event (e: event) (s: state) =
     match e
 
     case #keydown {key} ->
@@ -215,16 +215,16 @@ module lys : lys with text_content = () = {
 
     case _ -> s
 
-  let resize h w (s: state) =
+  def resize h w (s: state) =
     s with screenX = w with screenY = h
 
-  let render (s: state) =
+  def render (s: state) =
     render s.palette s.screenX s.screenY (next s.next_fn) s.time s.posX s.posY
            s.width s.iters s.radius
 
   type text_content = ()
-  let grab_mouse = false
-  let text_format () = ""
-  let text_content _ _ = ()
-  let text_colour _ = argb.white
+  def grab_mouse = false
+  def text_format () = ""
+  def text_content _ _ = ()
+  def text_colour _ = argb.white
 }

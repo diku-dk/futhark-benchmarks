@@ -7,9 +7,9 @@
 import "lib/github.com/diku-dk/sorts/radix_sort"
 import "util"
 
-let iota32 n = (0..1..<i32.i64 n) :> [n]i32
+def iota32 n = (0..1..<i32.i64 n) :> [n]i32
 
-local let closestLog2 (p: i32) : i32 =
+local def closestLog2 (p: i32) : i32 =
     if p<=1 then 0
     else let (_,res) = loop (q,r) = (p,0) 
                        while q > 1 do
@@ -22,7 +22,7 @@ local let closestLog2 (p: i32) : i32 =
 -- m: the number of reference points
 -- defppl: the default number of points per leaf
 -- result: (height of tree without leaves, number of points per leaf)
-let computeTreeShape (m: i32) (defppl: i32) : (i32, i32, i32, i32) =
+def computeTreeShape (m: i32) (defppl: i32) : (i32, i32, i32, i32) =
     let def_num_leaves = (m + defppl - 1) / defppl
     let hp1 = closestLog2 def_num_leaves in
     if hp1 <= 0 then (-1, 0, m, m)
@@ -31,7 +31,7 @@ let computeTreeShape (m: i32) (defppl: i32) : (i32, i32, i32, i32) =
          let ppl = (m + num_leaves - 1) / num_leaves
          in  (h, num_leaves-1, ppl, num_leaves*ppl)
 
-local let updateBounds [n] [d2] (level: i32) (median_dims: [n]i32) (median_vals: [n]f32)
+local def updateBounds [n] [d2] (level: i32) (median_dims: [n]i32) (median_vals: [n]f32)
                      (node_ind: i32) (lubs_cur: *[d2]f32) : *[d2]f32=
     let d = d2 / 2
     let ancestor = 0
@@ -49,7 +49,7 @@ local let updateBounds [n] [d2] (level: i32) (median_dims: [n]i32) (median_vals:
         in  (ancestor_child, lubs_cur)
     in  res
 
-local let findClosestMed [n] (cur_dim: i32) (median_dims: [n]i32) (node_ind: i32) : i32 =
+local def findClosestMed [n] (cur_dim: i32) (median_dims: [n]i32) (node_ind: i32) : i32 =
     let cur_node = node_ind
     let res_ind  = -1i32
     let (_, res) =
@@ -72,7 +72,7 @@ local let findClosestMed [n] (cur_dim: i32) (median_dims: [n]i32) (node_ind: i32
 --         3. the index of the dimension that is split
 --         4. the median value of the split dimension
 --         5. the closest ancestor node index that splits the same dimension (or -1 if none)
-let mkKDtree [m] [d] (height: i32) (q: i64) (m' : i64)
+def mkKDtree [m] [d] (height: i32) (q: i64) (m' : i64)
                      (input: [m][d]f32) :
            (*[m'][d]f32, *[m']i32, *[q]i32, *[q]f32, *[q]i32) =
 
@@ -162,10 +162,10 @@ let mkKDtree [m] [d] (height: i32) (q: i64) (m' : i64)
          in  (input'', indir', median_dims', median_vals', clanc_eqdim')
 
 
-let main0 (m: i32) (defppl: i32) =
+def main0 (m: i32) (defppl: i32) =
     computeTreeShape m defppl
 
-let main [m] [d] (defppl: i32) (input: [m][d]f32) =
+def main [m] [d] (defppl: i32) (input: [m][d]f32) =
     let (height, num_inner_nodes, _, m') = computeTreeShape (i32.i64 m) defppl
     let (leafs, indir, median_dims, median_vals, clanc_eqdim) =
         mkKDtree height (i64.i32 num_inner_nodes) (i64.i32 m') input

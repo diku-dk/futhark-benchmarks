@@ -1,8 +1,10 @@
 LYS_BACKEND?=opencl
 LYS_TTF?=0
 
+SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+
 ifeq ($(origin PROG_FUT_DEPS), undefined)
-PROG_FUT_DEPS:=$(shell ls *.fut; find lib -name \*.fut)
+PROG_FUT_DEPS:=$(shell ls *.fut; find $(SELF_DIR)/../../.. -name \*.fut)
 endif
 
 PKG_CFLAGS_PKGS=sdl2

@@ -7,10 +7,10 @@
 -- input @ crypt-data/medium.in
 -- output @ crypt-data/medium.out
 
-let mk16b(upper: u8, lower: u8): u16 =
+def mk16b(upper: u8, lower: u8): u16 =
   (u16.u8(upper) & 0xFFu16) << 8u16 | (u16.u8(lower) & 0xFFu16)
 
-let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
+def cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
   let x1 = mk16b(block[1], block[0])
   let x2 = mk16b(block[3], block[2])
   let x3 = mk16b(block[5], block[4])
@@ -77,10 +77,10 @@ let cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
      , u8.u16(x4), u8.u16(x4>>8u16)
      ]
 
-let cipher_idea [n] (key: [52]u16, text: [n]u8): [n]u8 =
+def cipher_idea [n] (key: [52]u16, text: [n]u8): [n]u8 =
   let blocks = unflatten (n//8) 8 text
   in flatten (map (cipher_idea_block(key)) blocks) :> [n]u8
 
-let main [n] (z: [52]u16) (dk: [52]u16) (text: [n]u8): ([n]u8, [n]u8) =
+def main [n] (z: [52]u16) (dk: [52]u16) (text: [n]u8): ([n]u8, [n]u8) =
   let text_encrypted = cipher_idea(z, text)
   in (text_encrypted, cipher_idea(dk, text_encrypted))

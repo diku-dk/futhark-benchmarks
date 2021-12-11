@@ -20,29 +20,29 @@
 
 import "physics"
 
-let calc_accels [n] (epsilon: f32) (bodies: [n]pointmass): [n]acceleration =
+def calc_accels [n] (epsilon: f32) (bodies: [n]pointmass): [n]acceleration =
   let move (body: pointmass) =
     let accels = map (accel epsilon body) bodies
     in reduce_comm (vec3.+) {x=0f32, y=0f32, z=0f32} accels
   in map move bodies
 
-let advance_bodies [n] (epsilon: f32) (time_step: f32) (bodies: [n]body): [n]body =
+def advance_bodies [n] (epsilon: f32) (time_step: f32) (bodies: [n]body): [n]body =
   let accels = calc_accels epsilon (map pointmass bodies)
   in map2 (advance_body time_step) bodies accels
 
-let advance_bodies_steps [n] (n_steps: i32) (epsilon: f32) (time_step: f32)
+def advance_bodies_steps [n] (n_steps: i32) (epsilon: f32) (time_step: f32)
                              (bodies: [n]body): [n]body =
   loop bodies for _i < n_steps do
     advance_bodies epsilon time_step bodies
 
-let wrap_body (posx: f32, posy: f32, posz: f32)
+def wrap_body (posx: f32, posy: f32, posz: f32)
               (mass: f32)
               (velx: f32, vely: f32, velz: f32): body =
   {position={x=posx, y=posy, z=posz},
    mass,
    velocity={x=velx, y=vely, z=velz}}
 
-let unwrap_body (b: body): ((f32, f32, f32), f32, (f32, f32, f32)) =
+def unwrap_body (b: body): ((f32, f32, f32), f32, (f32, f32, f32)) =
   ((b.position.x, b.position.y, b.position.z),
    b.mass,
    (b.velocity.x, b.velocity.y, b.velocity.z))

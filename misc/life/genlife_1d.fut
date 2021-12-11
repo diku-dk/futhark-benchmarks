@@ -28,12 +28,12 @@ module type rules_and_visuals_1d = {
 module gen_life_1d(R: rules_1d): game_of_life with cell = R.cell = {
   type cell = R.cell
 
-  let sum_of_neighbours (n:  cell) (c: cell) (s:  cell): i32 =
+  def sum_of_neighbours (n:  cell) (c: cell) (s:  cell): i32 =
     (R.value n * R.weights[0] +
      R.value c * R.weights[1] +
      R.value s * R.weights[2])
 
-  let advance [m] (c: [m]cell): [m]cell =
+  def advance [m] (c: [m]cell): [m]cell =
     let ns  = rotate (-1) c
     let ss  = rotate   1  c
     let neighbours = map3 sum_of_neighbours ns c ss
@@ -41,7 +41,7 @@ module gen_life_1d(R: rules_1d): game_of_life with cell = R.cell = {
 
   -- Only the last column matters.  Note that the world is stored
   -- column-major.
-  let step [n][m] (world: [n][m]cell): [n][m]cell =
+  def step [n][m] (world: [n][m]cell): [n][m]cell =
     let world' = rotate 1 world
     in map2 (\(c : [m]cell) i -> if i == n-1 then advance world[n-1] else c) world' (iota n)
 }

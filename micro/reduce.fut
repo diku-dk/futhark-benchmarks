@@ -105,14 +105,14 @@ entry sum_scaled_f64 xs = let ys = map (f64.i32 >-> (*2)) xs
 -- random input { [1000000]i32 [1000000]i32 [1000000]i32 [1000000]i32 }
 -- no_python random input { [10000000]i32 [10000000]i32 [10000000]i32 [10000000]i32 }
 
-let mat4_mul (+) (*) (a0,a1,a2,a3) (b0,b1,b2,b3) =
+def mat4_mul (+) (*) (a0,a1,a2,a3) (b0,b1,b2,b3) =
   ((b0*a0 + b1*a2),
    (b0*a1 + b1*a3),
    (b2*a0 + b3*a2),
    (b2*a1 + b3*a3))
 
-let mat4 x = (x, x, x, x)
-let mat4' f a b c d = (f a, f b, f c, f d)
+def mat4 x = (x, x, x, x)
+def mat4' f a b c d = (f a, f b, f c, f d)
 
 entry prod_iota_mat4_i8  n =
   i64.i32 n |> iota |> map (i8.i64 >-> mat4)  |> reduce (mat4_mul  (i8.+)  (i8.*)) (1, 0, 0, 1)
@@ -130,7 +130,7 @@ entry prod_mat4_f64 as bs cs ds = map4 (mat4' f64.i32) as bs cs ds |> reduce (ma
 
 -- Try a non-commutative reduction with a beefy operator containing lots of control flow.
 
-let lss 't (t: t) (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
+def lss 't (t: t) (pred1: t -> bool) (pred2: t -> t -> bool) (xs: []t): i32 =
   let max = i32.max
 
   let rop (lssx, lisx, lcsx, tlx, firstx, lastx)

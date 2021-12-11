@@ -9,7 +9,7 @@
 -- compiled input @ LocVolCalib-data/large.in
 -- output @ LocVolCalib-data/large.out
 
-let initGrid (s0: f32) (alpha: f32) (nu: f32) (t: f32) (numX: i64) (numY: i64) (numT: i64)
+def initGrid (s0: f32) (alpha: f32) (nu: f32) (t: f32) (numX: i64) (numY: i64) (numT: i64)
   : (i32, i32, [numX]f32, [numY]f32, [numT]f32) =
   let logAlpha = f32.log alpha
   let myTimeline = map (\i -> t * f32.i64 i / (f32.i64 numT - 1.0)) (iota numT)
@@ -22,7 +22,7 @@ let initGrid (s0: f32) (alpha: f32) (nu: f32) (t: f32) (numX: i64) (numY: i64) (
   in (myXindex, myYindex, myX, myY, myTimeline)
 
 -- make the innermost dimension of the result of size 4 instead of 3?
-let initOperator [n] (x: [n]f32): ([n][3]f32,[n][3]f32) =
+def initOperator [n] (x: [n]f32): ([n][3]f32,[n][3]f32) =
   let dxu     = x[1] - x[0]
   let dx_low  = [[0.0, -1.0 / dxu, 1.0 / dxu]]
   let dxx_low = [[0.0, 0.0, 0.0]]
@@ -40,11 +40,11 @@ let initOperator [n] (x: [n]f32): ([n][3]f32,[n][3]f32) =
   let dxx    = dxx_low ++ dxx_mid ++ dxx_high :> [n][3]f32
   in  (dx, dxx)
 
-let setPayoff [numX][numY] (strike: f32, myX: [numX]f32, _myY: [numY]f32): *[numY][numX]f32 =
+def setPayoff [numX][numY] (strike: f32, myX: [numX]f32, _myY: [numY]f32): *[numY][numX]f32 =
   replicate numY (map (\xi -> f32.max (xi-strike) 0.0) myX)
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
-let updateParams [numX][numY]
+def updateParams [numX][numY]
                 (myX:  [numX]f32, myY: [numY]f32,
                  tnow: f32, _alpha: f32, beta: f32, nu: f32)
   : ([numY][numX]f32, [numY][numX]f32, [numX][numY]f32, [numX][numY]f32) =
@@ -57,7 +57,7 @@ let updateParams [numX][numY]
                    myY
   in  ( myMuX, myVarX, myMuY, myVarY )
 
-let tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
+def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   #[unsafe]
   ----------------------------------------------------
   -- Recurrence 1: b[i] = b[i] - a[i]*c[i-1]/b[i-1] --
@@ -107,7 +107,7 @@ let tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   let y    = reverse y
   in y
 
-let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
+def explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
                            myMu:   [n][m]f32,  myVar: [n][m]f32,
                            result: [n][m]f32)
                   : *[n][m]f32 =
@@ -125,7 +125,7 @@ let explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
        myMu myVar result
 
 -- for implicitY: should be called with transpose(u) instead of u
-let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
+def implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
                            myMu: [n][m]f32,  myVar: [n][m]f32,
                            u:   *[n][m]f32,  dtInv: f32)
                   : *[n][m]f32 =
@@ -138,7 +138,7 @@ let implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
           in tridagPar( a, b, c, u_row ))
        myMu myVar u
 
-let rollback
+def rollback
   [numX][numY]
   (tnow: f32, tnext: f32, myResult: [numY][numX]f32,
    myMuX: [numY][numX]f32, myDx: [numX][3]f32, myDxx: [numX][3]f32, myVarX: [numY][numX]f32,
@@ -160,7 +160,7 @@ let rollback
   let myResultTR = implicitMethod(myDy, myDyy, myMuY, myVarY, y, dtInv)
   in transpose myResultTR
 
-let value(numX: i64, numY: i64, numT: i64, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =
+def value(numX: i64, numY: i64, numT: i64, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =
   let (myXindex, myYindex, myX, myY, myTimeline) =
     initGrid s0 alpha nu t numX numY numT
   let (myDx, myDxx) = initOperator(myX)
@@ -179,7 +179,7 @@ let value(numX: i64, numY: i64, numT: i64, s0: f32, strike: f32, t: f32, alpha: 
                  in myResult
   in myResult[myYindex,myXindex]
 
-let main (outer_loop_count: i32) (numX: i32) (numY: i32) (numT: i32)
+def main (outer_loop_count: i32) (numX: i32) (numY: i32) (numT: i32)
          (s0: f32) (t: f32) (alpha: f32) (nu: f32) (beta: f32): []f32 =
   let strikes = map (\i -> 0.001*f32.i64 i) (iota (i64.i32 outer_loop_count))
   let res =
