@@ -20,15 +20,11 @@ def euclid_dist_2 [d] (pt1: [d]f32) (pt2: [d]f32): f32 =
 def closest_point (p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
   if p1.1 < p2.1 then p1 else p2
 
-
 def find_nearest_point [k][d] (pts: [k][d]f32) (pt: [d]f32): i32 =
   let (i, _) = foldl (\acc (i, p) -> closest_point acc (i32.i64 i, euclid_dist_2 pt p))
                      (0, f32.inf)
                      (zip (indices pts) pts)
   in i
-
-def add_centroids [d] (x: [d]f32) (y: [d]f32): *[d]f32 =
-  map2 (+) x y
 
 def centroids_of [n][d] (k: i64) (points: [n][d]f32) (membership: [n]i32): [k][d]f32 =
   let points_in_clusters =
