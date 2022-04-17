@@ -1,7 +1,8 @@
 #!/bin/sh
 #
 # Script to add new files to external-data.txt. Should be run from the root of
-# the repository.
+# the repository. If the file already exists, we don't add it to
+# external-data.txt.
 
 set -e
 
@@ -14,6 +15,7 @@ fi
 
 SHA=$(curl "$1" | sha256sum - | cut -f 1 -d ' ')
 
+ln -s -r "external-data/$2" "$2"
+
 echo "external-data/$2 $1 $SHA" >> external-data.txt
 
-ln -s -r "external-data/$2" "$2"
