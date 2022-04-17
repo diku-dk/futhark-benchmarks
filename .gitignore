@@ -25,3 +25,4 @@
 !**/data/*.gz
 !**/lib
 !**/lib/**
+external-data/
