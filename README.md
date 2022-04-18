@@ -8,9 +8,8 @@ instructions on how to do that.
 
 ## Running benchmarks
 
-Some of the benchmarks depend on large datasets that are managed with
-[git-annex](https://git-annex.branchable.com/).  To retrieve them, run
-`git-annex get`.
+Some of the benchmarks depend on large datasets that are managed with the
+`get-data.sh` tool. To retrieve them, run `./get-data.sh external-data.txt`.
 
 The recommended method for running all benchmarks is
 
@@ -55,22 +54,37 @@ representation via the [futhark dataset][2] tool.
 
 Some of the larger datasets are not stored directly in the Git
 repository.  Instead they are stored on a separate server and fetched
-using [git-annex](https://git-annex.branchable.com/), which you must install.
+using the self-contained `get-data.sh` script.
 
 * **To add a dataset:** First place the dataset on a publicly
   accessible webserver.  We use [ERDA](https://erda.dk), which is run
-  by UCPH.  Then run `git-annex addurl URL`.  For example:
+  by UCPH.  Then add a line to the `external-data.txt` file of the format:
 
   ```
-  git-annex addurl --no-check-gitignore https://sid.erda.dk/share_redirect/FlhwY8rtfk/xsbench/small.in.gz --file=small.in.gz
+  OUTPUT URL SHA256
   ```
 
-  You may need `--no-check-gitignore`.  Note the seemingly redundant
-  `--file=small.in.gz`.  This is because some webservers (such as
-  ERDA) perform a redirect that otherwise confuses `git-annex` about
-  what the destination file should be called.  You can always fix it
-  afterwards with `git mv`, of course.  There is a script
-  [add-data.sh](add-data.sh) that does some of this automatically.
-  **Read it before running it.**
+  where `OUTPUT` is local path, `URL` is the shared link from ERDA and `SHA256`
+  is the sha256 checksum of the file.
 
-  After this, run `git-annex sync`.
+  For instance, the line
+
+  ```
+  external-data/accelerate/canny/data/lena256.in https://sid.erda.dk/share_redirect/FlhwY8rtfk/accelerate/canny/lena256.in 8c63faf15d9f8028826ed7d9a1647917a833092c1bd291f017b6618584124707
+  ```
+
+  Specifies where `lena256.in` should be placed, where it can be downloaded
+  from, and what the checksum is.
+
+  We recommend storing large datasets in the `external-data` directory which is
+  ignored by our `.gitignore`, and then adding symlinks to the actual place you
+  want to use the data. For example:
+
+  ```
+  ln -s -r external-data/accelerate/canny/data/lena256.in accelerate/canny/data/lena256.in
+  git add accelerate/canny/data/lena256.in
+  ```
+
+  There is a script [add-data.sh](add-data.sh) that does some of this automatically. **Read it before running it.**
+
+  Remember to commit your changes.
