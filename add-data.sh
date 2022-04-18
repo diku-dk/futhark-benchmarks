@@ -13,7 +13,7 @@ if [ $# != 2 ]; then
     exit 1
 fi
 
-SHA=$(curl "$1" | sha256sum - | cut -f 1 -d ' ')
+SHA=$(curl "$1" | LC_ALL=en_US.UTF-8 shasum -a 256 - | cut -f 1 -d ' ')
 
 ln -s -r "external-data/$2" "$2"
 

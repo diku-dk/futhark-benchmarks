@@ -25,8 +25,8 @@ if [ "$#" -ne "1" ]; then
     exit 3
 fi
 
-if [ -z "$(which sha256sum)" ]; then
-    echo "Error: sha256sum could not be found."
+if [ -z "$(which shasum)" ]; then
+    echo "Error: shasum could not be found."
 
     exit 4
 fi
@@ -37,13 +37,15 @@ if [ -z "$(which curl)" ]; then
     exit 5
 fi
 
+function sha256sum() { LC_ALL=C shasum -a 256 "$@" ; }
+
 BASEDIR=$(dirname "$1")
 
 while read -r OUTPUT URL CHECKSUM; do
     echo "Now processing $OUTPUT..."
 
     if [ -f "$OUTPUT" ]; then
-        COMPUTED_SUM=$(sha256sum "$OUTPUT" | cut --fields=1 --delimiter=' ')
+        COMPUTED_SUM=$(sha256sum "$OUTPUT" | cut -f 1 -d ' ')
         if [ "$COMPUTED_SUM" = "$CHECKSUM" ]; then
             echo "File exists. Skipping."
             continue
@@ -57,10 +59,10 @@ while read -r OUTPUT URL CHECKSUM; do
 
     TMPFILE=$(mktemp)
     curl --fail "$URL" --output "$TMPFILE"
-    COMPUTED_SUM=$(sha256sum "$TMPFILE" | cut --fields=1 --delimiter=' ')
+    COMPUTED_SUM=$(sha256sum "$TMPFILE" | cut -f 1 -d ' ')
 
     if [ "$COMPUTED_SUM" = "$CHECKSUM" ]; then
-        mkdir --parents "${BASEDIR}/$(dirname "$OUTPUT")"
+        mkdir -p "${BASEDIR}/$(dirname "$OUTPUT")"
         mv "$TMPFILE" "${BASEDIR}/${OUTPUT}"
     else
         echo "Error: Invalid checksum of downloaded file!"
