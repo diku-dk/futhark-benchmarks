@@ -37,13 +37,15 @@ if [ -z "$(which curl)" ]; then
     exit 5
 fi
 
+function sha256sum() { LC_ALL=C shasum -a 256 "$@" ; }
+
 BASEDIR=$(dirname "$1")
 
 while read -r OUTPUT URL CHECKSUM; do
     echo "Now processing $OUTPUT..."
 
     if [ -f "$OUTPUT" ]; then
-        COMPUTED_SUM=$(shasum -a 256 "$OUTPUT" | cut -f 1 -d ' ')
+        COMPUTED_SUM=$(sha256sum "$OUTPUT" | cut -f 1 -d ' ')
         if [ "$COMPUTED_SUM" = "$CHECKSUM" ]; then
             echo "File exists. Skipping."
             continue
@@ -57,7 +59,7 @@ while read -r OUTPUT URL CHECKSUM; do
 
     TMPFILE=$(mktemp)
     curl --fail "$URL" --output "$TMPFILE"
-    COMPUTED_SUM=$(shasum -a 256 "$TMPFILE" | cut -f 1 -d ' ')
+    COMPUTED_SUM=$(sha256sum "$TMPFILE" | cut -f 1 -d ' ')
 
     if [ "$COMPUTED_SUM" = "$CHECKSUM" ]; then
         mkdir -p "${BASEDIR}/$(dirname "$OUTPUT")"
