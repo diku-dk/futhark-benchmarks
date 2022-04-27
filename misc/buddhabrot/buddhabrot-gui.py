@@ -14,7 +14,7 @@ npoints = 100000
 (width, height) = (1024,768)
 aspect = width/float(height)
 SDL_Init(SDL_INIT_EVERYTHING)
-window = SDL_CreateWindow("Buddhabrot",
+window = SDL_CreateWindow(b"Buddhabrot",
                           SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		          width, height, SDL_WINDOW_SHOWN)
 
