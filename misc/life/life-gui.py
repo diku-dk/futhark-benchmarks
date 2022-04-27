@@ -39,7 +39,7 @@ width = args.width
 steps=args.steps
 
 SDL_Init(SDL_INIT_EVERYTHING)
-window = SDL_CreateWindow("Game of Life",
+window = SDL_CreateWindow(b"Game of Life",
                           SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		          width, height, SDL_WINDOW_SHOWN)
 
