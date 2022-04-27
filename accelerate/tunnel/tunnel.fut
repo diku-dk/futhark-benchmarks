@@ -74,11 +74,7 @@ def tunnel(time: f32) (x: i32) (y: i32): argb.colour =
 entry render (time: f32) (h: i64) (w: i64) =
   tabulate_2d h w (\y x -> tunnel time (i32.i64 (x-w/2)) (i32.i64 (y-h/2)))
 
-entry main (time: f32) (h: i32) (w: i32) =
-  -- Hack to avoid returning something gigantic.
-  let frame = render time (i64.i32 h) (i64.i32 w)
-  let frame_flat = flatten frame
-  in frame_flat[i32.u32 (frame_flat[0] % u32.i64 (length frame_flat))]
+entry main (time: f32) (h: i32) (w: i32) = render time (i64.i32 h) (i64.i32 w)
 
 import "lib/github.com/diku-dk/lys/lys"
 
