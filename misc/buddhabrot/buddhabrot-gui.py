@@ -62,6 +62,3 @@ while running:
                 (window_surface, frame_py, surface) = reWindow(window)
             elif key == SDLK_g:
                 SDL_SetWindowFullscreen(window, 0)
-            elif key == SDLK_o:
-                state['viewer_state'] = viewer.revert(state['viewer_state'])
-
