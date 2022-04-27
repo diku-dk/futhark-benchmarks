@@ -39,14 +39,14 @@ width = args.width
 steps=args.steps
 
 SDL_Init(SDL_INIT_EVERYTHING)
-window = SDL_CreateWindow("Game of Life",
+window = SDL_CreateWindow(b"Game of Life",
                           SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		          width, height, SDL_WINDOW_SHOWN)
 
 
 def reWindow(window):
     window_surface = SDL_GetWindowSurface(window)
-    frame_py = np.ndarray(shape=(height, width), dtype=np.int32, order='C')
+    frame_py = np.ndarray(shape=(height, width), dtype=np.uint32, order='C')
     surface = SDL_CreateRGBSurfaceFrom(frame_py.ctypes.data, width, height, 32, width*4,
                                        0xFF0000, 0xFF00, 0xFF, 0x00000000)
     return (window_surface, frame_py, surface)
