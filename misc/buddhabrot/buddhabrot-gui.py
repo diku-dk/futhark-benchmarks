@@ -14,14 +14,14 @@ npoints = 100000
 (width, height) = (1024,768)
 aspect = width/float(height)
 SDL_Init(SDL_INIT_EVERYTHING)
-window = SDL_CreateWindow("Buddhabrot",
+window = SDL_CreateWindow(b"Buddhabrot",
                           SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		          width, height, SDL_WINDOW_SHOWN)
 
 
 def reWindow(window):
     window_surface = SDL_GetWindowSurface(window)
-    frame_py = np.ndarray(shape=(height, width), dtype=np.int32, order='C')
+    frame_py = np.ndarray(shape=(height, width), dtype=np.uint32, order='C')
     surface = SDL_CreateRGBSurfaceFrom(frame_py.ctypes.data, width, height, 32, width*4,
                                        0xFF0000, 0xFF00, 0xFF, 0x00000000)
     return (window_surface, frame_py, surface)
@@ -62,6 +62,3 @@ while running:
                 (window_surface, frame_py, surface) = reWindow(window)
             elif key == SDLK_g:
                 SDL_SetWindowFullscreen(window, 0)
-            elif key == SDLK_o:
-                state['viewer_state'] = viewer.revert(state['viewer_state'])
-
