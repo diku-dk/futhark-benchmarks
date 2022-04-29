@@ -18,4 +18,6 @@ def main [num_quotes]
          (quotes_maturity: [num_quotes]i32)
          (quotes_strike: [num_quotes]f64)
          (quotes_quote: [num_quotes]f64) =
-  heston64.heston max_global num_points np today quotes_maturity quotes_strike quotes_quote
+  let num_points' = if num_points == 10 then #ten else #twenty
+  in heston64.heston max_global num_points' np today quotes_maturity
+                     quotes_strike quotes_quote

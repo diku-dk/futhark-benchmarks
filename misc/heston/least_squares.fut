@@ -78,10 +78,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
 
   type termination = {max_iterations: i32, max_global: i32, target: real}
 
-  type status = i32 -- Pretend it's opaque!
-  def max_iterations_reached: status = 0
-  def max_global_reached: status = 1
-  def target_reached: status = 2
+  type status = #max_iterations_reached | #max_global_reached | #target_reached
 
   type result [n] = {x0: [n]real, f: real, num_feval: i32, status: status}
 
@@ -165,7 +162,7 @@ module mk_least_squares (real: real) (rand: rng_engine)
     -- We are not counting the numer of invocations of the objective
     -- function quite as in LexiFi's code (they use a closure that
     -- increments a counter), but we should be close.
-    let (_,ncalls,num_it,(_,_,_,x)) =
+    let (_,ncalls,_num_it,(_,_,_,x)) =
       loop (rng, ncalls, num_it, (fx0, best_idx, fx, x)) =
            (rng, i32.i64 np, max_iterations, (fx0, best_idx, fx, x))
       while i32.(num_it > 0) && (max_global > ncalls) && (fx0 real.> target) do
@@ -180,10 +177,9 @@ module mk_least_squares (real: real) (rand: rng_engine)
        in (rng, ncalls + i32.i64 np, num_it - 1,
            (fx0, best_idx, fx, x)))
     let x0 = x[best_idx]
-    let status = if      real.(fx0 <= target)      then target_reached
-                 else if i32.(max_global < ncalls) then max_global_reached
-                 else if i32.(num_it == 0)         then max_iterations_reached
-                 else 1337 -- never reached
+    let status = if      real.(fx0 <= target)      then #target_reached
+                 else if i32.(max_global < ncalls) then #max_global_reached
+                 else                                   #max_iterations_reached
     in {x0=x0, f=fx0, num_feval=ncalls, status=status}
 
   def least_squares [num_vars]

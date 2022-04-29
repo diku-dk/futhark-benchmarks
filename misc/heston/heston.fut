@@ -10,7 +10,7 @@ module heston (real: real)
               (rand: rng_engine): {
   type real = real.t
   val heston [num_quotes]:
-    i32 -> i32 -> i32 -> i32 ->
+    i32 -> num_points -> i32 -> i32 ->
     [num_quotes]i32 ->
     [num_quotes]real ->
     [num_quotes]real ->
@@ -109,7 +109,7 @@ def default_variables: [5]real_least_squares.optimization_variable =
 
 def heston [num_quotes]
            (max_global: i32)
-           (num_points: i32)
+           (num_points: num_points)
            (np: i32)
            (today: i32)
            (quotes_maturity: [num_quotes]i32)
@@ -124,7 +124,7 @@ def heston [num_quotes]
                     , strike_weight_bandwidth = int 0
                     , maturity_weight_x0 = int 0
                     , maturity_weight_gamma = int 1
-                    , integral_iterations = if num_points == 10 then pricer.ten else pricer.twenty
+                    , integral_iterations = num_points
                     , variables = default_variables
                     }
   let { initial_variance,

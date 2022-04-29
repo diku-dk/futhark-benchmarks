@@ -11,13 +11,11 @@ type heston_parameters 'real = { initial_variance: real
                                , variance_volatility: real
                                , correlation: real }
 
+type num_points = #ten | #twenty
+
 -- | Pricing parameterised over the real number representation to use.
 module price_european_calls(R: real) : {
   type real = R.t
-  type num_points
-
-  val ten: num_points
-  val twenty: num_points
 
   val gauss_laguerre_coefficients: num_points -> [](real, real)
   val bs_call: bool -> date -> real -> real -> date -> real -> (real,real)
@@ -36,11 +34,6 @@ module price_european_calls(R: real) : {
 type real = R.t
 def real (x: f64) = R.f64 x
 def int (x: i32) = R.i32 x
-
--- We simulate a sum type with an opaque type.
-type num_points = bool
-def ten: num_points = true
-def twenty: num_points = false
 
 open R
 
@@ -105,8 +98,9 @@ def ugaussian_P (x: real) =
   else int 1 - int 0 * erfc (x * inv_sqrt2)
 
 def gauss_laguerre_coefficients (nb: num_points) =
-  if nb
-  then zip
+  match nb
+  case #ten ->
+    zip
        (map real [ 0.1377934705404924298211, 0.7294545495031707904587,
                    1.8083429017403143124199, 3.4014336978548351808627,
                    5.5524961400642398601235,
@@ -121,8 +115,8 @@ def gauss_laguerre_coefficients (nb: num_points) =
                    3.1227641551735070279960, 3.9341526954948387029276,
                    4.9924148722151180379569, 6.5722024851118048260901,
                    9.7846958403678012672344])
-
-  else zip
+  case #twenty ->
+    zip
        (map real [ 0.070539889691988738596, 0.372126818001613290932,
                    0.916582102483245675373, 1.707306531028168317121,
                    2.749199255315394108123, 4.048925313808060089116,
