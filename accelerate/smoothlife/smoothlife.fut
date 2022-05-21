@@ -239,7 +239,7 @@ def snm [l] (conf: conf) (n: [l]f32) (m: [l]f32): [l]f32 =
                              (sigmoid_ab n d1 d2) m
       case 3 -> sigmoid_ab n (mix b1 d1 m)
                              (mix b2 d2 m)
-      case 4 -> sigmoid_ab n (sigmoid_mix b1 d1 m)
+      case _ -> sigmoid_ab n (sigmoid_mix b1 d1 m)
                              (sigmoid_mix b2 d2 m)
   in map2 sigmode n m
 
