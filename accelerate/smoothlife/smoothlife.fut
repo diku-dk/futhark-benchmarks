@@ -259,7 +259,7 @@ def step [size] (state: state [size]): state [size] =
     match state.conf.timestep_mode
       case 0 -> f
       case 1 -> g + dt * (2.0 * f - 1.0)
-      case 2 -> g + dt * (f - g)
+      case _ -> g + dt * (f - g)
   let clamp v = f32.min (f32.max v 0.0) 1.0
   let aa'' = map2 (map2 (\a b -> clamp (timestep a b))) (aa' :> [size][size]f32) aa
   in state with world = aa''
