@@ -33,9 +33,9 @@ def find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
 
 def centroids_of [n] (k: i64) (points: [n]point) (membership: [n]i32): [k]point =
   let cluster_sizes =
-    reduce_by_index (replicate k 0) (+) 0 (map i64.i32 membership) (replicate n 1)
+    hist (+) 0 k (map i64.i32 membership) (replicate n 1)
   let cluster_sums =
-    reduce_by_index (replicate k (0,0)) add_points (0,0) (map i64.i32 membership) points
+    hist add_points (0,0) k (map i64.i32 membership) points
   in map2 scale_point cluster_sums (map (1/) (map r32 cluster_sizes))
 
 def continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =

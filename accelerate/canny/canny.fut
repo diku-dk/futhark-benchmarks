@@ -141,14 +141,13 @@ def selectStrong [h][w] (img: [h][w]f32): []i32 =
   let targetIdxAndLen = scan (+) 0 strong
   let (targetIdx, len') = split n targetIdxAndLen
   let len = i64.i32 (len'[0])
-  let zeros = replicate len 0
   let (indices', values) =
     unzip(map3 (\i target_i strong_x ->
                  if strong_x == 0
                  then (-1, 0)
                  else (i64.i32 target_i, i32.i64 i+1))
                (iota n) targetIdx (strong[1:] :> [n]i32))
-  in scatter zeros indices' values
+  in spread len 0 indices' values
 
 def main [h][w] (low: f32) (high: f32) (img: [h][w]i32): []i32 =
   img

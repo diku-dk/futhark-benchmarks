@@ -55,7 +55,8 @@ entry new_state (screenX: i64) (screenY: i64) (seed: i32): state [] =
   , prior_visits = replicate (screenX*screenY) 0
   , iter = 0 }
 
-def visualise (state: state [])
+def visualise [n]
+              (state: state [n])
               (screenX: i64) (screenY: i64) (limit: i64) (radius: f32)
               (npoints: i64) (field: (f32,f32,f32,f32)):
              (state [], [screenY][screenX]argb.colour) =
@@ -67,8 +68,8 @@ def visualise (state: state [])
                         i64.i32) npoints
     else replicate limit (-1)
   let touched = flatten (map mk_increments trajectories)
-  let visits_per_pixel = reduce_by_index (copy state.prior_visits) (+) 0
-                                         touched (map (const 1) touched)
+  let visits_per_pixel = map2 (+) state.prior_visits
+                              (hist (+) 0 n touched (map (const 1) touched))
   let max_visits = i32.maximum visits_per_pixel
   let coloured = map (colourise max_visits) visits_per_pixel
   in ({rng, prior_visits = visits_per_pixel, iter = state.iter + 1},

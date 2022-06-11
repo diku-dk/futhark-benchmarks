@@ -41,8 +41,7 @@ def mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
   let size = i64.i32 (last prefix_sum) + 1
   let ranges = map (+ 1) (rotate (-1) prefix_sum) with [0] = 1
   let (is, vs) = map (\x -> (i64.i32 x, 1)) (tail ranges) |> unzip
-  let I_rad = reduce_by_index (replicate size 0) (+) 0 is vs
-              |> scan (+) (0 : i32)
+  let I_rad = hist (+) 0 size is vs |> scan (+) (0 : i32)
 
   let octree =
     map2 (\i rp ->

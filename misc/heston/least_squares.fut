@@ -192,9 +192,9 @@ module mk_least_squares (real: real) (rand: rng_engine)
     let (free_vars_to_vars, free_vars) =
       unzip (filter (\(_, (fixed, _, _)) -> !fixed)
                     (zip (iota num_vars) variables))
-    let vars_to_free_vars = scatter (replicate num_vars (-1))
-                                    free_vars_to_vars
-                                    (map i32.i64 (indices free_vars))
+    let vars_to_free_vars = spread num_vars (-1)
+                                   free_vars_to_vars
+                                   (map i32.i64 (indices free_vars))
     let (x, lower_bounds, upper_bounds) =
       unzip3 (map (\(_, _, {initial_value, lower_bound, upper_bound}) ->
                    (initial_value, lower_bound, upper_bound)) free_vars)

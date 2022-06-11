@@ -28,12 +28,12 @@ def find_nearest_point [k][d] (pts: [k][d]f32) (pt: [d]f32): i32 =
 
 def centroids_of [n][d] (k: i64) (points: [n][d]f32) (membership: [n]i32): [k][d]f32 =
   let points_in_clusters =
-    reduce_by_index (replicate k 0) (+) 0 (map i64.i32 membership) (replicate n 1)
+    hist (+) 0 k (map i64.i32 membership) (replicate n 1)
 
   let cluster_sums =
-    reduce_by_index (replicate k (replicate d 0)) (map2 (+)) (replicate d 0)
-                    (map i64.i32 membership)
-                    points
+    hist (map2 (+)) (replicate d 0) k
+         (map i64.i32 membership)
+         points
 
   in map2 (\point n -> map (/r32 (if n == 0 then 1 else n)) point)
           cluster_sums points_in_clusters

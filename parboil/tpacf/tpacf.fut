@@ -53,7 +53,7 @@ def doCompute [numD][numBBins]
     in i64.i32 index
 
   let l = numD * numD
-  in reduce_by_index (replicate numBins2 0) (+) 0 (tabulate l f) (replicate l 1)
+  in hist (+) 0 numBins2 (tabulate l f) (replicate l 1)
 
 def doComputeSelf [numD][numBBins]
                   (datapoints: [numD]vec3)
@@ -82,7 +82,7 @@ def doComputeSelf [numD][numBBins]
 
          in i64.i32 index
   let l = numD * numD
-  in reduce_by_index (replicate numBins2 0) (+) 0 (tabulate l f) (replicate l 1)
+  in hist (+) 0 numBins2 (tabulate l f) (replicate l 1)
 
 def fixPoints (ra: f64) (dec: f64): vec3 =
   let rarad = dec2rad(ra)

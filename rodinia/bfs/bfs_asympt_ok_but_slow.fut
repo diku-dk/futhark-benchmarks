@@ -47,14 +47,11 @@ def step [n][e]
   let active_edges   = map (\tid -> #[unsafe] (nodes_n_edges[tid])) active_indices
   let scan_num_edges = scan (+) 0i32 active_edges
   let flat_len       = i64.i32 scan_num_edges[n_indices-1]
-  let (tmp1, tmp2, tmp3) = (replicate flat_len false,
-                            replicate flat_len 0i32,
-                            replicate flat_len 1i32)
   let write_inds     = map (\i -> if i==0 then 0 else #[unsafe] i64.i32 scan_num_edges[i-1]) (iota n_indices)
-  let active_flags   = scatter tmp1 write_inds (replicate n_indices true)
-  let track_nodes_tmp= scatter tmp2 write_inds (map i32.i64 (iota n_indices))
+  let active_flags   = spread flat_len false write_inds (replicate n_indices true)
+  let track_nodes_tmp= spread flat_len 0 write_inds (map i32.i64 (iota n_indices))
   let active_starts  = map (\tid -> #[unsafe] (nodes_start_index[tid])) active_indices
-  let track_index_tmp= scatter tmp3 write_inds active_starts
+  let track_index_tmp= spread flat_len 1 write_inds active_starts
 
   -- DOUBLE BUG in FUSION:
   -- 1) if the scans are separated (as in commented code)

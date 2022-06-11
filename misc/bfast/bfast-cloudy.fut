@@ -28,8 +28,8 @@ def filterPadWithKeys [n] 't
   let isT = scan (+) 0 tfs
   let i   = last isT
   let inds= map2 (\a iT -> if p a then iT-1 else -1) arr isT
-  let rs  = scatter (replicate n dummy) (map i64.i32 inds) arr
-  let ks  = scatter (replicate n 0) (map i64.i32 inds) (map i32.i64 (iota n))
+  let rs  = spread n dummy (map i64.i32 inds) arr
+  let ks  = spread n 0 (map i64.i32 inds) (map i32.i64 (iota n))
   in  (zip rs ks, i) 
 
 -- | builds the X matrices; first result dimensions of size 2*k+2
@@ -269,7 +269,7 @@ entry main [m][N] (trend: i32) (k: i32) (n32: i32) (freq: f32)
           let fst_break' = if ns <=5 || Ns-ns <= 5 then -2i32 else fst_break'
 
             let val_inds' = map (adjustValInds (i32.i64 n) ns Ns val_inds) (map i32.i64 (iota m))
-            let MO'' = scatter (replicate m f32.nan) (map i64.i32 val_inds') MO'
+            let MO'' = spread m f32.nan (map i64.i32 val_inds') MO'
             in (MO'', MO', fst_break', mean)
         ) |> unzip4
 

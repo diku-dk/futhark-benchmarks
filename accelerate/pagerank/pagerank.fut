@@ -48,7 +48,7 @@ def calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *
   let (page_tos, page_contributions) =
     unzip (map3 (\to c flag -> if flag then (i64.i32 to, c) else (-1, c))
                 tos scanned_contributions (rotate 1 page_flags))
-  in scatter (replicate n 0f32) page_tos page_contributions
+  in spread n 0 page_tos page_contributions
 
 def calculate_ranks [n] (links:[]link) (ranks_in: *[n]f32)
                         (sizes: [n]i32) (iterations:i32): *[n]f32 =
@@ -69,7 +69,7 @@ def compute_sizes [m] (n: i64) (links: [m]link) =
   let flags = map2 (!=) froms (rotate (-1) froms)
   let sizes = segmented_scan (+) 0 flags (replicate m 1i32)
   let (sizes, ids, _) = unzip3 (filter (.2) (zip3 sizes froms (rotate 1 flags)))
-  in scatter (replicate n 0) (map i64.i32 ids) sizes
+  in spread n 0 (map i64.i32 ids) sizes
 
 entry preprocess_graph [m] (links_array: [m][2]i32): ([m]i32, [m]i32, []i32) =
   let links_by_to = sort_by_to (map (\l -> {from=l[0], to=l[1]}) links_array)

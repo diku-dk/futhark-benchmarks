@@ -9,4 +9,4 @@ def bins k is = map (%k) is |> map i64.i32
 
 entry sum_i32 [n][m] (k: i32) (iss: [n][m]i32) (vss: [n][m]i32) : [][]i32 =
   let k64 = i64.i32 k
-  in map2 (\is vs -> reduce_by_index (replicate k64 0) (+) 0 (bins k is) vs) iss vss
+  in map2 (\is vs -> hist (+) 0 k64 (bins k is) vs) iss vss

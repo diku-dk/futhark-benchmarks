@@ -282,7 +282,7 @@ module lys : lys with text_content = info = {
               (map (.mass) s.bodies))
     let vs' = map (\x -> if s.invert then !x else x) vs
     in unflatten s.height s.width
-       (scatter (replicate (s.height*s.width) background) is vs')
+       (spread (s.height*s.width) background is vs')
 
   type text_content = info
   def text_content (fps: f32) (s: state) : info =
