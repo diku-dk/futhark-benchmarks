@@ -12,7 +12,7 @@
 def grayCode(x: i32): i32 = (x >> 1) ^ x
 
 ----------------------------------------
---- Sobol Generator
+--- 2D Sobol Generator
 ----------------------------------------
 def testBit(n: i32, ind: i32): bool =
   let t = (1 << ind) in (n & t) == t
@@ -22,13 +22,13 @@ def xorInds [num_bits] (n: i32) (dir_vs: [num_bits]i32): i32 =
                         dir_vs (indices dir_vs)
   in reduce (^) 0 reldv_vals
 
-def sobolIndI [m][num_bits] (dir_vs: [m][num_bits]i32, n: i32): [m]i32 =
-  map (xorInds n) dir_vs
+def sobolIndI [k][m][num_bits] (dir_vs: [k][m][num_bits]i32, n: i32): [k][m]i32 =
+  map (map (xorInds n)) dir_vs
 
-def sobolIndR [m][num_bits] (dir_vs: [m][num_bits]i32) (n: i32): [m]f32 =
+def sobolIndR [k][m][num_bits] (dir_vs: [k][m][num_bits]i32) (n: i32): [k][m]f32 =
   let divisor = 2.0 ** f32.i64(num_bits)
   let arri    = sobolIndI( dir_vs, n )
-  in map (\x -> f32.i32(x) / divisor) arri
+  in map (map (\x -> f32.i32(x) / divisor)) arri
 
 ----------------------------------------
 --- Inverse Gaussian
@@ -285,8 +285,9 @@ def main [sobvctsz][num_bits][num_models][num_und][num_dates][num_discts]
         (bb_inds: [3][num_dates]i32)
         (bb_data: [3][num_dates]f32)
          : []f32 =
+  let dir_vs = unflatten num_dates num_und dir_vs
   let sobol_mat = map (sobolIndR dir_vs) (map (1+) (map i32.i64 (iota (i64.i32 num_mc_it))))
-  let gauss_mat = map (map (map ugaussianEl)) (map (unflatten num_dates num_und) sobol_mat)
+  let gauss_mat = map (map (map ugaussianEl)) sobol_mat
   let bb_mat    = map (brownianBridge num_und bb_inds bb_data) gauss_mat
   let payoffs   = map (\bb_row ->
                          map3 (genericPayoff contract_number) md_discts md_detvals
