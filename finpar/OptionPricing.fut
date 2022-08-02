@@ -162,13 +162,12 @@ let i = num_dates - ii
 let bbrow[i] = bbrow[i] - bbrow[i-1]
 in  bbrow
 
-def brownianBridge [num_dates][k]
+def brownianBridge [num_dates]
                    (num_und: i64)
                    (bb_inds: [3][num_dates]i32)
                    (bb_data: [3][num_dates]f32)
-                   (gaussian_arr: [k]f32)
+                   (gauss2d: [num_dates][num_und]f32)
                    : [num_dates][num_und]f32 =
-  let gauss2d  = unflatten num_dates num_und gaussian_arr
   let gauss2dT = transpose gauss2d
   in transpose (map (brownianBridgeDates bb_inds bb_data) gauss2dT)
 
@@ -273,10 +272,10 @@ def genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]
   else 0.0
 
 -- Entry point
-def main [k][num_bits][num_models][num_und][num_dates][num_discts]
+def main [sobvctsz][num_bits][num_models][num_und][num_dates][num_discts]
         (contract_number: i32)
         (num_mc_it: i32)
-        (dir_vs: [k][num_bits]i32)
+        (dir_vs: [sobvctsz][num_bits]i32)
         (md_cs: [num_models][num_und][num_und]f32)
         (md_vols: [num_models][num_dates][num_und]f32)
         (md_drifts: [num_models][num_dates][num_und]f32)
@@ -286,14 +285,12 @@ def main [k][num_bits][num_models][num_und][num_dates][num_discts]
         (bb_inds: [3][num_dates]i32)
         (bb_data: [3][num_dates]f32)
          : []f32 =
-  let sobvctsz  = num_dates*num_und
-  let dir_vs = dir_vs :> [sobvctsz][num_bits]i32
   let sobol_mat = map (sobolIndR dir_vs) (map (1+) (map i32.i64 (iota (i64.i32 num_mc_it))))
-  let gauss_mat = map ugaussian sobol_mat
+  let gauss_mat = map (map (map ugaussianEl)) (map (unflatten num_dates num_und) sobol_mat)
   let bb_mat    = map (brownianBridge num_und bb_inds bb_data) gauss_mat
-  let payoffs   = map (\bb_row: [num_models]f32  ->
-                         let bd_row = map4 (blackScholes bb_row) md_cs md_vols md_drifts md_sts
-                         in map3 (genericPayoff contract_number) md_discts md_detvals bd_row)
+  let payoffs   = map (\bb_row ->
+                         map3 (genericPayoff contract_number) md_discts md_detvals
+                              (map4 (blackScholes bb_row) md_cs md_vols md_drifts md_sts))
                       bb_mat
   let payoff    = #[sequential_inner] reduce (map2 (+)) (replicate num_models 0.0) payoffs
   in  map (/f32.i32 num_mc_it) payoff
