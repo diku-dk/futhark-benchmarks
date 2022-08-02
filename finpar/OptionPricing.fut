@@ -17,12 +17,6 @@ def grayCode(x: i32): i32 = (x >> 1) ^ x
 def testBit(n: i32, ind: i32): bool =
   let t = (1 << ind) in (n & t) == t
 
------------------------------------------------------------------
----- INDEPENDENT FORMULA:
-----    filter is redundantly computed inside map.
-----    Currently Futhark hoists it outside, but this will
-----    not allow fusing the filter with reduce -> redomap,
------------------------------------------------------------------
 def xorInds [num_bits] (n: i32) (dir_vs: [num_bits]i32): i32 =
   let reldv_vals = map2 (\dv i -> if testBit(grayCode n,i32.i64 i) then dv else 0)
                         dir_vs (indices dir_vs)
@@ -35,45 +29,6 @@ def sobolIndR [m][num_bits] (dir_vs: [m][num_bits]i32) (n: i32): [m]f32 =
   let divisor = 2.0 ** f32.i64(num_bits)
   let arri    = sobolIndI( dir_vs, n )
   in map (\x -> f32.i32(x) / divisor) arri
-
---------------------------------
----- STRENGTH-REDUCED FORMULA
---------------------------------
-def index_of_least_significant_0(x: i32): i32 =
-  loop i = 0 while i < 32 && ((x>>i)&1) != 0 do i + 1
-
-def sobolRecI [num_bits][n] (sob_dir_vs: [n][num_bits]i32, prev: [n]i32, x: i32): [n]i32 =
-  let bit = index_of_least_significant_0 x
-  in map2 (\vct_row prev -> vct_row[bit] ^ prev) sob_dir_vs prev
-
-def recM [n][num_bits] (sob_dirs:  [n][num_bits]i32, i: i32 ): [n]i32 =
-  let bit = index_of_least_significant_0 i
-  in #[unsafe] sob_dirs[:,bit]
-
-def sobolRecMap [n][num_bits] (sob_fact:  f32, dir_vs: [n][num_bits]i32, (lb_inc, ub_exc): (i32,i32) ): [][]f32 =
-  -- the if inside may be particularly ugly for
-  -- flattening since it introduces control flow!
-  let contribs = map (\k -> if k==0
-                            then sobolIndI(dir_vs,lb_inc+1)
-                            else recM(dir_vs,k+lb_inc))
-                     (map i32.i64 (iota (i64.i32 (ub_exc-lb_inc))))
-  let vct_ints = scan (map2 (^)) (replicate n 0) contribs
-  in  map (\xs -> map (\x -> f32.i32 x * sob_fact) xs) vct_ints
-
-def sobolReci2 [n][num_bits] (sob_dirs: [n][num_bits]i32, prev: [n]i32, i: i32): [n]i32=
-  let col = recM(sob_dirs, i)
-  in map2 (^) prev col
-
--- computes sobol numbers: n,..,n+chunk-1
-def sobolChunk [len][num_bits] (dir_vs: [len][num_bits]i32) (n: i32) (chunk: i64): [chunk][len]f32 =
-  let sob_fact= 1.0 / f32.i64(1 << num_bits)
-  let sob_beg = sobolIndI(dir_vs, n+1)
-  let contrbs = map (\(k: i64): [len]i32  ->
-                       if k==0 then sob_beg
-                       else recM(dir_vs, i32.i64 k+n))
-                    (iota chunk)
-  let vct_ints= scan (map2 (^)) (replicate len 0) contrbs
-  in map (\xs -> map (\x -> f32.i32(x) * sob_fact) xs) vct_ints
 
 ----------------------------------------
 --- Inverse Gaussian
@@ -333,9 +288,7 @@ def main [k][num_bits][num_models][num_und][num_dates][num_discts]
          : []f32 =
   let sobvctsz  = num_dates*num_und
   let dir_vs = dir_vs :> [sobvctsz][num_bits]i32
-  let sobol_mat = map_stream (\chunk (ns: [chunk]i32): [chunk][sobvctsz]f32  ->
-                                sobolChunk dir_vs (#[unsafe] ns[0]) chunk)
-                             (map i32.i64 (iota (i64.i32 num_mc_it)))
+  let sobol_mat = map (sobolIndR dir_vs) (map (1+) (map i32.i64 (iota (i64.i32 num_mc_it))))
   let gauss_mat = map ugaussian sobol_mat
   let bb_mat    = map (brownianBridge num_und bb_inds bb_data) gauss_mat
   let payoffs   = map (\bb_row: [num_models]f32  ->
