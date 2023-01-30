@@ -22,7 +22,7 @@
 !Makefile
 !futhark.pkg
 !README.md
-!**/data/*.gz
+!**/data/*
 !**/lib
 !**/lib/**
 external-data/

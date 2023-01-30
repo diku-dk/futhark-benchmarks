@@ -72,6 +72,17 @@ int main(int argc, char** argv) {
       }
       fprintf(stdout, "%ld\n", x);
     }
+  } else if (memcmp(type, " f64", 4) == 0 && num_dims == 1) {
+    fprintf(stdout, "pbbs_sequenceDouble\n");
+    for (int i = 0; i < shape[0]; i++) {
+      double x;
+      if (fread(&x, sizeof(x), 1, stdin) != 1) {
+        fprintf(stderr, "%s: failed to read all values\n", argv[0]);
+        exit(1);
+      }
+      // Winging the precision here; hopefully will be OK.
+      fprintf(stdout, "%.20f\n", x);
+    }
   } else if (memcmp(type, " f64", 4) == 0 && num_dims == 2 && shape[1] == 2) {
     fprintf(stdout, "pbbs_sequencePoint2d\n");
     for (int i = 0; i < shape[0]; i++) {

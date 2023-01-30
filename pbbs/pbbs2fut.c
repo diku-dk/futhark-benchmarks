@@ -51,6 +51,36 @@ void sequenceInt(FILE *in, FILE *out) {
   fwrite(data, sizeof(int32_t), used, out);
 }
 
+void sequenceDouble(FILE *in, FILE *out) {
+  int used = 0, capacity = 100;
+  double *data = malloc(capacity*sizeof(double));
+  while (fscanf(in, "%lf", &data[used]) == 1) {
+    if (++used == capacity) {
+      capacity *= 2;
+      data = realloc(data, capacity*sizeof(double));
+    }
+  }
+
+  uint64_t dims[1] = {used};
+  header(out, 1, " f64", dims);
+  fwrite(data, sizeof(double), used, out);
+}
+
+void sequenceDoublePair(FILE *in, FILE *out) {
+  int used = 0, capacity = 100;
+  double *data = malloc(capacity*sizeof(double));
+  while (fscanf(in, "%lf %lf", &data[used], &data[used+1]) == 2) {
+    if ((used+=2) > capacity/2) {
+      capacity *= 2;
+      data = realloc(data, capacity*sizeof(double));
+    }
+  }
+
+  uint64_t dims[2] = {used/2, 2};
+  header(out, 2, " f64", dims);
+  fwrite(data, sizeof(double), used, out);
+}
+
 void pbbs_triangles(FILE *in, FILE *out) {
   // Assuming 3D triangles.
   int n, m;
@@ -132,6 +162,10 @@ int main(int argc, char** argv) {
 
   if (strcmp(line, "sequenceInt\n") == 0) {
     sequenceInt(stdin, stdout);
+  } else if (strcmp(line, "sequenceDouble\n") == 0) {
+    sequenceDouble(stdin, stdout);
+  } else if (strcmp(line, "sequenceDoublePair\n") == 0) {
+    sequenceDoublePair(stdin, stdout);
   } else if (strcmp(line, "pbbs_triangles\n") == 0) {
     pbbs_triangles(stdin, stdout);
   } else if (strcmp(line, "pbbs_sequencePoint2d\n") == 0) {
