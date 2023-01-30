@@ -8,7 +8,7 @@ are of high quality, including careful descriptions of input and
 output data.
 
 Upstream PBBS doesn't really standardise the workloads for
-benchmarking, but instead provices programs for generating input data
+benchmarking, but instead provides programs for generating input data
 of a given size in a variety of bespoke data formats.  For
 reproducibility, we prefer pinning the exact data used.  We still use
 the PBBS data generates to produce the workloads in the first place,
