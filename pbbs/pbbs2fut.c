@@ -76,21 +76,38 @@ void pbbs_triangles(FILE *in, FILE *out) {
   }
 }
 
-void pbbs_sequencePoint3d(FILE *in, FILE *out) {
+void pbbs_sequencePoint2d(FILE *in, FILE *out) {
   int used = 0, capacity = 100;
-  float *data = malloc(capacity*sizeof(float));
-  while (fscanf(in, "%f", &data[used]) == 1) {
+  double *data = malloc(capacity*sizeof(double));
+  while (fscanf(in, "%lf", &data[used]) == 1) {
     if (++used == capacity) {
       capacity *= 2;
-      data = realloc(data, capacity*sizeof(float));
+      data = realloc(data, capacity*sizeof(double));
     }
   }
 
-  assert(used % 6 == 0);
-  int n = used / 6;
-  uint64_t dims[3] = {n, 2, 3};
-  header(out, 3, " f32", dims);
-  fwrite(data, sizeof(float), used, out);
+  assert(used % 2 == 0);
+  int n = used / 2;
+  uint64_t dims[2] = {n, 2};
+  header(out, 2, " f64", dims);
+  fwrite(data, sizeof(double), used, out);
+}
+
+void pbbs_sequencePoint3d(FILE *in, FILE *out) {
+  int used = 0, capacity = 100;
+  double *data = malloc(capacity*sizeof(double));
+  while (fscanf(in, "%lf", &data[used]) == 1) {
+    if (++used == capacity) {
+      capacity *= 2;
+      data = realloc(data, capacity*sizeof(double));
+    }
+  }
+
+  assert(used % 3 == 0);
+  int n = used / 3;
+  uint64_t dims[3] = {n, 3};
+  header(out, 3, " f64", dims);
+  fwrite(data, sizeof(double), used, out);
 }
 
 int main(int argc, char** argv) {
@@ -106,12 +123,19 @@ int main(int argc, char** argv) {
     fprintf(stderr, "stdin is a tty - you probably want to redirect from a file instead.\n");
   }
 
+  if (isatty(fileno(stdout))) {
+    fprintf(stderr, "stdout is a tty - redirect to a file instead.\n");
+    exit(1);
+  }
+
   getline(&line, &n, stdin);
 
   if (strcmp(line, "sequenceInt\n") == 0) {
     sequenceInt(stdin, stdout);
   } else if (strcmp(line, "pbbs_triangles\n") == 0) {
     pbbs_triangles(stdin, stdout);
+  } else if (strcmp(line, "pbbs_sequencePoint2d\n") == 0) {
+    pbbs_sequencePoint2d(stdin, stdout);
   } else if (strcmp(line, "pbbs_sequencePoint3d\n") == 0) {
     pbbs_sequencePoint3d(stdin, stdout);
   } else {
