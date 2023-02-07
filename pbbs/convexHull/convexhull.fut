@@ -95,21 +95,19 @@ module quickhull (S : euclidean_space) : convex_hull with space.point = S.point 
                 (\(seg_ix, p) ->
                    signed_dist_to_line segs[seg_ix].0 segs[seg_ix].1 p)
                 points
-    let max i j =
-      if i == -1 then j
-      else if j == -1 then i
-      else if dist_less dists[j] dists[i] then i else j
+    let max (i,id) (j,jd) =
+      if dist_less jd id then (i,id) else (j,jd)
     let extrema_ix = reduce_by_index
-                     (replicate num_segs (-1)) max (-1)
-                     (map (i64.i32 <-< (.0)) points) (iota num_points)
+                     (replicate num_segs (-1,zero_dist)) max (-1,zero_dist)
+                     (map (i64.i32 <-< (.0)) points) (zip (iota num_points) dists)
     let segs' = tabulate num_segs
-                         (\i -> [(segs[i].0, points[extrema_ix[i]].1),
-                                 (points[extrema_ix[i]].1, segs[i].1)])
+                         (\i -> [(segs[i].0, points[extrema_ix[i].0].1),
+                                 (points[extrema_ix[i].0].1, segs[i].1)])
                 |> flatten
     let eval_point (ix, (seg_ix, p)) =
-      if extrema_ix[seg_ix] == ix then (-1, p) else
+      if extrema_ix[seg_ix].0 == ix then (-1, p) else
       let (a, b) = segs[seg_ix]
-      let q = points[extrema_ix[seg_ix]].1
+      let q = points[extrema_ix[seg_ix].0].1
       let daq = signed_dist_to_line a q p
       let dqb = signed_dist_to_line q b p
       in if dist_less zero_dist daq then (seg_ix * 2, p)
