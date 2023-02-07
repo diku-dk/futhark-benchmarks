@@ -169,3 +169,7 @@ external-data/pbbs/histogram/data/exptSeq_100M.in https://sid.erda.dk/share_redi
 external-data/pbbs/histogram/data/randomSeq_100M_100K.in https://sid.erda.dk/share_redirect/FlhwY8rtfk/pbbs/histogram/randomSeq_100M_100K.in 433fcf8785afe3c50664955e2c19e7c760f407408c49028c2434d5116756c895
 external-data/pbbs/histogram/data/randomSeq_100M_256.in https://sid.erda.dk/share_redirect/FlhwY8rtfk/pbbs/histogram/randomSeq_100M_256.in 9cc84b7848be5c04af4a996b2a523cbf58df88511ecd38b017cbc108e4db17e1
 external-data/pbbs/histogram/data/randomSeq_100M.in https://sid.erda.dk/share_redirect/FlhwY8rtfk/pbbs/histogram/randomSeq_100M.in 9c382187cdb486d017ad465c4f32ed9b9f3bc13ae04629d6348e4d4f3a1b254a
+external-data/pbbs/integerSort/data/exptSeq_100M_int.in https://sid.erda.dk/share_redirect/FlhwY8rtfk/pbbs/integerSort/exptSeq_100M_int.in 0ebcccac0a0cf1165905343c9a3a98945256b4a5249e803a89b7d5d868d9607c
+external-data/pbbs/integerSort/data/randomSeq_100M_256_int_pair_int.in https://sid.erda.dk/share_redirect/FlhwY8rtfk/pbbs/integerSort/randomSeq_100M_256_int_pair_int.in 28cf6b3b0db7448c80604478ac90f578c036bd03e1b62eda4b61b058b91f072c
+external-data/pbbs/integerSort/data/randomSeq_100M_int.in https://sid.erda.dk/share_redirect/FlhwY8rtfk/pbbs/integerSort/randomSeq_100M_int.in 9c382187cdb486d017ad465c4f32ed9b9f3bc13ae04629d6348e4d4f3a1b254a
+external-data/pbbs/integerSort/data/randomSeq_100M_int_pair_int.in https://sid.erda.dk/share_redirect/FlhwY8rtfk/pbbs/integerSort/randomSeq_100M_int_pair_int.in 2faa3485d5bbe24c88a11814729f75855e0374a38715e16b8896e2ab5b673aa8

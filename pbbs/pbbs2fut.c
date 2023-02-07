@@ -81,6 +81,21 @@ void sequenceDoublePair(FILE *in, FILE *out) {
   fwrite(data, sizeof(double), used, out);
 }
 
+void sequenceIntPair(FILE *in, FILE *out) {
+  int used = 0, capacity = 100;
+  int32_t *data = malloc(capacity*sizeof(int32_t));
+  while (fscanf(in, "%d %d", &data[used], &data[used+1]) == 2) {
+    if ((used+=2) > capacity/2) {
+      capacity *= 2;
+      data = realloc(data, capacity*sizeof(int32_t));
+    }
+  }
+
+  uint64_t dims[2] = {used/2, 2};
+  header(out, 2, " i32", dims);
+  fwrite(data, sizeof(int32_t), used, out);
+}
+
 void pbbs_triangles(FILE *in, FILE *out) {
   // Assuming 3D triangles.
   int n, m;
@@ -166,6 +181,8 @@ int main(int argc, char** argv) {
     sequenceDouble(stdin, stdout);
   } else if (strcmp(line, "sequenceDoublePair\n") == 0) {
     sequenceDoublePair(stdin, stdout);
+  } else if (strcmp(line, "sequenceIntPair\n") == 0) {
+    sequenceIntPair(stdin, stdout);
   } else if (strcmp(line, "pbbs_triangles\n") == 0) {
     pbbs_triangles(stdin, stdout);
   } else if (strcmp(line, "pbbs_sequencePoint2d\n") == 0) {
