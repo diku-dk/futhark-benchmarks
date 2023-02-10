@@ -17,6 +17,7 @@ def dotprod [n] (a: [n]f32) (b: [n]f32): f32 =
   map2 (*) a b
   |> reduce (+) 0
 
+#[inline]
 def lud_diagonal [b] (a: [b][b]f32): *[b][b]f32 =
   map (\mat ->
          let mat = copy mat
