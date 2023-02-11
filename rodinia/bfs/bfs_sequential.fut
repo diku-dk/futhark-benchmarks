@@ -12,14 +12,14 @@
 -- input @ data/64kn_32e-var-1-256-skew.in.gz
 -- output @ data/64kn_32e-var-1-256-skew.out
 
-def node_work [n][e] (tid: i32,
-                      cost: *[n]i32,
-                      nodes_start_index: [n]i32,
-                      nodes_n_edges: [n]i32,
-                      edges_dest: [e]i32,
-                      graph_visited: [n]bool,
-                      graph_mask: *[n]bool,
-                      updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
+def node_work [n][e] (tid: i32)
+                     (cost: *[n]i32)
+                     (nodes_start_index: [n]i32)
+                     (nodes_n_edges: [n]i32)
+                     (edges_dest: [e]i32)
+                     (graph_visited: [n]bool)
+                     (graph_mask: *[n]bool)
+                     (updating_graph_mask: *[n]bool): (*[n]i32, *[n]bool, *[n]bool) =
   let start_index = nodes_start_index[tid]
   let n_edges = nodes_n_edges[tid]
   let graph_mask[tid] = false
@@ -50,9 +50,9 @@ def step [n][e] (cost: *[n]i32)
   in loop ((cost, graph_mask, updating_graph_mask))
      for indices_i < length active_indices do
        let i = active_indices[indices_i]
-       in node_work(i, cost, nodes_start_index, nodes_n_edges,
-                    edges_dest, graph_visited,
-                    graph_mask, updating_graph_mask)
+       in node_work i cost nodes_start_index nodes_n_edges
+                    edges_dest graph_visited
+                    graph_mask updating_graph_mask
 
 import "common"
 

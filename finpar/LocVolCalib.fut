@@ -125,9 +125,9 @@ def explicitMethod [m][n] (myD:    [m][3]f32,  myDD: [m][3]f32,
        myMu myVar result
 
 -- for implicitY: should be called with transpose(u) instead of u
-def implicitMethod [n][m] (myD:  [m][3]f32,  myDD:  [m][3]f32,
-                           myMu: [n][m]f32,  myVar: [n][m]f32,
-                           u:   *[n][m]f32,  dtInv: f32)
+def implicitMethod [n][m] (myD:  [m][3]f32)  (myDD:  [m][3]f32)
+                          (myMu: [n][m]f32)  (myVar: [n][m]f32)
+                          (u:   *[n][m]f32)  (dtInv: f32)
                   : *[n][m]f32 =
   map3 (\mu_row var_row u_row  ->
           let (a,b,c) = unzip3 (map4 (\mu var d dd ->
@@ -153,11 +153,11 @@ def rollback
   let v = explicitMethod(myDy, myDyy, myMuY, myVarY, myResultTR)
   let u = map2 (map2 (+)) u (transpose v)
   -- implicitX
-  let u = implicitMethod(myDx, myDxx, myMuX, myVarX, u, dtInv)
+  let u = implicitMethod myDx myDxx myMuX myVarX u dtInv
   -- implicitY
   let y = map2 (map2 (\u_el v_el -> dtInv*u_el - 0.5*v_el))
                (transpose u) v
-  let myResultTR = implicitMethod(myDy, myDyy, myMuY, myVarY, y, dtInv)
+  let myResultTR = implicitMethod myDy myDyy myMuY myVarY y dtInv
   in transpose myResultTR
 
 def value(numX: i64, numY: i64, numT: i64, s0: f32, strike: f32, t: f32, alpha: f32, nu: f32, beta: f32): f32 =

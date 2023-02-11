@@ -30,14 +30,14 @@
 -- output @ data/64kn_32e-var-1-256-skew.out
 
 def core_step [n] [e]
-        ( cost: *[n]i32,
-          nodes_start_index: [n]i32,
-          nodes_n_edges: [n]i32,
-          edges_dest: [e]i32,
-          graph_visited: [n]bool,
-          updating_graph_mask: *[n]bool,
-          e_max: i32,
-          active_indices: []i32) : (*[n]i32, *[n]bool) =
+        (cost: *[n]i32)
+        (nodes_start_index: [n]i32)
+        (nodes_n_edges: [n]i32)
+        (edges_dest: [e]i32)
+        (graph_visited: [n]bool)
+        (updating_graph_mask: *[n]bool)
+        (e_max: i32)
+        (active_indices: []i32) : (*[n]i32, *[n]bool) =
 
   let costs_now = map (\tid -> #[unsafe] cost[tid]) active_indices
   let flat_len = i64.i32 e_max * length active_indices
@@ -95,16 +95,16 @@ def step [n][e]
      then let (do_inds_now, do_inds_later) =
               partition (\tid -> #[unsafe] nodes_n_edges[tid] <= e_max) active_indices
           let (cost', updating_graph_mask') =
-              core_step ( cost, nodes_start_index, nodes_n_edges, edges_dest,
-                          graph_visited, updating_graph_mask, e_max, do_inds_now )
+              core_step cost nodes_start_index nodes_n_edges edges_dest
+                        graph_visited updating_graph_mask e_max do_inds_now
           let (cost'', updating_graph_mask'') =
-              core_step ( cost', nodes_start_index, nodes_n_edges, edges_dest,
-                          graph_visited, updating_graph_mask', max_num_edges, do_inds_later )
+              core_step cost' nodes_start_index nodes_n_edges edges_dest
+                        graph_visited updating_graph_mask' max_num_edges do_inds_later
           in  (cost'', updating_graph_mask'')
 
      else let (cost', updating_graph_mask') =
-              core_step ( cost, nodes_start_index, nodes_n_edges, edges_dest,
-                          graph_visited, updating_graph_mask, e_max, active_indices )
+              core_step cost nodes_start_index nodes_n_edges edges_dest
+                        graph_visited updating_graph_mask e_max active_indices
           in  (cost', updating_graph_mask')
 
   in (cost_res, graph_mask_res, updating_graph_mask_res)

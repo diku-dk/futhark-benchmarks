@@ -19,8 +19,8 @@ def fmod(a: f32, b: f32): f32 = ( a - b * r32(t32(a / b)) )
 
 def fabs(a: f32): f32 = if (a < 0.0f32) then -a else a
 
-def ecc [equs][pars] (timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
-                      parameter: [pars]f32, parameter_offset: i32, finavalu: *[equs]f32 ): *[equs]f32 =
+def ecc [equs][pars] (timeinst:  f32) (initvalu: [equs]f32) (initvalu_offset: i32)
+                     (parameter: [pars]f32) (parameter_offset: i32) (finavalu: *[equs]f32 ): *[equs]f32 =
   #[unsafe]
   -- variable references
   let offset_1  = initvalu_offset
@@ -498,10 +498,10 @@ def ecc [equs][pars] (timeinst:  f32, initvalu: [equs]f32, initvalu_offset: i32,
 ----- Cam MODULE -----
 ----------------------
 
-def cam [equs][pars] (_timeinst:  f32, initvalu: [equs]f32,
-                      initvalu_offset: i32,
-                      parameter: [pars]f32, parameter_offset: i32,
-                      finavalu: *[equs]f32, ca: f32 ): (f32, *[equs]f32) =
+def cam [equs][pars] (_timeinst:  f32) (initvalu: [equs]f32)
+                     (initvalu_offset: i32)
+                     (parameter: [pars]f32) (parameter_offset: i32)
+                     (finavalu: *[equs]f32) (ca: f32): (f32, *[equs]f32) =
   #[unsafe]
 
   -- input data and output data variable references
@@ -697,10 +697,10 @@ def cam [equs][pars] (_timeinst:  f32, initvalu: [equs]f32,
 ----------------------
 
 def fin [equs][pars]
-       (initvalu:     [equs]f32, initvalu_offset_ecc: i32,
-        initvalu_offset_Dyad: i32, initvalu_offset_SL: i32,
-        initvalu_offset_Cyt: i32, parameter: [pars]f32,
-        finavalu: *[equs]f32, jcaDyad: f32, jcaSL: f32, jcaCyt: f32 ): *[equs]f32 =
+       (initvalu:     [equs]f32) (initvalu_offset_ecc: i32)
+       (initvalu_offset_Dyad: i32) (initvalu_offset_SL: i32)
+       (initvalu_offset_Cyt: i32) (parameter: [pars]f32)
+       (finavalu: *[equs]f32) (jcaDyad: f32) (jcaSL: f32) (jcaCyt: f32): *[equs]f32 =
   #[unsafe]
 
   let btotDyad      = parameter[2]
@@ -774,7 +774,7 @@ def master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f
   -- ecc function
   let initvalu_offset_ecc  = 0
   let parameter_offset_ecc = 0
-  let finavalu = ecc( timeinst, initvalu, initvalu_offset_ecc, parameter, parameter_offset_ecc, finavalu)
+  let finavalu = ecc timeinst initvalu initvalu_offset_ecc parameter parameter_offset_ecc finavalu
 
   let jcaDyad = 0.0f32
   let jcaSL   = 0.0f32
@@ -790,8 +790,8 @@ def master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f
                 ( 76, 11, 37 )
 
         let inp_val = #[unsafe] (initvalu[ind]*1e3f32)
-        let (res_val, finavalu) = cam(  timeinst, initvalu, initvalu_offset, parameter,
-                                        parameter_offset, finavalu, inp_val )
+        let (res_val, finavalu) = cam timeinst initvalu initvalu_offset parameter
+                                      parameter_offset finavalu inp_val
 
         let ( jcaDyad, jcaSL, jcaCyt ) =
             if      (ii == 0) then ( res_val, jcaSL,   jcaCyt )
@@ -800,8 +800,8 @@ def master [equs][pars] (timeinst:  f32, initvalu: [equs]f32, parameter: [pars]f
         in  ( jcaDyad, jcaSL, jcaCyt, finavalu)
 
   -- final adjustments
-  let finavalu = fin(  initvalu, initvalu_offset_ecc, 46, 61, 76,
-                       parameter, finavalu, jcaDyad, jcaSL, jcaCyt )
+  let finavalu = fin initvalu initvalu_offset_ecc 46 61 76
+                     parameter finavalu jcaDyad jcaSL jcaCyt
 
   in map (\(x: f32): f32  ->
             if ( f32.isnan(x) || f32.isinf(x) )
