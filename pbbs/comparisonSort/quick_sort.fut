@@ -9,10 +9,10 @@ entry sort_f64_pair =
 
 -- ==
 -- entry: sort_f64
--- input @ data/almostSortedSeq_100M.in
--- input @ data/exptSeq_100M.in
--- input @ data/randomSeq_100M.in
+-- mem_16gb input @ data/almostSortedSeq_100M.in
+-- mem_16gb input @ data/exptSeq_100M.in
+-- mem_16gb input @ data/randomSeq_100M.in
 
 -- ==
 -- entry: sort_f64_pair
--- input @ data/randomSeq_100M_double_pair_double.in
+-- mem_16gb input @ data/randomSeq_100M_double_pair_double.in

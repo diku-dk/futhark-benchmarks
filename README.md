@@ -88,3 +88,11 @@ using the self-contained `get-data.sh` script.
   There is a script [add-data.sh](add-data.sh) that does some of this automatically. **Read it before running it.**
 
   Remember to commit your changes.
+
+## Tags
+
+Some datasets require more memory than is commonly available.  These
+are tagged as appropriate so they can be disabled with `--exclude`.
+The following tags are currently used:
+
+* `mem_16gb`
