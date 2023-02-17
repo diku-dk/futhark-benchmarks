@@ -25,4 +25,5 @@
 !**/data/*
 !**/lib
 !**/lib/**
+!shell.nix
 external-data/

@@ -21,6 +21,10 @@ void bg_rgb(uint8_t r, uint8_t g, uint8_t b) {
   printf("\033[48;2;%d;%d;%dm", r, g, b);
 }
 
+void cursor_goto(int x, int y) {
+  printf("\033[%d;%dH", y, x);
+}
+
 void render(int nrows, int ncols, const uint32_t *rgbs,
             uint32_t *fgs, uint32_t *bgs, char *chars) {
   for (int i = 0; i < nrows; i++) {
@@ -187,6 +191,7 @@ void lys_run_ncurses(struct lys_context *ctx) {
       int ncols = ctx->width;
       render(nrows, ncols, ctx->rgbs, ctx->fgs, ctx->bgs, ctx->chars);
       ctx->event_handler(ctx, LYS_LOOP_ITERATION);
+      cursor_goto(0,0);
       display(nrows, ncols, ctx->fgs, ctx->bgs, ctx->chars);
       fflush(stdout);
     }
@@ -199,7 +204,6 @@ void lys_run_ncurses(struct lys_context *ctx) {
     }
 
     def();
-    move(0,0);
   }
 
   ctx->event_handler(ctx, LYS_LOOP_END);
@@ -254,7 +258,7 @@ void draw_text(struct lys_context *ctx, char* buffer, int32_t colour,
     } else {
       if (x < ctx->width && y < ctx->height) {
         ctx->fgs[y*ctx->width+x] = colour;
-        ctx->bgs[y*ctx->width+x] = 0;
+        ctx->bgs[y*ctx->width+x] = ~colour;
         ctx->chars[y*ctx->width+x] = buffer[i];
       }
       x++;
