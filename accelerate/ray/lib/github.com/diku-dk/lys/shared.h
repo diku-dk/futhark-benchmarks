@@ -1,5 +1,5 @@
-#ifndef LIBLYS_CONTEXT_SETUP
-#define LIBLYS_CONTEXT_SETUP
+#ifndef LIBLYS_SHARED
+#define LIBLYS_SHARED
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,5 +25,17 @@ static inline void _fut_check(struct futhark_context *ctx, int res,
     exit(EXIT_FAILURE);
   }
 }
+
+#ifdef LYS_TEXT
+struct lys_text {
+  char* text_format;
+  char* text_buffer;
+  size_t text_buffer_len;
+  bool show_text;
+  char* **sum_names;
+};
+
+void prepare_text(struct futhark_context* futctx, struct lys_text *text);
+#endif
 
 #endif

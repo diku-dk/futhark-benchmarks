@@ -10,7 +10,7 @@
 
 #include PROGHEADER
 
-#include "context_setup.h"
+#include "shared.h"
 
 enum lys_event {
   LYS_LOOP_START,
@@ -38,6 +38,8 @@ struct lys_context {
   int sdl_flags;
   void* event_handler_data;
   void (*event_handler)(struct lys_context*, enum lys_event);
+  TTF_Font *font;
+  int font_size;
 };
 
 #define SDL_ASSERT(x) _sdl_assert(x, __FILE__, __LINE__)
