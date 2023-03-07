@@ -17,30 +17,32 @@ def get_parent (q: queuePair): i32 =
 def get_vertex (q: queuePair): i32 =
     q.vertex
 
+def get_new_edges_from_vert (q: queuePair) (verts: []i32) (edges: []i32) (lengths: []i32) (parentsQueue: []queuePair) : []queuePair =
+    let edgepos = verts[q.vertex]
+    -- Loop over every edge of the current vertex
+    let range = 0...(lengths[q.vertex] - 1)
+    in loop p2 = [] for i in range do
+        -- Get the vertex the edge points to
+        let currentVert = edges[edgepos + i]
+        -- If it's new, add it to the queue
+        let addition = if (parentsQueue[currentVert].parent == -1)
+            then [{vertex = currentVert, parent = q.vertex}]
+            else []
+        in p2 ++ addition
+
 def BFS (verts: []i32) (edges: []i32) (lengths: []i32) (parentsQueue: *[]queuePair): []i32 =
     -- Split between parents and queue
     let split = length verts
 
     -- Loop until we get an empty queue
-    let parents2 = loop parentsQueue while length parentsQueue > split do
-        -- Loop over every vertez in the queue (can be map)
+    let parents = loop parentsQueue while length parentsQueue > split do
+        -- Loop over every verteX in the queue (can be map)
         let newQueue = loop p = [] for q in parentsQueue[split:] do
             -- The edges entry point
-            let edgepos = verts[q.vertex]
-
-            -- Loop over every edge of the current vertex
-            let range = 0...(lengths[q.vertex] - 1)
-            let newVertexes = loop p2 = [] for i in range do
-                -- Get the vertex the edge points to
-                let currentVert = edges[edgepos + i]
-                -- If it's new, add it to the queue
-                let addition = if (parentsQueue[currentVert].parent == -1)
-                    then [{vertex = currentVert, parent = q.vertex}]
-                    else []
-                in p2 ++ addition
+            let newVertexes = get_new_edges_from_vert q verts edges lengths parentsQueue
             in p ++ newVertexes
         in update_parentsQueue parentsQueue newQueue split
-    in map get_parent parents2
+    in map get_parent parents
 
 def main (vertexes_enc: []i32) (edges_enc: []i32) =
     let start = 0
