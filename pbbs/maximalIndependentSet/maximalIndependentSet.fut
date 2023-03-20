@@ -7,7 +7,7 @@ module shuffle = mk_shuffle minstd_rand
 def sum (array: []i64) =
     reduce (+) 0 array
 
-def valid_neighbour (random_state: []i64) (C: []i64) (state: i64) (neighbour: i64): i32 =
+def valid_neighbour (random_state: []i64) (C: []i64) (state: i64) (neighbour: i32): i32 =
     if (C[neighbour] == 1) && (random_state[neighbour] < state) then
         1
     else
@@ -30,8 +30,7 @@ def can_add (vertexes: []i32) (edges: []i32) (random_state: []i64) (C: []i64) (n
         let vEntry = (i64.i32 vertexes[index])
         let currentEdges = edges[vEntry:vEntry + (edges_of_vertex vertexes nEdges index)]
 
-        let arr = loop acc = [] for e in currentEdges do
-            acc ++ [valid_neighbour random_state C random_state[index] (i64.i32 e)]
+        let arr = map (valid_neighbour random_state C random_state[index]) currentEdges
 
         let valid = reduce (+) 0 arr
         in if (valid == 0) then
