@@ -2,20 +2,20 @@ import "lib/github.com/diku-dk/segmented/segmented"
 
 type queuePair = {vertex: i32, parent: i32}
 
-def update_parents [n] (parents: *[n]i32) (queue: []queuePair): *[n]i32 =
+def update_parents [nVerts] (parents: *[nVerts]i32) (queue: []queuePair): *[nVerts]i32 =
     -- Set the parent of each vertex in the queue
     let qVerts = map (\q -> i64.i32 q.vertex) queue
     let qParents = map (\q -> q.parent) queue
     let parents = scatter parents qVerts qParents
     in parents
 
-def remove_duplicates (queue: []queuePair) (nVerts: i64): []queuePair =
+def remove_duplicates (queue: []queuePair) (nVerts: i64): [nVerts]queuePair =
     let tmp = replicate nVerts {vertex = -1, parent = -1}
     let verts = map (\q -> i64.i32 q.vertex) queue
     in scatter tmp verts queue
 
-def edges_of_vertex (verts: []i32) (nedges: i32) (edge: queuePair): i64 =
-    let extended = verts ++ [nedges]
+def edges_of_vertex (verts: []i32) (nEdges: i32) (edge: queuePair): i64 =
+    let extended = verts ++ [nEdges]
     in i64.i32 (extended[edge.vertex + 1] - extended[edge.vertex])
 
 def get_ith_edge_from_vert (verts: []i32) (edges: []i32) (parents: []i32) (q: queuePair) (i: i64) : queuePair =
@@ -27,7 +27,7 @@ def get_ith_edge_from_vert (verts: []i32) (edges: []i32) (parents: []i32) (q: qu
         then {vertex = currentVert, parent = q.vertex}
         else {vertex = -1, parent = -1}
 
-def BFS [n] (verts: []i32) (nVerts: i64) (edges: []i32) (nEdges: i64) (parents: *[n]i32) (queue: *[]queuePair): [n]i32 =
+def BFS [nVerts] [nEdges] (verts: [nVerts]i32) (edges: [nEdges]i32) (parents: *[nVerts]i32) (queue: *[]queuePair): [nVerts]i32 =
     -- Loop until we get an empty queue
     let out = loop (parents, queue) while length queue > 0 do
         -- Setup a function that takes a queuePair, and returns how many vertexes goes out of it
@@ -44,17 +44,14 @@ def BFS [n] (verts: []i32) (nVerts: i64) (edges: []i32) (nEdges: i64) (parents: 
         in (update_parents parents queue, queue)
     in out.0
 
-def main (vertexes_enc: []i32) (edges_enc: []i32) =
+def main [nVerts] [nEdges] (vertexes_enc: [nVerts]i32) (edges_enc: [nEdges]i32) =
     let start = 0
 
-    let nVerts = length vertexes_enc
-    let nEdges = length edges_enc
-
-    let parents = replicate nVerts (-1) :> []i32
+    let parents = replicate nVerts (-1) :> [nVerts]i32
     let queue = [{vertex = start, parent = start}]
     let parents = update_parents parents queue
 
-    in BFS vertexes_enc nVerts edges_enc nEdges parents queue
+    in BFS vertexes_enc edges_enc parents queue
 
 -- ==
 -- input @ data/randLocalGraph_J_10_10000000.in
