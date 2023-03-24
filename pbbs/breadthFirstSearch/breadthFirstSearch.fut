@@ -54,6 +54,6 @@ def main [nVerts] [nEdges] (vertexes_enc: [nVerts]i32) (edges_enc: [nEdges]i32) 
     in BFS vertexes_enc edges_enc parents queue
 
 -- ==
--- input @ data/randLocalGraph_J_10_10000000.in
--- input @ data/rMatGraph_J_12_10000000.in
--- input @ data/gridGraph_J_3_10000000.in
+-- input @ data/randLocalGraph_J_10_20000000.in
+-- input @ data/rMatGraph_J_12_16000000.in
+-- input @ data/3Dgrid_J_64000000.in
