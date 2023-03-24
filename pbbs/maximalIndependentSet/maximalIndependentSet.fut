@@ -49,7 +49,7 @@ def remove_neighbour_and_self [nVerts] (marked: []i64) (targets: []i64) (C: *[nV
 -- Can probably be done without mapping over every vertex each loop, by keeping track of a queue-like array
 let MIS [nVerts] (vertexes: [nVerts]i32) (edges: []i32) (random_state: [nVerts]i64) (C: *[nVerts]i64) (I: *[nVerts]i64) (indexes: []i64) (nEdges: i64) =
     -- Loop until every vertex is added to or excluded from the MIS
-    let CI = loop (C, I) while (i64.sum C) > 0 do
+    let (_, I) = loop (C, I) while (i64.sum C) > 0 do
         -- Get an array of flags for which vertexes can be added to MIS
         let newI = map (can_add vertexes edges random_state C) indexes
         -- Map the index of each 0-flag to -1, as to be ignored by scatter
@@ -62,7 +62,7 @@ let MIS [nVerts] (vertexes: [nVerts]i32) (edges: []i32) (random_state: [nVerts]i
         -- Remove the vectors neighbours and self
         let C = remove_neighbour_and_self marked targets C
         in (C, I)
-    in CI.1
+    in I |> (map i32.i64)
 
 def main [nVerts] [nEdges] (vertexes_enc: [nVerts]i32) (edges_enc: [nEdges]i32) =
     let indexes = iota nVerts
