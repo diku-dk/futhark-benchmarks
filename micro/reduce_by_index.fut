@@ -67,7 +67,7 @@ entry absmax_i32 [n] (k: i32) (is : [n]i32) (vs : [n]i32) : []i32 =
 
 entry sum_vec_i32 [n][m] (k: i32) (is : [m]i32) (vs : [n]i32) : [][]i32 =
   let l = n/m
-  let vs' = unflatten m l vs
+  let vs' = unflatten m l (vs :> [m*l]i32)
   in hist (map2 (+)) (replicate l 0) (i64.i32 k) (bins k is) vs'
 
 -- An operator that the compiler really cannot do anything clever

@@ -210,11 +210,12 @@ def gather [n][s] (grid_2d: *[n][s]f32): *[n][s]f32  =
                   ] :> [n]f32)
   in transpose gathered
 
-def lbm [f] (grid_init: *[f]f32) (steps: i32): *[f]f32 =
+def lbm (grid_init: *[N_CELL_ENTRIES*TOTAL_PADDED_CELLS]f32) (steps: i32):
+  *[N_CELL_ENTRIES*TOTAL_PADDED_CELLS]f32 =
   let grid_2d = unflatten N_CELL_ENTRIES TOTAL_PADDED_CELLS grid_init
   let first_collide = collide grid_2d
   let looped = iterate (steps-1) gather_collide first_collide
-  in flatten_to f (gather looped)
+  in flatten (gather looped)
 
 -- This hardcodes 100 iterations, corresponding to the "short" dataset
 -- from Parboil when passed the 120_120_150_ldc data file.  Since we
@@ -224,5 +225,6 @@ def lbm [f] (grid_init: *[f]f32) (steps: i32): *[f]f32 =
 -- compiled input @ data/120_120_150_ldc.in.gz
 -- output @ data/short.out.gz
 
-def main [s] (input: *[s]f32): *[s]f32 =
+def main (input: *[N_CELL_ENTRIES*TOTAL_PADDED_CELLS]f32)
+  : *[N_CELL_ENTRIES*TOTAL_PADDED_CELLS]f32 =
   lbm input 100

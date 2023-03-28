@@ -15,7 +15,7 @@ def cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
   let x2 = mk16b(block[3], block[2])
   let x3 = mk16b(block[5], block[4])
   let x4 = mk16b(block[7], block[6])
-  let (x1,x2,x3,x4) = loop ((x1,x2,x3,x4)) for key' in unflatten 8 6 key[:48] do
+  let (x1,x2,x3,x4) = loop ((x1,x2,x3,x4)) for key' in unflatten 8 6 (take (8*6) key) do
     -- 1) Multiply (modulo 0x10001), 1st text sub-block with 1st key
     -- sub-block.
     let x1 = u16.u32(u32.u16(x1) * u32.u16(key'[0]) %% 0x10001u32)
@@ -78,7 +78,7 @@ def cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
      ]
 
 def cipher_idea [n] (key: [52]u16, text: [n]u8): [n]u8 =
-  let blocks = unflatten (n//8) 8 text
+  let blocks = unflatten (n/8) 8 (text :> [n/8*8]u8)
   in flatten (map (cipher_idea_block(key)) blocks) :> [n]u8
 
 def main [n] (z: [52]u16) (dk: [52]u16) (text: [n]u8): ([n]u8, [n]u8) =

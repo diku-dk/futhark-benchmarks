@@ -47,8 +47,8 @@ def div_evenly64 (a: i64) (b: i64): i64 = assert (a % b == 0) a /b
 def div_evenly (a: i32) (b: i32): i32 = assert (a % b == 0) a /b
 
 def even_chunks 't [n]  (chunk_size: i64) (arr: [n] t) =
-  let chunk_count = div_evenly64 n chunk_size in
-  unflatten chunk_count chunk_size arr
+  let chunk_count = div_evenly64 n chunk_size
+  in unflatten chunk_count chunk_size (arr :> [chunk_count*chunk_size]t)
 
 
 module type hasher  = {

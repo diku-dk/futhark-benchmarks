@@ -36,7 +36,7 @@ def render(state):
     w = 3.067
     limit = 255
     radius = 4.0
-    (state, frame_fut) = buddhabrot.main(state, width, height,
+    (state, frame_fut) = buddhabrot.main(width, height, state,
                                          xcentre, ycentre, w,
                                          limit, radius, npoints)
     frame_fut.get(ary=frame_py)

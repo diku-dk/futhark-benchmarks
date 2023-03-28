@@ -65,14 +65,13 @@ def findSplit [N] (n: i32) (y: [N]f32) : i32 =
 
   def mat_inv [n] (A: [n][n]f32): [n][n]f32 =
     let m = 2*n
-    let nm = n*m
     -- Pad the matrix with the identity matrix.
     let Ap = map (\ind -> let (i, j) = (ind / m, ind % m)
                           in  if j < n then #[unsafe] ( A[i,j] )
                                        else if j == n+i
                                             then 1.0
                                             else 0.0
-                 ) (iota nm)
+                 ) (iota (n*m))
     let Ap' = unflatten n m (gauss_jordan n Ap)
 
     -- Drop the identity matrix at the front.

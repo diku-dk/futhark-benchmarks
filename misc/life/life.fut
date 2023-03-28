@@ -78,10 +78,9 @@ entry rule101_uninit (world: rule101_world [][]) =
 
 -- Just a simple test to force the program to be compiled.
 def main [n][m] (base_pattern: [n][m]i32) (_repeats: i32) (k: i64) =
-  let l = k * m
-  let pattern = unflatten (n*k) (m*k)
+  let pattern = unflatten (k*n) (m*k)
                 (flatten_3d (replicate k
-                             (map (\row -> flatten_to l (replicate k (map bool.i32 row)))
+                             (map (\row -> flatten_to (m*k) (replicate k (map bool.i32 row)))
                               base_pattern)))
   let world =
     loop world = conway.init pattern for _i < k do conway.step world

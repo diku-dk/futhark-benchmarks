@@ -272,10 +272,10 @@ def genericPayoff(contract: i32) (md_disct: []f32) (md_detval: []f32) (xss: [][]
   else 0.0
 
 -- Entry point
-def main [sobvctsz][num_bits][num_models][num_und][num_dates][num_discts]
+def main [num_bits][num_models][num_und][num_dates][num_discts]
         (contract_number: i32)
         (num_mc_it: i32)
-        (dir_vs: [sobvctsz][num_bits]i32)
+        (dir_vs: [num_dates*num_und][num_bits]i32)
         (md_cs: [num_models][num_und][num_und]f32)
         (md_vols: [num_models][num_dates][num_und]f32)
         (md_drifts: [num_models][num_dates][num_und]f32)

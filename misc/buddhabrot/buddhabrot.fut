@@ -55,9 +55,8 @@ entry new_state (screenX: i64) (screenY: i64) (seed: i32): state [] =
   , prior_visits = replicate (screenX*screenY) 0
   , iter = 0 }
 
-def visualise [n]
-              (state: state [n])
-              (screenX: i64) (screenY: i64) (limit: i64) (radius: f32)
+def visualise (screenX: i64) (screenY: i64)
+              (state: state [screenY*screenX]) (limit: i64) (radius: f32)
               (npoints: i64) (field: (f32,f32,f32,f32)):
              (state [], [screenY][screenX]argb.colour) =
   let (rng, trajectories) = trajectories state.rng limit radius npoints field
@@ -69,13 +68,13 @@ def visualise [n]
     else replicate limit (-1)
   let touched = flatten (map mk_increments trajectories)
   let visits_per_pixel = map2 (+) state.prior_visits
-                              (hist (+) 0 n touched (map (const 1) touched))
+                              (hist (+) 0 (screenY*screenX) touched (map (const 1) touched))
   let max_visits = i32.maximum visits_per_pixel
   let coloured = map (colourise max_visits) visits_per_pixel
   in ({rng, prior_visits = visits_per_pixel, iter = state.iter + 1},
       unflatten screenY screenX coloured)
 
-entry main (state: state []) (screenX: i64) (screenY: i64)
+entry main (screenX: i64) (screenY: i64) (state: state [])
          xcentre ycentre width limit radius npoints
        : (state [], [screenY][screenX]argb.colour) =
   let aspect_ratio = f32.i64 screenX / f32.i64 screenY
@@ -83,6 +82,6 @@ entry main (state: state []) (screenX: i64) (screenY: i64)
                      ycentre - (1/aspect_ratio)*width/2)
   let (xmax,ymax) = (xcentre + width/2,
                      ycentre + (1/aspect_ratio)*width/2)
-  in visualise state screenX screenY limit radius npoints (xmin, ymin, xmax, ymax)
+  in visualise screenX screenY state limit radius npoints (xmin, ymin, xmax, ymax)
 
 entry frob (s: state []) = s.iter

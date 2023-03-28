@@ -143,14 +143,15 @@ static void sdl_loop(struct lys_context *ctx) {
     float delta = ((float)(now - ctx->last_time))/1000000.0;
     ctx->fps = (ctx->fps*0.9 + (1/delta)*0.1);
     ctx->last_time = now;
-    struct futhark_opaque_state *new_state;
-    FUT_CHECK(ctx->fut, futhark_entry_step(ctx->fut, &new_state, delta, ctx->state));
-    futhark_free_opaque_state(ctx->fut, ctx->state);
+    struct futhark_opaque_state *new_state, *old_state = ctx->state;
+    FUT_CHECK(ctx->fut, futhark_entry_step(ctx->fut, &new_state, delta, old_state));
     ctx->state = new_state;
 
     FUT_CHECK(ctx->fut, futhark_entry_render(ctx->fut, &out_arr, ctx->state));
     FUT_CHECK(ctx->fut, futhark_values_u32_2d(ctx->fut, out_arr, ctx->data));
+    FUT_CHECK(ctx->fut, futhark_context_sync(ctx->fut));
     FUT_CHECK(ctx->fut, futhark_free_u32_2d(ctx->fut, out_arr));
+    FUT_CHECK(ctx->fut, futhark_free_opaque_state(ctx->fut, old_state));
 
     SDL_ASSERT(SDL_BlitSurface(ctx->surface, NULL, ctx->wnd_surface, NULL)==0);
 

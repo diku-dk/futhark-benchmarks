@@ -1,4 +1,5 @@
 LYS_BACKEND?=opencl
+LYS_FRONTEND?=sdl
 LYS_TTF?=0
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
@@ -7,21 +8,26 @@ ifeq ($(origin PROG_FUT_DEPS), undefined)
 PROG_FUT_DEPS:=$(shell ls *.fut; find $(SELF_DIR)/../../.. -name \*.fut)
 endif
 
+ifeq ($(LYS_FRONTEND),sdl)
 PKG_CFLAGS_PKGS=sdl2
 ifeq ($(LYS_TTF),1)
 PKG_CFLAGS_PKGS+= SDL2_ttf
 endif
 
-PKG_CFLAGS=$(shell pkg-config --cflags $(PKG_CFLAGS_PKGS))
+else ifeq ($(LYS_FRONTEND),ncurses)
+PKG_CFLAGS_PKGS=ncurses
 
-BASE_LDFLAGS=-lm -lSDL2
-ifeq ($(LYS_TTF),1)
-BASE_LDFLAGS+= -lSDL2_ttf
+else
+$(error Unknown LYS_FRONTEND: $(LYS_FRONTEND).  Must be 'sdl')
 endif
+
+PKG_CFLAGS=$(shell pkg-config --cflags $(PKG_CFLAGS_PKGS))
+PKG_LDFLAGS=$(shell pkg-config --libs $(PKG_CFLAGS_PKGS))
 
 NOWARN_CFLAGS=-std=c11 -O
 
 CFLAGS?=$(NOWARN_CFLAGS) $(PKG_CFLAGS) -Wall -Wextra -pedantic
+
 ifeq ($(LYS_TTF),1)
 CFLAGS+= -DLYS_TTF
 endif
@@ -42,4 +48,5 @@ DEVICE_LDFLAGS=-lpthread
 else
 $(error Unknown LYS_BACKEND: $(LYS_BACKEND).  Must be 'opencl', 'cuda', 'multicore', or 'c')
 endif
-LDFLAGS?=$(BASE_LDFLAGS) $(DEVICE_LDFLAGS)
+
+LDFLAGS?=-lm $(PKG_LDFLAGS) $(DEVICE_LDFLAGS)

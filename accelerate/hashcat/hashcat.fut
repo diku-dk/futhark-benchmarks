@@ -93,7 +93,7 @@ def mk_block (bs: []u8) ((i,k): (i64,i64)): [16]u32 =
   #[unsafe]
   let k = i64.min 64 k -- Truncate past first block.
   let one_bit = [0x80u8, 0u8, 0u8, 0u8]
-  let block = replicate 64 0u8
+  let block = replicate (16*4) 0u8
   let block[0:k] = bs[i:i+k]
   let block[k:k+4] = one_bit
   let block[64-8:64-4] = bytes (u32.i64(k*8))
