@@ -3,26 +3,24 @@ import "lib/github.com/diku-dk/sorts/radix_sort"
 
 type queuePair = {vertex: i32, parent: i32}
 
-def get_vertex (q: queuePair): i32 =
-    q.vertex
-
 def get_first (q1: queuePair) (q2: queuePair): queuePair =
     if (q1.vertex != q2.vertex)
     then q1
     else {vertex = -1, parent = -1}
 
--- Pretty fast, held back by sorting
 def remove_duplicates_GPU (queue: []queuePair) = 
     -- We need to append an extra in case the queue only contains items with the same vertex value
     -- Array copy is hopefully optimized away by the compiler
-    let sorted = radix_sort_int_by_key get_vertex i32.num_bits i32.get_bit queue ++ [{vertex = -1, parent = -1}]
+    let sorted = radix_sort_int_by_key (\q -> q.vertex) i32.num_bits i32.get_bit queue ++ [{vertex = -1, parent = -1}]
     in  map2 get_first sorted (rotate (1) sorted)
 
+-- Unused
 -- Might also not be secure as the function "(\_ b -> b)" isn't commutative
 def remove_duplicates_balanced (queue: []queuePair) (nVerts: i64): [nVerts]queuePair =
     let verts = map (\q -> i64.i32 q.vertex) queue
     in hist (\_ b -> b) {vertex = -1, parent = -1} nVerts verts queue
 
+-- Unused
 -- Writes to the same array position with different values. It is, however, very fast
 def remove_duplicates_insecure (queue: []queuePair) (nVerts: i64): [nVerts]queuePair =
     let tmp = replicate nVerts {vertex = -1, parent = -1}
@@ -58,15 +56,13 @@ def BFS [nVerts] [nEdges] (verts: [nVerts]i32) (edges: [nEdges]i32) (parents: *[
 
         -- Get the vertexes in the next layer
         let newQueue = expand (get_edges_of_vert_fun) (get_ith_edge_from_vert_fun) queue
-
         -- Remove empty spots/placeholders ({-1, -1} queuePairs)
         let filteredQueue = filter (\q -> q.parent != -1) newQueue
-
         -- Remove duplicates from the queue
         let noDupesQueue = remove_duplicates_GPU filteredQueue
-        
         -- Remove empty spots/placeholders again
         let queue = filter (\q -> q.parent != -1) noDupesQueue
+
         in (update_parents parents queue, queue)
     in parents
 
