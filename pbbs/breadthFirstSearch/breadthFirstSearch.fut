@@ -3,19 +3,17 @@ import "lib/github.com/diku-dk/sorts/radix_sort"
 
 type queuePair = {vertex: i32, parent: i32}
 
-def get_first (q1: queuePair) (q2: queuePair): queuePair =
-    if (q1.vertex != q2.vertex)
-    then q1
-    else {vertex = -1, parent = -1}
+def remove_duplicates [nQueue]  (nVerts) (queue: [nQueue]queuePair): []queuePair = 
+    let verts = map (\q -> i64.i32 q.vertex) queue
+    let indexes = iota nQueue 
+    let H = hist i64.min nQueue nVerts verts indexes
+    in map2 (\i j -> H[i] == j) verts indexes 
+        |> zip queue
+        |> filter (.1)
+        |> map (.0)
 
-def remove_duplicates (queue: []queuePair) = 
-    -- We need to append an extra in case the queue only contains items with the same vertex value
-    -- Array copy is hopefully optimized away by the compiler
-    let sorted = radix_sort_int_by_key (\q -> q.vertex) i32.num_bits i32.get_bit queue ++ [{vertex = -1, parent = -1}]
-    in  map2 get_first sorted (rotate (1) sorted)
-
+-- Set the parent of each vertex in the queue. The queue must not contain duplicates
 def update_parents [nVerts] (parents: *[nVerts]i32) (queue: []queuePair): *[nVerts]i32 =
-    -- Set the parent of each vertex in the queue
     let qVerts = map (\q -> i64.i32 q.vertex) queue
     let qParents = map (\q -> q.parent) queue
     in scatter parents qVerts qParents
@@ -43,14 +41,12 @@ def BFS [nVerts] [nEdges] (verts: [nVerts]i32) (edges: [nEdges]i32) (parents: *[
 
         -- Get the vertexes in the next layer
         let newQueue = expand (get_edges_of_vert_fun) (get_ith_edge_from_vert_fun) queue
-        -- Remove empty spots/placeholders ({-1, -1} queuePairs)
+        -- Remove empty placeholders ({-1, -1} queuePairs)
         let filteredQueue = filter (\q -> q.parent != -1) newQueue
         -- Remove duplicates from the queue
-        let noDupesQueue = remove_duplicates filteredQueue
-        -- Remove empty spots/placeholders again
-        let queue = filter (\q -> q.parent != -1) noDupesQueue
+        let noDupesQueue = remove_duplicates nVerts filteredQueue
 
-        in (update_parents parents queue, queue)
+        in (update_parents parents noDupesQueue, noDupesQueue)
     in parents
 
 def main [nVerts] [nEdges] (vertexes_enc: [nVerts]i32) (edges_enc: [nEdges]i32) =
