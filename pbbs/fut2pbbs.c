@@ -1,16 +1,92 @@
-// Convert input data from Futhark format to PBBS to the Futhark
-// binary data format.  Accepts data on stdin and produces results on
-// stdout.  May not support all PBBS data formats yet, but should be
-// enough for the currently implemented benchmarks.
+// Convert input data from Futhark binary format to PBBS.  Accepts
+// data on stdin and produces results on stdout.  May not support all
+// PBBS data formats yet, but should be enough for the currently
+// implemented benchmarks.
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 
+struct type {
+  char type[4];
+  uint8_t rank;
+  int64_t shape[256];
+  long data_offset;
+};
+
+char* progname;
+
+int64_t bytes(const char type[4]) {
+  if (memcmp(type, "  u8", 4) == 0 || memcmp(type, "  i8", 4) == 0 || memcmp(type, "bool", 4) == 0) {
+    return 1;
+  }
+  if (memcmp(type, " u16", 4) == 0 || memcmp(type, " i16", 4) == 0 || memcmp(type, " f16", 4) == 0) {
+    return 2;
+  }
+  if (memcmp(type, " u32", 4) == 0 || memcmp(type, " i32", 4) == 0 || memcmp(type, " f32", 4) == 0) {
+    return 4;
+  }
+  if (memcmp(type, " u64", 4) == 0 || memcmp(type, " i64", 4) == 0 || memcmp(type, " f64", 4) == 0) {
+    return 8;
+  }
+  fprintf(stderr, "%s: unknown type name: %c%c%c%c.\n", progname, type[0], type[1], type[2], type[3]);
+  exit(1);
+}
+
+void skipspaces(FILE* f) {
+  int c;
+  while ((c = fgetc(f)) != EOF) {
+    if (!isspace(c)) {
+      ungetc(c, f);
+      return;
+    }
+  }
+}
+
+// Find the types of values in the file.
+int read_types(FILE* f, struct type* ts) {
+  int i = 0;
+  while (1) {
+    skipspaces(f);
+    if (fgetc(f) != 'b' || fgetc(f) != 2) {
+      if (feof(f)) {
+        break;
+      } else {
+        fprintf(stderr, "%s: value %d: invalid input.\n", progname, i);
+        exit(1);
+      }
+    }
+    if (fread(&ts[i].rank, sizeof(uint8_t), 1, f) != 1) {
+      fprintf(stderr, "%s: value %d: could not read number of dimensions\n", progname, i);
+      exit(1);
+    }
+    if (fread(&ts[i].type, 4, 1, f) != 1) {
+      fprintf(stderr, "%s: value %d: could not read type\n", progname, i);
+      exit(1);
+    }
+    if (fread(&ts[i].shape, sizeof(int64_t), ts[i].rank, f) != ts[i].rank) {
+      fprintf(stderr, "%s: value %d: could not read shape\n", progname, i);
+      exit(1);
+    }
+    ts[i].data_offset = ftell(f);
+    long num_elems = 1;
+    for (int j = 0; j < ts[i].rank; j++) {
+      num_elems *= ts[i].shape[j];
+    }
+    fseek(f, num_elems*bytes(ts[i].type), SEEK_CUR);
+    i++;
+  }
+
+  return i;
+}
+
 int main(int argc, char** argv) {
+  progname = argv[0];
+
   if (argc != 1) {
     fprintf(stderr, "%s takes no options.\n", argv[0]);
     exit(1);
@@ -27,44 +103,24 @@ int main(int argc, char** argv) {
             argv[0]);
   }
 
-  if (getc(stdin) != 'b' || getc(stdin) != 2) {
-    fprintf(stderr, "%s: invalid input.\n", argv[0]);
-    exit(1);
-  }
+  struct type types[16]; // Hopefully enough.
 
-  uint8_t num_dims;
-  char type[4];
-
-  if (fread(&num_dims, sizeof(num_dims), 1, stdin) != 1) {
-    fprintf(stderr, "%s: could not read number of dimensions\n", argv[0]);
-    exit(1);
-  }
-
-  if (fread(&type, sizeof(type), 1, stdin) != 1) {
-    fprintf(stderr, "%s: could not read type\n", argv[0]);
-    exit(1);
-  }
-
-  int64_t shape[num_dims];
-
-  if (fread(&shape, sizeof(int64_t), num_dims, stdin) != num_dims) {
-    fprintf(stderr, "%s: could not read shape\n", argv[0]);
-    exit(1);
-  }
-
-  if (memcmp(type, " i32", 4) == 0 && num_dims == 1) {
+  int num_values = read_types(stdin, types);
+  if (num_values == 1 && memcmp(types[0].type, " i32", 4) == 0 && types[0].rank == 1) {
+    fseek(stdin, types[0].data_offset, SEEK_SET);
     fprintf(stdout, "sequenceInt\n");
-    for (int i = 0; i < shape[0]; i++) {
+    for (int i = 0; i < types[0].shape[0]; i++) {
       int32_t x;
       if (fread(&x, sizeof(x), 1, stdin) != 1) {
-        fprintf(stderr, "%s: failed to read all values\n", argv[0]);
+        fprintf(stderr, "%s: failed to read all values\n", progname);
         exit(1);
       }
       fprintf(stdout, "%d\n", x);
     }
-  } else if (memcmp(type, " i64", 4) == 0 && num_dims == 1) {
+  } else if (num_values == 1 && memcmp(types[0].type, " i64", 4) == 0 && types[0].rank == 1) {
+    fseek(stdin, types[0].data_offset, SEEK_SET);
     fprintf(stdout, "sequenceInt\n");
-    for (int i = 0; i < shape[0]; i++) {
+    for (int i = 0; i < types[0].shape[0]; i++) {
       int64_t x;
       if (fread(&x, sizeof(x), 1, stdin) != 1) {
         fprintf(stderr, "%s: failed to read all values\n", argv[0]);
@@ -72,9 +128,10 @@ int main(int argc, char** argv) {
       }
       fprintf(stdout, "%ld\n", x);
     }
-  } else if (memcmp(type, " f64", 4) == 0 && num_dims == 1) {
+  } else if (num_values == 1 && memcmp(types[0].type, " f64", 4) == 0 && types[0].rank == 1) {
+    fseek(stdin, types[0].data_offset, SEEK_SET);
     fprintf(stdout, "pbbs_sequenceDouble\n");
-    for (int i = 0; i < shape[0]; i++) {
+    for (int i = 0; i < types[0].shape[0]; i++) {
       double x;
       if (fread(&x, sizeof(x), 1, stdin) != 1) {
         fprintf(stderr, "%s: failed to read all values\n", argv[0]);
@@ -83,9 +140,10 @@ int main(int argc, char** argv) {
       // Winging the precision here; hopefully will be OK.
       fprintf(stdout, "%.20f\n", x);
     }
-  } else if (memcmp(type, " f64", 4) == 0 && num_dims == 2 && shape[1] == 2) {
+  } else if (num_values == 1 && memcmp(types[0].type, " f64", 4) == 0 && types[0].rank == 2 && types[0].shape[1] == 2) {
+    fseek(stdin, types[0].data_offset, SEEK_SET);
     fprintf(stdout, "pbbs_sequencePoint2d\n");
-    for (int i = 0; i < shape[0]; i++) {
+    for (int i = 0; i < types[0].shape[0]; i++) {
       double xs[2];
       if (fread(&xs, sizeof(xs), 1, stdin) != 1) {
         fprintf(stderr, "%s: failed to read all values\n", argv[0]);
@@ -94,12 +152,38 @@ int main(int argc, char** argv) {
       // Winging the precision here; hopefully will be OK.
       fprintf(stdout, "%.20f %.20f\n", xs[0], xs[1]);
     }
-  } else {
-    fprintf(stderr, "%s: cannot handle value with shape ", argv[0]);
-    for (int i = 0; i < num_dims; i++) {
-      fprintf(stderr, "[%ld]", (long)shape[i]);
+  } else if (num_values == 2 &&
+             memcmp(types[0].type, " i32", 2) == 0 && types[0].rank == 1 &&
+             memcmp(types[1].type, " i32", 2) == 0 && types[1].rank == 1) {
+    fprintf(stdout, "AdjacencyGraph\n");
+    fprintf(stdout, "%ld\n", types[0].shape[0]);
+    fprintf(stdout, "%ld\n", types[1].shape[0]);
+    fseek(stdin, types[0].data_offset, SEEK_SET);
+    for (int i = 0; i < types[0].shape[0]; i++) {
+      int32_t x;
+      if (fread(&x, sizeof(x), 1, stdin) != 1) {
+        fprintf(stderr, "%s: failed to read all values\n", progname);
+        exit(1);
+      }
+      fprintf(stdout, "%d\n", x);
     }
-    fprintf(stderr, " and type %c%c%c%c.\n",
-            type[0], type[1], type[2], type[3]);
+    fseek(stdin, types[1].data_offset, SEEK_SET);
+    for (int i = 0; i < types[1].shape[0]; i++) {
+      int32_t x;
+      if (fread(&x, sizeof(x), 1, stdin) != 1) {
+        fprintf(stderr, "%s: failed to read all values\n", progname);
+        exit(1);
+      }
+      fprintf(stdout, "%d\n", x);
+    }
+  } else {
+    fprintf(stderr, "%s: cannot handle file with %d values of these types:\n", argv[0], num_values);
+    for (int i = 0; i < num_values; i++) {
+      for (int j = 0; j < types[i].rank; j++) {
+        fprintf(stderr, "[%ld]", (long)types[i].shape[j]);
+      }
+      fprintf(stderr, "%c%c%c%c.\n", types[i].type[0], types[i].type[1], types[i].type[2], types[i].type[3]);
+    }
+    return 1;
   }
 }
