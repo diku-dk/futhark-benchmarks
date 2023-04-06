@@ -2,6 +2,8 @@
 // data on stdin and produces results on stdout.  May not support all
 // PBBS data formats yet, but should be enough for the currently
 // implemented benchmarks.
+//
+// Usage: fut2pbbs < input > output
 
 #include <assert.h>
 #include <stdio.h>
@@ -92,8 +94,8 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
-  if (isatty(fileno(stdin))) {
-    fprintf(stderr, "%s: stdin is a tty - redirect from a file instead.\n",
+  if (lseek(fileno(stdin), 0, SEEK_SET) == -1) {
+    fprintf(stderr, "%s: stdin is not a file - redirect from a file instead.\n",
             argv[0]);
     exit(1);
   }
