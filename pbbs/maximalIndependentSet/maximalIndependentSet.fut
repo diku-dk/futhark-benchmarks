@@ -80,9 +80,9 @@ def main [nVerts] [nEdges] (vertexes_enc: [nVerts]i32) (edges_enc: [nEdges]i32) 
     in MIS vertexes_enc edges_enc random_state C I indexes nEdges
 
 -- ==
--- input @ data/randLocalGraph_J_10_20000000.in
--- output @ data/randLocalGraph_J_10_20000000.out
--- input @ data/rMatGraph_J_12_16000000.in
--- output @ data/rMatGraph_J_12_16000000.out
--- input @ data/3Dgrid_J_64000000.in
--- output @ data/3Dgrid_J_64000000.out
+-- input @ data/randLocalGraph_JR_10_20000000.in
+-- output @ data/randLocalGraph_JR_10_20000000.out
+-- input @ data/rMatGraph_JR_12_16000000.in
+-- output @ data/rMatGraph_JR_12_16000000.out
+-- input @ data/3Dgrid_JR_64000000.in
+-- output @ data/3Dgrid_JR_64000000.out
