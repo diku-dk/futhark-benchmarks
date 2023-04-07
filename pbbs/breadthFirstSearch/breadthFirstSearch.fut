@@ -1,5 +1,4 @@
 import "lib/github.com/diku-dk/segmented/segmented"
-import "lib/github.com/diku-dk/sorts/radix_sort"
 
 type queuePair = {vertex: i32, parent: i32}
 
