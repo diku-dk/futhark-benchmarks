@@ -155,6 +155,25 @@ void pbbs_sequencePoint3d(FILE *in, FILE *out) {
   fwrite(data, sizeof(double), used, out);
 }
 
+void AdjacencyGraph(FILE *in, FILE *out) {
+  int n, m;
+  int ret = fscanf(in, "%d\n%d\n", &n, &m);
+  assert(ret == 2);
+
+  uint64_t dims[1];
+  dims[0] = n;
+  header(out, 1, " i32", dims);
+  for (int i = 0; i < n; i++) {
+    conv_i32(in, out);
+  }
+
+  dims[0] = m;
+  header(out, 1, " i32", dims);
+  for (int i = 0; i < m; i++) {
+    conv_i32(in, out);
+  }
+}
+
 int main(int argc, char** argv) {
   char* line;
   size_t n;
@@ -189,6 +208,8 @@ int main(int argc, char** argv) {
     pbbs_sequencePoint2d(stdin, stdout);
   } else if (strcmp(line, "pbbs_sequencePoint3d\n") == 0) {
     pbbs_sequencePoint3d(stdin, stdout);
+  } else if (strcmp(line, "AdjacencyGraph\n") == 0) {
+    AdjacencyGraph(stdin, stdout);
   } else {
     fprintf(stderr, "Unknown file type: %s\n", line);
     exit(1);
