@@ -74,5 +74,9 @@ def main [nEdges] (edges_enc: *[nEdges][2]i32) =
     in MM edges_enc edgeIds edge2Ids markedVerts smallestEdgeId includedEdges
 
 -- ==
--- input @ data/rMatGraph_E_10_10000000.in
--- output @ data/rMatGraph_E_10_10000000.out
+-- input @ data/randLocalGraph_E_10_20000000.in
+-- output @ data/randLocalGraph_E_10_20000000.out
+-- input @ data/rMatGraph_E_10_20000000.in
+-- output @ data/rMatGraph_E_10_20000000.out
+-- input @ data/2Dgrid_E_64000000.in
+-- output @ data/2Dgrid_E_64000000.out
