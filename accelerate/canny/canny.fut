@@ -132,21 +132,20 @@ def nonMaximumSuppression [h][w] (low: f32) (high: f32) (magdir: [h][w](f32,i32)
       (iota h)
 
 def selectStrong [h][w] (img: [h][w]f32): []i32 =
-  let strong = map (\(x: f32): i32  ->
-                     if x == edgeStrong then 1 else 0)
-                   (flatten img)
-  let n = length strong - 1
+  let [k] (strong: [k]i32) =
+    map (\x  -> if x == edgeStrong then 1 else 0)
+        (flatten img)
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
   let targetIdxAndLen = scan (+) 0 strong
-  let (targetIdx, len') = split n targetIdxAndLen
+  let (targetIdx, len') = split (k-1) targetIdxAndLen
   let len = i64.i32 (len'[0])
   let (indices', values) =
     unzip(map3 (\i target_i strong_x ->
                  if strong_x == 0
                  then (-1, 0)
                  else (i64.i32 target_i, i32.i64 i+1))
-               (iota n) targetIdx (strong[1:] :> [n]i32))
+               (indices targetIdx) targetIdx (strong[1:]))
   in spread len 0 indices' values
 
 def main [h][w] (low: f32) (high: f32) (img: [h][w]i32): []i32 =

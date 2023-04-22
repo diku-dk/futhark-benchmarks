@@ -244,15 +244,14 @@ def snm [l] (conf: conf) (n: [l]f32) (m: [l]f32): [l]f32 =
 def step [size] (state: state [size]): state [size] =
   let dt = state.conf.timestep
   let aa = state.world
-  let (r, c) = (size, size)
 
   let aaf = fft.fft2_re aa
   let nf = map2 (map2 (complex.*)) aaf state.krf
   let mf = map2 (map2 (complex.*)) aaf state.kdf
   let n = map (\x -> complex.re x / state.kflr) (fft.ifft2 nf |> flatten)
   let m = map (\x -> complex.re x / state.kfld) (fft.ifft2 mf |> flatten)
-  let aa' = snm state.conf (take (r*c) n) (take (r*c) m)
-            |> unflatten r c
+  let aa' = snm state.conf (take (size*size) n) (take (size*size) m)
+            |> unflatten size size
 
   let timestep f g =
     match state.conf.timestep_mode
@@ -260,7 +259,7 @@ def step [size] (state: state [size]): state [size] =
       case 1 -> g + dt * (2.0 * f - 1.0)
       case _ -> g + dt * (f - g)
   let clamp v = f32.min (f32.max v 0.0) 1.0
-  let aa'' = map2 (map2 (\a b -> clamp (timestep a b))) (aa' :> [size][size]f32) aa
+  let aa'' = map2 (map2 (\a b -> clamp (timestep a b))) aa' aa
   in state with world = aa''
 
 def render [size] (state: state [size]): [size][size]argb.colour =
@@ -289,8 +288,7 @@ module lys: lys with text_content = text_content = {
 
   -- Cut it down to requested size.
   def render (s: state) =
-    let size = to_pow2 (i64.max s.h s.w)
-    let screen = render (s.state :> sized_state [size])
+    let screen = render s.state
     in map (take s.w) screen |> take s.h
 
   -- Resizes can occur even with the -R flag to lys (at least on my machine,
@@ -308,8 +306,7 @@ module lys: lys with text_content = text_content = {
       then init s.state.seed (length s.state.world) (length s.state.world[0])
       else s
     case #step _ ->
-      let size = to_pow2 (i64.max s.h s.w)
-      in s with state = step (s.state :> sized_state [size])
+      s with state = step s.state
     case _ -> s
 
   type text_content = text_content

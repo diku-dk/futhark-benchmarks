@@ -18,7 +18,7 @@ def logplus (x: f32) : f32 =
   then f32.log x else 1
 
 -- | builds the X matrices; first result dimensions of size 2*k+2
-def mkX (k2p2: i64) (N: i64) (f: f32) : [k2p2][N]f32 =
+def mkX (k: i64) (N: i64) (f: f32) : [2+2*k][N]f32 =
   [ replicate N 1     -- first   row
   , map (f32.i64 >-> (+1)) (iota N) -- second  row
   ] ++
@@ -28,8 +28,8 @@ def mkX (k2p2: i64) (N: i64) (f: f32) : [k2p2][N]f32 =
                      let angle = 2 * f32.pi * i' * j' / f
                      in  if i % 2 == 0 then f32.sin angle else f32.cos angle
               ) (map (+1) (iota N))
-        ) (2 ... k2p2-1)
-  ) :> [k2p2][N]f32
+        ) (map (+2) (iota (2*k)))
+  )
 
 -- | compute the actual number of values that precisely
 --   encapsulate the first n valid values of y.
@@ -98,7 +98,7 @@ def bfast [N] (Nmn: i64) (f: f32) (k: i32) (n: i32)
   -- outer map is gonna be hoisted out!
   -- (Just to advertize the compiler a bit)
   -- let period = rint ( (f32.i64 N) / (f32.i64 n) )
-  let X = mkX (i64.i32 (2*k+2)) N f
+  let X = mkX (i64.i32 k) N f
 
   let m    = n -- findSplit n y   -- n
   let flgs = map (\v -> !(f32.isnan v)) y

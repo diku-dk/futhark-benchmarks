@@ -51,7 +51,7 @@ def BFS [nVerts] [nEdges] (verts: [nVerts]i32) (edges: [nEdges]i32) (parents: *[
 def main [nVerts] [nEdges] (vertexes_enc: [nVerts]i32) (edges_enc: [nEdges]i32) =
     let start = 0
 
-    let parents = replicate nVerts (-1) :> [nVerts]i32
+    let parents = replicate nVerts (-1)
     let queue = [{vertex = start, parent = start}]
     let parents = update_parents parents queue
 
