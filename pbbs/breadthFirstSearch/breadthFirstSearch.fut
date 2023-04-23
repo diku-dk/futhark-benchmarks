@@ -60,7 +60,7 @@ def main [nVerts] [nEdges] (vertexes_enc: [nVerts]i32) (edges_enc: [nEdges]i32) 
 -- ==
 -- input @ data/randLocalGraph_J_10_20000000.in
 -- output @ data/randLocalGraph_J_10_20000000.out
--- input @ data/rMatGraph_J_12_16000000.in
+-- mem_16gb input @ data/rMatGraph_J_12_16000000.in
 -- output @ data/rMatGraph_J_12_16000000.out
 -- input @ data/3Dgrid_J_64000000.in
 -- output @ data/3Dgrid_J_64000000.out
