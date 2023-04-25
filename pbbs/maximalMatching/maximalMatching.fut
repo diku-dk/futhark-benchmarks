@@ -2,14 +2,16 @@
 def getSmallestPairs [arraySize] (edges: [arraySize][2]i32) (edge2Ids: [arraySize][2]i32) (nVerts: i64) (nEdges: i64): ([]i32, []i32) =
     -- The length of the flattened arrays
     let arraySizeFlat = arraySize * 2
-    let zippedArray = zip (flatten edges :> [arraySizeFlat]i32) (flatten edge2Ids :> [arraySizeFlat]i32)
+    
+    let flatE = flatten edges :> [arraySizeFlat]i32
+    let flatE2i = flatten edge2Ids :> [arraySizeFlat]i32
 
-    let verts = map ((.0) >-> i64.i32) zippedArray 
-    let idIndex = zip (map (.1) zippedArray) (iota arraySizeFlat) 
-    in hist (\i1 i2 -> if i1.0 < i2.0 then i1 else i2) ((i32.i64 nEdges), -1) nVerts verts idIndex
-        |> map (.1)
-        |> filter (\i -> i >= 0)
-        |> map (\i -> zippedArray[i])
+    let zippedArray = zip flatE flatE2i
+
+    let verts = map i64.i32 flatE 
+
+    let H = hist i32.min (i32.i64 nEdges) nVerts verts flatE2i
+    in filter (\i -> H[i.0] == i.1) zippedArray
         |> unzip
 
 -- Return the edge if it's ID is the smallest, else return placeholder
@@ -59,8 +61,7 @@ def MM [nVerts] [nEdges] (edges: [][2]i32) (edgeIds: [nEdges]i64) (edge2Ids: [][
     in filter (.1) (zip edgeIds includedEdges) |> map (.0)
 
 def main [nEdges] (edges_enc: *[nEdges][2]i32) =
-    -- We are allowed to do this in pbbs2fut instead and pass the value. Need to check how big the performance hit is
-    let nVerts = reduce (\cMax eMax -> i32.max cMax eMax) 0 (map (\e -> i32.max e[0] e[1]) edges_enc) + 1 |> i64.i32
+    let nVerts = flatten edges_enc |> i32.maximum |> (+1) |> i64.i32
 
     let edgeIds = iota nEdges
     -- Create a doubled iota to simplify scatter/map on flattened edges
