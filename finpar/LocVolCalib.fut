@@ -166,9 +166,7 @@ def value(numX: i64, numY: i64, numT: i64, s0: f32, strike: f32, t: f32, alpha: 
   let (myDx, myDxx) = initOperator(myX)
   let (myDy, myDyy) = initOperator(myY)
   let myResult = setPayoff(strike, myX, myY)
-  let numT' = numT - 1
-  let myTimeline_neighbours = reverse (zip (init myTimeline :> [numT']f32)
-                                           (tail myTimeline :> [numT']f32))
+  let myTimeline_neighbours = reverse (zip (init myTimeline) (tail myTimeline))
   let myResult = loop (myResult) for (tnow,tnext) in myTimeline_neighbours do
                  let (myMuX, myVarX, myMuY, myVarY) =
                    updateParams(myX, myY, tnow, alpha, beta, nu)
