@@ -73,30 +73,28 @@ def bpnn_layerforward [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2
 
 --------------------------------------------------------/
 
-def bpnn_train_kernel [n_in][n_out][n_inp1][n_hid][n_hidp1]
+def bpnn_train_kernel [n_in][n_out][n_hid]
                      ( input_units:  [n_in]f32
                      , target: [n_out]f32
-                     , input_weights: [n_inp1][n_hid]f32
-                     , hidden_weights: [n_hidp1][n_out]f32
-                     , input_prev_weights: [n_inp1][n_hid]f32
-                     , hidden_prev_weights: [n_hidp1][n_out]f32
+                     , input_weights: [n_in+1][n_hid]f32
+                     , hidden_weights: [n_hid+1][n_out]f32
+                     , input_prev_weights: [n_in+1][n_hid]f32
+                     , hidden_prev_weights: [n_hid+1][n_out]f32
                      ): ( f32, f32
-                        , [n_inp1][n_hid]f32
-                        , [n_hidp1][n_out]f32
+                        , [n_in+1][n_hid]f32
+                        , [n_hid+1][n_out]f32
                         ) =
-    let (inpweightsP_row0,inpweightsP) = split (1)  input_weights
     let hidden_units = bpnn_layerforward(input_units,
-                                         inpweightsP :> [n_in][n_hid]f32,
-                                         inpweightsP_row0[0])
+                                         input_weights[1:n_in+1] :> [n_in][n_hid]f32,
+                                         input_weights[0])
 
-    let (hidweightsP_row0,hidweightsP) = split (1) hidden_weights
     let output_units = bpnn_layerforward(hidden_units,
-                                         hidweightsP :> [n_hid][n_out]f32,
-                                         hidweightsP_row0[0])
+                                         hidden_weights[1:n_hid+1] :> [n_hid][n_out]f32,
+                                         hidden_weights[0])
 
     let (out_err, output_delta) = bpnn_output_error(target, output_units)
     let (hid_err, hidden_delta) = bpnn_hidden_error(output_delta,
-                                                    hidweightsP :> [n_hid][n_out]f32,
+                                                    hidden_weights[1:n_hid+1] :> [n_hid][n_out]f32,
                                                     hidden_units)
 
     let (hidden_weights, hidden_prev_weights) =
@@ -143,14 +141,13 @@ def bpnn_zero_weights (m: i64) (n: i64): [m][n]f32 =
 
 ----------------------------------------------------/
 
-def bpnn_create (n_in: i64) (n_inp1: i64) (n_hid: i64)
-                (n_hidp1: i64) (n_out: i64) (offset: i32) (dirVct: []i32)
+def bpnn_create (n_in: i64) (n_hid: i64) (n_out: i64) (offset: i32) (dirVct: []i32)
                 : ( [n_in]f32
                   , [n_out]f32
-                  ,([n_inp1][n_hid]f32, [n_inp1]f32)
-                  ,([n_hidp1][n_out]f32, [n_hidp1]f32)
-                  , [n_inp1][n_hid]f32
-                  , [n_hidp1][n_out]f32
+                  ,([n_in+1][n_hid]f32, [n_in+1]f32)
+                  ,([n_hid+1][n_out]f32, [n_hid+1]f32)
+                  , [n_in+1][n_hid]f32
+                  , [n_hid+1][n_out]f32
                   ) =
   -- [#n_out]
   let target = bpnn_constant_row n_out 0.1
@@ -158,20 +155,20 @@ def bpnn_create (n_in: i64) (n_inp1: i64) (n_hid: i64)
   -- [#n_in][#n_hidden]f32
   let (offset, (input_weights, input_weights_fstcol)) =
     if init_zero()
-    then (  offset, (bpnn_zero_weights n_inp1 n_hid, replicate n_inp1 0.0) )
-    else (  offset+i32.i64 n_inp1*i32.i64 n_hidp1,
-            bpnn_randomize_weights n_inp1 n_hid offset dirVct  )
+    then (  offset, (bpnn_zero_weights (n_in+1) n_hid, replicate (n_in+1) 0.0) )
+    else (  offset+i32.i64 (n_in+1)*i32.i64 (n_hid+1),
+            bpnn_randomize_weights (n_in+1) n_hid offset dirVct  )
 
   -- [#n_hidden][#n_out]f32
   let (hidden_weights, hidden_weights_fstcol) =
-    bpnn_randomize_weights n_hidp1 n_out offset dirVct
-  let offset = offset + i32.i64 (n_hidp1*(n_out+1))
+    bpnn_randomize_weights (n_hid+1) n_out offset dirVct
+  let offset = offset + i32.i64 ((n_hid+1)*(n_out+1))
 
   --[#n_in][#n_hidden]f32
-  let input_prev_weights = bpnn_zero_weights n_inp1 n_hid
+  let input_prev_weights = bpnn_zero_weights (n_in+1) n_hid
 
   --[#n_hidden][#n_out]f32
-  let hidden_prev_weights= bpnn_zero_weights n_hidp1 n_out
+  let hidden_prev_weights= bpnn_zero_weights (n_hid+1) n_out
 
   --[#n_in]
   let input_units = bpnn_randomize_row n_in (offset+1) dirVct
@@ -189,12 +186,13 @@ def consColumn [m][n] (mat: [m][n]f32, col: [m]f32): [m][]f32 =
           (zip mat col)
 
 def main [num_bits] (n_in: i32) (dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
-    let (n_inp1, n_hid, n_hidp1, n_out) = (i64.i32 n_in+1, 16, 16+1, 1)
+    let n_in = i64.i32 n_in
+    let (n_hid, n_out) = (16, 1)
     let (   input_units, target,
            ( input_weights,  input_weights_fstcol),
            (hidden_weights, hidden_weights_fstcol),
             input_prev_weights, hidden_prev_weights) =
-        bpnn_create (i64.i32 n_in) n_inp1 n_hid n_hidp1 n_out 1 dirVct
+        bpnn_create n_in n_hid n_out 1 dirVct
 
     let ( out_err, hid_err, input_weights, hidden_weights ) =
         bpnn_train_kernel(  input_units, target,
