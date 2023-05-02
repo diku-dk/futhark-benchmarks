@@ -27,12 +27,12 @@ def link (UFparents: *[]i32) (us: []i32) (vs: []i32) =
 def ltm (a: (f64, [2]i32, i64)) (b: (f64, [2]i32, i64)): bool =
     (a.0 < b.0) || (a.0 == b.0 && (a.2 < b.2))
 
-def getSmallestPairs [arraySize] (edges: [arraySize][2]i32) (edge2Ids: [arraySize][2]i64) (nVerts: i64) (nEdges: i64) =
+def getSmallestPairs [arraySize] (edges: [arraySize][2]i32) (edgeIds: [arraySize]i64) (nVerts: i64) (nEdges: i64) =
     -- The length of the flattened arrays
     let arraySizeFlat = arraySize * 2
 
     let flatE = flatten edges |> map i64.i32 :> [arraySizeFlat]i64
-    let flatE2i = flatten edge2Ids :> [arraySizeFlat]i64
+    let flatE2i = map (\i -> [i, i]) edgeIds |> flatten :> [arraySizeFlat]i64
 
     let zippedArray = zip flatE flatE2i
 
@@ -40,40 +40,40 @@ def getSmallestPairs [arraySize] (edges: [arraySize][2]i32) (edge2Ids: [arraySiz
     in filter (\i -> H[i.0] == i.1) zippedArray
         |> unzip
 
-def getMSFEdges (smallestEdgeId: []i64) (e: [2]i32) (i: [2]i64) : ((i32, i32), i64) =
-    if (smallestEdgeId[e[1]] == i[1]) then
-        ((e[1], e[0]), i[1])
-    else if (smallestEdgeId[e[0]] == i[0]) then
-        ((e[0], e[1]), i[0])
+def getMSFEdges (smallestEdgeId: []i64) (e: [2]i32) (i: i64) : ((i32, i32), i64) =
+    if (smallestEdgeId[e[1]] == i) then
+        ((e[1], e[0]), i)
+    else if (smallestEdgeId[e[0]] == i) then
+        ((e[0], e[1]), i)
     else
         ((-1, -1), -1)
 
-def update[arraySize] (UFparents: *[]i32) (edges: [arraySize][2]i32) (edge2Ids: [arraySize][2]i64)
+def update[arraySize] (UFparents: *[]i32) (edges: [arraySize][2]i32) (edgeIds: [arraySize]i64)
                       (smallestEdgeId: []i64) (includedEdges: *[]bool) =
-    let (UVs, IDS) = unzip (map2 (getMSFEdges smallestEdgeId) edges edge2Ids)
+    let (UVs, IDS) = unzip (map2 (getMSFEdges smallestEdgeId) edges edgeIds)
     let (us, vs) = unzip UVs
 
     let UFparents = link UFparents us vs |> update_once
     let includedEdges = scatter includedEdges IDS (replicate arraySize true)
     in (includedEdges, UFparents)
 
-def MSF [nVerts] [nEdges] (UFparents: *[]i32) (edges: [][2]i32) (edgeIds: []i64) (edge2Ids: *[][2]i64)
+def MSF [nVerts] [nEdges] (UFparents: *[]i32) (edges: [][2]i32) (edgeIndexes: []i64) (edgeIds: *[]i64)
                           (smallestEdgeId: *[nVerts]i64) (includedEdges: *[nEdges]bool) =
-    let (_, _, _, _, includedEdges) = loop (UFparents, edges, edge2Ids, smallestEdgeId, includedEdges) while (length edges > 0) do
-        let (smallestTargets, smallestValues) = getSmallestPairs edges edge2Ids nVerts nEdges
+    let (_, _, _, _, includedEdges) = loop (UFparents, edges, edgeIds, smallestEdgeId, includedEdges) while (length edges > 0) do
+        let (smallestTargets, smallestValues) = getSmallestPairs edges edgeIds nVerts nEdges
         let smallestEdgeId = scatter smallestEdgeId smallestTargets smallestValues
 
-        let (includedEdges, UFparents) = update UFparents edges edge2Ids smallestEdgeId includedEdges
+        let (includedEdges, UFparents) = update UFparents edges edgeIds smallestEdgeId includedEdges
 
-        let (edge2Ids, edges) = map (findPair UFparents) edges |> zip edge2Ids |> filter (\e -> e.1[0] != e.1[1]) |> unzip
-        in (UFparents, edges, edge2Ids, smallestEdgeId, includedEdges)
-    in filter (.1) (zip edgeIds includedEdges) |> map (.0)
+        let (edgeIds, edges) = map (findPair UFparents) edges |> zip edgeIds |> filter (\e -> e.1[0] != e.1[1]) |> unzip
+        in (UFparents, edges, edgeIds, smallestEdgeId, includedEdges)
+    in filter (.1) (zip edgeIndexes includedEdges) |> map (.0)
 
 def main [nEdges] (edges: [nEdges][2]i32) (weights: [nEdges]f64) =
     let nVerts = flatten edges |> i32.maximum |> (+1) |> i64.i32
 
     let edgeIndexes = iota nEdges
-    let edge2Ids = map (\i -> [i, i]) edgeIndexes :> [nEdges][2]i64
+    let edgeIds = copy edgeIndexes
 
     let (_, edges, edgeIndexes) = zip3 weights edges edgeIndexes |> merge_sort ltm |> unzip3
     
@@ -81,4 +81,4 @@ def main [nEdges] (edges: [nEdges][2]i32) (weights: [nEdges]f64) =
     let included = replicate nEdges false
 
     let UFparents = replicate nEdges (-1)
-    in MSF UFparents edges edgeIndexes edge2Ids smallestEdgeId included
+    in MSF UFparents edges edgeIndexes edgeIds smallestEdgeId included
