@@ -21,12 +21,13 @@ def update_once [pLength] (UFparents: [pLength]i32) : (*[pLength]i32) =
     let indexes = iota pLength
     in map (\v -> if (is_root UFparents v) || (is_root32 UFparents UFparents[v]) then UFparents[v] else UFparents[UFparents[v]]) indexes
 
+def link (UFparents: *[]i32) (us: []i32) (vs: []i32) =
+    scatter UFparents (map i64.i32 us) vs
+
 def ltm (a: (f64, [2]i32, i64)) (b: (f64, [2]i32, i64)): bool =
     (a.0 < b.0) || (a.0 == b.0 && (a.2 < b.2))
 
-def link (UFparents: *[]i32) (us: []i32) (vs: []i32) : (*[]i32) =
-    scatter UFparents (us |> map i64.i32) vs
-
+def getSmallestPairs [arraySize] (edges: [arraySize][2]i32) (edge2Ids: [arraySize][2]i64) (nVerts: i64) (nEdges: i64) =
 def getSmallestPairs [arraySize] (edges: [arraySize][2]i32) (edge2Ids: [arraySize][2]i32) (nVerts: i64) (nEdges: i64) =
     -- The length of the flattened arrays
     let arraySizeFlat = arraySize * 2
