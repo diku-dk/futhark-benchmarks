@@ -67,12 +67,12 @@ def update[arraySize] (UFparents: *[]i32) (edges: [arraySize][2]i32) (edgeIds: [
 def MSF [nVerts] [nEdges] (UFparents: *[]i32) (edges: [][2]i32) (edgeIds: *[]i64) (edgeIndexes: []i64)
                           (smallestEdgeId: *[nVerts]i64) (includedEdges: *[nEdges]bool) =
     let (_, _, _, _, includedEdges) = loop (UFparents, edges, edgeIds, smallestEdgeId, includedEdges) while (length edges > 0) do
+        let (edgeIds, edges) = map (find2 UFparents) edges |> zip edgeIds |> filter (\e -> e.1[0] != e.1[1]) |> unzip
+
         let (smallestTargets, smallestValues) = getLowestIndexes edges edgeIds nVerts nEdges
         let smallestEdgeId = scatter smallestEdgeId smallestTargets smallestValues
 
         let (includedEdges, UFparents) = update UFparents edges edgeIds smallestEdgeId includedEdges
-
-        let (edgeIds, edges) = map (find2 UFparents) edges |> zip edgeIds |> filter (\e -> e.1[0] != e.1[1]) |> unzip
         in (UFparents, edges, edgeIds, smallestEdgeId, includedEdges)
     in filter (.1) (zip edgeIndexes includedEdges) |> map (.0)
 
