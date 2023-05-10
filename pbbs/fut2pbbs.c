@@ -178,6 +178,17 @@ int main(int argc, char** argv) {
       }
       fprintf(stdout, "%d\n", x);
     }
+  } else if (num_values == 1 && memcmp(types[0].type, " i32", 4) == 0 && types[0].rank == 2 && types[0].shape[1] == 2) {
+    fseek(stdin, types[0].data_offset, SEEK_SET);
+    fprintf(stdout, "EdgeArray\n");
+    for (int i = 0; i < types[0].shape[0]; i++) {
+      int32_t xs[2];
+      if (fread(&xs, sizeof(xs), 1, stdin) != 1) {
+        fprintf(stderr, "%s: failed to read all values\n", argv[0]);
+        exit(1);
+      }
+      fprintf(stdout, "%d %d\n", xs[0], xs[1]);
+    }
   } else {
     fprintf(stderr, "%s: cannot handle file with %d values of these types:\n", argv[0], num_values);
     for (int i = 0; i < num_values; i++) {

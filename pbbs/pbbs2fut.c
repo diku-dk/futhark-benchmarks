@@ -174,8 +174,12 @@ void AdjacencyGraph(FILE *in, FILE *out) {
   }
 }
 
+void EdgeArray(FILE *in, FILE *out) {
+  sequenceIntPair(in, out);
+}
+
 int main(int argc, char** argv) {
-  char* line;
+  char* line = NULL;
   size_t n;
 
   if (argc != 1) {
@@ -210,6 +214,8 @@ int main(int argc, char** argv) {
     pbbs_sequencePoint3d(stdin, stdout);
   } else if (strcmp(line, "AdjacencyGraph\n") == 0) {
     AdjacencyGraph(stdin, stdout);
+  } else if (strcmp(line, "EdgeArray\n") == 0) {
+    EdgeArray(stdin, stdout);
   } else {
     fprintf(stderr, "Unknown file type: %s\n", line);
     exit(1);
