@@ -285,7 +285,7 @@ def main [num_bits][num_models][num_und][num_dates][num_discts]
         (bb_inds: [3][num_dates]i32)
         (bb_data: [3][num_dates]f32)
          : []f32 =
-  let dir_vs = unflatten num_dates num_und dir_vs
+  let dir_vs = unflatten dir_vs
   let sobol_mat = map (sobolIndR dir_vs) (map (1+) (map i32.i64 (iota (i64.i32 num_mc_it))))
   let gauss_mat = map (map (map ugaussianEl)) sobol_mat
   let bb_mat    = map (brownianBridge num_und bb_inds bb_data) gauss_mat

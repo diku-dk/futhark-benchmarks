@@ -44,7 +44,7 @@ def iterationSorted [q][n][d][k][N][num_leaves][ppl]
   let ongoing_queries'= (gather2D ongoing_queries sort_inds)[:num_valid]
   let query_inds_all  = gather1D query_inds sort_inds
   let knns_all        = gather2D knns' sort_inds
-  let (valid, terminated) = split num_valid (zip query_inds_all knns_all)
+  let (valid, terminated) = split (resize (num_valid+(n-num_valid)) (zip query_inds_all knns_all))
   let (query_inds', knns'')= unzip valid
   let (terminated_inds, terminated_knns) = unzip terminated
   let ord_knns' = scatter2D ord_knns terminated_inds terminated_knns

@@ -111,7 +111,7 @@ def mat_inv [n] (A: [n][n]f32): [n][n]f32 =
                  ) (map i32.i64 (iota (n*m)))
     let Ap' = gauss_jordan n m Ap
     -- Drop the identity matrix at the front!
-    in (unflatten n m Ap')[0:n,n:2*n] :> [n][n]f32
+    in (unflatten Ap')[0:n,n:2*n] :> [n][n]f32
 
 --------------------------------------------------
 --------------------------------------------------

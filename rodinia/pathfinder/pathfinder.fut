@@ -39,7 +39,7 @@ def main (cols: i64) (rows: i64): [cols]i32 =
                 sobolInd(dirVct, i+1) % 10
            ) (iota(rows*cols))
 
-    let wall   = unflatten rows cols wall_flat
+    let wall   = unflatten wall_flat
     let result = copy(wall[0])
     
     ---------------

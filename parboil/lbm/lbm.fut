@@ -212,7 +212,7 @@ def gather [n][s] (grid_2d: *[n][s]f32): *[n][s]f32  =
 
 def lbm (grid_init: *[N_CELL_ENTRIES*TOTAL_PADDED_CELLS]f32) (steps: i32):
   *[N_CELL_ENTRIES*TOTAL_PADDED_CELLS]f32 =
-  let grid_2d = unflatten N_CELL_ENTRIES TOTAL_PADDED_CELLS grid_init
+  let grid_2d = unflatten grid_init
   let first_collide = collide grid_2d
   let looped = iterate (steps-1) gather_collide first_collide
   in flatten (gather looped)

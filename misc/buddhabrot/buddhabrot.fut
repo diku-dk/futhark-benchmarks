@@ -72,7 +72,7 @@ def visualise (screenX: i64) (screenY: i64)
   let max_visits = i32.maximum visits_per_pixel
   let coloured = map (colourise max_visits) visits_per_pixel
   in ({rng, prior_visits = visits_per_pixel, iter = state.iter + 1},
-      unflatten screenY screenX coloured)
+      unflatten coloured)
 
 entry main (screenX: i64) (screenY: i64) (state: state [])
          xcentre ycentre width limit radius npoints

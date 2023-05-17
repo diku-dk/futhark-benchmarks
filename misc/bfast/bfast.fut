@@ -72,7 +72,7 @@ def findSplit [N] (n: i32) (y: [N]f32) : i32 =
                                             then 1.0
                                             else 0.0
                  ) (iota (n*m))
-    let Ap' = unflatten n m (gauss_jordan n Ap)
+    let Ap' = unflatten (gauss_jordan n Ap)
 
     -- Drop the identity matrix at the front.
     in Ap'[0:n,n:n * 2] :> [n][n]f32

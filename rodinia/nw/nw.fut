@@ -34,8 +34,7 @@ def intraBlockPar [len] (B: i64)
                          b_x * B + 1: b_x * B + 1 + B] :> [B][B]i32
 
   -- inp_l is the working memory
-  let inp_l = replicate ((B+1)*(B+1)) 0i32
-              |> unflatten (B+1) (B+1)
+  let inp_l = replicate ((B+1)*(B+1)) 0i32 |> unflatten
 
   -- Initialize inp_l with the already processed the column to the left of this
   -- block

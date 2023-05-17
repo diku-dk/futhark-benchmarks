@@ -138,8 +138,8 @@ def selectStrong [h][w] (img: [h][w]f32): []i32 =
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
   let targetIdxAndLen = scan (+) 0 strong
-  let (targetIdx, len') = split (k-1) targetIdxAndLen
-  let len = i64.i32 (len'[0])
+  let targetIdx = take (k-1) targetIdxAndLen
+  let len = i64.i32 (last targetIdxAndLen)
   let (indices', values) =
     unzip(map3 (\i target_i strong_x ->
                  if strong_x == 0

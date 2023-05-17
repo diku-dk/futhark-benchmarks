@@ -14,7 +14,6 @@ def sat_add_u8 (x: i32) (y: i32): i32 =
 
 def main [img_width] [img_height] (histo_width: i32) (histo_height: i32)
                                   (img: [img_width][img_height]i32) =
-  let flat = img_height*img_width
-  in hist sat_add_u8 0 (i64.i32 (histo_height*histo_width))
-          (flatten_to flat img |> map i64.i32)
-          (replicate flat 1)
+  hist sat_add_u8 0 (i64.i32 (histo_height*histo_width))
+       (flatten img |> map i64.i32)
+       (replicate (img_width*img_height) 1)
