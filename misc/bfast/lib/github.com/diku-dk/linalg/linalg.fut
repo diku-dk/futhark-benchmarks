@@ -96,7 +96,7 @@ module mk_linalg (T: field): linalg with t = T.t = {
     kronecker' xss yss        -- [m][n][p][q]
     |> map transpose          -- [m][p][n][q]
     |> flatten                -- [m*p][n][q]
-    |> map (flatten_to (n*q)) -- [m*p][n*q]
+    |> map flatten            -- [m*p][n*q]
 
   def indices_from [n] 't (x: i64) (arr: [n]t) =
     zip arr (map (+x) (iota n))

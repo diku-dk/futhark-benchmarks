@@ -64,13 +64,10 @@ def mk_radix_tree [n] (L: [n]u32) : []inner =
     in ({left, right}, (set_left_parent, i), (set_right_parent, i))
 
   let (inners, parents_a, parents_b) = tabulate (n-1) node |> unzip3
-  let k = (n-1)*2
   let parents = spread (n-1) (-1)
-                       (concat_to k
-                                  (map ((.0) >-> i64.i32) parents_a)
-                                  (map ((.0) >-> i64.i32) parents_b))
-                       (concat_to k
-                                  (map (.1) parents_a)
-                                  (map (.1) parents_b))
+                       (map ((.0) >-> i64.i32) parents_a ++
+                        map ((.0) >-> i64.i32) parents_b)
+                       (map (.1) parents_a ++
+                        map (.1) parents_b)
 
   in map2 (\{left, right} parent -> {left, right, parent}) inners parents
