@@ -178,7 +178,8 @@ int main(int argc, char** argv) {
       }
       fprintf(stdout, "%d\n", x);
     }
-  } else if (num_values == 1 && memcmp(types[0].type, " i32", 4) == 0 && types[0].rank == 2 && types[0].shape[1] == 2) {
+  } else if (num_values == 1 &&
+             memcmp(types[0].type, " i32", 4) == 0 && types[0].rank == 2 && types[0].shape[1] == 2) {
     fseek(stdin, types[0].data_offset, SEEK_SET);
     fprintf(stdout, "EdgeArray\n");
     for (int i = 0; i < types[0].shape[0]; i++) {
@@ -188,6 +189,38 @@ int main(int argc, char** argv) {
         exit(1);
       }
       fprintf(stdout, "%d %d\n", xs[0], xs[1]);
+    }
+  } else if (num_values == 2 &&
+             memcmp(types[0].type, " i32", 2) == 0 && types[0].rank == 2 &&
+             memcmp(types[1].type, " f64", 2) == 0 && types[1].rank == 1) {
+    fprintf(stdout, "WeightedEdgeArray\n");
+
+    int32_t (*buffer)[2] = malloc(sizeof(int32_t[types[0].shape[0]][2]));
+
+    fseek(stdin, types[0].data_offset, SEEK_SET);
+    for (int i = 0; i < types[0].shape[0]; i++) {
+      int32_t x;
+      if (fread(&x, sizeof(x), 1, stdin) != 1) {
+        fprintf(stderr, "%s: failed to read all values\n", progname);
+        exit(1);
+      }
+      buffer[i][0] = x;
+
+      int32_t x2;
+      if (fread(&x2, sizeof(x2), 1, stdin) != 1) {
+        fprintf(stderr, "%s: failed to read all values\n", progname);
+        exit(1);
+      }
+      buffer[i][1] = x2;
+    }
+    fseek(stdin, types[1].data_offset, SEEK_SET);
+    for (int i = 0; i < types[1].shape[0]; i++) {
+      double f;
+      if (fread(&f, sizeof(f), 1, stdin) != 1) {
+        fprintf(stderr, "%s: failed to read all values\n", progname);
+        exit(1);
+      }
+      fprintf(stdout, "%d %d %.20f\n", buffer[i][0], buffer[i][1], f);
     }
   } else {
     fprintf(stderr, "%s: cannot handle file with %d values of these types:\n", argv[0], num_values);

@@ -178,6 +178,26 @@ void EdgeArray(FILE *in, FILE *out) {
   sequenceIntPair(in, out);
 }
 
+void WeightedEdgeArray(FILE *in, FILE *out) {
+  int used = 0, capacity = 100;
+  int32_t *dataEdges = malloc(capacity*sizeof(int32_t));
+  double *dataWeights = malloc(capacity*sizeof(double));
+  while (fscanf(in, "%d %d %lf", &dataEdges[used], &dataEdges[used+1], &dataWeights[used/2]) == 3) {
+    if ((used+=2) > capacity/2) {
+      capacity *= 2;
+      dataEdges = realloc(dataEdges, capacity*sizeof(int32_t));
+      dataWeights = realloc(dataWeights, capacity*sizeof(double));
+    }
+  }
+
+  uint64_t dimsEdges[2] = {used/2, 2};
+  header(out, 2, " i32", dimsEdges);
+  fwrite(dataEdges, sizeof(int32_t), used, out);
+  uint64_t dimsWeights[1] = {used/2};
+  header(out, 1, " f64", dimsWeights);
+  fwrite(dataWeights, sizeof(double), used/2, out);
+}
+
 int main(int argc, char** argv) {
   char* line = NULL;
   size_t n;
@@ -216,6 +236,8 @@ int main(int argc, char** argv) {
     AdjacencyGraph(stdin, stdout);
   } else if (strcmp(line, "EdgeArray\n") == 0) {
     EdgeArray(stdin, stdout);
+  } else if (strcmp(line, "WeightedEdgeArray\n") == 0) {
+    WeightedEdgeArray(stdin, stdout);
   } else {
     fprintf(stderr, "Unknown file type: %s\n", line);
     exit(1);
