@@ -31,7 +31,7 @@ def scatter2D [m][k][n] 't (arr2D: *[m][k]t) (qinds: [n]i32) (vals2D: [n][k]t) :
                                            i32.i64 i % i32.i64 k)
                               in i64.i32 (qinds[d]*i32.i64 k + r)
                        ) (iota (n*k))
-  let res1D = scatter (flatten arr2D) flat_qinds ((flatten vals2D) :> [n*k]t)
+  let res1D = scatter (flatten arr2D) flat_qinds (flatten vals2D)
   in  unflatten res1D
 
 
