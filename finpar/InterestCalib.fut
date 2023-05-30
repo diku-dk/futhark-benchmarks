@@ -40,7 +40,7 @@ def min_date = date_of_triple (1980, 1, 1)
 
 def today = date_of_triple (2012, 1, 1)
 
-def iota32 n = 0..1..<i32.i64 n :> [n]i32
+def iota32 n = iota n |> map i32.i64
 
 ----------------------------------------------------------------
 ----/ G2PP Module
