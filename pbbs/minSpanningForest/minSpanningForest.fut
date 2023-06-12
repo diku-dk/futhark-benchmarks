@@ -100,5 +100,5 @@ def main [nEdges] (edges_enc: [nEdges][2]i32) (weights: [nEdges]f64) =
 -- output @ data/randLocalGraph_WE_10_2000000.out
 -- input @ data/rMatGraph_WE_12_2250000.in
 -- output @ data/rMatGraph_WE_12_2250000.out
--- input @ data/2Dgrid_WE_8000000.in
--- output @ data/2Dgrid_WE_8000000.out
+-- input @ data/3Dgrid_WE_8000000.in
+-- output @ data/3Dgrid_WE_8000000.out
