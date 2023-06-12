@@ -97,9 +97,9 @@ def bpnn_train_kernel [n_in][n_out][n_hid]
                                                     hidden_weights[1:n_hid+1] :> [n_hid][n_out]f32,
                                                     hidden_units)
 
-    let (hidden_weights, hidden_prev_weights) =
+    let (hidden_weights, _hidden_prev_weights) =
             bpnn_adjust_weights(output_delta, hidden_units, hidden_weights, hidden_prev_weights)
-    let ( input_weights,  input_prev_weights) =
+    let ( input_weights,  _input_prev_weights) =
             bpnn_adjust_weights(hidden_delta,  input_units,  input_weights,  input_prev_weights)
 
     in (out_err, hid_err, input_weights, hidden_weights)

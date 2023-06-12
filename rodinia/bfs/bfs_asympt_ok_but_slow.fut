@@ -53,17 +53,8 @@ def step [n][e]
   let active_starts  = map (\tid -> #[unsafe] (nodes_start_index[tid])) active_indices
   let track_index_tmp= spread flat_len 1 write_inds active_starts
 
-  -- DOUBLE BUG in FUSION:
-  -- 1) if the scans are separated (as in commented code)
-  --    then they are NOT fused by compiler
-  -- 2) even stranger, if I fuse them by hand as below, then
-  --    the three scatter above are not fused (but they fuse
-  --    the commented version in which the scans are separated)
-  let (track_nodes, track_index) = unzip (
-      segmented_scan (\(a,b) (c,d) -> (a+c,b+d)) (0,0) active_flags
-                     (zip track_nodes_tmp track_index_tmp)           )
-    let track_nodes    = segmented_scan (+) 0 active_flags track_nodes_tmp
-    let track_index    = segmented_scan (+) 0 active_flags track_index_tmp
+  let track_nodes    = segmented_scan (+) 0 active_flags track_nodes_tmp
+  let track_index    = segmented_scan (+) 0 active_flags track_index_tmp
   -----------------------------------------------------------------------------
   -- END-FLATTENING:   needed to ensure the asymptotic work/depth complexity --
   -----------------------------------------------------------------------------

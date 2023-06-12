@@ -427,7 +427,7 @@ def exactYhat(n_schedi:  i32,
                                 (log_aici-baix) / bbi
                             )
                       ) babaicis
-    let (ups, los) = unzip(uplos)
+    let (ups, _los) = unzip(uplos)
     let (up,  lo ) = reduce (\(x: (f32,f32)) (y: (f32,f32)): (f32,f32)  ->
                                let (a1, b1) = x
                                let (a2, b2) = y in
