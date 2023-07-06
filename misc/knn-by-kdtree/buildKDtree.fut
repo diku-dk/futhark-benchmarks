@@ -105,7 +105,7 @@ def mkKDtree [m] [d] (height: i32) (q: i64) (m' : i64)
              for lev < (height+1) do
                let nodes_this_lvl = 1 << i64.i32 lev
                let pts_per_node_at_lev = m' / nodes_this_lvl
-               let indir2d = unflatten (resize (nodes_this_lvl*pts_per_node_at_lev) indir)
+               let indir2d = unflatten (sized (nodes_this_lvl*pts_per_node_at_lev) indir)
 
                -- compute the dimensions to be split for each node at this level
                -- and also the index of the closest ancestor that has split the
@@ -154,7 +154,7 @@ def mkKDtree [m] [d] (height: i32) (q: i64) (m' : i64)
                let median_dims' = scatter median_dims this_lev_inds med_dims
                let median_vals' = scatter median_vals this_lev_inds med_vals
                let clanc_eqdim' = scatter clanc_eqdim this_lev_inds anc_same_med
-               let indir'' = resize m' (flatten indir2d')
+               let indir'' = sized m' (flatten indir2d')
 
                in  (indir'', median_dims', median_vals', clanc_eqdim')
 

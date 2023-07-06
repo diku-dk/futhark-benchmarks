@@ -110,4 +110,4 @@ def main [numD][numRs]
   let dd = doComputeSelf datapoints numBins2 binb
   let rr = sumBins rrs
   let dr = sumBins drs
-  in [dd, dr, rr] |> transpose |> init |> tail |> flatten |> resize 60
+  in [dd, dr, rr] |> transpose |> init |> tail |> flatten |> sized 60

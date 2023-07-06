@@ -46,7 +46,7 @@
 -- only_c random input { 50000000  2 [100000000]i64 }
 -- only_c random input { 100000000 1 [100000000]i64 }
 
-def unpack_2d n m = resize (i64.i32 n*i64.i32 m) >-> unflatten
+def unpack_2d n m = sized (i64.i32 n*i64.i32 m) >-> unflatten
 
 entry transpose_i8  n m xs: [][]i8  = unpack_2d n m xs |> transpose
 entry transpose_i32 n m xs: [][]i32 = unpack_2d n m xs |> transpose
@@ -88,7 +88,7 @@ entry transpose_i64 n m xs: [][]i64 = unpack_2d n m xs |> transpose
 -- only_c random input { 10 10000000 1 [100000000]i64 }
 -- only_c random input { 1000 100000 1 [100000000]i64 }
 
-def unpack_3d k n m = resize (i64.i32 k*i64.i32 n*i64.i32 m) >-> unflatten_3d
+def unpack_3d k n m = sized (i64.i32 k*i64.i32 n*i64.i32 m) >-> unflatten_3d
 
 entry map_transpose_i8  k n m xs:  [][][]i8 = unpack_3d k n m xs |> map transpose
 entry map_transpose_i32 k n m xs: [][][]i32 = unpack_3d k n m xs |> map transpose
