@@ -16,7 +16,7 @@ $(PROGNAME):
 	@make # The sync might have resulted in a new Makefile.
 else
 $(PROGNAME): $(PROGNAME)_wrapper.o $(PROGNAME)_printf.h font_data.h $(FRONTEND_DIR)/liblys.c $(FRONTEND_DIR)/liblys.h $(SELF_DIR)/shared.c $(SELF_DIR)/shared.h $(FRONTEND_DIR)/main.c
-	gcc $(FRONTEND_DIR)/liblys.c $(SELF_DIR)/shared.c $(FRONTEND_DIR)/main.c -I. -I$(SELF_DIR) -DPROGHEADER='"$(PROGNAME)_wrapper.h"' -DPRINTFHEADER='"$(PROGNAME)_printf.h"' $(PROGNAME)_wrapper.o -o $@ $(CFLAGS) $(LDFLAGS)
+	gcc $(FRONTEND_DIR)/liblys.c $(SELF_DIR)/shared.c $(FRONTEND_DIR)/main.c -I. -I$(SELF_DIR) -DPROGHEADER='"$(PROGNAME)_wrapper.h"' -DPRINTFHEADER='"$(PROGNAME)_printf.h"' -DLYS_TEXT $(PROGNAME)_wrapper.o -o $@ $(CFLAGS) $(LDFLAGS)
 endif
 
 $(PROGNAME)_printf.h: $(PROGNAME)_wrapper.c

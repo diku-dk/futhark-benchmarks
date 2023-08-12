@@ -18,7 +18,7 @@ else ifeq ($(LYS_FRONTEND),ncurses)
 PKG_CFLAGS_PKGS=ncurses
 
 else
-$(error Unknown LYS_FRONTEND: $(LYS_FRONTEND).  Must be 'sdl')
+$(error Unknown LYS_FRONTEND: $(LYS_FRONTEND).  Must be 'sdl' or 'ncurses')
 endif
 
 PKG_CFLAGS=$(shell pkg-config --cflags $(PKG_CFLAGS_PKGS))

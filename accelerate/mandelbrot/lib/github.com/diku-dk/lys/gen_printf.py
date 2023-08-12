@@ -19,7 +19,7 @@ with open(out_file, 'w') as f:
     print('', file=f)
     if len(types) == 0:
         print('#define UNUSED(x) (void)(x)', file=f)
-    print('void build_text(const struct lys_context *ctx, char* dest, size_t dest_len, const char* format, float render_milliseconds, char* **sum_names) {', file=f)
+    print('static void build_text(const struct lys_context *ctx, char* dest, size_t dest_len, const char* format, float render_milliseconds, char* **sum_names) {', file=f)
     if len(types) > 0:
         for v, t in zip(out_vars, types):
             print('  union {{ {} val; char* sum_name; }} {};'.format(t, v), file=f)

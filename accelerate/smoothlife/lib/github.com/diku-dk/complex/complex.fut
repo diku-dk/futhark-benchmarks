@@ -50,37 +50,37 @@ module mk_complex(T: real): (complex with real = T.t
   type real = T.t
   type complex = (T.t, T.t)
 
-  def mk (a: real) (b: real) = (a,b)
-  def mk_re (a: real) = (a, T.i32 0)
-  def mk_im (b: real) = (T.i32 0, b)
+  let mk (a: real) (b: real) = (a,b)
+  let mk_re (a: real) = (a, T.i32 0)
+  let mk_im (b: real) = (T.i32 0, b)
 
-  def conj ((a,b): complex) = T.((a, i32 0 - b))
-  def re ((a,_b): complex) = a
-  def im ((_a,b): complex) = b
+  let conj ((a,b): complex) = T.((a, i32 0 - b))
+  let re ((a,_b): complex) = a
+  let im ((_a,b): complex) = b
 
-  def ((a,b): complex) + ((c,d): complex) = T.((a + c, b + d))
-  def ((a,b): complex) - ((c,d): complex) = T.((a - c, b - d))
-  def ((a,b): complex) * ((c,d): complex) = T.((a * c - b * d,
+  let ((a,b): complex) + ((c,d): complex) = T.((a + c, b + d))
+  let ((a,b): complex) - ((c,d): complex) = T.((a - c, b - d))
+  let ((a,b): complex) * ((c,d): complex) = T.((a * c - b * d,
                                                 b * c + a * d))
-  def ((a,b): complex) / ((c,d): complex) =
+  let ((a,b): complex) / ((c,d): complex) =
     T.(((a * c + b * d) / (c * c + d * d),
         (b * c - a * d) / (c * c + d * d)))
 
-  def mag ((a,b): complex) =
+  let mag ((a,b): complex) =
     T.(sqrt (a * a + b * b))
-  def arg ((a,b): complex) =
+  let arg ((a,b): complex) =
     T.atan2 b a
 
-  def sqrt ((a,b): complex) =
+  let sqrt ((a,b): complex) =
     let gamma = T.(sqrt ((a + sqrt (a * a + b * b)) / i32 2))
     let delta = T.(sgn b *
                    sqrt (((i32 0 - a) + sqrt (a * a + b * b)) / i32 2))
     in (gamma, delta)
 
-  def exp ((a,b): complex) =
+  let exp ((a,b): complex) =
     let expx = T.exp a
     in mk T.(expx * cos b) T.(expx * sin b)
 
-  def log (z: complex) =
+  let log (z: complex) =
     mk (T.log (mag z)) (arg z)
 }
