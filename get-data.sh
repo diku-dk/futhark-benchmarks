@@ -37,26 +37,31 @@ if [ -z "$(which curl)" ]; then
     exit 5
 fi
 
+function longest_line() { cat "$1" | awk '{print length($1)}' | sort -nr | head -1 ; }
 function sha256sum() { LC_ALL=C shasum -a 256 "$@" ; }
 
 BASEDIR=$(dirname "$1")
 
+n=$(longest_line "$1")
+
 while read -r OUTPUT URL CHECKSUM; do
-    echo "Now processing $OUTPUT..."
+    printf "%-${n}s: " "$OUTPUT"
 
     if [ -f "$OUTPUT" ]; then
+        echo -n "File exists, verifying checksum... "
         COMPUTED_SUM=$(sha256sum "$OUTPUT" | cut -f 1 -d ' ')
         if [ "$COMPUTED_SUM" = "$CHECKSUM" ]; then
-            echo "File exists. Skipping."
+            echo "OK."
             continue
         else
-            echo "Error: File exists but has invalid checksum!"
+            echo "Invalid checksum!"
             echo "Expected $CHECKSUM, got $COMPUTED_SUM."
             echo "You can manually delete the file to get the correct version."
             exit 2
         fi
     fi
 
+    echo "File missing, downloading..."
     TMPFILE=$(mktemp)
     curl --fail "$URL" --output "$TMPFILE"
     COMPUTED_SUM=$(sha256sum "$TMPFILE" | cut -f 1 -d ' ')
