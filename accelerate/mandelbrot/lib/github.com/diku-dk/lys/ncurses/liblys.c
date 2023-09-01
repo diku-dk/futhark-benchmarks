@@ -13,12 +13,12 @@ void def() {
   printf("\033[0m");
 }
 
-void fg_rgb(uint8_t r, uint8_t g, uint8_t b) {
-  printf("\033[38;2;%d;%d;%dm", r, g, b);
+void fg_rgb(FILE *f, uint8_t r, uint8_t g, uint8_t b) {
+  fprintf(f, "\033[38;2;%d;%d;%dm", r, g, b);
 }
 
-void bg_rgb(uint8_t r, uint8_t g, uint8_t b) {
-  printf("\033[48;2;%d;%d;%dm", r, g, b);
+void bg_rgb(FILE *f, uint8_t r, uint8_t g, uint8_t b) {
+  fprintf(f, "\033[48;2;%d;%d;%dm", r, g, b);
 }
 
 void cursor_goto(int x, int y) {
@@ -38,7 +38,7 @@ void render(int nrows, int ncols, const uint32_t *rgbs,
   }
 }
 
-void display(int nrows, int ncols,
+void display(FILE *f, bool eol, int nrows, int ncols,
              const uint32_t *fgs, const uint32_t *bgs, const char *chars) {
   uint32_t prev_w0 = 0xdeadbeef;
   uint32_t prev_w1 = 0xdeadbeef;
@@ -55,17 +55,20 @@ void display(int nrows, int ncols,
         r1 = (w1>>16)&0xFF;
         g1 = (w1>>8)&0xFF;
         b1 = (w1>>0)&0xFF;
-        fg_rgb(r0, g0, b0);
-        bg_rgb(r1, g1, b1);
+        fg_rgb(f, r0, g0, b0);
+        bg_rgb(f, r1, g1, b1);
         prev_w0 = w0;
         prev_w1 = w1;
       }
       char c = chars[i*ncols+j];
       if (c == 127) {
-        fputs("▀", stdout);
+        fputs("▀", f);
       } else {
-        fputc(c, stdout);
+        fputc(c, f);
       }
+    }
+    if (eol) {
+      fputc('\n', f);
     }
   }
 }
@@ -127,6 +130,7 @@ void check_input(struct lys_context *ctx) {
     resize(ctx);
     break;
   case KEY_F0+1:
+    ctx->event_handler(ctx, LYS_F1);
     keydown(ctx, 0x4000003A);
     return;
   case KEY_F0+2:
@@ -166,13 +170,23 @@ void lys_run_ncurses(struct lys_context *ctx) {
   ctx->running = 1;
   ctx->last_time = lys_wall_time();
 
-  resize(ctx);
+  if (ctx->interactive) {
+    resize(ctx);
+  }
+
+  int num_frames = 0;
 
   ctx->event_handler(ctx, LYS_LOOP_START);
 
-  while (ctx->running) {
+  while (ctx->running && ctx->num_frames-- > 0) {
+    num_frames++;
     int64_t now = lys_wall_time();
-    float delta = ((float)(now - ctx->last_time))/1000000.0;
+    float delta;
+    if (ctx->interactive) {
+      delta = ((float)(now - ctx->last_time))/1000000.0;
+    } else {
+      delta = 1/(double)ctx->max_fps;
+    }
     ctx->fps = (ctx->fps*0.9 + (1/delta)*0.1);
     ctx->last_time = now;
     struct futhark_opaque_state *new_state, *old_state = ctx->state;
@@ -191,26 +205,31 @@ void lys_run_ncurses(struct lys_context *ctx) {
       int ncols = ctx->width;
       render(nrows, ncols, ctx->rgbs, ctx->fgs, ctx->bgs, ctx->chars);
       ctx->event_handler(ctx, LYS_LOOP_ITERATION);
-      cursor_goto(0,0);
-      display(nrows, ncols, ctx->fgs, ctx->bgs, ctx->chars);
+      if (ctx->interactive) {
+        cursor_goto(0,0);
+      }
+      display(ctx->out, !ctx->interactive, nrows, ncols, ctx->fgs, ctx->bgs, ctx->chars);
+    }
+    if (ctx->interactive) {
       fflush(stdout);
+      check_input(ctx);
+
+      int delay =  1000.0/ctx->max_fps - delta*1000.0;
+      if (delay > 0) {
+        usleep(delay*1000);
+      }
+
+      def();
     }
-
-    check_input(ctx);
-
-    int delay =  1000.0/ctx->max_fps - delta*1000.0;
-    if (delay > 0) {
-      usleep(delay*1000);
-    }
-
-    def();
   }
 
   ctx->event_handler(ctx, LYS_LOOP_END);
 
-  // Ncurses cleanup.
-  clrtobot();
-  endwin();
+  if (ctx->interactive) {
+    // Ncurses cleanup.
+    clrtobot();
+    endwin();
+  }
 
   // Our cleanup.
   free(ctx->rgbs);
@@ -220,29 +239,38 @@ void lys_run_ncurses(struct lys_context *ctx) {
   FUT_CHECK(ctx->fut, futhark_free_opaque_state(ctx->fut, ctx->state));
 }
 
-void lys_setup(struct lys_context *ctx, int max_fps) {
-  // ncurses initialisation.
-  initscr(); // Initialise ncurses.
-  raw(); // Disable line buffering.
-  nodelay(stdscr, TRUE);  // Non-blocking getch().
-  keypad(stdscr, TRUE); // F keys, arrow keys, etc.
-  noecho(); // Admit nothing.
-  intrflush(stdscr, TRUE); // Interrupts take precedence.
-  curs_set(0); // Hide cursor.
-
+void lys_setup(struct lys_context *ctx, int max_fps, int num_frames, FILE* out, int width, int height) {
   memset(ctx, 0, sizeof(struct lys_context));
 
-  int nrows, ncols;
-  getmaxyx(stdscr, nrows, ncols);
-
-  ctx->width = ncols;
-  ctx->height = nrows*2;
   ctx->fps = 0;
   ctx->max_fps = max_fps;
-  ctx->fgs = NULL;
-  ctx->bgs = NULL;
-  ctx->chars = NULL;
-  ctx->rgbs = NULL;
+  ctx->num_frames = num_frames;
+  ctx->interactive = out == NULL;
+
+  if (ctx->interactive) {
+    // ncurses initialisation.
+    initscr(); // Initialise ncurses.
+    raw(); // Disable line buffering.
+    nodelay(stdscr, TRUE);  // Non-blocking getch().
+    keypad(stdscr, TRUE); // F keys, arrow keys, etc.
+    noecho(); // Admit nothing.
+    intrflush(stdscr, TRUE); // Interrupts take precedence.
+    curs_set(0); // Hide cursor.
+    int nrows, ncols;
+    getmaxyx(stdscr, nrows, ncols);
+    ctx->width = ncols;
+    ctx->height = nrows*2;
+    ctx->out = stdout;
+  } else {
+    ctx->out = out;
+    ctx->width = width;
+    ctx->height = height;
+  }
+
+  ctx->fgs = malloc(ctx->width * ctx->height * sizeof(uint32_t));
+  ctx->bgs = malloc(ctx->width * ctx->height * sizeof(uint32_t));
+  ctx->chars = malloc(ctx->width * ctx->height * sizeof(char));
+  ctx->rgbs = malloc(ctx->width*ctx->height*sizeof(uint32_t));
   ctx->key_pressed = 0;
 }
 

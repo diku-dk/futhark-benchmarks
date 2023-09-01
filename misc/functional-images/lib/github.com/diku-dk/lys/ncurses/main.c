@@ -4,9 +4,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <string.h>
-
-#define INITIAL_WIDTH 800
-#define INITIAL_HEIGHT 600
+#include <errno.h>
 
 void loop_start(struct lys_context *ctx, struct lys_text *text) {
   prepare_text(ctx->fut, text);
@@ -74,17 +72,22 @@ void usage(char **argv) {
   puts("  -?      Print this help and exit.");
   puts("  -d DEV  Set the computation device.");
   puts("  -r INT  Maximum frames per second.");
+  puts("  -f INT  Frames rendered.");
   puts("  -i      Select execution device interactively.");
-  puts("  -b <render|step>  Benchmark program.");
+  puts("  -n FILE Render frames to FILE.");
 }
 
 int main(int argc, char** argv) {
   int max_fps = 60;
   char *deviceopt = NULL;
   bool device_interactive = false;
+  FILE *output = NULL;
+  int width = 74;
+  int height = 25*2;
+  int num_frames = -1;
 
   int c;
-  while ( (c = getopt(argc, argv, "r:d:i")) != -1) {
+  while ( (c = getopt(argc, argv, "r:d:in:f:")) != -1) {
     switch (c) {
     case 'r':
       max_fps = atoi(optarg);
@@ -93,11 +96,25 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
       }
       break;
+    case 'f':
+      num_frames = atoi(optarg);
+      if (num_frames <= 0) {
+        fprintf(stderr, "'%s' is not a number of frames.\n", optarg);
+        exit(EXIT_FAILURE);
+      }
+      break;
     case 'd':
       deviceopt = optarg;
       break;
     case 'i':
       device_interactive = true;
+      break;
+    case 'n':
+      output = fopen(optarg, "w+");
+      if (output == NULL) {
+        fprintf(stderr, "Cannot open %s: %s\n", optarg, strerror(errno));
+        exit(1);
+      }
       break;
     case '?':
       usage(argv);
@@ -109,9 +126,13 @@ int main(int argc, char** argv) {
     }
   }
 
-  void* buf = malloc(1024*1024);
-  setvbuf(stdout, buf, _IOFBF, 1024*1024);
-
+  if (num_frames < 0) {
+    if (output == NULL) {
+      num_frames = 1<<30;
+    } else {
+      num_frames = max_fps;
+    }
+  }
 
   if (optind < argc) {
     fprintf(stderr, "Excess non-options: ");
@@ -121,9 +142,12 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
+  void* buf = malloc(1024*1024);
+  setvbuf(stdout, buf, _IOFBF, 1024*1024);
+
   struct lys_context ctx;
   struct futhark_context_config *futcfg;
-  lys_setup(&ctx, max_fps);
+  lys_setup(&ctx, max_fps, num_frames, output, width, height);
 
   char* opencl_device_name = NULL;
   lys_setup_futhark_context(deviceopt, device_interactive,

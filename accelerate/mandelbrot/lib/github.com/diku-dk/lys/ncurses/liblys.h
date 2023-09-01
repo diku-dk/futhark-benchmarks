@@ -34,12 +34,15 @@ struct lys_context {
   bool mouse_grabbed;
   float fps;
   int max_fps;
+  int num_frames;
   void* event_handler_data;
   void (*event_handler)(struct lys_context*, enum lys_event);
   int key_pressed;
+  bool interactive;
+  FILE* out;
 };
 
-void lys_setup(struct lys_context *ctx, int max_fps);
+void lys_setup(struct lys_context *ctx, int max_fps, int num_frames, FILE *output, int width, int height);
 
 void lys_run_ncurses(struct lys_context *ctx);
 
