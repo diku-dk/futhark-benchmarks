@@ -32,7 +32,7 @@ def calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
   let zipped = zip sizes ranks
   let weights = map (\(size, rank) -> if size == 0 then rank else 0f32) zipped
   let total = f32.sum weights / f32.i64 n
-  in map (+total) ranks
+  in ranks + total
 
 -- Calculate ranks from all pages
 -- A rank is counted as the contribution of a page / the outbound edges from that page
@@ -43,7 +43,7 @@ def calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *
   let get_rank (i: i32) = #[unsafe] if sizes[i] == 0 then 0f32
                                  else ranks[i] / f32.i32 sizes[i]
   let contributions = map get_rank froms
-  let page_flags = map2 (!=) tos (rotate (-1) tos)
+  let page_flags = tos != rotate (-1) tos
   let scanned_contributions = segmented_scan (+) 0f32 page_flags contributions
   let (page_tos, page_contributions) =
     unzip (map3 (\to c flag -> if flag then (i64.i32 to, c) else (-1, c))
@@ -66,7 +66,7 @@ def sort_by_from = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i lin
 def compute_sizes [m] (n: i64) (links: [m]link) =
   let links = sort_by_from links
   let froms = map (\(x: link) -> x.from) links
-  let flags = map2 (!=) froms (rotate (-1) froms)
+  let flags = froms != (rotate (-1) froms)
   let sizes = segmented_scan (+) 0 flags (replicate m 1i32)
   let (sizes, ids, _) = unzip3 (filter (.2) (zip3 sizes froms (rotate 1 flags)))
   in spread n 0 (map i64.i32 ids) sizes
@@ -74,8 +74,8 @@ def compute_sizes [m] (n: i64) (links: [m]link) =
 entry preprocess_graph [m] (links_array: [m][2]i32): ([m]i32, [m]i32, []i32) =
   let links_by_to = sort_by_to (map (\l -> {from=l[0], to=l[1]}) links_array)
   let n = i32.maximum (map (\(x: link) -> 1 + x.from) links_by_to)
-  in (map (\(x: link) -> x.from) links_by_to,
-      map (\(x: link) -> x.to) links_by_to,
+  in (map (\x -> x.from) links_by_to,
+      map (\x -> x.to) links_by_to,
       compute_sizes (i64.i32 n) links_by_to)
 
 def initial_ranks (n: i64): *[n]f32 =
