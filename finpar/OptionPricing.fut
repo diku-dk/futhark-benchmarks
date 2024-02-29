@@ -22,13 +22,10 @@ def xorInds [num_bits] (n: i32) (dir_vs: [num_bits]i32): i32 =
                         dir_vs (indices dir_vs)
   in reduce (^) 0 reldv_vals
 
-def sobolIndI [k][m][num_bits] (dir_vs: [k][m][num_bits]i32, n: i32): [k][m]i32 =
-  map (map (xorInds n)) dir_vs
-
 def sobolIndR [k][m][num_bits] (dir_vs: [k][m][num_bits]i32) (n: i32): [k][m]f32 =
   let divisor = 2.0 ** f32.i64(num_bits)
-  let arri    = sobolIndI( dir_vs, n )
-  in map (map (\x -> f32.i32(x) / divisor)) arri
+  let arri    = xorInds n dir_vs
+  in f32.i32 arri / divisor
 
 ----------------------------------------
 --- Inverse Gaussian
@@ -123,7 +120,7 @@ def ugaussianEl(p: f32): f32 =
 
 -- Transforms a uniform distribution [0,1)
 -- into a gaussian distribution (-inf, +inf)
-def ugaussian [n] (ps: [n]f32): [n]f32 = map ugaussianEl ps
+def ugaussian [n] (ps: [n]f32): [n]f32 = ugaussianEl ps
 
 
 ---------------------------------
@@ -193,7 +190,7 @@ def combineVs [num_und]
              (n_row:   [num_und]f32)
              (vol_row: [num_und]f32)
              (dr_row:  [num_und]f32): [num_und]f32 =
-  map2 (+) dr_row (map2 (*) n_row vol_row)
+  dr_row + n_row * vol_row
 
 def mkPrices [num_und][num_dates]
             (md_starts:    [num_und]f32,
@@ -203,7 +200,7 @@ def mkPrices [num_und][num_dates]
             : [num_dates][num_und]f32 =
   let c_rows = map3 combineVs noises md_vols md_drifts
   let e_rows = map (\x: [num_und]f32 -> map f32.exp x) c_rows
-  in  map (map2 (*) md_starts) (scan (map2 (*)) (replicate num_und 1.0) e_rows)
+  in  md_starts * scan (map2 (*)) (replicate num_und 1.0) e_rows
 
 def blackScholes [num_dates][num_und]
                 (bb_arr: [num_dates][num_und]f32)
@@ -286,8 +283,8 @@ def main [num_bits][num_models][num_und][num_dates][num_discts]
         (bb_data: [3][num_dates]f32)
          : []f32 =
   let dir_vs = unflatten dir_vs
-  let sobol_mat = map (sobolIndR dir_vs) (map (1+) (map i32.i64 (iota (i64.i32 num_mc_it))))
-  let gauss_mat = map (map (map ugaussianEl)) sobol_mat
+  let sobol_mat = map (sobolIndR dir_vs) (1+i32.i64 (iota (i64.i32 num_mc_it)))
+  let gauss_mat = map (map ugaussian) sobol_mat
   let bb_mat    = map (brownianBridge num_und bb_inds bb_data) gauss_mat
   let payoffs   = map (\bb_row ->
                          map3 (genericPayoff contract_number) md_discts md_detvals
