@@ -16,19 +16,19 @@ def min_arcmin: f64 = 1.0
 def max_arcmin: f64 = 10000.0
 def bins_per_dec: f64 = 5.0
 def numBins: i32 = 20
+def numBins2 = i64.i32 numBins + 2
 
 def iota32 (num: i64): [num]f64 =
-  map f64.i64 (iota num)
+  f64.i64 (iota num)
 
 def sumBins [numBins][numBinss] (bins: [numBinss][numBins]i32): *[numBins]i32 =
-  map1 i32.sum (transpose bins)
+  i32.sum (transpose bins)
 
 def log10 (num: f64): f64 = f64.log(num) / f64.log(10.0)
 
 def doCompute [numD][numBBins]
               (datapoints: [numD]vec3)
               (random: [numD]vec3)
-              (numBins2: i64)
               (binb: [numBBins]f64)
              : [numBins2]i32 =
   let f k =
@@ -57,7 +57,6 @@ def doCompute [numD][numBBins]
 
 def doComputeSelf [numD][numBBins]
                   (datapoints: [numD]vec3)
-                  (numBins2: i64)
                   (binb: [numBBins]f64)
                  : [numBins2]i32 =
   let f k =
@@ -96,18 +95,14 @@ def main [numD][numRs]
          (randompointsx: [numRs][numD]f64)
          (randompointsy: [numRs][numD]f64)
         : *[60]i32 =
-  let numBins2 = i64.i32 numBins + 2
-  let binb = map (\k ->
-                    f64.cos((10.0 ** (log10(min_arcmin) + k*1.0/bins_per_dec))
-                            / 60.0 * dec2rad(1.0)))
-                 (iota32(i64.i32 numBins + 1))
-  let datapoints = map2 fixPoints datapointsx datapointsy
-  let randompoints = map2 (map2 fixPoints) randompointsx randompointsy
-  let (drs, rrs) = unzip (map (\random ->
-                                 (doCompute datapoints random numBins2 binb,
-                                  doComputeSelf random numBins2 binb))
-                               randompoints)
-  let dd = doComputeSelf datapoints numBins2 binb
+  let binb = f64.cos((10.0 ** (log10(min_arcmin) + iota32(i64.i32 numBins + 1)*1.0/bins_per_dec))
+                     / 60.0 * dec2rad(1.0))
+  let datapoints = fixPoints datapointsx datapointsy
+  let randompoints = fixPoints randompointsx randompointsy
+
+  let drs = doCompute datapoints randompoints binb
+  let rrs = doComputeSelf randompoints binb
+  let dd = doComputeSelf datapoints binb
   let rr = sumBins rrs
   let dr = sumBins drs
   in [dd, dr, rr] |> transpose |> init |> tail |> flatten |> sized 60
