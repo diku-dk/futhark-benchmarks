@@ -37,13 +37,10 @@ def main [numK][numX]
          (x: [numX]f32) (y: [numX]f32) (z: [numX]f32)
          (phiR: [numK]f32) (phiI: [numK]f32)
        : ([numX]f32, [numX]f32) =
-  let phiMag = map2 (\r i -> r*r + i*i) phiR phiI
+  let phiMag = phiR*phiR + phiI*phiI
   let expArgs = map3 (\x_e y_e z_e ->
-                          map (2.0f32*f32.pi*)
-                              (map3 (\kx_e ky_e kz_e ->
-                                        kx_e * x_e + ky_e * y_e + kz_e * z_e)
-                                    kx ky kz))
+                        2*f32.pi*(kx*x_e + ky*y_e + kz*z_e))
                      x y z
-  let qr = map1 (map1 f32.cos >-> map2 (*) phiMag >-> f32.sum) expArgs
-  let qi = map1 (map1 f32.sin >-> map2 (*) phiMag >-> f32.sum) expArgs
+  let qr = f32.sum (f32.cos expArgs * phiMag)
+  let qi = f32.sum (f32.sin expArgs * phiMag)
   in (qr, qi)
