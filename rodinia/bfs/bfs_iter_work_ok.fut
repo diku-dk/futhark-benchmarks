@@ -40,9 +40,9 @@ def core_step [n] [e]
   let costs_now = map (\tid -> #[unsafe] cost[tid]) active_indices
   let flat_len = i64.i32 e_max * length active_indices
 
-  let changes = map (\ii ->
-                        let row = ii / e_max
-                        let col = ii % e_max
+  let changes = tabulate flat_len (\ii ->
+                        let row = i32.i64 ii / e_max
+                        let col = i32.i64 ii % e_max
                         -- let n_edges     = #[unsafe] act_num_edges[row]
                         let tid     = #[unsafe] active_indices[row]
                         let n_edges = #[unsafe] nodes_n_edges[tid]
@@ -57,7 +57,7 @@ def core_step [n] [e]
                                     -- then (node_id, #[unsafe] cost[tid] + 1)
                                     else (-1, -1)
                             else (-1, -1)
-                    ) (map i32.i64 (iota flat_len))
+                    )
 
   let (changes_node_ids, changes_costs) = unzip(changes)
   let cost' = scatter cost changes_node_ids changes_costs
@@ -81,7 +81,7 @@ def step [n][e]
   let graph_mask_res =
     scatter graph_mask active_indices (map (const false) active_indices)
 
-  let active_indices = map i32.i64 active_indices
+  let active_indices = i32.i64 active_indices
   let continue = true
   let (cost_res, updating_graph_mask_res, _, _) =
     loop (cost, updating_graph_mask, active_indices, continue)
