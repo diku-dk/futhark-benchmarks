@@ -41,7 +41,7 @@ def bpnn_layerforward_GOOD [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow
 
 def bpnn_layerforward [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
-  let res_tmp   = map f32.sum (connT * l1)
+  let res_tmp   = f32.sum (connT * l1)
   in squash(res_tmp+conn_fstrow)
 
 --------------------------------------------------------/
