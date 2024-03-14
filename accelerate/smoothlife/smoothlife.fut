@@ -141,21 +141,20 @@ def generate_world (size: i64) (disc: (f32, f32)) (seed: i32): [size][size]f32 =
   let op p1 p2 = if p1.0 >= p2.0 then p1 else p2
   let ne = (-1, 0)
   let reduced = hist op ne (size*size) idxs points
-  let grid = map ((.1) >-> f32.i32) reduced
+  let grid = f32.i32 (map (.1) reduced)
   in unflatten grid
 
 def init (size: i64) (conf: conf) (seed: u32): state [size] =
 
   let shift2d 'a [r][c] (arr: [r][c]a): [r][c]a =
     let (mr, mc) = (r / 2, c / 2)
-    let indices = map (\ir -> map (\ic -> (ir,ic)) (iota c)) (iota r) |> flatten
+    let indices = tabulate_2d r c (\ir ic -> (ir,ic)) |> flatten
     let shift (ir, ic) =
       ( if ir < mr then ir + mr else ir - mr
       , if ic < mc then ic + mc else ic - mc
       )
-    let indices' = map (\(ir, ic) -> let (ir', ic') = shift (ir, ic)
-                                     in ir' * c + ic')
-                       indices
+    let (ir',ic') = unzip (shift indices)
+    let indices' = ir' * c + ic'
     let arr' = flatten arr
     in scatter (copy arr') indices' arr' |> unflatten
 
@@ -171,17 +170,14 @@ def init (size: i64) (conf: conf) (seed: u32): state [size] =
     let y = y' - (size / 2)
     in f32.sqrt <| f32.i32 (x * x + y * y)
 
-  let kr = map (\y ->
-             map (\x ->
-               let r = radius (i32.i64 y, i32.i64 x) (i32.i64 size)
-               in linear r ri b * (1 - linear r ra b)
-             ) (iota size)
-           ) (iota size)
-  let kd = map (\y ->
-             map (\x ->
-               1 - linear (radius (i32.i64 y, i32.i64 x) (i32.i64 size)) ri b
-             ) (iota size)
-           ) (iota size)
+  let kr = tabulate_2d
+           size size
+           (\y x ->
+              let r = radius (i32.i64 y, i32.i64 x) (i32.i64 size)
+              in linear r ri b * (1 - linear r ra b))
+  let kd = tabulate_2d
+           size size
+           (\y x -> 1 - linear (radius (i32.i64 y, i32.i64 x) (i32.i64 size)) ri b)
   let krf = fft.fft2_re (shift2d kr)
   let kdf = fft.fft2_re (shift2d kd)
   let kflr = reduce (+) 0 (flatten kr)
@@ -239,7 +235,7 @@ def snm [l] (conf: conf) (n: [l]f32) (m: [l]f32): [l]f32 =
                              (mix b2 d2 m)
       case _ -> sigmoid_ab n (sigmoid_mix b1 d1 m)
                              (sigmoid_mix b2 d2 m)
-  in map2 sigmode n m
+  in sigmode n m
 
 def step [size] (state: state [size]): state [size] =
   let dt = state.conf.timestep
@@ -248,8 +244,8 @@ def step [size] (state: state [size]): state [size] =
   let aaf = fft.fft2_re aa
   let nf = map2 (map2 (complex.*)) aaf state.krf
   let mf = map2 (map2 (complex.*)) aaf state.kdf
-  let n = map (\x -> complex.re x / state.kflr) (fft.ifft2 nf |> flatten)
-  let m = map (\x -> complex.re x / state.kfld) (fft.ifft2 mf |> flatten)
+  let n = map (/state.kflr) (complex.re (fft.ifft2 nf) |> flatten)
+  let m = map (/state.kfld) (complex.re (fft.ifft2 mf) |> flatten)
   let aa' = snm state.conf (take (size*size) n) (take (size*size) m)
             |> unflatten
 
@@ -259,12 +255,12 @@ def step [size] (state: state [size]): state [size] =
       case 1 -> g + dt * (2.0 * f - 1.0)
       case _ -> g + dt * (f - g)
   let clamp v = f32.min (f32.max v 0.0) 1.0
-  let aa'' = map2 (map2 (\a b -> clamp (timestep a b))) aa' aa
+  let aa'' = clamp (timestep aa' aa)
   in state with world = aa''
 
 def render [size] (state: state [size]): [size][size]argb.colour =
   let w = state.world |> flatten
-  in map (\v -> argb_colour.from_rgba v v v 0) w |> unflatten
+  in argb_colour.from_rgba w w w 0 |> unflatten
 
 type text_content = (i32, i32, i32)
 
