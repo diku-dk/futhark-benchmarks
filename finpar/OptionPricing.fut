@@ -166,7 +166,7 @@ def brownianBridge [num_dates]
                    (gauss2d: [num_dates][num_und]f32)
                    : [num_dates][num_und]f32 =
   let gauss2dT = transpose gauss2d
-  in transpose (map (brownianBridgeDates bb_inds bb_data) gauss2dT)
+  in transpose (brownianBridgeDates bb_inds bb_data gauss2dT)
 
 
 ---------------------------------
@@ -177,13 +177,10 @@ def correlateDeltas [num_und][num_dates]
                    (md_c:  [num_und][num_und]f32,
                     zds:   [num_dates][num_und]f32)
                    : [num_dates][num_und]f32 =
-  map (\zi: [num_und]f32  ->
-         map (\(j: i64): f32  ->
-                let x = map2 (*)
-                             (#[unsafe] take (j+1) zi)
-                             (#[unsafe] take (j+1) md_c[j])
-                in  f32.sum x)
-             (iota num_und))
+  map (\zi  ->
+         tabulate num_und (\j ->
+                             f32.sum (#[unsafe] take (j+1) zi *
+                                      #[unsafe] take (j+1) md_c[j])))
       zds
 
 def combineVs [num_und]
@@ -198,8 +195,8 @@ def mkPrices [num_und][num_dates]
              md_drifts: [num_dates][num_und]f32,
              noises: [num_dates][num_und]f32)
             : [num_dates][num_und]f32 =
-  let c_rows = map3 combineVs noises md_vols md_drifts
-  let e_rows = map (\x: [num_und]f32 -> map f32.exp x) c_rows
+  let c_rows = combineVs noises md_vols md_drifts
+  let e_rows = f32.exp c_rows
   in  md_starts * scan (map2 (*)) (replicate num_und 1.0) e_rows
 
 def blackScholes [num_dates][num_und]
@@ -283,12 +280,12 @@ def main [num_bits][num_models][num_und][num_dates][num_discts]
         (bb_data: [3][num_dates]f32)
          : []f32 =
   let dir_vs = unflatten dir_vs
-  let sobol_mat = map (sobolIndR dir_vs) (1+i32.i64 (iota (i64.i32 num_mc_it)))
-  let gauss_mat = map (map ugaussian) sobol_mat
-  let bb_mat    = map (brownianBridge num_und bb_inds bb_data) gauss_mat
+  let sobol_mat = sobolIndR dir_vs (1+i32.i64 (iota (i64.i32 num_mc_it)))
+  let gauss_mat = ugaussian sobol_mat
+  let bb_mat    = brownianBridge num_und bb_inds bb_data gauss_mat
   let payoffs   = map (\bb_row ->
                          map3 (genericPayoff contract_number) md_discts md_detvals
                               (map4 (blackScholes bb_row) md_cs md_vols md_drifts md_sts))
                       bb_mat
   let payoff    = #[sequential_inner] reduce (map2 (+)) (replicate num_models 0.0) payoffs
-  in  map (/f32.i32 num_mc_it) payoff
+  in  payoff / f32.i32 num_mc_it
