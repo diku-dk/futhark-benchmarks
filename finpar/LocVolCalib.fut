@@ -12,13 +12,13 @@
 def initGrid (s0: f32) (alpha: f32) (nu: f32) (t: f32) (numX: i64) (numY: i64) (numT: i64)
   : (i32, i32, [numX]f32, [numY]f32, [numT]f32) =
   let logAlpha = f32.log alpha
-  let myTimeline = map (\i -> t * f32.i64 i / (f32.i64 numT - 1.0)) (iota numT)
+  let myTimeline = t * f32.i64 (iota numT) / (f32.i64 numT - 1)
   let (stdX, stdY) = (20.0 * alpha * s0 * f32.sqrt(t),
                       10.0 * nu         * f32.sqrt(t))
   let (dx, dy) = (stdX / f32.i64 numX, stdY / f32.i64 numY)
   let (myXindex, myYindex) = (i32.f32 (s0 / dx), i32.i64 numY / 2)
-  let myX = tabulate numX (\i -> f32.i64 i * dx - f32.i32 myXindex * dx + s0)
-  let myY = tabulate numY (\i -> f32.i64 i * dy - f32.i32 myYindex * dy + logAlpha)
+  let myX = f32.i64 (iota numX) * dx - f32.i32 myXindex * dx + s0
+  let myY = f32.i64 (iota numY) * dy - f32.i32 myYindex * dy + logAlpha
   in (myXindex, myYindex, myX, myY, myTimeline)
 
 -- make the innermost dimension of the result of size 4 instead of 3?
@@ -41,7 +41,7 @@ def initOperator [n] (x: [n]f32): ([n][3]f32,[n][3]f32) =
   in  (dx, dxx)
 
 def setPayoff [numX][numY] (strike: f32, myX: [numX]f32, _myY: [numY]f32): *[numY][numX]f32 =
-  replicate numY (map (\xi -> f32.max (xi-strike) 0.0) myX)
+  replicate numY (f32.max (myX-strike) 0.0)
 
 -- Returns new myMuX, myVarX, myMuY, myVarY.
 def updateParams [numX][numY]
@@ -51,10 +51,9 @@ def updateParams [numX][numY]
   let myMuY  = replicate numX (replicate numY 0.0)
   let myVarY = replicate numX (replicate numY (nu*nu))
   let myMuX  = replicate numY (replicate numX 0.0)
-  let myVarX = map (\yj ->
-                      map (\xi -> f32.exp(2.0*(beta*f32.log(xi) + yj - 0.5*nu*nu*tnow)))
-                          myX)
-                   myY
+  let myVarX = f32.exp(2.0*(beta*f32.log(myX) +
+                            transpose (replicate numX myY)
+                            - 0.5*nu*nu*tnow))
   in  ( myMuX, myVarX, myMuY, myVarY )
 
 def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
@@ -64,11 +63,10 @@ def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   --   solved by scan with 2x2 matrix mult operator --
   ----------------------------------------------------
   let b0   = b[0]
-  let mats = map  (\i ->
+  let mats = tabulate n (\i ->
                      if 0 < i
                      then (b[i], 0.0-a[i]*c[i-1], 1.0, 0.0)
                      else (1.0,  0.0,             0.0, 1.0))
-                  (iota n)
   let scmt = scan (\(a0,a1,a2,a3) (b0,b1,b2,b3) ->
                      let value = 1.0/(a0*b0)
                      in ( (b0*a0 + b1*a2)*value,
@@ -82,11 +80,10 @@ def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   --   solved by scan with linear func comp operator  --
   ------------------------------------------------------
   let y0   = y[0]
-  let lfuns= map  (\i  ->
+  let lfuns= tabulate n (\i  ->
                      if 0 < i
                      then (y[i], 0.0-a[i]/b[i-1])
                      else (0.0,  1.0))
-                  (iota n)
   let cfuns= scan (\(a0,a1) (b0,b1) -> (b0 + b1*a0, a1*b1))
                   (0.0, 1.0) lfuns
   let y    = map (\(a,b)  -> a + b*y0) cfuns
@@ -95,12 +92,11 @@ def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   --             scan with linear func comp operator  --
   ------------------------------------------------------
   let yn   = y[n-1]/b[n-1]
-  let lfuns= map (\k  ->
+  let lfuns= tabulate n (\k  ->
                     let i = n-k-1
                     in  if   0 < k
                         then (y[i]/b[i], 0.0-c[i]/b[i])
                         else (0.0,       1.0))
-                 (iota n)
   let cfuns= scan (\(a0,a1) (b0,b1) -> (b0 + b1*a0, a1*b1))
                   (0.0, 1.0) lfuns
   let y    = map (\(a,b) -> a + b*yn) cfuns
@@ -147,16 +143,15 @@ def rollback
   let dtInv = 1.0/(tnext-tnow)
   -- explicitX
   let u = explicitMethod(myDx, myDxx, myMuX, myVarX, myResult)
-  let u = map2 (map2 (\u_el res_el  -> dtInv*res_el + 0.5*u_el)) u myResult
+  let u = dtInv*myResult + 0.5*u
   -- explicitY
   let myResultTR = transpose(myResult)
   let v = explicitMethod(myDy, myDyy, myMuY, myVarY, myResultTR)
-  let u = map2 (map2 (+)) u (transpose v)
+  let u = u + transpose v
   -- implicitX
   let u = implicitMethod myDx myDxx myMuX myVarX u dtInv
   -- implicitY
-  let y = map2 (map2 (\u_el v_el -> dtInv*u_el - 0.5*v_el))
-               (transpose u) v
+  let y = dtInv*transpose u - 0.5*v
   let myResultTR = implicitMethod myDy myDyy myMuY myVarY y dtInv
   in transpose myResultTR
 
@@ -179,7 +174,7 @@ def value(numX: i64, numY: i64, numT: i64, s0: f32, strike: f32, t: f32, alpha: 
 
 def main (outer_loop_count: i32) (numX: i32) (numY: i32) (numT: i32)
          (s0: f32) (t: f32) (alpha: f32) (nu: f32) (beta: f32): []f32 =
-  let strikes = map (\i -> 0.001*f32.i64 i) (iota (i64.i32 outer_loop_count))
+  let strikes = f32.i64 (iota (i64.i32 outer_loop_count)) * 0.001
   let res =
     #[incremental_flattening(only_inner)]
     map (\x -> value(i64.i32 numX, i64.i32 numY, i64.i32 numT, s0, x, t, alpha, nu, beta))

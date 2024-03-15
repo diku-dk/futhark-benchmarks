@@ -48,97 +48,83 @@ def edgeWeak: f32 = 0.5
 def edgeStrong: f32 = 1.0
 
 def toGreyscale [h][w] (img: [h][w]i32): [h][w]f32 =
-  map (\row -> map (255.0*) (map luminanceOfRGBA32 row)) img
+  255.0 * luminanceOfRGBA32 img
 
 def gaussianX [h][w] (img: [h][w]f32): [h][w]f32 =
-  map (\x ->
-        map (\y ->
-              #[unsafe]
-              let a = img[clamp(0,x-2,h-1),y] * (1.0 / 16.0)
-              let b = img[clamp(0,x-1,h-1),y] * (4.0 / 16.0)
-              let c = img[clamp(0,x+0,h-1),y] * (6.0 / 16.0)
-              let d = img[clamp(0,x+1,h-1),y] * (4.0 / 16.0)
-              let e = img[clamp(0,x+2,h-1),y] * (1.0 / 16.0)
-              in a + b + c + d + e)
-            (iota w))
-      (iota h)
+  tabulate_2d h w (\x y ->
+     #[unsafe]
+     let a = img[clamp(0,x-2,h-1),y] * (1.0 / 16.0)
+     let b = img[clamp(0,x-1,h-1),y] * (4.0 / 16.0)
+     let c = img[clamp(0,x+0,h-1),y] * (6.0 / 16.0)
+     let d = img[clamp(0,x+1,h-1),y] * (4.0 / 16.0)
+     let e = img[clamp(0,x+2,h-1),y] * (1.0 / 16.0)
+     in a + b + c + d + e)
 
 def gaussianY [h][w] (img: [h][w]f32): [h][w]f32 =
-  map (\x ->
-        map (\y ->
-              #[unsafe]
-              let a = img[x,clamp(0,y-2,w-1)] * (1.0 / 16.0)
-              let b = img[x,clamp(0,y-1,w-1)] * (4.0 / 16.0)
-              let c = img[x,clamp(0,y+0,w-1)] * (6.0 / 16.0)
-              let d = img[x,clamp(0,y+1,w-1)] * (4.0 / 16.0)
-              let e = img[x,clamp(0,y+2,w-1)] * (1.0 / 16.0)
-              in a + b + c + d + e)
-       (iota w))
-     (iota h)
+  tabulate_2d h w (\x y ->
+     #[unsafe]
+     let a = img[x,clamp(0,y-2,w-1)] * (1.0 / 16.0)
+     let b = img[x,clamp(0,y-1,w-1)] * (4.0 / 16.0)
+     let c = img[x,clamp(0,y+0,w-1)] * (6.0 / 16.0)
+     let d = img[x,clamp(0,y+1,w-1)] * (4.0 / 16.0)
+     let e = img[x,clamp(0,y+2,w-1)] * (1.0 / 16.0)
+     in a + b + c + d + e)
 
 def gradiantMagDir [h][w] (low: f32) (img: [h][w]f32): [h][w](f32,i32) =
-  map (\x ->
-        map (\y ->
-              #[unsafe]
-              let v0 = img[clamp(0, x-1, h-1), clamp(0, y-1, w-1)]
-              let v1 = img[clamp(0, x+0, h-1), clamp(0, y-1, w-1)]
-              let v2 = img[clamp(0, x+1, h-1), clamp(0, y-1, w-1)]
+  tabulate_2d h w (\x y ->
+     #[unsafe]
+     let v0 = img[clamp(0, x-1, h-1), clamp(0, y-1, w-1)]
+     let v1 = img[clamp(0, x+0, h-1), clamp(0, y-1, w-1)]
+     let v2 = img[clamp(0, x+1, h-1), clamp(0, y-1, w-1)]
 
-              let v3 = img[clamp(0, x-1, h-1), clamp(0, y+0, w-1)]
-              let v4 = img[clamp(0, x+1, h-1), clamp(0, y+0, w-1)]
+     let v3 = img[clamp(0, x-1, h-1), clamp(0, y+0, w-1)]
+     let v4 = img[clamp(0, x+1, h-1), clamp(0, y+0, w-1)]
 
-              let v5 = img[clamp(0, x-1, h-1), clamp(0, y+1, w-1)]
-              let v6 = img[clamp(0, x+0, h-1), clamp(0, y+1, w-1)]
-              let v7 = img[clamp(0, x+1, h-1), clamp(0, y+1, w-1)]
+     let v5 = img[clamp(0, x-1, h-1), clamp(0, y+1, w-1)]
+     let v6 = img[clamp(0, x+0, h-1), clamp(0, y+1, w-1)]
+     let v7 = img[clamp(0, x+1, h-1), clamp(0, y+1, w-1)]
 
-              let dx = v2 + (2.0*v4) + v7 - v0 - (2.0*v3) - v5
-              let dy = v0 + (2.0*v1) + v2 - v5 - (2.0*v6) - v7
+     let dx = v2 + (2.0*v4) + v7 - v0 - (2.0*v3) - v5
+     let dy = v0 + (2.0*v1) + v2 - v5 - (2.0*v6) - v7
 
-              let mag = f32.sqrt(dx * dx + dy * dy)
+     let mag = f32.sqrt(dx * dx + dy * dy)
 
-              let theta = f32.atan2 dy dx
-              let alpha = (theta - (f32.pi/8.0)) * (4.0/f32.pi)
+     let theta = f32.atan2 dy dx
+     let alpha = (theta - (f32.pi/8.0)) * (4.0/f32.pi)
 
-              -- Normalise the angle to between [0..8)
-              let norm = alpha + if alpha <= 0.0 then 8.0 else 0.0
+     -- Normalise the angle to between [0..8)
+     let norm = alpha + if alpha <= 0.0 then 8.0 else 0.0
 
-              let dir = if f32.abs(dx) <= low && f32.abs(dy) <= low
-                        then 0
-                        else i32.min (64 * (1 + i32.f32(norm) % 4)) 255
+     let dir = if f32.abs(dx) <= low && f32.abs(dy) <= low
+               then 0
+               else i32.min (64 * (1 + i32.f32(norm) % 4)) 255
 
-              in (mag, dir))
-            (iota w))
-      (iota h)
+     in (mag, dir))
 
 def nonMaximumSuppression [h][w] (low: f32) (high: f32) (magdir: [h][w](f32,i32)): [h][w]f32 =
-  map (\x ->
-        map (\y ->
-              let (mag, dir) = magdir[x,y]
-              let offsetx = if dir > orientVert then -1
-                            else if dir < orientVert then 1
-                            else 0
-              let offsety = if dir < orientHoriz then -1 else 0
-              let (fwd, _) = #[unsafe]
-                             magdir[clamp(0, x+offsetx, h-1),
-                                    clamp(0, y+offsety, w-1)]
-              let (rev, _) = #[unsafe]
-                             magdir[clamp(0, x-offsetx, h-1),
-                                    clamp(0, y-offsety, w-1)]
+  tabulate_2d h w (\x y ->
+     let (mag, dir) = magdir[x,y]
+     let offsetx = if dir > orientVert then -1
+                   else if dir < orientVert then 1
+                   else 0
+     let offsety = if dir < orientHoriz then -1 else 0
+     let (fwd, _) = #[unsafe]
+                    magdir[clamp(0, x+offsetx, h-1),
+                           clamp(0, y+offsety, w-1)]
+     let (rev, _) = #[unsafe]
+                    magdir[clamp(0, x-offsetx, h-1),
+                           clamp(0, y-offsety, w-1)]
 
-              in if dir == orientUndef || mag < low || mag < fwd || mag < rev
-                 then 0.0
-                 else if mag >= high then 1.0 else 0.5)
-            (iota w))
-      (iota h)
+     in if dir == orientUndef || mag < low || mag < fwd || mag < rev
+        then 0.0
+        else if mag >= high then 1.0 else 0.5)
 
 def selectStrong [h][w] (img: [h][w]f32): []i32 =
-  let [k] (strong: [k]i32) =
-    map (\x  -> if x == edgeStrong then 1 else 0)
-        (flatten img)
+  let strong = i32.bool (flatten img == edgeStrong)
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
   let targetIdxAndLen = scan (+) 0 strong
-  let targetIdx = take (k-1) targetIdxAndLen
+  let targetIdx = init targetIdxAndLen
   let len = i64.i32 (last targetIdxAndLen)
   let (indices', values) =
     unzip(map3 (\i target_i strong_x ->

@@ -52,8 +52,9 @@ def step [n][e]
   -- let e_max = i32.maximum act_num_edges
 
   let flat_len = i64.i32 e_max * n_indices
-  let changes = map (\ii -> let row = ii / e_max
-                            let col = ii % e_max
+  let changes = tabulate flat_len (\ii ->
+                            let row = i32.i64 ii / e_max
+                            let col = i32.i64 ii % e_max
                             -- let n_edges     = #[unsafe] act_num_edges[row]
                             let tid     = #[unsafe] active_indices[row]
                             let n_edges = #[unsafe] nodes_n_edges[tid]
@@ -68,7 +69,7 @@ def step [n][e]
                                          -- then (node_id, #[unsafe] cost[tid] + 1)
                                          else (-1, -1)
                                 else (-1, -1)
-                    ) (map i32.i64 (iota flat_len))
+                    )
 
   let (changes_node_ids, changes_costs) = unzip(changes)
 

@@ -131,11 +131,9 @@ def lin_solve [g]
   (c: f32):
   [g][g]f32 =
   loop s1 = replicate g (replicate g 0.0) for _k < n_solver_steps do
-    map (\i ->
-         map (\j ->
-              edge_handling_lin_solve.handle (i32.i64 i) (i32.i64 j) g b (s0, s1, a, c))
-             (0..<g))
-        (0..<g)
+    tabulate_2d g g
+                (\i j ->
+                   edge_handling_lin_solve.handle (i32.i64 i) (i32.i64 j) g b (s0, s1, a, c))
 
 
 def diffuse [g]
@@ -190,10 +188,9 @@ def advect [g]
   *[g][g]f32 =
 
   let time_step0 = time_step * f32.i64 (g - 2)
-  in map (\i -> map (\j ->
+  in tabulate_2d g g
+                 (\i j ->
                      edge_handling_advect.handle (i32.i64 i) (i32.i64 j) g b (s0, u, v, time_step0))
-                    (0..<g))
-         (0..<g)
 
 
 module edge_handling_project_top = edge_handling({
@@ -231,10 +228,8 @@ def project [g]
   (*[g][g]f32, *[g][g]f32) =
 
   let project_top: [g][g]f32 =
-    map (\i -> map (\j ->
+    tabulate_2d g g (\i j ->
                      edge_handling_project_top.handle (i32.i64 i) (i32.i64 j) g 0 (u0, v0))
-                   (0..<g))
-        (0..<g)
 
   let project_bottom
     (p0: [g][g]f32)
@@ -245,11 +240,10 @@ def project [g]
     (i1d: i32)
     (j1d: i32):
     *[g][g]f32 =
-    map (\i -> map (\j ->
-                    edge_handling_project_bottom.handle (i32.i64 i) (i32.i64 j) g b
-                      (p0, s0, i0d, j0d, i1d, j1d))
-                   (0..<g))
-        (0..<g)
+    tabulate_2d g g (\i j ->
+                       edge_handling_project_bottom.handle
+                       (i32.i64 i) (i32.i64 j) g b
+                       (p0, s0, i0d, j0d, i1d, j1d))
 
   let div0 = project_top
   let p0 = lin_solve n_solver_steps div0 0 1.0 4.0
