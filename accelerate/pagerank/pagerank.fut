@@ -38,8 +38,8 @@ def calculate_dangling_ranks [n] (ranks: [n]f32) (sizes: [n]i32): *[]f32 =
 -- A rank is counted as the contribution of a page / the outbound edges from that page
 -- A contribution is defined as the rank of the page / the inbound edges
 def calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *[n]f32 =
-  let froms = map (\(x: link) -> x.from) links
-  let tos = map (\(x: link) -> x.to) links
+  let froms = map (.from) links
+  let tos = map (.to) links
   let get_rank (i: i32) = #[unsafe] if sizes[i] == 0 then 0f32
                                  else ranks[i] / f32.i32 sizes[i]
   let contributions = map get_rank froms
@@ -65,17 +65,17 @@ def sort_by_from = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i lin
 -- Compute the number of outbound links for each page.
 def compute_sizes [m] (n: i64) (links: [m]link) =
   let links = sort_by_from links
-  let froms = map (\(x: link) -> x.from) links
+  let froms = map (.from) links
   let flags = froms != (rotate (-1) froms)
   let sizes = segmented_scan (+) 0 flags (replicate m 1i32)
   let (sizes, ids, _) = unzip3 (filter (.2) (zip3 sizes froms (rotate 1 flags)))
-  in spread n 0 (map i64.i32 ids) sizes
+  in spread n 0 (i64.i32 ids) sizes
 
 entry preprocess_graph [m] (links_array: [m][2]i32): ([m]i32, [m]i32, []i32) =
   let links_by_to = sort_by_to (map (\l -> {from=l[0], to=l[1]}) links_array)
   let n = i32.maximum (map (\(x: link) -> 1 + x.from) links_by_to)
-  in (map (\x -> x.from) links_by_to,
-      map (\x -> x.to) links_by_to,
+  in (map (.from) links_by_to,
+      map (.to) links_by_to,
       compute_sizes (i64.i32 n) links_by_to)
 
 def initial_ranks (n: i64): *[n]f32 =
@@ -85,5 +85,5 @@ def process_graph [m] [n] (links: [m]link) (sizes: [n]i32) (iterations: i32) =
   (calculate_ranks links (initial_ranks n) sizes iterations)
 
 def main [m] (froms: [m]i32) (tos: [m]i32) (sizes: []i32) (iterations: i32) =
-  let links = map (\(from, to) -> {from, to}) (zip froms tos)
+  let links = map2 (\from to -> {from, to}) froms tos
   in process_graph links sizes iterations

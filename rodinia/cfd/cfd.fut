@@ -39,7 +39,7 @@ def compute_speed_of_sound(density: f32, pressure: f32): f32 =
 
 --
 def initialize_variables (nelr: i64) (ff_variable: [5]f32): [5][nelr]f32 = --[#nvar]float ff_variable
-    map (\(x: f32): [nelr]f32  -> replicate nelr x) (ff_variable)
+    map (replicate nelr) ff_variable
 
 --
 def compute_flux_contribution(_density:  f32,  momentum: (f32,f32,f32), density_energy: f32,

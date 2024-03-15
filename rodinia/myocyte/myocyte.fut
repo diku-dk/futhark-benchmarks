@@ -987,15 +987,15 @@ def embedded_fehlberg_7_8 [equs][pars]
   -- end loop --
   --------------
 
-  let finavalu = map (\i  ->
+  let finavalu = tabulate equs (\i  ->
                         initvalu[i] +  h * (c_1_11 * (finavalu_temp[0,i] + finavalu_temp[10,i]) +
                             c6 * finavalu_temp[5,i] + c_7_8 * (finavalu_temp[6,i] + finavalu_temp[7,i]) +
                             c_9_10 * (finavalu_temp[8,i] + finavalu_temp[9,i]) )
-                    ) (iota(equs) )
+                    )
 
-  let error = map (\i  ->
+  let error = tabulate equs (\i  ->
                         fabs(err_factor * (finavalu_temp[0,i] + finavalu_temp[10,i] - finavalu_temp[11,i] - finavalu_temp[12,i]))
-                 ) (iota(equs) )
+                 )
   in ( finavalu, error )
 
 
@@ -1039,8 +1039,7 @@ def solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
       let (y_k: [equs]f32, err: [equs]f32) = embedded_fehlberg_7_8( f32.i32 (km1), h, y_km1, params)
 
       -- iF THERE WAS NO ERROR FOR ANY OF equations, SET SCALE AND LEAVE THE LOOP
-      let errs = map (\(e: f32): bool  -> if e > 0.0f32 then true else false) err
-      let error= or errs
+      let error = or (err > 0)
 
       in
       if (!error)
@@ -1051,20 +1050,13 @@ def solver [pars][equs] (xmax: i32, params: [pars]f32, y0: [equs]f32): (bool,[eq
                         if (x == 0.0f32) then tolerance else fabs(x)
                   ) (y_km1 )
 
-      let scale = map  (\(yy_erri: (f32,f32)): f32  ->
-                          let (yyi, erri) = yy_erri
-                          in 0.8f32 * pow( tolerance * yyi / erri , err_exponent )
-                      ) (zip yy err )
+      let scale = 0.8 * ((tolerance * yy / err) ** err_exponent)
 
       let scale_min = f32.minimum scale
       let scale_fina = f32.min(f32.max scale_min (min_scale_factor())) (max_scale_factor())
 
       -- iF WiTHiN TOLERANCE, FiNiSH attempts...
-      let tmps =map  (\(err_yyi: (f32,f32)): bool  ->
-                        let (erri, yyi) = err_yyi
-                        in erri <= ( tolerance * yyi )
-                    ) (zip err yy )
-      let breakLoop = and tmps
+      let breakLoop = and (err <= tolerance * yy)
 
       -- ...OTHERWiSE, ADJUST STEP FOR NEXT ATTEMPT
       -- scale next step in a default way
@@ -1095,10 +1087,10 @@ def main (repeat: i32) (eps: f32) (workload: i64)
   let (oks, y_res) =
     unzip <|
     #[sequential_inner]
-    map (\i  ->
-            let add_fact = f32.i32(i32.i64 i % repeat)*eps
-            let y_row = map (+add_fact) y0
-            in solver(xmax, params, y_row))
-    (iota workload)
+    tabulate workload
+    (\i  ->
+       let add_fact = f32.i32(i32.i64 i % repeat)*eps
+       let y_row = map (+add_fact) y0
+       in solver(xmax, params, y_row))
 
   in ( and (opaque oks), y_res )
