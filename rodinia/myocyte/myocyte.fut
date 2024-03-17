@@ -987,15 +987,15 @@ def embedded_fehlberg_7_8 [equs][pars]
   -- end loop --
   --------------
 
-  let finavalu = map (\i  ->
+  let finavalu = tabulate equs (\i  ->
                         initvalu[i] +  h * (c_1_11 * (finavalu_temp[0,i] + finavalu_temp[10,i]) +
                             c6 * finavalu_temp[5,i] + c_7_8 * (finavalu_temp[6,i] + finavalu_temp[7,i]) +
                             c_9_10 * (finavalu_temp[8,i] + finavalu_temp[9,i]) )
-                    ) (iota(equs) )
+                    )
 
-  let error = map (\i  ->
+  let error = tabulate equs (\i  ->
                         fabs(err_factor * (finavalu_temp[0,i] + finavalu_temp[10,i] - finavalu_temp[11,i] - finavalu_temp[12,i]))
-                 ) (iota(equs) )
+                 )
   in ( finavalu, error )
 
 
@@ -1095,10 +1095,10 @@ def main (repeat: i32) (eps: f32) (workload: i64)
   let (oks, y_res) =
     unzip <|
     #[sequential_inner]
-    map (\i  ->
-            let add_fact = f32.i32(i32.i64 i % repeat)*eps
-            let y_row = map (+add_fact) y0
-            in solver(xmax, params, y_row))
-    (iota workload)
+    tabulate workload
+    (\i  ->
+       let add_fact = f32.i32(i32.i64 i % repeat)*eps
+       let y_row = map (+add_fact) y0
+       in solver(xmax, params, y_row))
 
   in ( and (opaque oks), y_res )

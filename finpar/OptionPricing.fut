@@ -180,13 +180,12 @@ def correlateDeltas [num_und][num_dates]
                    (md_c:  [num_und][num_und]f32,
                     zds:   [num_dates][num_und]f32)
                    : [num_dates][num_und]f32 =
-  map (\zi: [num_und]f32  ->
-         map (\(j: i64): f32  ->
-                let x = map2 (*)
-                             (#[unsafe] take (j+1) zi)
-                             (#[unsafe] take (j+1) md_c[j])
-                in  f32.sum x)
-             (iota num_und))
+  map (\zi  ->
+         tabulate num_und (\j ->
+                             let x = map2 (*)
+                                          (#[unsafe] take (j+1) zi)
+                                          (#[unsafe] take (j+1) md_c[j])
+                             in  f32.sum x))
       zds
 
 def combineVs [num_und]

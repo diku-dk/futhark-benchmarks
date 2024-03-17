@@ -148,7 +148,7 @@ def init (size: i64) (conf: conf) (seed: u32): state [size] =
 
   let shift2d 'a [r][c] (arr: [r][c]a): [r][c]a =
     let (mr, mc) = (r / 2, c / 2)
-    let indices = map (\ir -> map (\ic -> (ir,ic)) (iota c)) (iota r) |> flatten
+    let indices = tabulate_2d r c (\ir ic -> (ir,ic)) |> flatten
     let shift (ir, ic) =
       ( if ir < mr then ir + mr else ir - mr
       , if ic < mc then ic + mc else ic - mc
@@ -171,17 +171,14 @@ def init (size: i64) (conf: conf) (seed: u32): state [size] =
     let y = y' - (size / 2)
     in f32.sqrt <| f32.i32 (x * x + y * y)
 
-  let kr = map (\y ->
-             map (\x ->
-               let r = radius (i32.i64 y, i32.i64 x) (i32.i64 size)
-               in linear r ri b * (1 - linear r ra b)
-             ) (iota size)
-           ) (iota size)
-  let kd = map (\y ->
-             map (\x ->
-               1 - linear (radius (i32.i64 y, i32.i64 x) (i32.i64 size)) ri b
-             ) (iota size)
-           ) (iota size)
+  let kr = tabulate_2d
+           size size
+           (\y x ->
+              let r = radius (i32.i64 y, i32.i64 x) (i32.i64 size)
+              in linear r ri b * (1 - linear r ra b))
+  let kd = tabulate_2d
+           size size
+           (\y x -> 1 - linear (radius (i32.i64 y, i32.i64 x) (i32.i64 size)) ri b)
   let krf = fft.fft2_re (shift2d kr)
   let kdf = fft.fft2_re (shift2d kd)
   let kflr = reduce (+) 0 (flatten kr)

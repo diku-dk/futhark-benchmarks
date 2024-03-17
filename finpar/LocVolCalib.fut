@@ -64,11 +64,10 @@ def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   --   solved by scan with 2x2 matrix mult operator --
   ----------------------------------------------------
   let b0   = b[0]
-  let mats = map  (\i ->
+  let mats = tabulate n (\i ->
                      if 0 < i
                      then (b[i], 0.0-a[i]*c[i-1], 1.0, 0.0)
                      else (1.0,  0.0,             0.0, 1.0))
-                  (iota n)
   let scmt = scan (\(a0,a1,a2,a3) (b0,b1,b2,b3) ->
                      let value = 1.0/(a0*b0)
                      in ( (b0*a0 + b1*a2)*value,
@@ -82,11 +81,10 @@ def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   --   solved by scan with linear func comp operator  --
   ------------------------------------------------------
   let y0   = y[0]
-  let lfuns= map  (\i  ->
+  let lfuns= tabulate n (\i  ->
                      if 0 < i
                      then (y[i], 0.0-a[i]/b[i-1])
                      else (0.0,  1.0))
-                  (iota n)
   let cfuns= scan (\(a0,a1) (b0,b1) -> (b0 + b1*a0, a1*b1))
                   (0.0, 1.0) lfuns
   let y    = map (\(a,b)  -> a + b*y0) cfuns
@@ -95,12 +93,11 @@ def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   --             scan with linear func comp operator  --
   ------------------------------------------------------
   let yn   = y[n-1]/b[n-1]
-  let lfuns= map (\k  ->
+  let lfuns= tabulate n (\k  ->
                     let i = n-k-1
                     in  if   0 < k
                         then (y[i]/b[i], 0.0-c[i]/b[i])
                         else (0.0,       1.0))
-                 (iota n)
   let cfuns= scan (\(a0,a1) (b0,b1) -> (b0 + b1*a0, a1*b1))
                   (0.0, 1.0) lfuns
   let y    = map (\(a,b) -> a + b*yn) cfuns

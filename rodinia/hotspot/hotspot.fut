@@ -40,43 +40,40 @@ def single_iteration [row][col]
                     (temp: [row][col]f32, power: [row][col]f32,
                      cap: f32, rx: f32, ry: f32, rz: f32,
                      step: f32): [row][col]f32 =
-  map (\r ->
-         map (\c ->
-                #[unsafe]
-                let temp_el =  temp[r,c]
-                let delta =
-                  (step / cap) *
-                  (power[r,c] +
-                   (if r == 0 && c == 0 -- Corner 1
-                    then (temp[r,c+1] - temp_el) / rx +
-                         (temp[r+1,c] - temp_el) / ry
-                    else if r == 0 && c == col-1 -- Corner 2
-                    then (temp[r,c-1] - temp_el) / rx +
-                         (temp[r+1,c] - temp_el) / ry
-                    else if r == row-1 && c == col-1 -- Corner 3
-                    then (temp[r,c-1] - temp_el) / rx +
-                         (temp[r-1,c] - temp_el) / ry
-                    else if r == row-1 && c == 0 -- Corner 4
-                    then (temp[r,c+1] - temp_el) / rx +
-                         (temp[r-1,c] - temp_el) / ry
-                    else if r == 0 -- Edge 1
-                    then (temp[r,c+1] + temp[r,c-1] - 2*temp_el) / rx +
-                         (temp[r+1,c] - temp_el) / ry
-                    else if c == col-1 -- Edge 2
-                    then (temp[r,c-1] - temp_el) / rx +
-                         (temp[r+1,c] + temp[r-1,c] - 2*temp_el) / ry
-                    else if r == row-1 -- Edge 3
-                    then (temp[r,c+1] + temp[r,c-1] - 2*temp_el) / rx +
-                         (temp[r-1,c] - temp_el) / ry
-                    else if c == 0 -- Edge 4
-                    then (temp[r,c+1] - temp_el) / rx +
-                         (temp[r+1,c] + temp[r-1,c] - 2*temp_el) / ry
-                    else (temp[r,c+1] + temp[r,c-1] - 2 * temp_el) / rx +
-                         (temp[r+1,c] + temp[r-1,c] - 2 * temp_el) / ry) +
-                   (amb_temp - temp_el) / rz)
-                in temp_el + delta)
-             (iota col))
-      (iota row)
+  tabulate_2d row col (\r c ->
+    #[unsafe]
+    let temp_el =  temp[r,c]
+    let delta =
+      (step / cap) *
+      (power[r,c] +
+       (if r == 0 && c == 0 -- Corner 1
+        then (temp[r,c+1] - temp_el) / rx +
+             (temp[r+1,c] - temp_el) / ry
+        else if r == 0 && c == col-1 -- Corner 2
+        then (temp[r,c-1] - temp_el) / rx +
+             (temp[r+1,c] - temp_el) / ry
+        else if r == row-1 && c == col-1 -- Corner 3
+        then (temp[r,c-1] - temp_el) / rx +
+             (temp[r-1,c] - temp_el) / ry
+        else if r == row-1 && c == 0 -- Corner 4
+        then (temp[r,c+1] - temp_el) / rx +
+             (temp[r-1,c] - temp_el) / ry
+        else if r == 0 -- Edge 1
+        then (temp[r,c+1] + temp[r,c-1] - 2*temp_el) / rx +
+             (temp[r+1,c] - temp_el) / ry
+        else if c == col-1 -- Edge 2
+        then (temp[r,c-1] - temp_el) / rx +
+             (temp[r+1,c] + temp[r-1,c] - 2*temp_el) / ry
+        else if r == row-1 -- Edge 3
+        then (temp[r,c+1] + temp[r,c-1] - 2*temp_el) / rx +
+             (temp[r-1,c] - temp_el) / ry
+        else if c == 0 -- Edge 4
+        then (temp[r,c+1] - temp_el) / rx +
+             (temp[r+1,c] + temp[r-1,c] - 2*temp_el) / ry
+        else (temp[r,c+1] + temp[r,c-1] - 2 * temp_el) / rx +
+             (temp[r+1,c] + temp[r-1,c] - 2 * temp_el) / ry) +
+       (amb_temp - temp_el) / rz)
+    in temp_el + delta)
 
 -- Transient solver driver routine: simply converts the heat transfer
 -- differential equations to difference equations and solves the

@@ -36,9 +36,7 @@ def bpnn_hidden_error [no][nh] (delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]
     in  ( err, delta_h )
 
 def bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
-  let lyext = map( \k  ->
-                        if k < 1 then 1.0 else #[unsafe] ly[k-1])
-                 (iota nly)
+  let lyext = tabulate nly (\k -> if k < 1 then 1.0 else #[unsafe] ly[k-1])
   in unzip (map (\(w_row: []f32, oldw_row: []f32, lyk: f32)  ->
                     unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32): (f32,f32)  ->
                                    let new_dw = eta()*delta_el*lyk + momentum()*oldw_el
@@ -179,11 +177,9 @@ def bpnn_create (n_in: i64) (n_hid: i64) (n_out: i64) (offset: i32) (dirVct: []i
        input_prev_weights, hidden_prev_weights)
 
 def consColumn [m][n] (mat: [m][n]f32, col: [m]f32): [m][]f32 =
-  let np1 = n+1
-  in map (\(matrow, colelm)  ->
-            map (\k -> if k < 1 then colelm else #[unsafe] matrow[k-1])
-                (iota np1))
-          (zip mat col)
+  map (\(matrow, colelm)  ->
+          tabulate (n+1) (\k -> if k < 1 then colelm else #[unsafe] matrow[k-1]))
+      (zip mat col)
 
 def main [num_bits] (n_in: i32) (dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
     let n_in = i64.i32 n_in
