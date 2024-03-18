@@ -27,7 +27,7 @@ def can_add [nVerts] [nEdges] (vertexes: [nVerts]i32) (edges: [nEdges]i32) (rand
         let vEntry = (i64.i32 vertexes[index])
         let currentEdges = edges[vEntry:vEntry + (edges_of_vertex vertexes nEdges index)]
 
-        let arr = map (valid_neighbour random_state C random_state[index]) currentEdges
+        let arr = valid_neighbour random_state C random_state[index] currentEdges
 
         let valid = i32.sum arr
         in if (valid == 0) then
@@ -51,9 +51,9 @@ let MIS [nVerts] (vertexes: [nVerts]i32) (edges: []i32) (random_state: [nVerts]i
     -- Loop until every vertex is added to or excluded from the MIS
     let (_, I) = loop (C, I) while (i64.sum C) > 0 do
         -- Get an array of flags for which vertexes can be added to MIS
-        let newI = map (can_add vertexes edges random_state C) indexes
+        let newI = can_add vertexes edges random_state C indexes
         -- Map the index of each 0-flag to -1, as to be ignored by scatter
-        let targets = map2 (\i j -> j*i + (-1) * (1-i)) newI indexes
+        let targets = indexes*newI + (-1) * (1-newI)
         -- Update our MIS with found values
         let I = scatter I targets newI
 
@@ -62,7 +62,7 @@ let MIS [nVerts] (vertexes: [nVerts]i32) (edges: []i32) (random_state: [nVerts]i
         -- Remove the vectors neighbours and self
         let C = remove_neighbour_and_self marked targets C
         in (C, I)
-    in I |> (map i32.i64)
+    in i32.i64 I
 
 def main [nVerts] [nEdges] (vertexes_enc: [nVerts]i32) (edges_enc: [nEdges]i32) =
     let indexes = iota nVerts

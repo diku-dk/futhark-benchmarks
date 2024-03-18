@@ -8,7 +8,7 @@ def getSmallestPairs [arraySize] (edges: [arraySize][2]i32) (edge2Ids: [arraySiz
 
     let zippedArray = zip flatE flatE2i
 
-    let verts = map i64.i32 flatE 
+    let verts = i64.i32 flatE
 
     let H = hist i32.min (i32.i64 nEdges) nVerts verts flatE2i
     in filter (\i -> H[i.0] == i.1) zippedArray
@@ -24,14 +24,14 @@ def update [arraySize] (edges: [arraySize][2]i32) (edge2Ids: [arraySize][2]i32) 
     -- The length of the flattened arrays
     let arraySizeFlat = arraySize*2
 
-    let (e, e2i) = unzip (map2 (getMMEdges smallestEdgeId) edges edge2Ids)
+    let (e, e2i) = unzip (getMMEdges smallestEdgeId edges edge2Ids)
     let flatE = flatten e :> [arraySizeFlat]i32
     let flatEi2 = flatten e2i :> [arraySizeFlat]i32
 
     let trues = replicate arraySizeFlat true
 
-    let markedVerts = scatter markedVerts (map i64.i32 (flatE)) trues
-    let includedEdges = scatter includedEdges (map i64.i32 (flatEi2)) trues
+    let markedVerts = scatter markedVerts (i64.i32 flatE) trues
+    let includedEdges = scatter includedEdges (i64.i32 flatEi2) trues
     in (markedVerts, includedEdges)
 
 -- Remove the marked edges
@@ -49,7 +49,7 @@ def MM [nVerts] [nEdges] (edges: [][2]i32) (edgeIds: [nEdges]i64) (edge2Ids: [][
     let (_, _, _, _, includedEdges) = loop (edges, edge2Ids, markedVerts, smallestEdgeId, includedEdges) while (length edges > 0) do
         let (smallestTargets, smallestValues) = getSmallestPairs edges edge2Ids nVerts nEdges
 
-        let smallestEdgeId = scatter smallestEdgeId (map (i64.i32) smallestTargets) smallestValues
+        let smallestEdgeId = scatter smallestEdgeId (i64.i32 smallestTargets) smallestValues
 
         let (markedVerts, includedEdges) = update edges edge2Ids smallestEdgeId markedVerts includedEdges
 
