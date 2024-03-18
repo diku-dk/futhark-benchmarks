@@ -649,7 +649,7 @@ def interestCalibKernel(pop:  i32
   let proposals = copy(genomes)
   let sob_offs = 5*pop+1        in
   let (genomes,_proposals,logLiks,_sob_offs) =
-    loop ((genomes,proposals,logLiks,sob_offs))
+    loop ((genomes ,proposals,logLiks,sob_offs))
     for _j < mcmc_conv do
       let rand01   = sobolInd sobDirVct sob_offs
       let move_type= selectMoveType(rand01)
@@ -715,7 +715,7 @@ def interestCalibKernel(pop:  i32
                     f32.sum terms
               ) proposals
       let res_gene_liks =
-          map (\(gene, logLik, new_gene, (new_logLik, fb_rat, i)) ->
+          map (\(gene : [5]f32, logLik, new_gene : [5]f32, (new_logLik, fb_rat, i)) ->
                  let acceptance = f32.min 1.0 (f32.exp(new_logLik - logLik)*fb_rat)
                  let rand01     = sobolInd sobDirVct (sob_offs+i)
                  let (res_gene, res_logLik) =
