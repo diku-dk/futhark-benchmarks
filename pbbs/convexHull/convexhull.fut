@@ -132,7 +132,7 @@ module quickhull (S : euclidean_space) : convex_hull with space.point = S.point 
     let segs_indicator = map i32.bool segs_inhabited
     let new_segs_ix =
       scan (+) 0 segs_indicator |> map2 (\i n -> n - i) segs_indicator
-    let hull' = hull ++ map ((.0) <-< (.0)) segs_false
+    let hull' = hull ++ map (.0.0) segs_false
     let segs' = map (.0) segs_true
     let points' = map (\(seg_ix, p) -> (new_segs_ix[seg_ix], p)) points
     in (hull', segs', points')
@@ -140,12 +140,12 @@ module quickhull (S : euclidean_space) : convex_hull with space.point = S.point 
   def semihull (start : point) (end : point) (points : []point) =
     if null points then [start]
     else
-      (loop (hull, segs, points) =
+      let (hull', _, _) = (loop (hull, segs, points) =
          ([], [(start, end)], map (\p -> (0, p)) points)
        while !(null points) do
        let (segs', points') = expand_hull segs points
        in extract_empty_segments hull segs' points')
-      |> (.0)
+      in hull'
 
   def pmin p q = if point_less p q then p else q
   def pmax p q = if point_less p q then q else p

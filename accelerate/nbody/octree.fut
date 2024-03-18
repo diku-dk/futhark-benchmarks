@@ -25,7 +25,7 @@ def mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
   -- (6)-(7) from karras2012. In addition, we also assign child pointers.
   let root_delta = inners[0].delta_node
   let edge delta_c delta_p : i32 = (delta_c / 3) - (delta_p / 3)
-  let get_delta ptr = match ptr
+  let get_delta ptr = match ptr : ptr
                       case #leaf _i -> u64.num_bits + 2 -- u32.num_bits + 1
                       case #inner i -> #[unsafe] inners[i].delta_node
   let edges =
