@@ -1,6 +1,3 @@
-main.suff_outer_par_0=2000000000
-main.suff_outer_par_1=2000000000
-main.suff_outer_par_2=2000000000
-main.suff_outer_par_3=1
+main.suff_outer_par_0=8388608
 default_tile_size=8
 default_reg_tile_size=4
