@@ -42,7 +42,7 @@ def calculate_page_ranks [n] (links: []link) (ranks: *[n]f32) (sizes: [n]i32): *
   let tos = map (.to) links
   let get_rank (i: i32) = #[unsafe] if sizes[i] == 0 then 0f32
                                  else ranks[i] / f32.i32 sizes[i]
-  let contributions = map get_rank froms
+  let contributions = get_rank froms
   let page_flags = tos != rotate (-1) tos
   let scanned_contributions = segmented_scan (+) 0f32 page_flags contributions
   let (page_tos, page_contributions) =

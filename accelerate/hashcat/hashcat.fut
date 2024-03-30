@@ -110,4 +110,4 @@ entry mk_dict [n] (bs: []i8) (offsets: [n]i64): dict[n] =
 -- The entry point.
 
 entry main [n] (a: u32) (b: u32) (c: u32) (d: u32) (bs: []i8) (offsets: [n]i32): i32 =
-  first_true (map (==(a,b,c,d)) (md5s (mk_dict bs (i64.i32 offsets))))
+  first_true (md5s (mk_dict bs (i64.i32 offsets))) == (a,b,c,d)
