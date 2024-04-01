@@ -40,7 +40,7 @@ def min_date = date_of_triple (1980, 1, 1)
 
 def today = date_of_triple (2012, 1, 1)
 
-def iota32 n = iota n |> map i32.i64
+def iota32 n = i32.i64 (iota n)
 
 ----------------------------------------------------------------
 ----/ G2PP Module
@@ -93,7 +93,7 @@ def uGaussian_P(x: f32): f32 =
                          else  erf( u)
     in 0.5 * (1.0 + e)
 
-def uGaussian_P_withExpFactor(x:  f32, exp_factor: f32 ): f32 =
+def uGaussian_P_withExpFactor (x: f32) (exp_factor: f32): f32 =
     let u   = f32.abs( x / f32.sqrt(2.0) )
     let e   = erff_poly_only(u)
     let res = 0.5 * e * f32.exp(exp_factor-u*u) in
@@ -231,12 +231,8 @@ def genomeBounds: [5](f32,f32,f32) =
     ]
 
 def initGenome (rand_nums: [5]f32): [5]f32 =
-  map  (\(tup: (f32, (f32,f32,f32))): f32  ->
-                    let (r01, (g_min, g_max, _g_ini)) = tup
-                    in  r01*(g_max - g_min) + g_min
-
-               ) (zip rand_nums genomeBounds
-               )
+  let (g_min, g_max, _g_ini) = unzip3 genomeBounds
+  in rand_nums * (g_max - g_min) + g_min
 
 def selectMoveType(r01: f32): i32 =
   if r01 <= 0.2   then 1 -- r01 in [0.0, 0.2] -> DIMS_ALL
@@ -247,7 +243,7 @@ def selectMoveType(r01: f32): i32 =
 
 def moves_unif_ampl_ratio(): f32 = 0.005
 
-def mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32,f32)): (f32,f32) =
+def mutateHelper (ampl_ratio:  f32) (r01: f32) (gene: f32) (prop: f32) (gmm: (f32,f32,f32)) =
   let (g_min, g_max, _g_ini) = gmm
   let amplitude     = f32.abs( (g_max - g_min) * ampl_ratio )
   let semiamplitude = amplitude / 2.0
@@ -265,55 +261,51 @@ def mutateHelper(ampl_ratio:  f32, r01: f32, gene: f32, prop: f32, gmm: (f32,f32
                 else 1.0
   in (gene + amplitude * r01 - semiamplitude, bf_fact)
 
-def constrainDim(gene:  f32, tup: (f32,f32,f32) ): f32 =
+def constrainDim (gene:  f32) (tup: (f32,f32,f32)) =
   let (g_min, g_max, _g_ini) = tup
   in  f32.max g_min (f32.min g_max gene)
 
 def perturbation(gamma1:  f32, ampl_rat : f32)
-                (gene: f32, gene_k: f32, gene_l: f32,   r01: f32, mm_diff: f32 ): f32 =
+                (gene: f32) (gene_k: f32) (gene_l: f32) (r01: f32) (mm_diff: f32): f32 =
   let amplitude     = f32.abs( mm_diff * ampl_rat )
   let semiamplitude = amplitude / 2.0
   let perturb       = ( amplitude * r01 - semiamplitude )
   in  gene + perturb + gamma1 * ( gene_k - gene_l )
 
-def mutate_dims_all [n] (tup: ([n]f32,[]f32,[]f32)): (*[n]f32,f32) =
-  let (sob_row, orig, muta) = tup
+def mutate_dims_all [n] (sob_row: [n]f32) (orig: []f32) (muta: []f32): (*[n]f32,f32) =
   let gene_bds = take n genomeBounds
   let amplitude = moves_unif_ampl_ratio()
-  let gene_rats = map mutateHelper (
-                       zip5 (replicate n amplitude) (sob_row) orig muta gene_bds)
+  let gene_rats = mutateHelper amplitude sob_row orig muta gene_bds
   let (tmp_genome, fb_rats) = unzip(gene_rats)
-  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
+  let new_genome= constrainDim tmp_genome gene_bds
   let fb_rat    = f32.product (fb_rats)
   in  (copy(new_genome), fb_rat)
 
-def mutate_dims_one [n] (dim_j: i32) (tup: ([]f32,[n]f32,[]f32)): (*[n]f32,f32) =
-  let (sob_row, orig, muta) = tup
+def mutate_dims_one [n] (dim_j: i32) (sob_row : []f32) (orig: [n]f32) (muta: []f32): (*[n]f32,f32) =
   let gene_bds = take n genomeBounds
   let amplitudes= map (\i ->
                          if i32.i64 i == dim_j
                          then moves_unif_ampl_ratio() else 0.0)
                       (iota n)
 
-  let gene_rats = map mutateHelper (zip5 amplitudes (sob_row) orig muta (gene_bds) )
+  let gene_rats = mutateHelper amplitudes sob_row orig muta gene_bds
   let (tmp_genome, fb_rats) = unzip(gene_rats)
-  let new_genome= map constrainDim (zip (tmp_genome) (gene_bds) )
+  let new_genome= constrainDim tmp_genome gene_bds
   let fb_rat    = f32.product (fb_rats)
   in  (copy(new_genome), fb_rat)
 
 
 def mcmc_DE (r01: f32, sob_row: [5]f32, g_i: [5]f32, g_k: [5]f32, g_l: [5]f32): *[5]f32 =
-  let gene_bds = genomeBounds
+  let (g_min, g_max, _) = unzip3 genomeBounds
   let gamma_avg = 2.38 / f32.sqrt(2.0*5.0)
   let ampl_ratio= 0.1 * moves_unif_ampl_ratio()
   let gamma1    = gamma_avg - 0.5 + r01
-  let mm_diffs  = map (\(g_min, g_max, _) -> g_max - g_min
-                     ) (gene_bds )
+  let mm_diffs  = g_max - g_min
 
-  let tmp_genome = map (perturbation(gamma1,ampl_ratio))
-                   (zip5 (g_i) (g_k) (g_l) (sob_row) (mm_diffs))
+  let tmp_genome =
+    perturbation (gamma1,ampl_ratio) g_i g_k g_l sob_row mm_diffs
 
-  in  copy( map constrainDim (zip (tmp_genome) (gene_bds) ) )
+  in  constrainDim tmp_genome genomeBounds
 
 
 def b_fun(z: f32, tau: f32): f32 = (1.0-f32.exp(-z*tau))/z
@@ -419,23 +411,13 @@ def exactYhat(n_schedi:  i32,
     -- ugaussian_Pinv(k)=1.0e-4
     let k= -3.71901648545568
 
-
-    let uplos = map (\(babaici: (f32,f32,f32,f32)): (f32,f32)  ->
-                        let (bai,bbi,aici,log_aici) = babaici
-                        let baix                    = bai * x in
-                            (   aici * f32.exp( -baix ),
-                                (log_aici-baix) / bbi
-                            )
-                      ) babaicis
-    let (ups, _los) = unzip(uplos)
-    let (up,  lo ) = reduce (\(x: (f32,f32)) (y: (f32,f32)): (f32,f32)  ->
-                               let (a1, b1) = x
-                               let (a2, b2) = y in
-                               (a1 + a2, f32.max b1 b2 )
-                           ) (0.0, -f32.inf) uplos
-
-    let (_bai, bbi, _aici, _log_aici) = unzip4 babaicis in
-
+    let (bai,bbi,aici,log_aici) = unzip4 babaicis
+    let baix = bai * x
+    let ups = aici * f32.exp(0-baix)
+    let los = (log_aici-baix) / bbi
+    let up = f32.sum ups
+    let lo = f32.maximum los
+    in
     if(n_schedi < 2) -- == 1
     then lo
     else
@@ -481,8 +463,8 @@ def exactYhat(n_schedi:  i32,
 --/ evaluating a genome on a swaption and getting
 --/ back the quote and the estimated price
 --------------------------------------------------/
-def evalGenomeOnSwap (genomea: []f32,
-                      hermdata: [](f32,f32))
+def evalGenomeOnSwap (genomea: []f32)
+                     (hermdata: [](f32,f32))
                      (swaption: []f32): (f32,f32) =
   let (a,b,rho,nu,sigma) = (genomea[0],genomea[1],genomea[2],genomea[3],genomea[4])
   let swap_freq  = swaption[1]
@@ -575,15 +557,11 @@ def evalGenomeOnSwap (genomea: []f32,
                       let x  = sqrt2sigmax * x_quad + mux
                       let yhat_x = f + df*(x - mux)
                       let h1 = ( (yhat_x - muy) / sigmay_rhoxycs ) - t2*( x - mux )
-                      let accum1s = map (\(tup: (f32,f32,f32,f32)): f32  ->
-                                           let (bbi, scalei, csi, t1_csi) = tup
-                                           let h2 = h1 + bbi * sigmay_rhoxycs
-                                           let expo_aici = t1_csi + scalei*x
-                                           let fact_aici = csi
-                                           let expo_part = uGaussian_P_withExpFactor( -h2, expo_aici )
-                                           in  fact_aici * expo_part
-                                       ) (zip4 bbs scales cs (t1_cs )
-                                       )
+                      let h2 = h1 + bbs * sigmay_rhoxycs
+                      let expo_aici = t1_cs + scales*x
+                      let fact_aici = cs
+                      let expo_part = uGaussian_P_withExpFactor (0-h2) expo_aici
+                      let accum1s = fact_aici * expo_part
                       let accum1 = f32.sum accum1s
                       let tmp    = f32.sqrt(2.0) * x_quad
                       let t1     = f32.exp( - 0.5 * tmp * tmp )     in
@@ -633,16 +611,13 @@ def interestCalibKernel(pop:  i32
   -- initialize the genomes
   let genomes = map  (\i  ->
                         let k   = 5*i32.i64 i + 1
-                        let z5s = map  (+k) (iota32 5)
-                        let sobs= map  (sobolInd(sobDirVct)) z5s
+                        let z5s = iota32 5 + k
+                        let sobs= sobolInd sobDirVct z5s
                         in  initGenome( copy(sobs) )
                     ) (iota(i64.i32 pop))
   -- evaluate genomes
-  let logLiks = map  (\(genome: []f32): f32  ->
-                        let qtprs = map  (evalGenomeOnSwap(genome,hermdata)
-                                        ) swaptions
-                        let terms = map  logLikelihood qtprs in
-                                  f32.sum terms
+  let logLiks = map  (\genome  ->
+                        f32.sum (logLikelihood (evalGenomeOnSwap genome hermdata swaptions))
                     ) genomes
 --  logLiks
 --  genomes[pop/2]
@@ -660,11 +635,11 @@ def interestCalibKernel(pop:  i32
         then let sob_mat =
                  map (\i ->
                         let k   = 5*i32.i64 i + sob_offs
-                        let z5s = map (+k) (iota32 5) in
-                        map  (sobolInd(sobDirVct)) z5s
+                        let z5s = iota32 5 + k in
+                        sobolInd sobDirVct z5s
                     ) (iota (i64.i32 pop))
              let new_gene_rat =
-                 map mutate_dims_all (zip3 (sob_mat) genomes proposals )
+                 mutate_dims_all sob_mat genomes proposals
              let (new_genomes, fb_rats) = unzip(new_gene_rat)
              in  (new_genomes, fb_rats, sob_offs+5*pop)
 
@@ -675,12 +650,12 @@ def interestCalibKernel(pop:  i32
              let sob_mat =
                  map (\i  ->
                         let k   = 5*i32.i64 i + sob_offs + 1
-                        let z5s = map (+k) (iota32 5) in
-                        map  (sobolInd(sobDirVct)) z5s
+                        let z5s = iota32 5 + k in
+                        sobolInd sobDirVct z5s
                     ) (iota(i64.i32 pop) )
 
              let new_gene_rat =
-                 map (mutate_dims_one(dim_j)) (zip3 (sob_mat) genomes proposals )
+                 mutate_dims_one dim_j sob_mat genomes proposals
              let (new_genomes, fb_rats) = unzip(new_gene_rat)
              in  (new_genomes, fb_rats, sob_offs+5*pop+1)
 
@@ -701,17 +676,16 @@ def interestCalibKernel(pop:  i32
                                 else l
 
                         let s3      = sobolInd sobDirVct (kk+2)
-                        let z5s     = map (+(kk+3)) (iota32 5)
-                        let sob_row = map (sobolInd(sobDirVct)) z5s in
+                        let z5s     = iota32 5 + kk + 3
+                        let sob_row = sobolInd sobDirVct z5s in
                             mcmc_DE(s3, sob_row, genomes[i], genomes[k], genomes[l])
-                    ) (map i32.i64 (iota(i64.i32 pop)))
+                    ) (i32.i64 (iota(i64.i32 pop)))
              in  (new_genomes, replicate (i64.i32 pop) 1.0, sob_offs+8*pop)
 
       let new_logLiks =
           map  (\(genome: []f32): f32  ->
-                    let qtprs = map  (evalGenomeOnSwap(genome,hermdata)
-                                    ) swaptions
-                    let terms = map  logLikelihood qtprs in
+                    let qtprs = evalGenomeOnSwap genome hermdata swaptions
+                    let terms = logLikelihood qtprs in
                     f32.sum terms
               ) proposals
       let res_gene_liks =
@@ -723,7 +697,7 @@ def interestCalibKernel(pop:  i32
                        then (new_gene, new_logLik)
                        else (gene,     logLik    )
                  in (copy(res_gene), res_logLik)
-             ) (zip4 genomes logLiks proposals (zip3 (new_logLiks) (fb_rats) (map i32.i64 (iota(i64.i32 pop))))
+             ) (zip4 genomes logLiks proposals (zip3 (new_logLiks) (fb_rats) (i32.i64 (iota(i64.i32 pop))))
              )
 
       let (res_genomes, res_logLiks) = unzip(res_gene_liks) in
@@ -735,13 +709,12 @@ def interestCalibKernel(pop:  i32
       reduce (\(t1: (i32,f32)) (t2: (i32,f32)): (i32,f32)  ->
                 let (i1, v1) = t1 let (i2, v2) = t2 in
                 if (v1 < v2) then (i2, v2) else (i1, v1)
-            ) (0, -f32.inf) (zip (map i32.i64 (iota(i64.i32 pop))) logLiks
+            ) (0, -f32.inf) (zip (i32.i64 (iota(i64.i32 pop))) logLiks
             )
 
   let winner = genomes[winner_ind]
   let winner_quote_prices =
-      map  (evalGenomeOnSwap(genomes[winner_ind],hermdata)
-          ) swaptions
+      evalGenomeOnSwap genomes[winner_ind] hermdata swaptions
   in  ( winner[0],winner[1],winner[4],winner[3],winner[2],winner_logLik
       , makeSummary(winner_quote_prices)
       )
@@ -767,7 +740,7 @@ def extended_swaption_of_swaption(swaption: (f32,f32,f32)): (date,[](date,date),
                      let a1 = add_months maturity (i32.f32 (freq*f32.i32 i))
                      let a2 = add_months a1 (i32.f32 freq)
                      in ( zc(a2) * date_act_365(a2, a1), a1, a2 )
-                 ) (map i32.i64 (iota(i64.i32 nschedule) ))
+                 ) (i32.i64 (iota(i64.i32 nschedule) ))
 
     let (lvl, t0, tn) = reduce (\((lvl,t0,tn):  (f32,date,date))
                                  ((a12,a1,a2): (f32,date,date)): (f32,date,date)  ->

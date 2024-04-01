@@ -73,7 +73,7 @@ def lud_internal [m][b] (top_per: [m][b][b]f32) (lft_per: [m][b][b]f32) (mat_sli
         map2 (\mat_blk top ->
                 map2 (\mat_row lft_row ->
                         map2 (\mat_el top_row ->
-                                let prods = map2 (*) lft_row top_row
+                                let prods = lft_row * top_row
                                 let sum = f32.sum prods
                                 in mat_el - sum
                              ) mat_row top

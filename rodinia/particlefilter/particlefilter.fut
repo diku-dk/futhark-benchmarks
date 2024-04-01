@@ -78,12 +78,10 @@ def particleFilter [IszX][IszY][Nfr]
   let (_, _, distances, _, _) =
     -- I have no idea why this should run Nfr-1 times instead of Nfr times.
     loop (arrayX, arrayY, distances, seed, seed0) for k in 1..<Nfr do
-    let (seed, x_noises : []f64) = seed
-                           |> map (norm_rng.rand {stddev=0, mean=5})
-                           |> unzip
-    let (seed, y_noises : []f64) = seed
-                           |> map (norm_rng.rand {stddev=0, mean=2})
-                           |> unzip
+    let (seed, x_noises : []f64) =
+      unzip (norm_rng.rand {stddev=0, mean=5} seed)
+    let (seed, y_noises : []f64) =
+      unzip (norm_rng.rand {stddev=0, mean=2} seed)
     let arrayX = arrayX + x_noises + 1
     let arrayY = arrayY + y_noises - 2
 
@@ -105,7 +103,7 @@ def particleFilter [IszX][IszY][Nfr]
          |> f64.sum
          |> (/f64.i64 countOnes)
 
-    let likelihood = map2 flikelihood arrayX arrayY
+    let likelihood = flikelihood arrayX arrayY
 
     let weights = weights * (f64.exp likelihood)
     let sumWeights = f64.sum weights
