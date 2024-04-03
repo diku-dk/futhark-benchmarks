@@ -181,12 +181,12 @@ def morton_3D {x,y,z} : u32 =
   in xx * 4 + yy * 2 + zz
 
 def mk_accelerator [n] (bodies: [n]body) : ([]octnode, f32, i32, [n]body) =
-  let x_max = f32.maximum (map (.position.x) bodies)
-  let y_max = f32.maximum (map (.position.y) bodies)
-  let z_max = f32.maximum (map (.position.z) bodies)
-  let x_min = f32.minimum (map (.position.x) bodies)
-  let y_min = f32.minimum (map (.position.y) bodies)
-  let z_min = f32.minimum (map (.position.z) bodies)
+  let x_max = f32.maximum ((.position.x) bodies)
+  let y_max = f32.maximum ((.position.y) bodies)
+  let z_max = f32.maximum ((.position.z) bodies)
+  let x_min = f32.minimum ((.position.x) bodies)
+  let y_min = f32.minimum ((.position.y) bodies)
+  let z_min = f32.minimum ((.position.z) bodies)
   let normalize {x,y,z} = {x=(x-x_min)/(x_max-x_min),
                            y=(y-y_min)/(y_max-y_min),
                            z=(z-z_min)/(z_max-z_min)}
@@ -194,7 +194,7 @@ def mk_accelerator [n] (bodies: [n]body) : ([]octnode, f32, i32, [n]body) =
   -- (1)-(5) from karras2012.
   let bodies =
     radix_sort_by_key (\p -> morton p.position) u32.num_bits u32.get_bit bodies
-  let mortons = map (\p -> morton p.position) bodies
+  let mortons = morton ((.position) bodies)
   let inners = mk_radix_tree mortons
   -- (6)-(7).
   let octree = mk_octree bodies inners
