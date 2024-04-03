@@ -38,9 +38,9 @@ def main [numK][numX]
          (phiR: [numK]f32) (phiI: [numK]f32)
        : ([numX]f32, [numX]f32) =
   let phiMag = phiR*phiR + phiI*phiI
-  let expArgs = map3 (\x_e y_e z_e ->
-                        2*f32.pi*(kx*x_e + ky*y_e + kz*z_e))
-                     x y z
+  let expArgs = 2*f32.pi*(kx*transpose (replicate numK x)
+                + ky*transpose (replicate numK y)
+                + kz*transpose (replicate numK z))
   let qr = f32.sum (f32.cos expArgs * phiMag)
   let qi = f32.sum (f32.sin expArgs * phiMag)
   in (qr, qi)
