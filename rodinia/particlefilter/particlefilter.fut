@@ -96,10 +96,9 @@ def particleFilter [IszX][IszY][Nfr]
                    --- occurs in practice.
                    in if indX >= IszX || indY >= IszY then (0,0) else (indX, indY)
         ) objxy
-      in (map (\(i,j) -> (#[unsafe] I[i,j,k]-100)**2) ind -
-          map (\(i,j) -> (#[unsafe] I[i,j,k]-228)**2) ind)
-         |> map f64.i32
-         |> map (/50)
+      in f64.i32 (map (\(i,j) -> (#[unsafe] I[i,j,k]-100)**2) ind -
+                  map (\(i,j) -> (#[unsafe] I[i,j,k]-228)**2) ind)
+         / 50
          |> f64.sum
          |> (/f64.i64 countOnes)
 

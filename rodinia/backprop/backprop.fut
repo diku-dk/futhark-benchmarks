@@ -29,10 +29,8 @@ def bpnn_hidden_error [no][nh] (delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]
 
 def bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
   let lyext = tabulate nly (\k -> if k < 1 then 1.0 else #[unsafe] ly[k-1])
-  in unzip (map3 (\w_row oldw_row lyk ->
-                   let new_dw = eta*delta*lyk + momentum*oldw_row
-                   in ( w_row+new_dw, new_dw ))
-                 w oldw lyext)
+  in (w + momentum*oldw + eta*delta*transpose (replicate ndelta lyext),
+      momentum*oldw + eta*delta*transpose (replicate ndelta lyext))
 
 def bpnn_layerforward_GOOD [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)

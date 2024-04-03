@@ -107,5 +107,5 @@ def main [rows][cols] (image: [rows][cols]u8): [rows][cols]f32 =
 
 -- Entry point for interactive demo.  Here we can return an RGBA image.
 entry srad [rows][cols] (niter: i32) (lambda: f32) (image: [rows][cols]u8): [rows][cols]i32 =
-  map (map1 (\p -> (i32.f32 (p) << 16) | (i32.f32 (p) << 8) | (i32.f32 (p))))
-      (do_srad(niter, lambda, image))
+  let ps = i32.f32(do_srad(niter, lambda, image))
+  in (ps << 16) | (ps << 8) | ps
