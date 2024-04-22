@@ -1,8 +1,8 @@
 -- Parallel blocked LU-decomposition.
 --
 -- ==
--- input @ data/16by16.in
--- output @ data/16by16.out
+-- input @ data/16.in
+-- output @ data/16.out
 -- compiled input @ data/64.in
 -- output @ data/64.out
 -- compiled input @ data/256.in
