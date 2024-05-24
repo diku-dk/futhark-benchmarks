@@ -27,8 +27,10 @@
 --
 -- ==
 -- compiled input @ benchmarking/medium.in
+-- compiled input @ benchmarking/large.in.gz
 
 -- medium.in attributes: n_steps=1, n_solver_steps=40, grid_res=100
+-- large.in attributes: n_steps=1, n_solver_steps=40, grid_res=2000
 
 ------------------------------------------------------------
 -- General helper functions.
