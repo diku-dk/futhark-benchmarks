@@ -5,7 +5,7 @@
 -- non-sorted data.
 
 -- | Parallel bubble sort.  Runs with *O(n^2)* work and *O(n^2)* depth.
-let bubble_sort [n] 't ((<=): t -> t -> bool) (xs: [n]t): [n]t =
+def bubble_sort [n] 't ((<=): t -> t -> bool) (xs: [n]t): [n]t =
   let f b xs i =
     let dir = if i%2 == 0 then b else -b
     let j = i + dir
@@ -19,7 +19,7 @@ let bubble_sort [n] 't ((<=): t -> t -> bool) (xs: [n]t): [n]t =
   in (loop (xs, b, continue) = (xs, 1, true) while continue do iter xs b).0
 
 -- | Like `bubble_sort`@term, but sort based on key function.
-let bubble_sort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =
+def bubble_sort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =
   zip (map key xs) (iota n)
   |> bubble_sort (\(x, _) (y, _) -> x <= y)
   |> map (\(_, i) -> xs[i])

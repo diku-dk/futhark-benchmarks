@@ -10,12 +10,18 @@ SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(SELF_DIR)/setup_flags.mk
 FRONTEND_DIR = $(SELF_DIR)/$(LYS_FRONTEND)
 
+ifeq ($(LYS_FRONTEND), sdl)
+FONT_DEPS=font_data.h
+else
+FONT_DEPS=
+endif
+
 ifeq ($(shell test futhark.pkg -nt lib; echo $$?),0)
 $(PROGNAME):
 	futhark pkg sync
 	@make # The sync might have resulted in a new Makefile.
 else
-$(PROGNAME): $(PROGNAME)_wrapper.o $(PROGNAME)_printf.h font_data.h $(FRONTEND_DIR)/liblys.c $(FRONTEND_DIR)/liblys.h $(SELF_DIR)/shared.c $(SELF_DIR)/shared.h $(FRONTEND_DIR)/main.c
+$(PROGNAME): $(PROGNAME)_wrapper.o $(PROGNAME)_printf.h $(FONT_DEPS) $(FRONTEND_DIR)/liblys.c $(FRONTEND_DIR)/liblys.h $(SELF_DIR)/shared.c $(SELF_DIR)/shared.h $(FRONTEND_DIR)/main.c
 	gcc $(FRONTEND_DIR)/liblys.c $(SELF_DIR)/shared.c $(FRONTEND_DIR)/main.c -I. -I$(SELF_DIR) -DPROGHEADER='"$(PROGNAME)_wrapper.h"' -DPRINTFHEADER='"$(PROGNAME)_printf.h"' -DLYS_TEXT $(PROGNAME)_wrapper.o -o $@ $(CFLAGS) $(LDFLAGS)
 endif
 

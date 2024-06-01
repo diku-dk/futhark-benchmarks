@@ -1,7 +1,19 @@
 #include "shared.h"
 #include <string.h>
 
-void lys_setup_futhark_context(const char *deviceopt, bool device_interactive,
+const char* basename(const char *progname) {
+  int n = strlen(progname);
+  int i;
+  for (i = n-1; i >= 0; i--) {
+    if (progname[i] == '/') {
+      return &progname[i+1];
+    }
+  }
+  return &progname[i+1];
+}
+
+void lys_setup_futhark_context(const char *progname,
+                               const char *deviceopt, bool device_interactive,
                                struct futhark_context_config* *futcfg,
                                struct futhark_context* *futctx,
                                char* *opencl_device_name) {
@@ -23,6 +35,14 @@ void lys_setup_futhark_context(const char *deviceopt, bool device_interactive,
 #else
   (void)device_interactive;
 #endif
+
+  if (progname != NULL) {
+    int bufsize = strlen(progname) + 10;
+    char buf[bufsize];
+    // Would it be better to store this in some XDG directory?
+    snprintf(buf, bufsize, "%s.lyscache", basename(progname));
+    futhark_context_config_set_cache_file(*futcfg, buf);
+  }
 
   *futctx = futhark_context_new(*futcfg);
   assert(*futctx != NULL);

@@ -4,33 +4,31 @@
 
 local import "../segmented/segmented"
 
-local let segmented_replicate [n] 't (reps:[n]i64) (vs:[n]t) : []t =
+local def segmented_replicate [n] 't (reps:[n]i64) (vs:[n]t) : []t =
   let idxs = replicated_iota reps
   in map (\i -> vs[i]) idxs
 
-local let info 't ((<=): t -> t -> bool) (x:t) (y:t) : i64 =
+local def info 't ((<=): t -> t -> bool) (x:t) (y:t) : i64 =
   if x <= y then
      if y <= x then 0 else -1
   else 1
 
-local let tripit (x: i64): (i64,i64,i64) =
+local def tripit (x: i64): (i64,i64,i64) =
   if x < 0 then (1,0,0)
   else if x > 0 then (0,0,1) else (0,1,0)
 
-local let tripadd (a1:i64,e1:i64,b1:i64) (a2,e2,b2) =
+local def tripadd (a1:i64,e1:i64,b1:i64) (a2,e2,b2) =
   (a1+a2,e1+e2,b1+b2)
 
 local type sgm = {start:i64,sz:i64}  -- segment
 
-local let step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]t,[]sgm) =
+local def step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]t,[]sgm) =
   --let _ = trace {NEW_STEP=()}
 
   -- find a pivot for each segment
   let pivots : []t = map (\sgm -> xs[sgm.start + sgm.sz/2]) sgms
   let sgms_szs : []i64 = map (\sgm -> sgm.sz) sgms
-  let idxs = replicated_iota sgms_szs
-  let m = length idxs
-  let idxs = idxs :> [m]i64
+  let [m] (idxs: [m]i64) = replicated_iota sgms_szs
 
   -- find the indexes into values in segments; after a value equal to
   -- a pivot has moved, it will no longer be part of a segment (it
@@ -86,13 +84,13 @@ local let step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]
 -- *O(n log n)*. It has best depth complexity *O(1)*, worst depth
 -- complexity *O(n)* and average depth complexity *O(log n)*.
 
-let qsort [n] 't ((<=): t -> t -> bool) (xs:[n]t) : [n]t =
+def qsort [n] 't ((<=): t -> t -> bool) (xs:[n]t) : [n]t =
   if n < 2 then xs
   else (loop (xs,mms) = (copy xs,[{start=0,sz=n}]) while length mms > 0 do
           step (<=) xs mms).0
 
 -- | Like `qsort`@term, but sort based on key function.
-let qsort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =
+def qsort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =
   zip (map key xs) (iota n)
   |> qsort (\(x, _) (y, _) -> x <= y)
   |> map (\(_, i) -> xs[i])
