@@ -51,8 +51,7 @@ def move [n] (epsilon: f32) (theta: f32)
         in (acc vec3.+ velocity, current.parent, cur, to_check - 1)
       else -- node is too close
         let children = current.children
-        let num_children = map (i32.bool <-< (>= 0)) children
-                           |> reduce_comm (+) 0
+        let num_children = i32.sum (i32.bool (children >= 0))
         in (acc, children[0], cur, to_check + num_children - 1)
   in acceleration
 
@@ -60,14 +59,14 @@ def calc_accels [n] (epsilon: f32) (theta: f32) (bodies: [n]body)
                     : ([n]acceleration, [n]body) =
   let (accelerator, side_max, root_delta, sorted_bodies) =
     mk_accelerator bodies
-  in (map (move epsilon theta (accelerator, side_max, root_delta))
-          (map pointmass sorted_bodies),
+  in (move epsilon theta (accelerator, side_max, root_delta)
+           (pointmass sorted_bodies),
       sorted_bodies)
 
 def advance_bodies [n] (theta: f32) (epsilon: f32) (time_step: f32)
                        (bodies: [n]body): [n]body =
   let (accels, bodies) = calc_accels epsilon theta bodies
-  in map2 (advance_body time_step) bodies accels
+  in advance_body time_step bodies accels
 
 def advance_bodies_steps [n] (n_steps: i32) (theta: f32) (epsilon: f32) (time_step: f32)
                              (bodies: [n]body): [n]body =
@@ -98,9 +97,9 @@ entry main [n]
         (yvs: [n]f32)
         (zvs: [n]f32): ([n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32, [n]f32) =
   let theta = 0.5
-  let bodies  = map3 wrap_body (zip3 xps yps zps) ms (zip3 xvs yvs zvs)
+  let bodies  = wrap_body (zip3 xps yps zps) ms (zip3 xvs yvs zvs)
   let bodies' = advance_bodies_steps n_steps theta epsilon time_step bodies
-  let (final_pos, ms', final_vel) = map unwrap_body (bodies') |> unzip3
+  let (final_pos, ms', final_vel) = unzip3 (unwrap_body bodies')
   let (xps', yps', zps') = unzip3 final_pos
   let (xvs', yvs', zvs') = unzip3 final_vel
   in (xps', yps', zps', ms', xvs', yvs', zvs')

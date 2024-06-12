@@ -15,7 +15,7 @@
 -- output @ data/kdd_cup.out
 
 def euclid_dist_2 [d] (pt1: [d]f32) (pt2: [d]f32): f32 =
-  f32.sum (map (\x->x*x) (map2 (-) pt1 pt2))
+  f32.sum ((pt1 - pt2)**2)
 
 def closest_point (p1: (i32,f32)) (p2: (i32,f32)): (i32,f32) =
   if p1.1 < p2.1 then p1 else p2
@@ -28,15 +28,16 @@ def find_nearest_point [k][d] (pts: [k][d]f32) (pt: [d]f32): i32 =
 
 def centroids_of [n][d] (k: i64) (points: [n][d]f32) (membership: [n]i32): [k][d]f32 =
   let points_in_clusters =
-    hist (+) 0 k (map i64.i32 membership) (replicate n 1)
+    hist (+) 0 k (i64.i32 membership) (replicate n 1)
 
   let cluster_sums =
     hist (map2 (+)) (replicate d 0) k
-         (map i64.i32 membership)
+         (i64.i32 membership)
          points
 
-  in map2 (\point n -> map (/r32 (if n == 0 then 1 else n)) point)
-          cluster_sums points_in_clusters
+  let prop c = replicate d (f32.i64 (if c == 0 then 1 else c))
+
+  in cluster_sums / prop points_in_clusters
 
 def main [n][d]
         (threshold: i32) (k: i32) (max_iterations: i32)
@@ -46,17 +47,16 @@ def main [n][d]
   -- Assign arbitrary initial cluster centres.
   let cluster_centres = take k points
   -- Also assign points arbitrarily to clusters.
-  let membership = map i32.i64 (map (%k) (iota n))
+  let membership = i32.i64 (iota n % k)
   let delta = threshold + 1
   let i = 0
   let (_,cluster_centres,_,i) =
     loop (membership, cluster_centres, delta, i)
     while delta > threshold && i < max_iterations do
       -- For each point, find the cluster with the closest centroid.
-      let new_membership = map (find_nearest_point cluster_centres) points
+      let new_membership = find_nearest_point cluster_centres points
       -- Then, find the new centres of the clusters.
       let new_centres = centroids_of k points new_membership
-      let delta = i32.sum (map (\b -> if b then 0 else 1)
-                               (map2 (==) membership new_membership))
+      let delta = i32.sum (i32.bool (membership != new_membership))
       in (new_membership, new_centres, delta, i+1)
   in (cluster_centres, i)

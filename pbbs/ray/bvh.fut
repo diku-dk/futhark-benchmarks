@@ -28,7 +28,7 @@ type inner = {aabb: aabb, left:ptr, right:ptr, parent:i32}
 type~ bvh [n] 't = {L: [n]t, I: []inner}
 
 def bvh_mk [n] 't (bbf: t -> aabb) (ts: [n]t) : bvh [n] t =
-  let centers = map (bbf >-> aabb_center) ts
+  let centers = aabb_center (bbf ts)
   let x_max = f32.maximum (map (.x) centers)
   let y_max = f32.maximum (map (.y) centers)
   let z_max = f32.maximum (map (.z) centers)
@@ -43,7 +43,7 @@ def bvh_mk [n] 't (bbf: t -> aabb) (ts: [n]t) : bvh [n] t =
   let ts = radix_sort_by_key morton u32.num_bits u32.get_bit ts
   let empty_aabb = {min = vec(0,0,0), max = vec(0,0,0)}
   let empty_aabb {left, right, parent} = {aabb=empty_aabb, left, right, parent}
-  let inners = map empty_aabb (mk_radix_tree (map morton ts))
+  let inners = empty_aabb (mk_radix_tree (morton ts))
   let depth = i64.f32 (f32.log2 (f32.i64 n)) + 2
   let get_aabb inners ptr =
     match ptr
@@ -55,7 +55,7 @@ def bvh_mk [n] 't (bbf: t -> aabb) (ts: [n]t) : bvh [n] t =
      right,
      parent}
   let inners = loop inners for _i < depth do
-               map (update inners) inners
+               update inners inners
   in {L = ts, I = inners}
 
 def bvh_fold [n] 'a 'b (contains: aabb -> bool) (op: b -> i32 -> a -> b) (init: b) (t: bvh [n] a) : b =

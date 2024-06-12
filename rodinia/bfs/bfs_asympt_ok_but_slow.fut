@@ -49,7 +49,7 @@ def step [n][e]
   let flat_len       = i64.i32 scan_num_edges[n_indices-1]
   let write_inds     = map (\i -> if i==0 then 0 else #[unsafe] i64.i32 scan_num_edges[i-1]) (iota n_indices)
   let active_flags   = spread flat_len false write_inds (replicate n_indices true)
-  let track_nodes_tmp= spread flat_len 0 write_inds (map i32.i64 (iota n_indices))
+  let track_nodes_tmp= spread flat_len 0 write_inds (i32.i64 (iota n_indices))
   let active_starts  = map (\tid -> #[unsafe] (nodes_start_index[tid])) active_indices
   let track_index_tmp= spread flat_len 1 write_inds active_starts
 

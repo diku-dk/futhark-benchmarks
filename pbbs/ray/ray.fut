@@ -92,7 +92,7 @@ def main [npoints][ntriangles][nrays]
   -- need to do is give it a nicer representation.
 
   let to_point p = {x=p[0], y=p[1], z=p[2]}
-  let points = map to_point points_enc
+  let points = to_point points_enc
 
   -- Despite what the documentation says, the point indices are
   -- actually 1-based.
@@ -101,8 +101,8 @@ def main [npoints][ntriangles][nrays]
   let triangles = map2 to_triangle triangles_enc (iota ntriangles)
 
   let to_ray r = {orig = to_point r[0], dir = to_point r[1]}
-  let rays = map to_ray rays_enc
+  let rays = to_ray rays_enc
 
   let bvh = bvh_mk triangle_aabb triangles
 
-  in map (bvh_hit bvh) rays
+  in bvh_hit bvh rays
