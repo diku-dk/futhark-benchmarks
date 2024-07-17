@@ -25,8 +25,8 @@ if [ "$#" -ne "1" ]; then
     exit 3
 fi
 
-if [ -z "$(which shasum)" ]; then
-    echo "Error: shasum could not be found."
+if [ -z "$(which sha256sum)" ]; then
+    echo "Error: sha256sum could not be found."
 
     exit 4
 fi
@@ -38,7 +38,6 @@ if [ -z "$(which curl)" ]; then
 fi
 
 function longest_line() { cat "$1" | awk '{print length($1)}' | sort -nr | head -1 ; }
-function sha256sum() { LC_ALL=C shasum -a 256 "$@" ; }
 
 BASEDIR=$(dirname "$1")
 

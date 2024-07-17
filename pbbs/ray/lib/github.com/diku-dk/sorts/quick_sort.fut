@@ -28,9 +28,7 @@ local def step [n][k] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[k]sgm) : (*[n]
   -- find a pivot for each segment
   let pivots : []t = map (\sgm -> xs[sgm.start + sgm.sz/2]) sgms
   let sgms_szs : []i64 = map (\sgm -> sgm.sz) sgms
-  let idxs = replicated_iota sgms_szs
-  let m = length idxs
-  let idxs = idxs :> [m]i64
+  let [m] (idxs: [m]i64) = replicated_iota sgms_szs
 
   -- find the indexes into values in segments; after a value equal to
   -- a pivot has moved, it will no longer be part of a segment (it

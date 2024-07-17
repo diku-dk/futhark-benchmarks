@@ -7,5 +7,4 @@ pkgs: with pkgs; [
   xxd
   python3
   gcc
-  ncurses.dev
 ]
