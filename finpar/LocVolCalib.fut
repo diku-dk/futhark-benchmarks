@@ -64,19 +64,23 @@ def tridagPar [n] (a:  [n]f32, b: [n]f32, c: [n]f32, y: [n]f32 ): *[n]f32 =
   --   solved by scan with 2x2 matrix mult operator --
   ----------------------------------------------------
   let b0   = b[0]
-  let mats = tabulate n (\i ->
+
+  let mats = map  (\i ->
                      if 0 < i
-                     then (b[i], 0.0-a[i]*c[i-1], 1.0, 0.0)
-                     else (1.0,  0.0,             0.0, 1.0))
-  let scmt = scan (\(a0,a1,a2,a3) (b0,b1,b2,b3) ->
-                     let value = 1.0/(a0*b0)
-                     in ( (b0*a0 + b1*a2)*value,
-                          (b0*a1 + b1*a3)*value,
-                          (b2*a0 + b3*a2)*value,
-                          (b2*a1 + b3*a3)*value))
-                  (1.0,  0.0, 0.0, 1.0) mats
-  let b    = map (\(t0,t1,t2,t3) -> (t0*b0 + t1) / (t2*b0 + t3)) scmt
-  ------------------------------------------------------
+                     then let bi = 1 / b[i] in
+                          (-a[i]*c[i-1]*bi, bi,  0.0)
+                     else (0.0,             0.0, 1.0))
+                  (iota n)
+
+  let scmt = scan (\(a1,a2,a3) (b1,b2,b3) ->
+                     let value = 1.0/ (1.0 + b1*a2)
+                     in ( (a1    + b1*a3) * value,
+                          (b2    + b3*a2) * value,
+                          (b2*a1 + b3*a3) * value  )
+                  )
+                  (0.0, 0.0, 1.0) mats
+
+  let b    = map (\(t1,t2,t3) -> (b0 + t1) / (t2*b0 + t3)) scmt  ------------------------------------------------------
   -- Recurrence 2: y[i] = y[i] - (a[i]/b[i-1])*y[i-1] --
   --   solved by scan with linear func comp operator  --
   ------------------------------------------------------
