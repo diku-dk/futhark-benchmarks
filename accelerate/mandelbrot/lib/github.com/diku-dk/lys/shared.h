@@ -9,7 +9,8 @@
 
 #include PROGHEADER
 
-void lys_setup_futhark_context(const char *deviceopt, bool device_interactive,
+void lys_setup_futhark_context(const char *progname,
+                               const char *deviceopt, bool device_interactive,
                                struct futhark_context_config* *futcfg,
                                struct futhark_context* *futctx,
                                char* *opencl_device_name);

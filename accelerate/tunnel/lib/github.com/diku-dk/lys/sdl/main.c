@@ -9,8 +9,11 @@
 #define INITIAL_WIDTH 800
 #define INITIAL_HEIGHT 600
 
+bool show_text = true;
+
 void loop_start(struct lys_context *ctx, struct lys_text *text) {
   prepare_text(ctx->fut, text);
+  text->show_text = show_text;
 }
 
 void loop_iteration(struct lys_context *ctx, struct lys_text *text) {
@@ -145,6 +148,7 @@ void usage(char **argv) {
   puts("  -R      Disallow resizing the window.");
   puts("  -d DEV  Set the computation device.");
   puts("  -r INT  Maximum frames per second.");
+  puts("  -t      Do not show text by default.");
   puts("  -i      Select execution device interactively.");
   puts("  -b <render|step>  Benchmark program.");
 }
@@ -157,7 +161,7 @@ int main(int argc, char** argv) {
   char *benchopt = NULL;
 
   int c;
-  while ( (c = getopt(argc, argv, "w:h:r:Rd:b:i")) != -1) {
+  while ( (c = getopt(argc, argv, "w:h:r:Rtd:b:i")) != -1) {
     switch (c) {
     case 'w':
       width = atoi(optarg);
@@ -182,6 +186,9 @@ int main(int argc, char** argv) {
       break;
     case 'R':
       allow_resize = false;
+      break;
+    case 't':
+      show_text = false;
       break;
     case 'd':
       deviceopt = optarg;
@@ -226,7 +233,8 @@ int main(int argc, char** argv) {
   lys_setup(&ctx, width, height, max_fps, sdl_flags);
 
   char* opencl_device_name = NULL;
-  lys_setup_futhark_context(deviceopt, device_interactive,
+  lys_setup_futhark_context(argv[0],
+                            deviceopt, device_interactive,
                             &futcfg, &ctx.fut, &opencl_device_name);
   if (opencl_device_name != NULL) {
     printf("Using OpenCL device: %s\n", opencl_device_name);
