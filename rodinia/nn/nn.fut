@@ -17,7 +17,7 @@ def main [numRecords]
   let locations = zip locations_lat locations_lng
   let distance (lat_i: f32, lng_i: f32) =
     f32.sqrt((lat-lat_i)*(lat-lat_i) + (lng-lng_i)*(lng-lng_i) )
-  let distances = map distance locations
+  let distances = distance locations
 
   let results = replicate (i64.i32 resultsCount) emptyRecord
   let (results, _) =

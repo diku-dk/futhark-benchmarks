@@ -153,4 +153,4 @@ def main (sizeX: i32) (sizeY: i32) (fov: i32)
                  y=f32.sin eye_dir_B,
                  z=f32.sin eye_dir_A * f32.cos eye_dir_B}
   let eye_rays = cast_view_rays sizeX sizeY fov eye_dir
-  in map (map (trace_ray limit objects lights ambient eye_pos)) eye_rays
+  in trace_ray limit objects lights ambient eye_pos eye_rays

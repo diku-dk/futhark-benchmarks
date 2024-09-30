@@ -81,9 +81,9 @@ def ds: [FLAG][3]i64 =
 def transvec: []i64 = [PADDED_X*PADDED_Y, PADDED_X, 1]
 
 def dotprod (x: []i64) (y: []i64): i64 =
-  reduce (+) 0 (map2 (*) x y)
+  i64.sum (x * y)
 
-def ind_offsets = map (\d -> dotprod d transvec) ds
+def ind_offsets = dotprod ds transvec
 
 def speeds [l] (rhos: [l]f32): (f32, f32, f32) =
   let ux = - rhos[W] + rhos[E] - rhos[SW] + rhos[SE] - rhos[NW] + rhos[NE] - rhos[WB] - rhos[WT] + rhos[EB] + rhos[ET]
@@ -170,8 +170,8 @@ def gather_collide [n][s] (grid_2d: [n][s]f32): [n][s]f32  =
                 if i < MARGIN || i > (TOTAL_PADDED_CELLS - MARGIN)
                 then grid_2d[:, i]
                 else
-                let inds = map (\ind_offset -> i + ind_offset) ind_offsets
-                let rhos = map2 (\j ind-> grid_2d[j, ind]) (iota (FLAG)) inds
+                let inds = i + ind_offsets
+                let rhos = map2 (\j ind-> grid_2d[j, ind]) (iota FLAG) inds
                 in (perform_collision rhos grid_2d[FLAG, i]) :> [n]f32)
   in transpose collided
 
@@ -184,7 +184,7 @@ def gather [n][s] (grid_2d: *[n][s]f32): *[n][s]f32  =
                   if i < MARGIN || i > (TOTAL_PADDED_CELLS - MARGIN)
                   then grid_2d[:, i]
                   else
-                  let inds = map (\ind_offset -> i + ind_offset) ind_offsets
+                  let inds = i + ind_offsets
                   in
                   [
                     grid_2d[C, inds[C]],

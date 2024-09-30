@@ -33,10 +33,10 @@ def find_nearest_point [k] (pts: [k]point) (pt: point): i32 =
 
 def centroids_of [n] (k: i64) (points: [n]point) (membership: [n]i32): [k]point =
   let cluster_sizes =
-    hist (+) 0 k (map i64.i32 membership) (replicate n 1)
+    hist (+) 0 k (i64.i32 membership) (replicate n 1)
   let cluster_sums =
-    hist add_points (0,0) k (map i64.i32 membership) points
-  in map2 scale_point cluster_sums (map (1/) (map r32 cluster_sizes))
+    hist add_points (0,0) k (i64.i32 membership) points
+  in cluster_sums `scale_point` (1/r32 cluster_sizes)
 
 def continue [k] (old_centres: [k]point) (cur_centres: [k]point): bool =
   let changed ((x1,y1), (x2,y2)) =
@@ -54,7 +54,7 @@ def main [n] (k: i32) (points_in: [n][2]f32): ([][2]f32, i32) =
 
   let recentre (cluster_centres: [k]point) =
         -- For each point, find the cluster with the closest centroid.
-        let new_membership = map (find_nearest_point cluster_centres) points
+        let new_membership = find_nearest_point cluster_centres points
         -- Then find the new centres of the clusters.
         in centroids_of k points new_membership
 

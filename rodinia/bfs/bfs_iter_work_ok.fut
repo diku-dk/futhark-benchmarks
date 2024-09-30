@@ -81,7 +81,7 @@ def step [n][e]
   let graph_mask_res =
     scatter graph_mask active_indices (map (const false) active_indices)
 
-  let active_indices = map i32.i64 active_indices
+  let active_indices = i32.i64 active_indices
   let continue = true
   let (cost_res, updating_graph_mask_res, _, _) =
     loop (cost, updating_graph_mask, active_indices, continue)
