@@ -55,8 +55,8 @@ while read -r OUTPUT URL CHECKSUM; do
         else
             echo "Invalid checksum!"
             echo "Expected $CHECKSUM, got $COMPUTED_SUM."
-            echo "You can manually delete the file to get the correct version."
-            exit 2
+            echo "Deleting file and redownloading."
+            rm "$OUTPUT"
         fi
     fi
 
