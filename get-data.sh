@@ -61,14 +61,11 @@ while read -r OUTPUT URL CHECKSUM; do
     fi
 
     echo "File missing, downloading..."
-    TMPFILE=$(mktemp)
-    curl --fail "$URL" --output "$TMPFILE"
-    COMPUTED_SUM=$(sha256sum "$TMPFILE" | cut -f 1 -d ' ')
+    mkdir -p "${BASEDIR}/$(dirname "$OUTPUT")"
+    curl --fail "$URL" --output "${BASEDIR}/${OUTPUT}"
+    COMPUTED_SUM=$(sha256sum "${BASEDIR}/${OUTPUT}" | cut -f 1 -d ' ')
 
-    if [ "$COMPUTED_SUM" = "$CHECKSUM" ]; then
-        mkdir -p "${BASEDIR}/$(dirname "$OUTPUT")"
-        mv "$TMPFILE" "${BASEDIR}/${OUTPUT}"
-    else
+    if [ "$COMPUTED_SUM" != "$CHECKSUM" ]; then
         echo "Error: Invalid checksum of downloaded file!"
         echo "Expected $CHECKSUM, got $COMPUTED_SUM."
         exit 1
