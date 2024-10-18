@@ -6,6 +6,12 @@
 -- no_rtx2080 no_k40 no_gtx780 input @ data/large.in.gz
 -- output { 952131i64 }
 
+-- ==
+-- entry: diff
+-- input @ data/small.in.gz
+-- no_rtx2080 no_k40 no_gtx780 input @ data/large.in.gz
+
+
 type nuclide_grid_point =
   { energy: f64,
     total_xs: f64,
@@ -225,9 +231,29 @@ def unpack n_isotopes n_gridpoints grid_type hash_bins lookups
     {num_nucs, concs, mats, nuclide_grid, index_grid, unionized_energy_array}
   in (inputs, sd)
 
-def main n_isotopes n_gridpoints grid_type hash_bins lookups
-         num_nucs concs mats nuclide_grid index_grid unionized_energy_array =
+entry main n_isotopes n_gridpoints grid_type hash_bins lookups
+           num_nucs concs mats nuclide_grid index_grid unionized_energy_array =
   let (inputs, sd) =
     unpack n_isotopes n_gridpoints grid_type hash_bins lookups
            num_nucs concs mats nuclide_grid index_grid unionized_energy_array
   in #[unsafe] verification (run_event_based_simulation inputs sd)
+
+-- Performs a single vjp pass with an all-unit seed vector. This is
+-- unlikely to produce a useful gradient, but does show the overhead
+-- of a single jvp invocation.
+entry diff n_isotopes n_gridpoints grid_type hash_bins lookups
+           num_nucs concs mats nuclide_grid index_grid unionized_energy_array =
+  let (inputs, sd) =
+    unpack n_isotopes n_gridpoints grid_type hash_bins lookups
+           num_nucs concs mats nuclide_grid index_grid unionized_energy_array
+  let diff_res = #[unsafe]
+     (vjp (run_event_based_simulation inputs)
+          sd
+          (replicate inputs.lookups (1,1,1,1,1))).nuclide_grid
+  in (map (map (.absorbtion_xs)) diff_res,
+      map (map (.elastic_xs)) diff_res,
+      map (map (.energy)) diff_res,
+      map (map (.fission_xs)) diff_res,
+      map (map (.nu_fission_xs)) diff_res,
+      map (map (.total_xs)) diff_res,
+     )
