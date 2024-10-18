@@ -178,6 +178,8 @@ entry calculate_objective [num_bones][N][M]
       is_mirrored }
   in objective model correspondences points theta us
 
+import "lib/github.com/diku-dk/autodiff/onehot"
+
 -- The Jacobian is morally transposed, because that is what ADBench expects.
 entry calculate_jacobian [num_bones][N][M][num_us]
   (parents: [num_bones]i32)
@@ -197,13 +199,8 @@ entry calculate_jacobian [num_bones][N][M][num_us]
       base_positions,
       triangles,
       is_mirrored }
-  let f i =
-    let theta' = tabulate theta_count (\j -> f64.bool(j==i))
-    let us' = tabulate num_us (\j -> f64.bool(i >= theta_count && (j%2)==(i%2)))
-    in jvp (\(a,b) -> objective model correspondences points a b)
-           (theta,us) (theta',us')
-  let us_derivs = if N == 0 then 0 else 2
-  let J = map flatten (tabulate (theta_count+us_derivs) f)
+  let f = uncurry (objective model correspondences points)
+  let J = map flatten (map (jvp f (theta,us)) (onehots onehot.(pair (arr f64) (arr f64))))
   in if N == 0
      then J
      else
