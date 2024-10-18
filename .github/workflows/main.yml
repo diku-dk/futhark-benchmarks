@@ -27,3 +27,5 @@ jobs:
         version: 'nightly'
 
     - run: futhark test -C --pass-compiler-option=--Werror *
+
+    - run: sh get-data.sh external-data.txt
