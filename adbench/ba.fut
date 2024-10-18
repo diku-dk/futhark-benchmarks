@@ -2,13 +2,13 @@ import "lib/github.com/athas/vector/vspace"
 
 module v3d = mk_vspace_3d f64
 type point_3d = v3d.vector
-let point_3d a: point_3d = {x=a[0], y=a[1], z=a[2]}
+def point_3d a: point_3d = {x=a[0], y=a[1], z=a[2]}
 
 module v2d = mk_vspace_2d f64
 type point_2d = v2d.vector
-let point_2d a: point_2d = {x=a[0], y=a[1]}
+def point_2d a: point_2d = {x=a[0], y=a[1]}
 
-let rodrigues_rotate_point (rot: point_3d) (X: point_3d) =
+def rodrigues_rotate_point (rot: point_3d) (X: point_3d) =
     let sqtheta = v3d.quadrance rot in
     if sqtheta != 0 then
         let theta = f64.sqrt sqtheta
@@ -25,25 +25,25 @@ let rodrigues_rotate_point (rot: point_3d) (X: point_3d) =
                 scale tmp w)
     else v3d.(X + cross rot X)
 
-let radial_distort (rad_params: point_2d) (proj: point_2d) =
+def radial_distort (rad_params: point_2d) (proj: point_2d) =
   let rsq = v2d.quadrance proj
   let L = 1 + rad_params.x * rsq + rad_params.y * rsq * rsq
   in v2d.scale L proj
 
 type cam = {rot: point_3d, center: point_3d, focal: f64, x0: point_2d, rad: point_2d}
 
-let project (cam: cam) X =
+def project (cam: cam) X =
   let Xcam = rodrigues_rotate_point cam.rot (X v3d.- cam.center)
   let distorted = radial_distort cam.rad (v2d.scale (1/Xcam.z) {x=Xcam.x, y=Xcam.y})
   in cam.x0 v2d.+ v2d.scale cam.focal distorted
 
-let compute_reproj_err cam X w feat : point_2d =
+def compute_reproj_err cam X w feat : point_2d =
   v2d.scale w (project cam X v2d.- feat)
 
-let compute_zach_weight_error w : f64 =
+def compute_zach_weight_error w : f64 =
   1 - w*w
 
-let ba_objective [n][m][p] (cams: [n]cam) (X: [m]point_3d) (w: [p]f64) (obs:[p][2]i32) (feat:[]point_2d) =
+def ba_objective [n][m][p] (cams: [n]cam) (X: [m]point_3d) (w: [p]f64) (obs:[p][2]i32) (feat:[]point_2d) =
   let reproj_err =
     tabulate p (\i -> compute_reproj_err cams[obs[i,0]]
                                          X[obs[i,1]]
@@ -52,9 +52,9 @@ let ba_objective [n][m][p] (cams: [n]cam) (X: [m]point_3d) (w: [p]f64) (obs:[p][
   let w_err = map compute_zach_weight_error w
   in (reproj_err, w_err)
 
-let grad f x = vjp f x 1f64
+def grad f x = vjp f x 1f64
 
-let ba_diff [n][m][p] (cams: [n]cam)
+def ba_diff [n][m][p] (cams: [n]cam)
                       (X: [m]point_3d)
                       (w: [p]f64)
                       (obs: [p][2]i32)
@@ -70,7 +70,7 @@ let ba_diff [n][m][p] (cams: [n]cam)
           (map (\i -> X[i]) obs[:,1])
           w feats
 
-let idx_cam (i: i64) (cam: cam) : f64 =
+def idx_cam (i: i64) (cam: cam) : f64 =
   match i
   case 0 -> cam.rot.x
   case 1 -> cam.rot.y
@@ -84,7 +84,7 @@ let idx_cam (i: i64) (cam: cam) : f64 =
   case 9 -> cam.rad.x
   case _ -> cam.rad.y
 
-let unpack_cam (cam: [11]f64) : cam =
+def unpack_cam (cam: [11]f64) : cam =
   {rot = point_3d cam[0:3],
    center = point_3d cam[3:6],
    focal = cam[6],

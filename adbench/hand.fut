@@ -2,12 +2,12 @@ import "lib/github.com/diku-dk/linalg/linalg"
 
 module linalg_f64 = mk_linalg f64
 
-let matmul = linalg_f64.matmul
-let matadd = map2 (map2 (f64.+))
+def matmul = linalg_f64.matmul
+def matadd = map2 (map2 (f64.+))
 
-let identity n = tabulate_2d n n (\i j -> f64.bool(i == j))
+def identity n = tabulate_2d n n (\i j -> f64.bool(i == j))
 
-let angle_axis_to_rotation_matrix (angle_axis: [3]f64) : [3][3]f64 =
+def angle_axis_to_rotation_matrix (angle_axis: [3]f64) : [3][3]f64 =
   let n = f64.sqrt (angle_axis[0]**2+angle_axis[1]**2+angle_axis[2]**2)
   in if n < 0.0001 then identity 3 else
      let x = angle_axis[0] / n
@@ -25,13 +25,13 @@ let angle_axis_to_rotation_matrix (angle_axis: [3]f64) : [3][3]f64 =
           z * y * (1 - c) + x * s,
           z * z + (1 - z * z) * c]]
 
-let apply_global_transform [n][m] (pose_params: [n][3]f64) (positions: [3][m]f64) : [3][m]f64 =
+def apply_global_transform [n][m] (pose_params: [n][3]f64) (positions: [3][m]f64) : [3][m]f64 =
   let R = angle_axis_to_rotation_matrix pose_params[0]
           |> map (map2 (*) pose_params[1])
   in (R `matmul` positions) `matadd`
      transpose (replicate m [pose_params[2,0], pose_params[2,1], pose_params[2,2]])
 
-let relatives_to_absolutes [n] (relatives: [n][4][4]f64) (parents: [n]i32) : [n][4][4]f64 =
+def relatives_to_absolutes [n] (relatives: [n][4][4]f64) (parents: [n]i32) : [n][4][4]f64 =
   -- Initial value does not matter.
   loop absolutes : *[n][4][4]f64 = replicate n (identity 4)
   for i < n do
@@ -41,7 +41,7 @@ let relatives_to_absolutes [n] (relatives: [n][4][4]f64) (parents: [n]i32) : [n]
                          then relative
                          else copy (absolutes[parent] `matmul` relative)
 
-let euler_angles_to_rotation_matrix (xzy: [3]f64) : [4][4]f64 =
+def euler_angles_to_rotation_matrix (xzy: [3]f64) : [4][4]f64 =
   let tx = xzy[0]
   let ty = xzy[2]
   let tz = xzy[1]
@@ -78,14 +78,14 @@ type~ hand_model [num_bones][M] =
     is_mirrored: bool
   }
 
-let get_posed_relatives [num_bones][M] (model: hand_model [num_bones][M]) (pose_params: [][3]f64) =
+def get_posed_relatives [num_bones][M] (model: hand_model [num_bones][M]) (pose_params: [][3]f64) =
   let offset = 3
   let f i =
     matmul model.base_relatives[i]
            (euler_angles_to_rotation_matrix pose_params[i+offset])
   in tabulate num_bones f
 
-let get_skinned_vertex_positions [num_bones][M]
+def get_skinned_vertex_positions [num_bones][M]
                                  (model: hand_model [num_bones][M])
                                  (pose_params: [][3]f64)
                                  (apply_global: bool) =
@@ -111,7 +111,7 @@ let get_skinned_vertex_positions [num_bones][M]
      then apply_global_transform pose_params positions
      else positions
 
-let to_pose_params (theta: []f64) (num_bones: i64) : [][]f64 =
+def to_pose_params (theta: []f64) (num_bones: i64) : [][]f64 =
   let n = 3 + num_bones
   let num_fingers = 5
   let cols = 5 + num_fingers * 4
@@ -124,14 +124,14 @@ let to_pose_params (theta: []f64) (num_bones: i64) : [][]f64 =
                          else if j % 4 == 1 then [theta[j + 1], theta[j + 2], 0]
                          else [theta[j + 2], 0, 0])
 
-let (+^) = map2 (f64.+)
+def (+^) = map2 (f64.+)
 
 -- Not sure if this should be a run-time parameter, but it is constant
 -- for all datasets, and seems more like an algorithmic property (it's
 -- an encoding of various spatial transformations).
-let theta_count : i64 = 26
+def theta_count : i64 = 26
 
-let objective [num_us][num_bones][N][M]
+def objective [num_us][num_bones][N][M]
     (model: hand_model [num_bones][M])
     (correspondences: [N]i32)
     (points: [3][N]f64)

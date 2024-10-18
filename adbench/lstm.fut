@@ -1,10 +1,10 @@
-let dotproduct [n] (a: [n]f64) (b: [n]f64) : f64 =
+def dotproduct [n] (a: [n]f64) (b: [n]f64) : f64 =
     f64.sum <| map2 (*) a b
 
-let sigmoid (x: f64) : f64 =
+def sigmoid (x: f64) : f64 =
     1.0f64 / (1.0f64 + f64.exp(-x))
 
-let lstmModel [d] (weight: [4][d]f64) (bias: [4][d]f64)
+def lstmModel [d] (weight: [4][d]f64) (bias: [4][d]f64)
                   (hidden: [d]f64) (cell: [d]f64) (input: [d]f64)
                 : ([d]f64, [d]f64) =
     let forget = map sigmoid <| map2 (+) bias[0] <| map2 (*) input  weight[0]
@@ -19,7 +19,7 @@ let lstmModel [d] (weight: [4][d]f64) (bias: [4][d]f64)
     let hidden2 = map2 (*) outgate <| map f64.tanh cell2
     in (hidden2, cell2)
 
-let lstmPredict [slen] [d]
+def lstmPredict [slen] [d]
                 (mainParams: [slen][2][4][d]f64)
                 (extraParams: [3][d]f64)
                 (state: [slen][2][d]f64)
@@ -37,7 +37,7 @@ let lstmPredict [slen] [d]
              map2 (+) extraParams[2]
     in  (v', state')
 
-let lstmObjective [stlen] [lenSeq] [d]
+def lstmObjective [stlen] [lenSeq] [d]
                   (mainParams0: [stlen*2][4*d]f64)
                   (extraParams: [3][d]f64)
                   (state0: [stlen*2][d]f64)
