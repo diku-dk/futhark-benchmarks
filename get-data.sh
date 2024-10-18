@@ -67,7 +67,8 @@ while read -r OUTPUT URL CHECKSUM; do
 
     if [ "$COMPUTED_SUM" != "$CHECKSUM" ]; then
         echo "Error: Invalid checksum of downloaded file!"
-        echo "Expected $CHECKSUM, got $COMPUTED_SUM."
+        echo "Expected: $CHECKSUM"
+        echo "Got:      $COMPUTED_SUM"
         exit 1
     fi
 done < "$1"
