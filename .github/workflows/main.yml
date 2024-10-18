@@ -7,6 +7,9 @@ on:
   push:
     branches: [ master ]
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
   # Run weekly to detect compiler or dependency regressions.
   schedule:
     - cron: "0 0 * * 0"
