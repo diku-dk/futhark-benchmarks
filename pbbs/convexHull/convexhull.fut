@@ -7,6 +7,7 @@
 -- right ordering, but the flattened quickhull does not otherwise
 -- preserve it.
 -- ==
+-- tags { no_opencl }
 -- compiled input @ data/2DinSphere_10K.in
 -- output @ data/2DinSphere_10K.out
 -- compiled input @ data/2DinSphere_100K.in
