@@ -28,4 +28,4 @@ jobs:
 
     - run: futhark test -C --pass-compiler-option=--Werror *
 
-#    - run: ./get-data.sh external-data.txt
+    - run: ./get-data.sh -t external-data.txt
