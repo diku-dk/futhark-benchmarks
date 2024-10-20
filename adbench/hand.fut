@@ -200,12 +200,14 @@ entry calculate_jacobian [num_bones][N][M][num_us]
       triangles,
       is_mirrored }
   let us_derivs = if num_us == 0 then 0 else 2
-  let f i =
-    let (theta',us') = onehot.onehot (onehot.(pair (arr f64) (arr f64))) i
-    let us'' = sized num_us (flatten (replicate (num_us/2) us') : [num_us/2*2]f64)
+  let oh : onehot.gen [theta_count*1+us_derivs]
+                      ([theta_count]f64,[num_us/2][2]f64) =
+    onehot.(pair (arr f64) (resize (cycle (arr f64))))
+  let f (theta',us') =
+    let us'' = sized num_us (flatten us')
     in jvp (uncurry (objective model correspondences points))
-           (theta,us) (trace (theta',us''))
-  let J = map flatten (map f (iota (theta_count+us_derivs)))
+           (theta,us) (theta',us'')
+  let J = map flatten (map f (onehots oh))
 
   in if num_us == 0
      then J

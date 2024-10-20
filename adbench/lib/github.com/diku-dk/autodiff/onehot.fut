@@ -27,6 +27,10 @@ module type onehot = {
   -- value of type 'a'.
   val size [n] 'a : gen [n] a -> i64
 
+  -- | Resize the generation space. This does not affect the actual
+  -- values generated.
+  val resize [n][m] 'a : gen [n] a -> gen [m] a
+
   -- | Produces a generator that is `one` at index 0 and `zero`
   -- everywhere else.
   val point 'a : (one: a) -> (zero: a) -> gen [1] a
@@ -64,6 +68,9 @@ module type onehot = {
   -- Polymorphic in the array size, which will be inferred at the
   -- usage site.
   val arr [n][m] 'a : gen [m] a -> gen [n*m] ([n]a)
+
+  -- | Repeats the elements of a generator.
+  val cycle [n][r] 'a : gen [n] a -> gen [n] ([r]a)
 }
 
 module onehot : onehot = {
@@ -77,23 +84,10 @@ module onehot : onehot = {
   def onehot 'a (gen: gen [] a) i = gen.gen i
   def size [n] 'a (_: gen [n] a) = n
 
+  def resize [n][m] 'a (gen: gen [n] a) = {size = witness m, gen = gen.gen}
+
   def point one zero = {size = witness 1,
                         gen = \i -> if i == 0i64 then one else zero}
-
-  def bool = point true false
-  def i8 = point 1i8 0i8
-  def i16 = point 1i16 0i16
-  def i32 = point 1i32 0i32
-  def i64 = point 1i64 0i64
-  def u8 = point 1u8 0u8
-  def u16 = point 1u16 0u16
-  def u32 = point 1u32 0u32
-  def u64 = point 1u64 0u64
-
-  def f16 = point 1f16 0f16
-  def f32 = point 1f32 0f32
-  def f64 = point 1f64 0f64
-
   def fixed a = { size = witness 0, gen = const a }
 
   def pair [n][m] 'a 'b (x: gen[n]a) (y: gen[m]b) =
@@ -112,9 +106,28 @@ module onehot : onehot = {
     { size = witness (n*m),
       gen = \i -> tabulate n (\l ->
                                 if i / m == l
-                                then onehot gen (i % m)
+                                then onehot gen (i %% m)
                                 else onehot gen (-1))
     }
+
+  def cycle [n][r] 'a (gen: gen [n] a) =
+    { size = witness n,
+      gen = \i -> replicate r (gen.gen (if i < 0 then -1 else i%%n))
+    }
+
+  def bool = point true false
+  def i8 = point 1i8 0i8
+  def i16 = point 1i16 0i16
+  def i32 = point 1i32 0i32
+  def i64 = point 1i64 0i64
+  def u8 = point 1u8 0u8
+  def u16 = point 1u16 0u16
+  def u32 = point 1u32 0u32
+  def u64 = point 1u64 0u64
+
+  def f16 = point 1f16 0f16
+  def f32 = point 1f32 0f32
+  def f64 = point 1f64 0f64
 }
 
 -- | Generate all one-hot values possible for a given generator.
