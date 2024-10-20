@@ -199,9 +199,15 @@ entry calculate_jacobian [num_bones][N][M][num_us]
       base_positions,
       triangles,
       is_mirrored }
-  let f = uncurry (objective model correspondences points)
-  let J = map flatten (map (jvp f (theta,us)) (onehots onehot.(pair (arr f64) (arr f64))))
-  in if N == 0
+  let us_derivs = if num_us == 0 then 0 else 2
+  let f i =
+    let (theta',us') = onehot.onehot (onehot.(pair (arr f64) (arr f64))) i
+    let us'' = sized num_us (flatten (replicate (num_us/2) us') : [num_us/2*2]f64)
+    in jvp (uncurry (objective model correspondences points))
+           (theta,us) (trace (theta',us''))
+  let J = map flatten (map f (iota (theta_count+us_derivs)))
+
+  in if num_us == 0
      then J
      else
        -- ADBench expects the packed 'us' derivatives to be in the
