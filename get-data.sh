@@ -14,7 +14,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-if [ "$#" -ne "1" ] && [ "$#" -ne "2" ] || [ "x$2" -ne "x-t" ]; then
+if [ "$#" -ne "1" ] && ([ "$#" -ne "2" ] || [ "x$2" -ne "x-t" ]); then
     echo "Usage: $0 [-t] FILE"
     echo "FILE must be a file containing lines of the format:"
     echo "   PATH URL SHA256SUM"
