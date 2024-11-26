@@ -14,10 +14,10 @@ def common_main [n][e] (step: step_fn [n][e])
                        (nodes_n_edges: [n]i32)
                        (edges_dest: [e]i32) : [n]i32 =
     let source = 0
-    let is_source = map (==source) (iota n)
+    let is_source = iota n == source
     let (graph_mask, graph_visited, cost) = (copy is_source,
                                              copy is_source,
-                                             map (\x -> if x then 0 else -1) is_source)
+                                             i32.bool is_source - 1)
     let (cost,_,_,_,_) =
       loop (cost, graph_mask, graph_visited, updating_graph_mask, continue) =
            (cost, graph_mask, graph_visited, replicate n false, true)
@@ -37,7 +37,7 @@ def common_main [n][e] (step: step_fn [n][e])
         let updating_graph_mask'' =
             scatter updating_graph_mask' step2_inds (replicate n false)
 
-        let continue_indices = map (\x -> if x>=0 then 0 else -1) step2_inds
+        let continue_indices = i64.bool (step2_inds >= 0) - 1
         let continue' =
             scatter [false] continue_indices (replicate n true)
 

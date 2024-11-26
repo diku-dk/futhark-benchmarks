@@ -116,5 +116,5 @@ def render_mandelbrot (screenX: i64) (screenY: i64)
                      real.(ycentre + (int 1/aspect_ratio)*width/int 2))
   let escapes = mandelbrot screenX screenY limit radius (xmin, ymin, xmax, ymax)
   let points = 2048
-  in map (map1 (escape_to_colour limit points)) escapes
+  in escape_to_colour limit points escapes
 }

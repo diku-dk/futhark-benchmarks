@@ -5,9 +5,9 @@
 -- output @ data/small.out
 -- input @ data/medium.in
 
-def eta(): f32       = 0.3
-def momentum(): f32  = 0.3
-def init_zero(): bool = false
+def eta: f32       = 0.3
+def momentum: f32  = 0.3
+def init_zero: bool = false
 
 def squash(x: f32): f32 = 1.0 / (1.0 + f32.exp(-x))
 def fabs   (x: f32): f32 = if x < 0.0 then 0.0 - x else x
@@ -15,59 +15,32 @@ def fabs   (x: f32): f32 = if x < 0.0 then 0.0 - x else x
 -- Computational kernels
 
 def bpnn_output_error [n] (target: [n]f32, output: [n]f32): (f32, [n]f32) =
-    let (errs, delta) = unzip (
-        map ( \(t: f32, o: f32): (f32,f32)  ->
-                let d = o * (1.0 - o) * (t - o)
-                in ( if d < 0.0 then 0.0-d else d, d ))
-            (zip target output ))
-    let err = f32.sum errs
-    in  ( err, delta )
+  let delta = output * (1.0 - output) * (target - output)
+  let err = f32.sum (f32.abs delta)
+  in  ( err, delta )
 
 
 def bpnn_hidden_error [no][nh] (delta_o: [no]f32, who: [nh][no]f32, hidden: [nh]f32): (f32, [nh]f32) =
-    let (errs, delta_h) = unzip (
-        map ( \(hidden_el: f32, who_row: []f32): (f32,f32)  ->
-                let prods  = map2 (*) delta_o who_row
-                let sumrow = f32.sum prods
-                let new_el = hidden_el * (1.0-hidden_el) * sumrow
-                in ( fabs(new_el), new_el ))
-            (zip hidden who))
-    let err = f32.sum errs
-    in  ( err, delta_h )
+  let prods  = delta_o * who
+  let sumrow = f32.sum prods
+  let delta_h = hidden * (1.0-hidden) * sumrow
+  let err = f32.sum (fabs delta_h)
+  in  ( err, delta_h )
 
 def bpnn_adjust_weights [ndelta][nlym1][nly] (delta: [ndelta]f32, ly: [nlym1]f32, w: [nly][ndelta]f32, oldw: [nly][ndelta]f32): ([nly][ndelta]f32, [nly][ndelta]f32) =
   let lyext = tabulate nly (\k -> if k < 1 then 1.0 else #[unsafe] ly[k-1])
-  in unzip (map (\(w_row: []f32, oldw_row: []f32, lyk: f32)  ->
-                    unzip (map ( \(w_el: f32, oldw_el: f32, delta_el: f32): (f32,f32)  ->
-                                   let new_dw = eta()*delta_el*lyk + momentum()*oldw_el
-                                   in ( w_el+new_dw, new_dw ))
-                           (zip3 (w_row) (oldw_row) delta)))
-            (zip3 w oldw lyext))
-
+  in (w + momentum*oldw + eta*delta*transpose (replicate ndelta lyext),
+      momentum*oldw + eta*delta*transpose (replicate ndelta lyext))
 
 def bpnn_layerforward_GOOD [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
-  let res_tmp   = map ( \(conn_tr_row: [n1]f32): f32  ->
-                            let prods = map2 (*) conn_tr_row l1
-                            in f32.sum prods)
-                      connT
-  in map (\(pr: f32, conn0: f32): f32  -> squash(pr+conn0))
-  (zip (res_tmp) (conn_fstrow))
-
+  let res_tmp   = f32.sum (connT * l1)
+  in squash(res_tmp+conn_fstrow)
 
 def bpnn_layerforward [n1][n2] (l1: [n1]f32, conn: [n1][n2]f32, conn_fstrow: [n2]f32): [n2]f32 =
   let connT     = transpose(conn)
-  let res_map   = map ( \(conn_tr_row: [n1]f32): [n1]f32  ->
-                        map2 (*) conn_tr_row l1)
-                      connT
-
-  -- FIXME: nasty hack to avoid fusion, which presently causes the
-  -- kernel extractor to sequentialise the reduction.
-
-  let res_tmp   = map f32.sum (opaque res_map)
-
-  in map ( \(pr: f32, conn0: f32): f32  -> squash(pr+conn0))
-  (zip (res_tmp) (conn_fstrow))
+  let res_tmp   = f32.sum (connT * l1)
+  in squash(res_tmp+conn_fstrow)
 
 --------------------------------------------------------/
 
@@ -129,7 +102,7 @@ def bpnn_randomize_weights (m: i64) (n: i64) (offset: i32) (dirVct: []i32): ([m]
     in (mat, vct)
 
 def bpnn_randomize_row (m: i64) (offset: i32) (dirVct: []i32): [m]f32 =
-    map (sobolIndR(dirVct)) (map (+offset) (map i32.i64 (iota m)))
+    sobolIndR dirVct (offset + i32.i64 (iota m))
 
 def bpnn_constant_row (m: i64) (value: f32): [m]f32 =
     replicate m value
@@ -152,7 +125,7 @@ def bpnn_create (n_in: i64) (n_hid: i64) (n_out: i64) (offset: i32) (dirVct: []i
 
   -- [#n_in][#n_hidden]f32
   let (offset, (input_weights, input_weights_fstcol)) =
-    if init_zero()
+    if init_zero
     then (  offset, (bpnn_zero_weights (n_in+1) n_hid, replicate (n_in+1) 0.0) )
     else (  offset+i32.i64 (n_in+1)*i32.i64 (n_hid+1),
             bpnn_randomize_weights (n_in+1) n_hid offset dirVct  )
@@ -177,9 +150,9 @@ def bpnn_create (n_in: i64) (n_hid: i64) (n_out: i64) (offset: i32) (dirVct: []i
        input_prev_weights, hidden_prev_weights)
 
 def consColumn [m][n] (mat: [m][n]f32, col: [m]f32): [m][]f32 =
-  map (\(matrow, colelm)  ->
+  map2 (\matrow colelm ->
           tabulate (n+1) (\k -> if k < 1 then colelm else #[unsafe] matrow[k-1]))
-      (zip mat col)
+       mat col
 
 def main [num_bits] (n_in: i32) (dirVct: [num_bits]i32): ( f32, f32, [][]f32, [][]f32 ) =
     let n_in = i64.i32 n_in

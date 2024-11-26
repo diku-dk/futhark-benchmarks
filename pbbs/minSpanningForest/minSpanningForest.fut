@@ -25,7 +25,7 @@ def update_once [pLength] (UFparents: [pLength]i32) : (*[pLength]i32) =
 
 -- This is safe as each element of us is unique
 def link (UFparents: *[]i32) (us: []i32) (vs: []i32) =
-    scatter UFparents (map i64.i32 us) vs
+    scatter UFparents (i64.i32 us) vs
 
 -- Order by weight, and if equal, by index
 def ltm (a: (f64, (i32, i32), i64)) (b: (f64, (i32, i32), i64)): bool =
@@ -57,7 +57,7 @@ def getMSFEdges (smallestEdgeId: []i64) (e: (i32, i32)) (i: i64) : ((i32, i32), 
 -- Update the UF array and the array of included edges
 def update[arraySize] (UFparents: *[]i32) (edges: [arraySize](i32, i32)) (edgeIds: [arraySize]i64)
                       (smallestEdgeId: []i64) (includedEdges: *[]bool) =
-    let (UVs, IDS) = unzip (map2 (getMSFEdges smallestEdgeId) edges edgeIds)
+    let (UVs, IDS) = unzip (getMSFEdges smallestEdgeId edges edgeIds)
     let (us, vs) = unzip UVs
 
     let UFparents = link UFparents us vs |> update_once
@@ -67,7 +67,7 @@ def update[arraySize] (UFparents: *[]i32) (edges: [arraySize](i32, i32)) (edgeId
 def MSF [nVerts] [nEdges] (UFparents: *[]i32) (edges: [](i32, i32)) (edgeIds: *[]i64) (edgeIndexes: []i64)
                           (smallestEdgeId: *[nVerts]i64) (includedEdges: *[nEdges]bool) =
     let (_, _, _, _, includedEdges) = loop (UFparents, edges, edgeIds, smallestEdgeId, includedEdges) while (length edges > 0) do
-        let (edgeIds, edges) = map (find2 UFparents) edges |> zip edgeIds |> filter (\e -> e.1.0 != e.1.1) |> unzip
+        let (edgeIds, edges) = find2 UFparents edges |> zip edgeIds |> filter (\e -> e.1.0 != e.1.1) |> unzip
 
         let (smallestTargets, smallestValues) = getLowestIndexes edges edgeIds nVerts nEdges
         let smallestEdgeId = scatter smallestEdgeId smallestTargets smallestValues

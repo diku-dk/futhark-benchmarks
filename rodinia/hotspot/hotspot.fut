@@ -99,15 +99,12 @@ entry ambient_temps (row: i64) (col: i64): [row][col]f32 =
 entry render_frame [row][col] (temp: [row][col]f32): [row][col][3]i8 =
   let hottest = 400f32
   let coldest = amb_temp
-  in map (\(temp_r: []f32): [col][3]i8  ->
-            map (\(c: f32): [3]i8  ->
-                   let c' = f32.min hottest (f32.max c coldest)
-                   let intensity = ((c' - coldest) / (hottest - coldest)) * 256
-                   in [i8.f32(intensity),
-                       i8.f32(intensity/2),
-                       i8.f32(intensity/2)])
-                temp_r)
-         temp
+  let pix c = let c' = f32.min hottest (f32.max c coldest)
+              let intensity = ((c' - coldest) / (hottest - coldest)) * 256
+              in [i8.f32(intensity),
+                  i8.f32(intensity/2),
+                  i8.f32(intensity/2)]
+  in pix temp
 
 def main [row][col] (num_iterations: i32) (temp: [row][col]f32) (power: [row][col]f32): [][]f32 =
   compute_tran_temp num_iterations temp power

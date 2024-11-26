@@ -42,11 +42,11 @@ def do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
   let neROI = (r2-r1+1)*(c2-c1+1)
 
   -- SCALE IMAGE DOWN FROM 0-255 TO 0-1 AND EXTRACT
-  let image = map (map1 (\pixel -> f32.exp(f32.u8(pixel)/255.0))) image
+  let image = f32.exp(f32.u8 image/255.0)
   let image = loop image for _i < niter do
     -- ROI statistics for entire ROI (single number for ROI)
     let sum = f32.sum (flatten image)
-    let sum2 = f32.sum (map (**2.0) (flatten image))
+    let sum2 = f32.sum (flatten image**2)
     -- get mean (average) value of element in ROI
     let meanROI = sum / f32.i64 neROI
     -- gets variance of ROI
@@ -94,12 +94,10 @@ def do_srad [rows][cols] (niter: i32, lambda: f32, image: [rows][cols]u8): [rows
            (iota rows) image c (zip4 dN dS dW dE)
     in image
 
-  -- SCALE IMAGE UP FROM 0-1 TO 0-255 AND COMPRESS
-  let image = map (map1 (\pixel  ->
-                          -- Take logarithm of image (log compress).
-                          -- This is where the original implementation
-                          -- would round to i32.
-                         f32.log(pixel)*255.0)) image
+  -- Take logarithm of image (log compress).
+  -- This is where the original implementation
+  -- would round to i32.
+  let image = f32.log image * 255.0
   in image
 
 def main [rows][cols] (image: [rows][cols]u8): [rows][cols]f32 =
@@ -109,5 +107,5 @@ def main [rows][cols] (image: [rows][cols]u8): [rows][cols]f32 =
 
 -- Entry point for interactive demo.  Here we can return an RGBA image.
 entry srad [rows][cols] (niter: i32) (lambda: f32) (image: [rows][cols]u8): [rows][cols]i32 =
-  map (map1 (\p -> (i32.f32 (p) << 16) | (i32.f32 (p) << 8) | (i32.f32 (p))))
-      (do_srad(niter, lambda, image))
+  let ps = i32.f32(do_srad(niter, lambda, image))
+  in (ps << 16) | (ps << 8) | ps

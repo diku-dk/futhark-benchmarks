@@ -7,7 +7,7 @@
 -- compiled input @ data/10_boxes.in.gz
 -- output @ data/10_boxes.out.gz
 
-def dot ((ax,ay,az), (bx,by,bz)): f32 =
+def dot (ax,ay,az) (bx,by,bz): f32 =
   ax*bx + ay*by + az*bz
 
 -----------------------------------------
@@ -51,29 +51,23 @@ def main [number_boxes][par_per_box][num_neighbors]
                           let (_,_,_,first_j) = #[unsafe] box_coefs[pointer]
                           let rB = #[unsafe] rv[first_j]
                           let qB = #[unsafe] qv[first_j]
-                          ---------------------------------------------------------
-                          -- Important note: rB and qB are invariant to the      --
-                          -- second map on rA -> can be blocked in shared memory --
-                          ---------------------------------------------------------
-                          let pres =
-                            map2 (\(rbj_v,rbj_x,rbj_y,rbj_z) qbj ->
-                                   let r2   = rai_v + rbj_v - dot((rai_x,rai_y,rai_z), (rbj_x,rbj_y,rbj_z))
-                                   let u2   = a2*r2
-                                   let vij  = f32.exp(-u2)
-                                   let fs   = 2.0 * vij
-                                   let d_x  = rai_x  - rbj_x
-                                   let d_y  = rai_y  - rbj_y
-                                   let d_z  = rai_z  - rbj_z
-                                   let fxij = fs * d_x
-                                   let fyij = fs * d_y
-                                   let fzij = fs * d_z
-                                   in (qbj*vij, qbj*fxij, qbj*fyij, qbj*fzij))
-                                 rB qB
-
+                          let (rbj_v,rbj_x,rbj_y,rbj_z) = unzip4 rB
+                          let qbj = qB
+                          let r2   = rai_v + rbj_v - dot (zip3 rai_x rai_y rai_z) (zip3 rbj_x rbj_y rbj_z)
+                          let u2   = a2*r2
+                          let vij  = f32.exp(0-u2)
+                          let fs   = 2.0 * vij
+                          let d_x  = rai_x  - rbj_x
+                          let d_y  = rai_y  - rbj_y
+                          let d_z  = rai_z  - rbj_z
+                          let fxij = fs * d_x
+                          let fyij = fs * d_y
+                          let fzij = fs * d_z
                           let (r1, r2, r3, r4) =
-                            reduce (\(a1,a2,a3,a4) (b1,b2,b3,b4) ->
-                                    (a1+b1, a2+b2, a3+b3, a4+b4))
-                                   (0,0,0,0) pres
+                            (f32.sum (qbj*vij),
+                             f32.sum (qbj*fxij),
+                             f32.sum (qbj*fyij),
+                             f32.sum (qbj*fzij))
                           let (a1, a2, a3, a4) = acc
                           in  (a1+r1, a2+r2, a3+r3, a4+r4)
             ) rA

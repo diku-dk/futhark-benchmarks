@@ -25,7 +25,7 @@ def mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
   -- (6)-(7) from karras2012. In addition, we also assign child pointers.
   let root_delta = inners[0].delta_node
   let edge delta_c delta_p : i32 = (delta_c / 3) - (delta_p / 3)
-  let get_delta ptr = match ptr
+  let get_delta ptr = match ptr : ptr
                       case #leaf _i -> u64.num_bits + 2 -- u32.num_bits + 1
                       case #inner i -> #[unsafe] inners[i].delta_node
   let edges =
@@ -39,9 +39,9 @@ def mk_octree [n] [m] (L: [n]body) (inners : [m]inner) : []octnode =
                                   (i32.bool (right > 0)))
                          |> scan (+) 0
   let size = i64.i32 (last prefix_sum) + 1
-  let ranges = map (+ 1) (rotate (-1) prefix_sum) with [0] = 1
-  let (is, vs) = map (\x -> (i64.i32 x, 1)) (tail ranges) |> unzip
-  let I_rad = hist (+) 0 size is vs |> scan (+) (0 : i32)
+  let ranges = 1 + (rotate (-1) prefix_sum) with [0] = 1
+  let is = i64.i32 (tail ranges)
+  let I_rad = hist (+) 0 size is (replicate (m-1) 1) |> scan (+) 0
 
   let octree =
     map2 (\i rp ->
@@ -181,12 +181,12 @@ def morton_3D {x,y,z} : u32 =
   in xx * 4 + yy * 2 + zz
 
 def mk_accelerator [n] (bodies: [n]body) : ([]octnode, f32, i32, [n]body) =
-  let x_max = f32.maximum (map (.position.x) bodies)
-  let y_max = f32.maximum (map (.position.y) bodies)
-  let z_max = f32.maximum (map (.position.z) bodies)
-  let x_min = f32.minimum (map (.position.x) bodies)
-  let y_min = f32.minimum (map (.position.y) bodies)
-  let z_min = f32.minimum (map (.position.z) bodies)
+  let x_max = f32.maximum ((.position.x) bodies)
+  let y_max = f32.maximum ((.position.y) bodies)
+  let z_max = f32.maximum ((.position.z) bodies)
+  let x_min = f32.minimum ((.position.x) bodies)
+  let y_min = f32.minimum ((.position.y) bodies)
+  let z_min = f32.minimum ((.position.z) bodies)
   let normalize {x,y,z} = {x=(x-x_min)/(x_max-x_min),
                            y=(y-y_min)/(y_max-y_min),
                            z=(z-z_min)/(z_max-z_min)}
@@ -194,7 +194,7 @@ def mk_accelerator [n] (bodies: [n]body) : ([]octnode, f32, i32, [n]body) =
   -- (1)-(5) from karras2012.
   let bodies =
     radix_sort_by_key (\p -> morton p.position) u32.num_bits u32.get_bit bodies
-  let mortons = map (\p -> morton p.position) bodies
+  let mortons = morton ((.position) bodies)
   let inners = mk_radix_tree mortons
   -- (6)-(7).
   let octree = mk_octree bodies inners

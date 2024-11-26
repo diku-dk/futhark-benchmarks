@@ -78,14 +78,12 @@ def particleFilter [IszX][IszY][Nfr]
   let (_, _, distances, _, _) =
     -- I have no idea why this should run Nfr-1 times instead of Nfr times.
     loop (arrayX, arrayY, distances, seed, seed0) for k in 1..<Nfr do
-    let (seed, x_noises) = seed
-                           |> map (norm_rng.rand {stddev=0, mean=5})
-                           |> unzip
-    let (seed, y_noises) = seed
-                           |> map (norm_rng.rand {stddev=0, mean=2})
-                           |> unzip
-    let arrayX = map2 (+) arrayX (map (1+) x_noises)
-    let arrayY = map2 (+) arrayY (map (-2+) y_noises)
+    let (seed, x_noises : []f64) =
+      unzip (norm_rng.rand {stddev=0, mean=5} seed)
+    let (seed, y_noises : []f64) =
+      unzip (norm_rng.rand {stddev=0, mean=2} seed)
+    let arrayX = arrayX + x_noises + 1
+    let arrayY = arrayY + y_noises - 2
 
     let flikelihood x' y' =
       let ind = map
@@ -98,27 +96,26 @@ def particleFilter [IszX][IszY][Nfr]
                    --- occurs in practice.
                    in if indX >= IszX || indY >= IszY then (0,0) else (indX, indY)
         ) objxy
-      in (map2 (-) (map (\(i,j) -> (#[unsafe] I[i,j,k]-100)**2) ind)
-                   (map (\(i,j) -> (#[unsafe] I[i,j,k]-228)**2) ind))
-         |> map f64.i32
-         |> map (/50)
+      in f64.i32 (map (\(i,j) -> (#[unsafe] I[i,j,k]-100)**2) ind -
+                  map (\(i,j) -> (#[unsafe] I[i,j,k]-228)**2) ind)
+         / 50
          |> f64.sum
          |> (/f64.i64 countOnes)
 
-    let likelihood = map2 flikelihood arrayX arrayY
+    let likelihood = flikelihood arrayX arrayY
 
-    let weights = map2 (*) weights (map f64.exp likelihood)
+    let weights = weights * (f64.exp likelihood)
     let sumWeights = f64.sum weights
-    let weights = map2 (*) weights (map (/sumWeights) weights)
-    let xe = f64.sum (map2 (*) arrayX weights)
-    let ye = f64.sum (map2 (*) arrayY weights)
+    let weights = weights * (weights / sumWeights)
+    let xe = f64.sum (arrayX * weights)
+    let ye = f64.sum (arrayY * weights)
     let distance = f64.sqrt ((xe-f64.round(f64.i64 IszY/2))**2 + (ye-f64.round(f64.i64 IszX/2))**2)
     let distances[k] = distance
 
     let CDF = scan (+) 0 weights
     let (seed0, v) = norm_rng.rand {mean=0, stddev=1} seed0
     let u1 = (1/f64.i64 Nparticles) * v
-    let u = map (f64.i64 >-> (/f64.i64 Nparticles) >-> (+u1)) (iota Nparticles)
+    let u = f64.i64 (iota Nparticles) / f64.i64 Nparticles + u1
     let (xj, yj) = u
                    |> map (\u' -> let i = findIndex CDF u'
                                   in #[unsafe] (arrayX[i], arrayY[i]))

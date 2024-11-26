@@ -115,8 +115,7 @@ module quickhull (S : euclidean_space) : convex_hull with space.point = S.point 
          else if dist_less zero_dist dqb then (seg_ix * 2 + 1, p)
          else (-1, p)
     let points' =
-      filter ((>= 0) <-< (.0))
-      <| map eval_point (zip (iota num_points) points)
+      filter ((>= 0) <-< (.0)) (eval_point (zip (iota num_points) points))
     in (segs', points')
 
   def extract_empty_segments [num_segs] [num_points]
@@ -127,13 +126,11 @@ module quickhull (S : euclidean_space) : convex_hull with space.point = S.point 
     let point_ixs = map (i64.i32 <-< (.0)) points
     let segs_inhabited =
       reduce_by_index
-      (replicate num_segs 0i32) (+) 0 point_ixs (replicate num_points 1)
-      |> map (> 0)
+      (replicate num_segs 0i32) (+) 0 point_ixs (replicate num_points 1) > 0
     let (segs_true, segs_false) = partition (.1) (zip segs segs_inhabited)
-    let segs_indicator = map i32.bool segs_inhabited
-    let new_segs_ix =
-      scan (+) 0 segs_indicator |> map2 (\i n -> n - i) segs_indicator
-    let hull' = hull ++ map ((.0) <-< (.0)) segs_false
+    let segs_indicator = i32.bool segs_inhabited
+    let new_segs_ix = scan (+) 0 segs_indicator - segs_indicator
+    let hull' = hull ++ map (.0.0) segs_false
     let segs' = map (.0) segs_true
     let points' = map (\(seg_ix, p) -> (new_segs_ix[seg_ix], p)) points
     in (hull', segs', points')
@@ -141,12 +138,12 @@ module quickhull (S : euclidean_space) : convex_hull with space.point = S.point 
   def semihull (start : point) (end : point) (points : []point) =
     if null points then [start]
     else
-      (loop (hull, segs, points) =
-         ([], [(start, end)], map (\p -> (0, p)) points)
+      let (hull', _, _) = (loop (hull, segs, points) =
+         ([], [(start, end)], zip 0 points)
        while !(null points) do
        let (segs', points') = expand_hull segs points
        in extract_empty_segments hull segs' points')
-      |> (.0)
+      in hull'
 
   def pmin p q = if point_less p q then p else q
   def pmax p q = if point_less p q then q else p

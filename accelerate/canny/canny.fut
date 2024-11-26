@@ -48,7 +48,7 @@ def edgeWeak: f32 = 0.5
 def edgeStrong: f32 = 1.0
 
 def toGreyscale [h][w] (img: [h][w]i32): [h][w]f32 =
-  map (\row -> map (255.0*) (map luminanceOfRGBA32 row)) img
+  255.0 * luminanceOfRGBA32 img
 
 def gaussianX [h][w] (img: [h][w]f32): [h][w]f32 =
   tabulate_2d h w (\x y ->
@@ -120,9 +120,7 @@ def nonMaximumSuppression [h][w] (low: f32) (high: f32) (magdir: [h][w](f32,i32)
         else if mag >= high then 1.0 else 0.5)
 
 def selectStrong [h][w] (img: [h][w]f32): []i32 =
-  let strong =
-    map (\x  -> if x == edgeStrong then 1 else 0)
-        (flatten img)
+  let strong = i32.bool (flatten img == edgeStrong)
   -- The original Accelerate implementation used an exclusive scan
   -- here, so we have to play with the indices.
   let targetIdxAndLen = scan (+) 0 strong
