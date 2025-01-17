@@ -37,12 +37,12 @@ def getLowestIndexes [arraySize] (edges: [arraySize](i32, i32)) (edgeIds: [array
     let arraySizeFlat = arraySize * 2
 
     let flatE = map (\e -> [e.0, e.1]) edges |> flatten |> map i64.i32 :> [arraySizeFlat]i64
-    let flatE2i = map (\i -> [i, i]) edgeIds |> flatten :> [arraySizeFlat]i64
+    let flatE2i = map (\i -> [2*i, 2*i+1]) edgeIds |> flatten :> [arraySizeFlat]i64
 
     let zippedArray = zip flatE flatE2i
 
-    let H = hist i64.min nEdges nVerts flatE flatE2i
-    in map (\i -> if H[i.0] == i.1 then i else (-1,0)) zippedArray
+    let H = hist i64.min (2*nEdges) nVerts flatE flatE2i
+    in map (\i -> if H[i.0] == i.1 then (i.0, i.1/2) else (-1,0)) zippedArray
         |> unzip
 
 -- If the edgis the one with the smallest index, return them for linking. Else return placeholder
