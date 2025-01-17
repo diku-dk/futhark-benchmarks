@@ -15,6 +15,8 @@ fi
 
 SHA=$(curl "$1" | LC_ALL=en_US.UTF-8 shasum -a 256 - | cut -f 1 -d ' ')
 
+mkdir -p $(dirname "$2")
+
 ln -f -s -r "external-data/$2" "$2"
 
 echo "external-data/$2 $1 $SHA" >> external-data.txt

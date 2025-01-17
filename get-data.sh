@@ -14,13 +14,14 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-if [ "$#" -ne "1" ]; then
-    echo "Usage: $0 FILE"
+if [ "$#" -ne "1" ] && ([ "$#" -ne "2" ] || [ "x$2" -ne "x-t" ]); then
+    echo "Usage: $0 [-t] FILE"
     echo "FILE must be a file containing lines of the format:"
     echo "   PATH URL SHA256SUM"
     echo "$0 will attempt to download the file at URL into PATH (relative to"
     echo "the location of external-data.txt) after verifying that the sha256sum is"
     echo "identical to SHA256SUM. Neither field can contain spaces."
+    echo "If -t is passed, delete the file after downloading it. This is used for testing."
 
     exit 3
 fi
@@ -37,11 +38,20 @@ if [ -z "$(which curl)" ]; then
     exit 5
 fi
 
-function longest_line() { cat "$1" | awk '{print length($1)}' | sort -nr | head -1 ; }
+DELETE=false
 
-BASEDIR=$(dirname "$1")
+if [ "$#" -eq "1" ]; then
+    FILE=$1
+elif [ "$#" -eq "2" ]; then
+    FILE=$2
+    DELETE=true
+fi
 
-n=$(longest_line "$1")
+function longest_line() { cat "$FILE" | awk '{print length($FILE)}' | sort -nr | head -1 ; }
+
+BASEDIR=$(dirname "$FILE")
+
+n=$(longest_line "$FILE")
 
 while read -r OUTPUT URL CHECKSUM; do
     printf "%-${n}s: " "$OUTPUT"
@@ -55,24 +65,25 @@ while read -r OUTPUT URL CHECKSUM; do
         else
             echo "Invalid checksum!"
             echo "Expected $CHECKSUM, got $COMPUTED_SUM."
-            echo "You can manually delete the file to get the correct version."
-            exit 2
+            echo "Deleting file and redownloading."
+            rm "$OUTPUT"
         fi
     fi
 
     echo "File missing, downloading..."
-    TMPFILE=$(mktemp)
-    curl --fail "$URL" --output "$TMPFILE"
-    COMPUTED_SUM=$(sha256sum "$TMPFILE" | cut -f 1 -d ' ')
+    mkdir -p "${BASEDIR}/$(dirname "$OUTPUT")"
+    curl --fail "$URL" --output "${BASEDIR}/${OUTPUT}"
+    COMPUTED_SUM=$(sha256sum "${BASEDIR}/${OUTPUT}" | cut -f 1 -d ' ')
 
-    if [ "$COMPUTED_SUM" = "$CHECKSUM" ]; then
-        mkdir -p "${BASEDIR}/$(dirname "$OUTPUT")"
-        mv "$TMPFILE" "${BASEDIR}/${OUTPUT}"
-    else
+    if [ "$COMPUTED_SUM" != "$CHECKSUM" ]; then
         echo "Error: Invalid checksum of downloaded file!"
-        echo "Expected $CHECKSUM, got $COMPUTED_SUM."
+        echo "Expected: $CHECKSUM"
+        echo "Got:      $COMPUTED_SUM"
         exit 1
     fi
-done < "$1"
+    if [ "$DELETE" = "true" ]; then
+        rm -f "${BASEDIR}/${OUTPUT}"
+    fi
+done < "$FILE"
 
 echo "Done."
