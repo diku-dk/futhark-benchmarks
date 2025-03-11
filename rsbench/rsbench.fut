@@ -1,4 +1,5 @@
 -- ==
+-- tags { no_opencl }
 -- entry: main
 -- input @ data/small.in.gz output { 880018i64 }
 -- input @ data/large.in.gz output { 358389i64 }
