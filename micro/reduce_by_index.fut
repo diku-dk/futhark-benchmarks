@@ -99,13 +99,17 @@ entry argmax_i32 [n] (k: i32) (is: [n]i32) (vs: [n]i32) : ([]i32, []i32) =
   |> unzip
 
 -- f16 addition is not directly supported.
+--
+-- It is intentional that we do not have 'auto output' here - the
+-- numerical properties of half precision are so terrible that we
+-- cannot expect to match a sequential reference result.
 -- ==
 -- entry: sum_f16
--- random input { 10 [1000000]i32 [1000000]f16 } auto output
--- random input { 100 [1000000]i32 [1000000]f16 } auto output
--- random input { 1000 [1000000]i32 [1000000]f16 } auto output
--- random input { 10000 [1000000]i32 [1000000]f16 } auto output
--- random input { 100000 [1000000]i32 [1000000]f16 } auto output
+-- random input { 10 [1000000]i32 [1000000]f16 }
+-- random input { 100 [1000000]i32 [1000000]f16 }
+-- random input { 1000 [1000000]i32 [1000000]f16 }
+-- random input { 10000 [1000000]i32 [1000000]f16 }
+-- random input { 100000 [1000000]i32 [1000000]f16 }
 
 entry sum_f16 [n] (k: i32) (is: [n]i32) (vs: [n]f16) : []f16 =
   hist (+) 0 (i64.i32 k) (bins k is) vs
