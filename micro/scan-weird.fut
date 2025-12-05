@@ -10,8 +10,9 @@
 -- random input { 10000000i64 10i64 [100000000]i32 } auto output
 -- random input { 100000000i64 1i64 [100000000]i32 } auto output
 entry scan_vector (n: i64) (m: i64) (a: [n * m]i32) =
-  -- The map is just to avoid interchange.
-  scan (map2 (+)) (replicate m 0) (map (map (+ 3)) (unflatten a))
+  scan (map2 (+))
+       (replicate m 0)
+       (map (\r -> loop r = copy r for i < m do r with [i] = r[i] + 3) (unflatten a))
 
 def vecadd [n] (xs: [n]i32) (ys: [n]i32) : [n]i32 =
   loop res = #[scratch] replicate n 0
