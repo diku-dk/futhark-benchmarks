@@ -28,7 +28,7 @@ entry sum_iota_f32 n = i64.i32 n |> iota |> map f32.i64 |> scan (+) 0
 entry sum_iota_f64 n = i64.i32 n |> iota |> map f64.i64 |> scan (+) 0
 
 -- ==
--- entry: sum_i8 sum_i32
+-- entry: sum_i8 sum_i32 sum_i64
 -- random input { [10000]i32 } auto output
 -- random input { [100000]i32 } auto output
 -- random input { [1000000]i32 } auto output
@@ -45,6 +45,7 @@ entry sum_iota_f64 n = i64.i32 n |> iota |> map f64.i64 |> scan (+) 0
 
 entry sum_i8 = map i8.i32 >-> scan (+) 0
 entry sum_i32 = map i32.i32 >-> scan (+) 0
+entry sum_i64 = map i64.i32 >-> scan (+) 0
 entry sum_f32 = map f32.i32 >-> scan (+) 0
 entry sum_f64 = map f64.i32 >-> scan (+) 0
 
