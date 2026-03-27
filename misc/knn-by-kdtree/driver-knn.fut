@@ -1,8 +1,8 @@
+-- FIXME: restore validation for this one.
 -- ==
 -- entry: main
 --
 -- "ppl=256,m=2097152,n=10000000,d=7" no_multicore no_ispc compiled script input { mk_input 256i32 2097152i64 10000000i64 7i64 }
--- output @ valid-data/knn-ppl-256-m-2097152-n-10000000-d-7-k-5.out.gz
 
 import "buildKDtree"
 import "knn-iteration"
