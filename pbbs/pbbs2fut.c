@@ -96,6 +96,65 @@ void sequenceIntPair(FILE *in, FILE *out) {
   fwrite(data, sizeof(int32_t), used, out);
 }
 
+void sequenceChar(FILE *in, FILE *out) {
+  int64_t num_strings = 0, capacity_strings = 100;
+  int64_t *offsets = malloc(capacity_strings * sizeof(int64_t));
+  int64_t *lengths = malloc(capacity_strings * sizeof(int64_t));
+  
+  int64_t used_chars = 0, capacity_chars = 1000;
+  uint8_t *chars = malloc(capacity_chars * sizeof(uint8_t));
+  
+  char *line = NULL;
+  size_t line_cap = 0;
+  ssize_t line_len;
+  
+  while ((line_len = getline(&line, &line_cap, in)) != -1) {
+    size_t len = line_len;
+    if (len > 0 && line[len-1] == '\n') {
+      len--;
+    }
+    if (len > 0 && line[len-1] == '\r') {
+      len--;
+    }
+    
+    while (used_chars + len > (size_t) capacity_chars) {
+      capacity_chars *= 2;
+      chars = realloc(chars, capacity_chars * sizeof(uint8_t));
+    }
+    
+    if (num_strings == capacity_strings) {
+      capacity_strings *= 2;
+      offsets = realloc(offsets, capacity_strings * sizeof(int64_t));
+      lengths = realloc(lengths, capacity_strings * sizeof(int64_t));
+    }
+    
+    offsets[num_strings] = used_chars;
+    lengths[num_strings] = len;
+    num_strings++;
+    
+    for (size_t i = 0; i < len; i++) {
+      chars[used_chars++] = (uint8_t)line[i];
+    }
+  }
+  
+  free(line);
+  
+  uint64_t dims_chars[1] = {used_chars};
+  header(out, 1, "  u8", dims_chars);
+  fwrite(chars, sizeof(uint8_t), used_chars, out);
+  
+  uint64_t dims_strings[1] = {num_strings};
+  header(out, 1, " i64", dims_strings);
+  fwrite(offsets, sizeof(int64_t), num_strings, out);
+  
+  header(out, 1, " i64", dims_strings);
+  fwrite(lengths, sizeof(int64_t), num_strings, out);
+  
+  free(chars);
+  free(offsets);
+  free(lengths);
+}
+
 void pbbs_triangles(FILE *in, FILE *out) {
   // Assuming 3D triangles.
   int n, m;
@@ -226,7 +285,9 @@ int main(int argc, char** argv) {
     sequenceDoublePair(stdin, stdout);
   } else if (strcmp(line, "sequenceIntPair\n") == 0) {
     sequenceIntPair(stdin, stdout);
-  } else if (strcmp(line, "pbbs_triangles\n") == 0) {
+  } else if (strcmp(line, "sequenceChar\n") == 0) {
+    sequenceChar(stdin, stdout);
+  }else if (strcmp(line, "pbbs_triangles\n") == 0) {
     pbbs_triangles(stdin, stdout);
   } else if (strcmp(line, "pbbs_sequencePoint2d\n") == 0) {
     pbbs_sequencePoint2d(stdin, stdout);
