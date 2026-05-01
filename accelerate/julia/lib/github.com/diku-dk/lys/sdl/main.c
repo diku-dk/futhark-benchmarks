@@ -2,7 +2,9 @@
 #include "font_data.h"
 #include PRINTFHEADER
 
+#ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE
+#endif
 #include <unistd.h>
 #include <getopt.h>
 

@@ -1,4 +1,4 @@
 require {
-  github.com/diku-dk/cpprandom 1.3.1 #7ea358bd8bbbeb4786030a21a8d947ef37d1e032
-  github.com/diku-dk/segmented 0.4.4 #9653ba17581771f0641d1f3f9618da6d9bc633de
+  github.com/diku-dk/cpprandom 1.5.0 #ec96adc06f7a91040b2c1f7f9fdc56b9b2e9f3a3
+  github.com/diku-dk/segmented 0.5.3 #c96450f95a1e43e0906366a1dab45cb18220a643
 }

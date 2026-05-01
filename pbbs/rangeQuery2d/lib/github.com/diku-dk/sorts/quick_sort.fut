@@ -56,8 +56,7 @@ def step [n] [k] 't ((<=): t -> t -> bool) (xs: *[n]t) (sgms: [k]sgm) : (*[n]t, 
   let orders: [](i64, i64, i64) = map tripit infos
   -- compute segment descriptor
   let flags =
-    let flags = map2 (!=) idxs (rotate (-1) idxs)
-    in flags with [0] = true
+    map3 (\i j k -> i == 0 || j != k) (indices idxs) idxs (rotate (-1) idxs)
   -- compute partition sizes for each segment
   let pszs = segmented_reduce tripadd (0, 0, 0) flags orders :> [k](i64, i64, i64)
   -- compute the new segments

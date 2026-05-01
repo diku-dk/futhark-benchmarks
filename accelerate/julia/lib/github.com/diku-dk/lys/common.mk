@@ -25,7 +25,7 @@ $(PROGNAME): $(PROGNAME)_wrapper.o $(PROGNAME)_printf.h $(FONT_DEPS) $(FRONTEND_
 	gcc $(FRONTEND_DIR)/liblys.c $(SELF_DIR)/shared.c $(FRONTEND_DIR)/main.c -I. -I$(SELF_DIR) -DPROGHEADER='"$(PROGNAME)_wrapper.h"' -DPRINTFHEADER='"$(PROGNAME)_printf.h"' -DLYS_TEXT $(PROGNAME)_wrapper.o -o $@ $(CFLAGS) $(LDFLAGS)
 endif
 
-$(PROGNAME)_printf.h: $(PROGNAME)_wrapper.c
+$(PROGNAME)_printf.h: $(PROGNAME)_wrapper.json
 	python3 $(SELF_DIR)/gen_printf.py $(FRONTEND_DIR) $@ $<
 
 font_data.h: $(SELF_DIR)/Inconsolata-Regular.ttf

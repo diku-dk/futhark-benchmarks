@@ -2,7 +2,7 @@
 
 import "linalg"
 
-module linalg_f64 = mk_linalg f64
+module linalg_f64 = mk_ordered_linalg f64
 
 -- ==
 -- entry: test_veczeros
@@ -68,7 +68,7 @@ entry test_cross = linalg_f64.cross
 -- output { [[0.0f64, 1.0f64], [1.0f64, 0.0f64]] }
 -- input { [[1.0f64, 2.0f64, 1.0f64], [2.0f64, 1.0f64, 1.0f64], [1.0f64, 1.0f64, 2.0f64]] }
 -- output { [[-0.25f64, 0.75f64, -0.25f64], [0.75f64, -0.25f64, -0.25f64], [-0.25f64, -0.25f64, 0.75f64]] }
-entry test_inv [n] (A: [n][n]f64): [n][n]f64 =
+entry test_inv [n] (A: [n][n]f64) : [n][n]f64 =
   linalg_f64.inv A
 
 -- ==
@@ -340,11 +340,14 @@ entry test_eig_D = linalg_f64.eig >-> (.0)
 --   true
 -- }
 entry test_eig X =
-  let (D, V) = linalg_f64.eig X --decompose
-  let X' = linalg_f64.(V `matmul` D `matmul` inv V) --recompose
+  let (D, V) = linalg_f64.eig X
+  --decompose
+  let X' = linalg_f64.(V `matmul` D `matmul` inv V)
+  --recompose
   let eps = 1e-10
   let diff = linalg_f64.(X `matsub` X')
-  in diff |> flatten |> all (\d -> d < eps) --check that the recomposition matches
+  --check that the recomposition matches
+  in diff |> flatten |> all (\d -> d < eps)
 
 -- ==
 -- entry: test_matsqrt
@@ -357,8 +360,3 @@ entry test_eig X =
 --    [0.81649658, 1.63299316]]
 -- }
 entry test_matsqrt = linalg_f64.matsqrt
-
-
-
-
-

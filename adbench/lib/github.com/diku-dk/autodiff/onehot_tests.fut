@@ -1,3 +1,5 @@
+-- | ignore
+
 import "onehot"
 
 entry test_arr_pair n =

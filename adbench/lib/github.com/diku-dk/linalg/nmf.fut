@@ -19,8 +19,8 @@ module mk_nmf (T: real) : {
   val frob_norm [m][n] : (xss: [m][n]T.t) -> T.t
 } = {
 module rng_engine = minstd_rand
-module rand_T = normal_distribution T rng_engine
-module norm_dist = normal_distribution T minstd_rand
+module rand_T = normal_distribution T u32 rng_engine
+module norm_dist = normal_distribution T u32 minstd_rand
 
 def sum = reduce (T.+) (T.i64 0)
 

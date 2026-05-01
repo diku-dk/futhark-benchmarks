@@ -4,7 +4,7 @@ import "merge_sort"
 
 -- picking small block sizes should stress all codepaths within
 -- merge_sort, even on small inputs
-let params = {max_block_size = 2i64, max_merge_block_size = 2i64}
+def params = {max_block_size = 2i64, max_merge_block_size = 2i64}
 
 -- ==
 -- entry: sort_i32

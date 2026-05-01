@@ -1,7 +1,7 @@
 #include "shared.h"
 #include <string.h>
 
-const char* basename(const char *progname) {
+const char* get_basename(const char *progname) {
   int n = strlen(progname);
   int i;
   for (i = n-1; i >= 0; i--) {
@@ -40,7 +40,7 @@ void lys_setup_futhark_context(const char *progname,
     int bufsize = strlen(progname) + 10;
     char buf[bufsize];
     // Would it be better to store this in some XDG directory?
-    snprintf(buf, bufsize, "%s.lyscache", basename(progname));
+    snprintf(buf, bufsize, "%s.lyscache", get_basename(progname));
     futhark_context_config_set_cache_file(*futcfg, buf);
   }
 

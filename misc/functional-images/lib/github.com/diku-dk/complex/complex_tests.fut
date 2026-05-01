@@ -108,7 +108,7 @@ entry test_conj (a: f32) (b: f32) =
 -- entry: test_neg
 -- input { 2f32 3f32 }
 -- output { -2f32 -3f32 }
-entry test_neg(a: f32) (b: f32) =
+entry test_neg (a: f32) (b: f32) =
   let x = c32.neg (c32.mk a b)
   in (c32.re x, c32.im x)
 
@@ -121,54 +121,6 @@ entry test_neg(a: f32) (b: f32) =
 entry test_abs (a: f32) (b: f32) =
   let x = c32.abs (c32.mk a b)
   in (c32.re x, c32.im x)
-
--- ==
--- entry: test_lt
--- input { 3f32 2f32 1f32 4f32}
--- output { true }
--- input { 3f32 3f32 1f32 4f32}
--- output { false }
-entry test_lt (a: f32) (b: f32) (c: f32) (d: f32) =
-  let x = c32.mk a b
-  let y = c32.mk c d
-  in x c32.< y
-
--- ==
--- entry: test_gt
--- input { 3f32 2f32 1f32 4f32}
--- output { false }
--- input { 3f32 3f32 1f32 4f32}
--- output { true }
-entry test_gt (a: f32) (b: f32) (c: f32) (d: f32) =
-  let x = c32.mk a b
-  let y = c32.mk c d
-  in x c32.> y
-
--- ==
--- entry: test_leq
--- input { 2f32 4f32 5f32 4f32}
--- output { true }
--- input { 3f32 4f32 3f32 4f32}
--- output { true }
--- input { 3f32 3f32 1f32 4f32}
--- output { false }
-entry test_leq (a: f32) (b: f32) (c: f32) (d: f32) =
-  let x = c32.mk a b
-  let y = c32.mk c d
-  in x c32.<= y
-
--- ==
--- entry: test_geq
--- input { 3f32 2f32 1f32 4f32}
--- output { false }
--- input { 3f32 3f32 3f32 3f32}
--- output { true }
--- input { 5f32 3f32 3f32 3f32}
--- output { true }
-entry test_geq (a: f32) (b: f32) (c: f32) (d: f32) =
-  let x = c32.mk a b
-  let y = c32.mk c d
-  in x c32.>= y
 
 -- ==
 -- entry: test_pow
@@ -208,6 +160,6 @@ entry test_sum (a: []f32) (b: []f32) =
 -- entry: test_i64
 -- input { 5i64 }
 -- output { 5f32 0f32 }
-entry test_i64 (a: i64)  =
+entry test_i64 (a: i64) =
   let x = c32.i64 a
   in (c32.re x, c32.im x)

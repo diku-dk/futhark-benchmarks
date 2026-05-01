@@ -295,6 +295,24 @@ module u192 : uint with u = u64 = {
 
 type u192 = u192.t
 
+-- | An interface for n-dimensional linear contruential generators.
+module type ndimlcg = {
+  -- | The type that will be produced; in practice an array.
+  type t
+
+  -- | The state of the engine.
+  type rng
+
+  -- | Initialise an RNG state from a seed.  Even if the seed array is
+  -- empty, the resulting RNG should still behave reasonably.  It is
+  -- permissible for this function to process the seed array
+  -- sequentially, so don't make it too large.
+  val rng_from_seed [n] : [n]i32 -> rng
+
+  -- | Generate a single random element, and a new RNG state.
+  val rand : rng -> (rng, t)
+}
+
 -- | n-dimensional linear congruential generator. You can give it an
 -- array of non-zero integers to generate an n-array of n random
 -- numbers that will go in a full cycle such that every n-array of
@@ -319,7 +337,7 @@ module mk_ndimlcg
     val mat : [n][n + 1]t
   }
   with t = U.t)
-  : rng_engine with t = [P.n]U.t = {
+  : ndimlcg with t = [P.n]U.t = {
   type t = [P.n]U.t
   type rng = [P.n]U.t
 
@@ -357,21 +375,6 @@ module mk_ndimlcg
     in loop t = replicate P.n x
        for _i in 0..<10 do
          (rand t).0
-
-  -- FIXME: Should allow for parallel creation.
-  def split_rng (n: i64) (x: rng) : [n]rng =
-    (.0)
-    <| loop (dest, y) = (replicate n (replicate P.n U.zero), copy x)
-       for i in 0..<n do
-         let (y', _) = rand y
-         in (dest with [i] = y', y')
-
-  -- FIXME: This seems bad.
-  def join_rng [n] (xs: [n]rng) : rng =
-    xs[0]
-
-  def min = replicate P.n U.zero
-  def max = replicate P.n U.(prime - one)
 }
 
 -- | A module which contains universal hash functions. This module is
