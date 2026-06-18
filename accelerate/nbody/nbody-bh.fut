@@ -55,9 +55,7 @@ def move [n]
                       in (acc vec3.+ velocity, current.parent, cur, to_check - 1)
                  else -- node is too close
                       let children = current.children
-                      let num_children =
-                        map (i32.bool <-< (>= 0)) children
-                        |> reduce_comm (+) 0
+                      let num_children = foldl (\acc c -> acc + i32.bool (c >= 0)) 0 children
                       in (acc, children[0], cur, to_check + num_children - 1)
   in acceleration
 
