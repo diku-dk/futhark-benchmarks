@@ -1,6 +1,1 @@
-main.suff_intra_par_0=32
-main.suff_intra_par_1=32
-main.suff_intra_par_2=32
-main.suff_intra_par_4=32
-main.suff_intra_par_5=32
-main.suff_outer_par_3=1024
+main.suff_outer_par_1=1024
