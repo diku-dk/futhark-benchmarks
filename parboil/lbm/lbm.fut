@@ -174,6 +174,7 @@ def collide [n] [s] (grid_2d: *[n][s]f32) : *[n][s]f32 =
   let collided =
     tabulate s
              (\i ->
+                #[sequential]
                 if i < MARGIN || i > (TOTAL_PADDED_CELLS - MARGIN)
                 then grid_2d[:, i]
                 else let rhos = grid_2d[0:FLAG:1, i]
@@ -184,6 +185,7 @@ def gather_collide [n] [s] (grid_2d: [n][s]f32) : [n][s]f32 =
   let collided =
     tabulate s
              (\i ->
+                #[sequential]
                 if i < MARGIN || i > (TOTAL_PADDED_CELLS - MARGIN)
                 then grid_2d[:, i]
                 else let inds = map (\ind_offset -> i + ind_offset) ind_offsets
@@ -197,6 +199,7 @@ def gather_collide [n] [s] (grid_2d: [n][s]f32) : [n][s]f32 =
 def gather [n] [s] (grid_2d: *[n][s]f32) : *[n][s]f32 =
   let gathered =
     tabulate s (\i ->
+                  #[sequential]
                   if i < MARGIN || i > (TOTAL_PADDED_CELLS - MARGIN)
                   then grid_2d[:, i]
                   else let inds = map (\ind_offset -> i + ind_offset) ind_offsets
