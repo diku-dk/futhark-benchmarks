@@ -45,7 +45,7 @@ def relatives_to_absolutes [n] (relatives: [n][4][4]f64) (parents: [n]i32) : [n]
     let parent = parents[i]
     in absolutes with [i] = if parent == -1
                  then relative
-                 else copy (absolutes[parent] `matmul` relative)
+                 else #[sequential] (absolutes[parent] `matmul` relative)
 
 def euler_angles_to_rotation_matrix (xzy: [3]f64) : [4][4]f64 =
   let tx = xzy[0]
