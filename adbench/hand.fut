@@ -10,7 +10,7 @@ def identity n = tabulate_2d n n (\i j -> f64.bool (i == j))
 def angle_axis_to_rotation_matrix (angle_axis: [3]f64) : [3][3]f64 =
   let n = f64.sqrt (angle_axis[0] ** 2 + angle_axis[1] ** 2 + angle_axis[2] ** 2)
   in if n < 0.0001
-     then identity 3
+     then #[sequential] identity 3
      else let x = angle_axis[0] / n
           let y = angle_axis[1] / n
           let z = angle_axis[2] / n
