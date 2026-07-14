@@ -10,7 +10,7 @@ def identity n = tabulate_2d n n (\i j -> f64.bool (i == j))
 def angle_axis_to_rotation_matrix (angle_axis: [3]f64) : [3][3]f64 =
   let n = f64.sqrt (angle_axis[0] ** 2 + angle_axis[1] ** 2 + angle_axis[2] ** 2)
   in if n < 0.0001
-     then identity 3
+     then #[sequential] identity 3
      else let x = angle_axis[0] / n
           let y = angle_axis[1] / n
           let z = angle_axis[2] / n
@@ -45,7 +45,7 @@ def relatives_to_absolutes [n] (relatives: [n][4][4]f64) (parents: [n]i32) : [n]
     let parent = parents[i]
     in absolutes with [i] = if parent == -1
                  then relative
-                 else copy (absolutes[parent] `matmul` relative)
+                 else #[sequential] (absolutes[parent] `matmul` relative)
 
 def euler_angles_to_rotation_matrix (xzy: [3]f64) : [4][4]f64 =
   let tx = xzy[0]
