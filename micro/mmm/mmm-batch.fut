@@ -5,19 +5,20 @@
 -- Alternatively try this with default_tile_size=8 and default_reg_tile_size=2
 -- compiled random input {[256][256][16][16]f32 [256][256][16][16]f32} auto output
 
-
-def main [a][b][m][n][q]  (A0: [a][b][m][q]f32) 
-                          (B0: [a][b][q][n]f32)
-                        : [a][b][m][n]f32 =
- map2(\A1 B1 ->
-  map2(\A B -> 
-    map(\Arow ->
-            map (\Bcol ->
-                    let r = map2 (\x y -> x*y) Arow Bcol |>
-                            reduce (+) 0.0f32
-                    in  r
-                ) (transpose B)
-        ) A
-  ) A1 B1
- ) A0 B0
-  
+def main [a] [b] [m] [n] [q]
+         (A0: [a][b][m][q]f32)
+         (B0: [a][b][q][n]f32) : [a][b][m][n]f32 =
+  map2 (\A1 B1 ->
+          map2 (\A B ->
+                  map (\Arow ->
+                         map (\Bcol ->
+                                let r =
+                                  map2 (\x y -> x * y) Arow Bcol
+                                  |> reduce (+) 0.0f32
+                                in r)
+                             (transpose B))
+                      A)
+               A1
+               B1)
+       A0
+       B0

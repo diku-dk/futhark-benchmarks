@@ -22,5 +22,10 @@ def main [num_quotes]
          (quotes_strike: [num_quotes]f64)
          (quotes_quote: [num_quotes]f64) =
   let num_points' = if num_points == 10 then #ten else #twenty
-  in heston32.heston max_global num_points' np today quotes_maturity
-                     (map f32.f64 quotes_strike) (map f32.f64 quotes_quote)
+  in heston32.heston max_global
+                     num_points'
+                     np
+                     today
+                     quotes_maturity
+                     (map f32.f64 quotes_strike)
+                     (map f32.f64 quotes_quote)

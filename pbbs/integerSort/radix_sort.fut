@@ -13,6 +13,6 @@ import "lib/github.com/diku-dk/sorts/radix_sort"
 entry sort_i32 b = radix_sort_int b i32.get_bit
 
 entry sort_i32_pair b =
-  map (\p -> (p[0],p[1]))
-      >-> radix_sort_int_by_key (.0) b i32.get_bit
-      >-> map (\(x,y) -> [x,y])
+  map (\p -> (p[0], p[1]))
+  >-> radix_sort_int_by_key (.0) b i32.get_bit
+  >-> map (\(x, y) -> [x, y])

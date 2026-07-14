@@ -8,92 +8,98 @@ module vector_4 = cat_vector vector_2 vector_2
 -- For some reason, we can't access these bls12_381-related definitison from fut-ff/field, so just repeat here.
 -- https://github.com/filecoin-project/pairing/blob/master/src/bls12_381/fr.rs#L9
 -- #[PrimeFieldModulus = "52435875175126190479447740508185965837690552500527637822603658699938581184513"]
-def bls12_381_modulus  = "52435875175126190479447740508185965837690552500527637822603658699938581184513"
-def r_squared_mod_p =  "3294906474794265442129797520630710739278575682199800681788903916070560242797"
+def bls12_381_modulus = "52435875175126190479447740508185965837690552500527637822603658699938581184513"
+def r_squared_mod_p = "3294906474794265442129797520630710739278575682199800681788903916070560242797"
 
-module bls12_381: F.field = F.big_field (F.fieldtype u64 {
-                                                       module LVec = vector_4
-                                                       def limbs = 4i64
-                                                       def p () = copy bls12_381_modulus
-                                                       def r2 () = copy r_squared_mod_p })
+module bls12_381 : F.field = F.big_field (
+  F.fieldtype u64 {
+    module LVec = vector_4
+    def limbs = 4i64
+    def p () = copy bls12_381_modulus
+    def r2 () = copy r_squared_mod_p
+  })
 
-type option 't = #Some(t) | #None
+type option 't = #Some (t) | #None
 
 module type Params = {
-  val arity: i64
-  val full_rounds: i64
-  val partial_rounds: i64
+  val arity : i64
+  val full_rounds : i64
+  val partial_rounds : i64
 }
 
-type matrix 't [width] = [width][width] t
+type matrix 't [width] = [width][width]t
 
-type sparse_matrix 't [width] [width_] = {
-    w_hat: [width]t,
-    v_rest: [width_]t
-}
+type sparse_matrix 't [width] [width_] =
+  { w_hat: [width]t
+  , v_rest: [width_]t
+  }
 
 type sparse_matrix_in 't [n] = [n]t
 
+type constants 't [width] [width_] [rk_count] [sparse_count] =
+  { arity_tag: t
+  , round_keys: [rk_count]t
+  , mds_matrix: matrix t [width]
+  , pre_sparse_matrix: matrix t [width]
+  , sparse_matrixes: [sparse_count]sparse_matrix t [width] [width_]
+  }
 
-type constants 't [width] [width_] [rk_count] [sparse_count]= {
-    arity_tag: t,
-    round_keys: [rk_count]t,
-    mds_matrix: matrix t [width],
-    pre_sparse_matrix: matrix t [width],
-    sparse_matrixes: [sparse_count]sparse_matrix t [width] [width_]
-}
+def div_evenly64 (a: i64) (b: i64) : i64 = assert (a % b == 0) a / b
+def div_evenly (a: i32) (b: i32) : i32 = assert (a % b == 0) a / b
 
-def div_evenly64 (a: i64) (b: i64): i64 = assert (a % b == 0) a /b
-def div_evenly (a: i32) (b: i32): i32 = assert (a % b == 0) a /b
-
-def even_chunks 't [n]  (chunk_size: i64) (arr: [n] t) =
+def even_chunks 't [n] (chunk_size: i64) (arr: [n]t) =
   let chunk_count = div_evenly64 n chunk_size
-  in unflatten (sized (chunk_count*chunk_size) arr)
+  in unflatten (sized (chunk_count * chunk_size) arr)
 
-
-module type hasher  = {
+module type hasher = {
   module Field: F.field
 
   type state
 
-  val width: i64
-  val arity: i64
-  val width_: i64
-  val rk_count: i64
-  val sparse_count: i64
-  val sparse_matrix_size: i64
+  val width : i64
+  val arity : i64
+  val width_ : i64
+  val rk_count : i64
+  val sparse_count : i64
+  val sparse_matrix_size : i64
 
-  val init: (constants: constants Field.t [width] [width_] [rk_count] [sparse_count]) -> state
-  val blank_constants: constants Field.t [width] [width_] [rk_count] [sparse_count]
+  val init : (constants: constants Field.t [width] [width_] [rk_count] [sparse_count]) -> state
+  val blank_constants : constants Field.t [width] [width_] [rk_count] [sparse_count]
 
-  val constants: state -> constants Field.t [width] [width_] [rk_count] [sparse_count]
+  val constants : state -> constants Field.t [width] [width_] [rk_count] [sparse_count]
 
-  val set_preimage: state -> [arity]Field.t -> state
-  val hash: state -> Field.t
-  val hash_preimage: state -> [arity]Field.t -> Field.t
-  val hash_preimages [n]: state -> [n][arity]Field.t -> [n]Field.t
-  val hash_preimages_u64s [u64_count]: state -> [u64_count]u64 -> ([][Field.LIMBS]u64, state)
-  val hash_preimages_monts [u64_count]: state -> [u64_count]u64 -> ([][Field.LIMBS]u64, state)
+  val set_preimage : state -> [arity]Field.t -> state
+  val hash : state -> Field.t
+  val hash_preimage : state -> [arity]Field.t -> Field.t
+  val hash_preimages [n] : state -> [n][arity]Field.t -> [n]Field.t
+  val hash_preimages_u64s [u64_count] : state -> [u64_count]u64 -> ([][Field.LIMBS]u64, state)
+  val hash_preimages_monts [u64_count] : state -> [u64_count]u64 -> ([][Field.LIMBS]u64, state)
 
-  val reset: state -> state
+  val reset : state -> state
 
-  val leaves_per_kib: i64 -> i64
-  val leaves_per_mib: i64 -> i64
-  val leaves_per_gib: i64 -> i64
+  val leaves_per_kib : i64 -> i64
+  val leaves_per_mib : i64 -> i64
+  val leaves_per_gib : i64 -> i64
 
-  val make_constants: [Field.LIMBS]u64 -> [rk_count][Field.LIMBS]u64 -> matrix ([Field.LIMBS]u64) [width] -> matrix ([Field.LIMBS]u64) [width] -> [sparse_count][sparse_matrix_size][Field.LIMBS]u64 -> constants (Field.t) [width] [width_] [rk_count] [sparse_count]
+  val make_constants : [Field.LIMBS]u64 -> [rk_count][Field.LIMBS]u64 -> matrix ([Field.LIMBS]u64) [width] -> matrix ([Field.LIMBS]u64) [width] -> [sparse_count][sparse_matrix_size][Field.LIMBS]u64 -> constants (Field.t) [width] [width_] [rk_count] [sparse_count]
 }
 
-module make_hasher (f: F.field) (p: Params): hasher = {
+module make_hasher (f: F.field) (p: Params) : hasher = {
   module Field = f
 
   def arity = p.arity
   def width = arity + 1
-  def width_ = width - 1 -- width *could* be other than 1 + arity.
+  def width_ = width - 1
+
+  -- width *could* be other than 1 + arity.
   def full_rounds = p.full_rounds
   def partial_rounds = p.partial_rounds
-  def rk_count = width * p.full_rounds + p.partial_rounds -- TODO: Check this. We'll find out if it's wrong when integrating, of course.
-  def sparse_count = p.partial_rounds -- TODO: check
+  def rk_count = width * p.full_rounds + p.partial_rounds
+
+  -- TODO: Check this. We'll find out if it's wrong when integrating, of course.
+  def sparse_count = p.partial_rounds
+
+  -- TODO: check
   def sparse_matrix_size = width + width_
 
   def full_half = div_evenly64 full_rounds 2
@@ -103,65 +109,77 @@ module make_hasher (f: F.field) (p: Params): hasher = {
   type mat = matrix Field.t [width]
   type s_mat = sparse_matrix Field.t [width] [width_]
 
-  type state = {
-      constants: constants Field.t [width] [width_] [rk_count] [sparse_count],
-      elements: elements,
-      current_round: i32,
-      rk_offset: i32
-  }
+  type state =
+    { constants: constants Field.t [width] [width_] [rk_count] [sparse_count]
+    , elements: elements
+    , current_round: i32
+    , rk_offset: i32
+    }
 
-  def init (constants: constants Field.t [width] [width_] [rk_count] [sparse_count]): state = {
-      constants,
-      elements = map (\i -> if i == 0 then constants.arity_tag else Field.zero) (iota width),
-      current_round = 0,
-      rk_offset = 0
-  }
+  def init (constants: constants Field.t [width] [width_] [rk_count] [sparse_count]) : state =
+    { constants
+    , elements = map (\i -> if i == 0 then constants.arity_tag else Field.zero) (iota width)
+    , current_round = 0
+    , rk_offset = 0
+    }
 
-  def mk_arity_tag (arity: i64): Field.t  = Field.from_u32 (u32.i64 (1 << arity))
+  def mk_arity_tag (arity: i64) : Field.t = Field.from_u32 (u32.i64 (1 << arity))
 
-  def blank_constants: constants Field.t [width] [width_] [rk_count] [sparse_count] =
-    let dummy = Field.from_string "123" in -- dummy value for now, don't use 0 or 1, so we get hash-like results.
+  def blank_constants : constants Field.t [width] [width_] [rk_count] [sparse_count] =
+    let dummy = Field.from_string "123"
+    -- dummy value for now, don't use 0 or 1, so we get hash-like results.
     let arity_tag = mk_arity_tag arity
-    let round_keys = map (\_ -> dummy) (iota rk_count) :> [rk_count]Field.t in
+    let round_keys = map (\_ -> dummy) (iota rk_count) :> [rk_count]Field.t
     let mds_matrix = map (\_i -> map (\_j -> dummy) (iota width)) (iota width)
-    let pre_sparse_matrix =  map (\_i -> map (\_j -> dummy) (iota width)) (iota width)
-    let sparse_matrixes = map (\_ -> { w_hat = map (\_ -> dummy) (iota width),
-                                       v_rest = map (\_ -> dummy) (iota width_) })
-                              (iota sparse_count) in
-    { arity_tag,
-      round_keys,
-      mds_matrix,
-      pre_sparse_matrix,
-      sparse_matrixes }
+    let pre_sparse_matrix = map (\_i -> map (\_j -> dummy) (iota width)) (iota width)
+    let sparse_matrixes =
+      map (\_ ->
+             { w_hat = map (\_ -> dummy) (iota width)
+             , v_rest = map (\_ -> dummy) (iota width_)
+             })
+          (iota sparse_count)
+    in { arity_tag
+       , round_keys
+       , mds_matrix
+       , pre_sparse_matrix
+       , sparse_matrixes
+       }
 
-  def make_sparse_matrix (array: [sparse_matrix_size]Field.t): sparse_matrix Field.t [width] [width_] =
-    { w_hat = take width array,
-      v_rest = array |> drop width |> take width_ }
-  def make_constants (arity_tag: ([Field.LIMBS]u64)) (round_keys: [rk_count]([Field.LIMBS]u64)) (mds_matrix: matrix ([Field.LIMBS]u64) [width]) (pre_sparse_matrix: matrix ([Field.LIMBS]u64) [width])
-  (sparse_matrixes: [sparse_count][sparse_matrix_size][Field.LIMBS]u64): constants Field.t [width] [width_] [rk_count] [sparse_count] =
-    let sparse_matrixes = map make_sparse_matrix (map (map Field.mont_from_u64s) sparse_matrixes) in
-    { arity_tag = Field.mont_from_u64s arity_tag,
-      round_keys = map Field.mont_from_u64s round_keys,
-      mds_matrix = map (map Field.mont_from_u64s) mds_matrix,
-      pre_sparse_matrix = map (map Field.mont_from_u64s) pre_sparse_matrix,
-      sparse_matrixes }
+  def make_sparse_matrix (array: [sparse_matrix_size]Field.t) : sparse_matrix Field.t [width] [width_] =
+    { w_hat = take width array
+    , v_rest = array |> drop width |> take width_
+    }
 
-  def reset (s: state): state = s with current_round = 0
-                                  with rk_offset = 0
-                                  with elements = map (\i -> if i == 0 then s.constants.arity_tag else Field.zero) (iota width)
+  def make_constants (arity_tag: ([Field.LIMBS]u64))
+                     (round_keys: [rk_count]([Field.LIMBS]u64))
+                     (mds_matrix: matrix ([Field.LIMBS]u64) [width])
+                     (pre_sparse_matrix: matrix ([Field.LIMBS]u64) [width])
+                     (sparse_matrixes: [sparse_count][sparse_matrix_size][Field.LIMBS]u64) : constants Field.t [width] [width_] [rk_count] [sparse_count] =
+    let sparse_matrixes = map make_sparse_matrix (map (map Field.mont_from_u64s) sparse_matrixes)
+    in { arity_tag = Field.mont_from_u64s arity_tag
+       , round_keys = map Field.mont_from_u64s round_keys
+       , mds_matrix = map (map Field.mont_from_u64s) mds_matrix
+       , pre_sparse_matrix = map (map Field.mont_from_u64s) pre_sparse_matrix
+       , sparse_matrixes
+       }
 
-  def constants (s: state): constants Field.t [width] [width_] [rk_count] [sparse_count] = s.constants
+  def reset (s: state) : state =
+    s with current_round = 0
+      with rk_offset = 0
+      with elements = map (\i -> if i == 0 then s.constants.arity_tag else Field.zero) (iota width)
 
-  def set_preimage (s: state) (preimage: [arity]Field.t): state =
+  def constants (s: state) : constants Field.t [width] [width_] [rk_count] [sparse_count] = s.constants
+
+  def set_preimage (s: state) (preimage: [arity]Field.t) : state =
     s with elements = (([s.constants.arity_tag] ++ preimage) :> elements)
 
-  def result (s: state): Field.t = s.elements[1]
+  def result (s: state) : Field.t = s.elements[1]
 
   -- Placeholder until Field.square is fixed.
-  def naive_square (x: Field.t): Field.t = Field.(x * x)
+  def naive_square (x: Field.t) : Field.t = Field.(x * x)
 
-  def quintic_s_box (x: Field.t): Field.t =
-    let x2 = naive_square x in
+  def quintic_s_box (x: Field.t) : Field.t =
+    let x2 = naive_square x
     let x4 = naive_square x2
     in Field.(x4 * x)
 
@@ -171,59 +189,60 @@ module make_hasher (f: F.field) (p: Params): hasher = {
   -- Could be more generic, but could also use a library. Just target clarity.
   def scalar_product (a: elements) (b: elements) = Field.(reduce (+) zero (map2 (*) a b))
 
-  def apply_matrix (m: mat) (elts: elements): elements =
+  def apply_matrix (m: mat) (elts: elements) : elements =
     map (scalar_product elts) (transpose m)
 
-  def apply_sparse_matrix (sm: s_mat) (elts: [width]Field.t): elements =
+  def apply_sparse_matrix (sm: s_mat) (elts: [width]Field.t) : elements =
     let first = scalar_product elts sm.w_hat
-    let rest = map2 (\x y -> Field.(x + y * elts[0]))
-                    (elts[1:width] :> [width_]Field.t)
-                    sm.v_rest
+    let rest =
+      map2 (\x y -> Field.(x + y * elts[0]))
+           (elts[1:width] :> [width_]Field.t)
+           sm.v_rest
     in ([first] ++ rest) :> elements
 
-  def apply_round_matrix (s: state): state =
-    let elements = if s.current_round == i32.i64 sparse_offset then
-                     apply_matrix s.constants.pre_sparse_matrix s.elements
-                   else if (s.current_round > i32.i64 sparse_offset)
-                           && (s.current_round < i32.i64 full_half + i32.i64 partial_rounds) then
-                        let index = s.current_round - i32.i64 sparse_offset - 1 in
-                        apply_sparse_matrix s.constants.sparse_matrixes[index] s.elements
-                   else
-                     apply_matrix s.constants.mds_matrix s.elements
+  def apply_round_matrix (s: state) : state =
+    let elements =
+      if s.current_round == i32.i64 sparse_offset
+      then apply_matrix s.constants.pre_sparse_matrix s.elements
+      else if (s.current_round > i32.i64 sparse_offset)
+      && (s.current_round < i32.i64 full_half + i32.i64 partial_rounds)
+      then let index = s.current_round - i32.i64 sparse_offset - 1
+           in apply_sparse_matrix s.constants.sparse_matrixes[index] s.elements
+      else apply_matrix s.constants.mds_matrix s.elements
     in s with elements = elements
 
-  def add_full_round_keys (s: state): state =
-     s with elements = map (\i -> add_round_key s s.rk_offset i)
-                           (map i32.i64 (iota width))
-       with rk_offset = s.rk_offset + i32.i64 width
+  def add_full_round_keys (s: state) : state =
+    s with elements = map (\i -> add_round_key s s.rk_offset i)
+                          (map i32.i64 (iota width))
+      with rk_offset = s.rk_offset + i32.i64 width
 
-  def add_partial_round_key (s: state): state =
+  def add_partial_round_key (s: state) : state =
     s with elements = map (\i -> if i == 0 then add_round_key s s.rk_offset i else s.elements[i])
                           (map i32.i64 (iota width))
       with rk_offset = s.rk_offset + 1
 
-  def full_round (s: state): state =
-    let elements = map quintic_s_box s.elements in
+  def full_round (s: state) : state =
+    let elements = map quintic_s_box s.elements
     let s = add_full_round_keys (s with elements = elements)
-    in apply_round_matrix s
-      with current_round = s.current_round + 1
+    in apply_round_matrix s with current_round = s.current_round + 1
 
-  def last_full_round (s: state): state =
-    let elements = map quintic_s_box s.elements in
-    let s = s with elements = elements
-              with current_round = s.current_round + 1
+  def last_full_round (s: state) : state =
+    let elements = map quintic_s_box s.elements
+    let s =
+      s with elements = elements
+        with current_round = s.current_round + 1
     in apply_round_matrix s
 
-  def partial_round (s: state): state =
-    let elements = copy s.elements with [0] = quintic_s_box s.elements[0] in
+  def partial_round (s: state) : state =
+    let elements = copy s.elements with [0] = quintic_s_box s.elements[0]
     let s = add_partial_round_key (s with elements = elements)
     in apply_round_matrix s with current_round = s.current_round + 1
 
-  def hash (s: state): Field.t =
-    let s = add_full_round_keys s in
-    let s = loop s for _i < full_half do full_round s in
-    let s = loop s for _i < partial_rounds do partial_round s in
-    let s = loop s for _i < (full_half - 1) do full_round s in
+  def hash (s: state) : Field.t =
+    let s = add_full_round_keys s
+    let s = loop s for _i < full_half do full_round s
+    let s = loop s for _i < partial_rounds do partial_round s
+    let s = loop s for _i < (full_half - 1) do full_round s
     let s = last_full_round s
     in result s
 
@@ -234,16 +253,16 @@ module make_hasher (f: F.field) (p: Params): hasher = {
     map (hash_preimage s) preimages
 
   def hash_preimages_monts [u64_count] (s: state) (preimages_u64s: [u64_count]u64) : ([][Field.LIMBS]u64, state) =
-    let preimages = map Field.from_u64s (even_chunks Field.LIMBS preimages_u64s) in
-    let hashes = (hash_preimages s) (even_chunks arity preimages) in
-    let hashes_len = length hashes in
+    let preimages = map Field.from_u64s (even_chunks Field.LIMBS preimages_u64s)
+    let hashes = (hash_preimages s) (even_chunks arity preimages)
+    let hashes_len = length hashes
     let finalized_hashes = (map Field.to_u64s hashes) :> [hashes_len][Field.LIMBS]u64
     in (finalized_hashes, s)
 
   def hash_preimages_u64s [u64_count] (s: state) (preimages_u64s: [u64_count]u64) : ([][Field.LIMBS]u64, state) =
-    let preimages = map Field.mont_from_u64s (even_chunks Field.LIMBS preimages_u64s) in
-    let hashes = (hash_preimages s) (even_chunks arity preimages) in
-    let hashes_len = length hashes in
+    let preimages = map Field.mont_from_u64s (even_chunks Field.LIMBS preimages_u64s)
+    let hashes = (hash_preimages s) (even_chunks arity preimages)
+    let hashes_len = length hashes
     let finalized_hashes = (map Field.mont_to_u64s hashes) :> [hashes_len][Field.LIMBS]u64
     in (finalized_hashes, s)
 
@@ -261,21 +280,20 @@ module make_hasher (f: F.field) (p: Params): hasher = {
 module type tree_builder = {
   module Hasher: hasher
 
-  val leaves: i64
-  val height: i64
-  val tree_size: i64
+  val leaves : i64
+  val height : i64
+  val tree_size : i64
 
-  val build_tree:  Hasher.state -> [leaves]Hasher.Field.t -> [tree_size]Hasher.Field.t
-  val compute_root: Hasher.state -> [leaves]Hasher.Field.t -> Hasher.Field.t
-
+  val build_tree : Hasher.state -> [leaves]Hasher.Field.t -> [tree_size]Hasher.Field.t
+  val compute_root : Hasher.state -> [leaves]Hasher.Field.t -> Hasher.Field.t
 }
 
 module type tree_builder_params = {
---  module Hasher: hasher
-  val leaves: i64
+  --  module Hasher: hasher
+  val leaves : i64
 }
 
-module make_tree_builder (H: hasher) (P: tree_builder_params): tree_builder = {
+module make_tree_builder (H: hasher) (P: tree_builder_params) : tree_builder = {
   module Hasher = H
   module Field = Hasher.Field
   type t = Field.t
@@ -285,11 +303,12 @@ module make_tree_builder (H: hasher) (P: tree_builder_params): tree_builder = {
   def leaves = P.leaves
   def arity = Hasher.arity
 
-  def tree_dimensions (leaves: i64) (arity: i64): (i64, i64) =
-    let (height, size, _) = loop (height, size, row_size) = (0, leaves, leaves) while row_size > 1 do
-    let new_row_size = div_evenly64 row_size arity in
-    (height + 1, size + new_row_size, new_row_size)
-
+  def tree_dimensions (leaves: i64) (arity: i64) : (i64, i64) =
+    let (height, size, _) =
+      loop (height, size, row_size) = (0, leaves, leaves)
+      while row_size > 1 do
+        let new_row_size = div_evenly64 row_size arity
+        in (height + 1, size + new_row_size, new_row_size)
     in (height, size)
 
   def dimensions = tree_dimensions leaves arity
@@ -297,27 +316,31 @@ module make_tree_builder (H: hasher) (P: tree_builder_params): tree_builder = {
   def tree_size = dimensions.1
 
   -- Like build_tree but does not retain intermediate results.
-  def compute_root (s: Hasher.state) (base: [leaves]t): t =
+  def compute_root (s: Hasher.state) (base: [leaves]t) : t =
     -- Base shrinks by a factor of 1/Hasher.arity on each iteration.
-    let nodes = loop base while length base > 1 do
-                  map  (\preimage -> (Hasher.hash_preimage s preimage))
-                       (even_chunks Hasher.arity base)
+    let nodes =
+      loop base while length base > 1 do
+        map (\preimage -> (Hasher.hash_preimage s preimage))
+            (even_chunks Hasher.arity base)
     in assert (length nodes == 1) nodes[0]
 
   -- Like compute_root but returns an array of all rows, not just the last.
   -- This includes the original base row in the final treee, but to minimize memory, maybe we should define it not to.
-  def build_tree (s: Hasher.state) (base: [leaves]t): [tree_size]t =
+  def build_tree (s: Hasher.state) (base: [leaves]t) : [tree_size]t =
     -- Row shrinks by a factor of 1/Hasher.arity on each iteration.
     let (tree, _, _) =
-      loop (tree, row, offset) = ((replicate tree_size Field.zero) with [0:(length base)] = base,
-                                  base,
-                                  length base)
+      loop (tree, row, offset) =
+             ( (replicate tree_size Field.zero) with [0:(length base)] = base
+             , base
+             , length base
+             )
       while length row > 1 do
-      let preimages = (even_chunks Hasher.arity row) in
-      let new_row = (Hasher.hash_preimages s) preimages in
-      (tree with [offset:offset+length new_row] = new_row,
-       new_row,
-       offset + length new_row)
+        let preimages = (even_chunks Hasher.arity row)
+        let new_row = (Hasher.hash_preimages s) preimages
+        in ( tree with [offset:offset + length new_row] = new_row
+           , new_row
+           , offset + length new_row
+           )
     in tree
 }
 
@@ -327,201 +350,210 @@ module type column_tree_builder = {
 
   type state
 
-  val column_size: i64 -- elements per column
+  val column_size : i64
 
-  val init: ColumnHasher.state -> TreeBuilder.Hasher.state -> state
-  val reset: state -> state
-  val add_columns [elt_count]: state -> [elt_count]ColumnHasher.Field.t -> state
-  val finalize: state -> ([TreeBuilder.tree_size][TreeBuilder.Hasher.Field.LIMBS]u64, state)
+  -- elements per column
+
+  val init : ColumnHasher.state -> TreeBuilder.Hasher.state -> state
+  val reset : state -> state
+  val add_columns [elt_count] : state -> [elt_count]ColumnHasher.Field.t -> state
+  val finalize : state -> ([TreeBuilder.tree_size][TreeBuilder.Hasher.Field.LIMBS]u64, state)
 }
 
-module make_column_tree_builder (ColumnHasher: hasher) (TreeBuilder: tree_builder): column_tree_builder = {
+module make_column_tree_builder (ColumnHasher: hasher) (TreeBuilder: tree_builder) : column_tree_builder = {
   module ColumnHasher = ColumnHasher
   module TreeBuilder = TreeBuilder
 
-  type state = {
-      column_state: ColumnHasher.state,
-      tree_hasher_state: TreeBuilder.Hasher.state,
-      leaves: [TreeBuilder.leaves]ColumnHasher.Field.t,
-      pos: i64
-  }
+  type state =
+    { column_state: ColumnHasher.state
+    , tree_hasher_state: TreeBuilder.Hasher.state
+    , leaves: [TreeBuilder.leaves]ColumnHasher.Field.t
+    , pos: i64
+    }
 
   def column_size = ColumnHasher.arity
 
-  def init (column_state: ColumnHasher.state) (tree_hasher_state: TreeBuilder.Hasher.state): state =
-    { column_state = copy column_state,
-      tree_hasher_state = copy tree_hasher_state,
-      leaves = replicate TreeBuilder.leaves ColumnHasher.Field.zero,
-      pos = 0}
+  def init (column_state: ColumnHasher.state) (tree_hasher_state: TreeBuilder.Hasher.state) : state =
+    { column_state = copy column_state
+    , tree_hasher_state = copy tree_hasher_state
+    , leaves = replicate TreeBuilder.leaves ColumnHasher.Field.zero
+    , pos = 0
+    }
 
-  def reset (s: state): state =
+  def reset (s: state) : state =
     s with column_state = ColumnHasher.reset s.column_state
       with tree_hasher_state = TreeBuilder.Hasher.reset s.tree_hasher_state
       with leaves = replicate TreeBuilder.leaves ColumnHasher.Field.zero
       with pos = 0
 
-   def add_columns [elt_count] (s: state) (flat_columns: [elt_count]ColumnHasher.Field.t): state =
-    let columns = even_chunks ColumnHasher.arity flat_columns in
-    let column_leaves = (map (ColumnHasher.hash_preimage (copy s.column_state)) columns) in
-    let new_pos = s.pos + length column_leaves in
-    s with leaves = (copy s.leaves with [s.pos:new_pos] = column_leaves)
-      with pos = new_pos
-
+  def add_columns [elt_count] (s: state) (flat_columns: [elt_count]ColumnHasher.Field.t) : state =
+    let columns = even_chunks ColumnHasher.arity flat_columns
+    let column_leaves = (map (ColumnHasher.hash_preimage (copy s.column_state)) columns)
+    let new_pos = s.pos + length column_leaves
+    in s with leaves = (copy s.leaves with [s.pos:new_pos] = column_leaves)
+         with pos = new_pos
 
   def tree_size_in_limbs = TreeBuilder.tree_size * TreeBuilder.Hasher.Field.LIMBS
 
-  def finalize (s: state): ([TreeBuilder.tree_size][TreeBuilder.Hasher.Field.LIMBS]u64, state) =
-    let leaves = map (\i -> TreeBuilder.Hasher.Field.from_u64s (ColumnHasher.Field.to_u64s s.leaves[i])) (iota TreeBuilder.leaves) in
-    let mont_tree = (TreeBuilder.build_tree s.tree_hasher_state leaves) in
+  def finalize (s: state) : ([TreeBuilder.tree_size][TreeBuilder.Hasher.Field.LIMBS]u64, state) =
+    let leaves = map (\i -> TreeBuilder.Hasher.Field.from_u64s (ColumnHasher.Field.to_u64s s.leaves[i])) (iota TreeBuilder.leaves)
+    let mont_tree = (TreeBuilder.build_tree s.tree_hasher_state leaves)
     let output = map TreeBuilder.Hasher.Field.mont_to_u64s mont_tree
     in (output, s)
 }
 
 --------------------------------------------------------------------------------
 
-module p2: hasher = make_hasher bls12_381 { def arity = 2i64
-                                            def full_rounds = 8i64
-                                            def partial_rounds = 55i64 }
+module p2 : hasher = make_hasher bls12_381 {
+  def arity = 2i64
+  def full_rounds = 8i64
+  def partial_rounds = 55i64
+}
 
+module p4 : hasher = make_hasher bls12_381 {
+  def arity = 4i64
+  def full_rounds = 8i64
+  def partial_rounds = 56i64
+}
 
-module p4: hasher = make_hasher bls12_381 { def arity = 4i64
-                                            def full_rounds = 8i64
-                                            def partial_rounds = 56i64 }
-
-module p8: hasher = make_hasher bls12_381 { def arity = 8i64
-                                            def full_rounds = 8i64
-                                            def partial_rounds = 57i64 }
-
+module p8 : hasher = make_hasher bls12_381 {
+  def arity = 8i64
+  def full_rounds = 8i64
+  def partial_rounds = 57i64
+}
 
 -- Strengthened Poseidon: 1.25% more partial rounds.
-module s2: hasher = make_hasher bls12_381 { def arity = 2i64
-                                            def full_rounds = 8i64
-                                            def partial_rounds = 69i64 }
+module s2 : hasher = make_hasher bls12_381 {
+  def arity = 2i64
+  def full_rounds = 8i64
+  def partial_rounds = 69i64
+}
 
-module s4: hasher = make_hasher bls12_381 { def arity = 4i64
-                                            def full_rounds = 8i64
-                                            def partial_rounds = 70i64 }
+module s4 : hasher = make_hasher bls12_381 {
+  def arity = 4i64
+  def full_rounds = 8i64
+  def partial_rounds = 70i64
+}
 
-module s8: hasher = make_hasher bls12_381 { def arity = 8i64
-                                            def full_rounds = 8i64
-                                            def partial_rounds = 72i64 }
+module s8 : hasher = make_hasher bls12_381 {
+  def arity = 8i64
+  def full_rounds = 8i64
+  def partial_rounds = 72i64
+}
 
-module p11: hasher = make_hasher bls12_381 {
+module p11 : hasher = make_hasher bls12_381 {
   def arity = 11i64
   def full_rounds = 8i64
-  def partial_rounds = 57i64 }
+  def partial_rounds = 57i64
+}
 
-module s11: hasher = make_hasher bls12_381 {
+module s11 : hasher = make_hasher bls12_381 {
   def arity = 11i64
   def full_rounds = 8i64
-  def partial_rounds = 72i64 }
+  def partial_rounds = 72i64
+}
 
-module t2_2k: tree_builder =  make_tree_builder p2 { def leaves: i64 = p2.leaves_per_kib 2 }
-module t4_2k: tree_builder =  make_tree_builder p4 { def leaves: i64 = p4.leaves_per_kib 2 }
-module t8_2k: tree_builder =  make_tree_builder p8 { def leaves: i64 = p8.leaves_per_kib 2 }
-module t8_64m: tree_builder =  make_tree_builder p8 { def leaves: i64 = p8.leaves_per_mib 64 }
+module t2_2k : tree_builder = make_tree_builder p2 {def leaves : i64 = p2.leaves_per_kib 2}
+module t4_2k : tree_builder = make_tree_builder p4 {def leaves : i64 = p4.leaves_per_kib 2}
+module t8_2k : tree_builder = make_tree_builder p8 {def leaves : i64 = p8.leaves_per_kib 2}
+module t8_64m : tree_builder = make_tree_builder p8 {def leaves : i64 = p8.leaves_per_mib 64}
 
-module t8_512m: tree_builder =  make_tree_builder p8 { def leaves: i64 = p8.leaves_per_mib 512 }
-module t8_4g: tree_builder =  make_tree_builder p8 { def leaves: i64 = p8.leaves_per_gib 4 }
+module t8_512m : tree_builder = make_tree_builder p8 {def leaves : i64 = p8.leaves_per_mib 512}
+module t8_4g : tree_builder = make_tree_builder p8 {def leaves : i64 = p8.leaves_per_gib 4}
 
 type p2_state = p2.state
 
 entry init2 (arity_tag: ([p2.Field.LIMBS]u64))
-           (round_keys: [p2.rk_count]([p2.Field.LIMBS]u64))
-           (mds_matrix: matrix ([p2.Field.LIMBS]u64) [p2.width])
-           (pre_sparse_matrix: matrix ([p2.Field.LIMBS]u64) [p2.width])
-           (sparse_matrixes: [p2.sparse_count][p2.sparse_matrix_size]([p2.Field.LIMBS]u64))
-              : p2_state =
-  let constants = p2.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes in
-  p2.init constants
+            (round_keys: [p2.rk_count]([p2.Field.LIMBS]u64))
+            (mds_matrix: matrix ([p2.Field.LIMBS]u64) [p2.width])
+            (pre_sparse_matrix: matrix ([p2.Field.LIMBS]u64) [p2.width])
+            (sparse_matrixes: [p2.sparse_count][p2.sparse_matrix_size]([p2.Field.LIMBS]u64)) : p2_state =
+  let constants = p2.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes
+  in p2.init constants
 
 type p8_state = p8.state
 
 entry init8 (arity_tag: ([p8.Field.LIMBS]u64))
-           (round_keys: [p8.rk_count]([p8.Field.LIMBS]u64))
-           (mds_matrix: matrix ([p8.Field.LIMBS]u64) [p8.width])
-           (pre_sparse_matrix: matrix ([p8.Field.LIMBS]u64) [p8.width])
-           (sparse_matrixes: [p8.sparse_count][p8.sparse_matrix_size]([p8.Field.LIMBS]u64))
-              : p8_state =
-  let constants = p8.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes in
-  p8.init constants
+            (round_keys: [p8.rk_count]([p8.Field.LIMBS]u64))
+            (mds_matrix: matrix ([p8.Field.LIMBS]u64) [p8.width])
+            (pre_sparse_matrix: matrix ([p8.Field.LIMBS]u64) [p8.width])
+            (sparse_matrixes: [p8.sparse_count][p8.sparse_matrix_size]([p8.Field.LIMBS]u64)) : p8_state =
+  let constants = p8.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes
+  in p8.init constants
 
 entry hash8 (s: p8_state) (preimage_u64s: [32]u64) : ([p8.Field.LIMBS]u64, p8_state) =
-  let preimage = map p8.Field.mont_from_u64s (even_chunks p8.Field.LIMBS preimage_u64s) in
-  let hash = p8.Field.mont_to_u64s (p8.hash_preimage s (preimage :> [p8.arity]p8.Field.t)) in
-  (hash, s)
+  let preimage = map p8.Field.mont_from_u64s (even_chunks p8.Field.LIMBS preimage_u64s)
+  let hash = p8.Field.mont_to_u64s (p8.hash_preimage s (preimage :> [p8.arity]p8.Field.t))
+  in (hash, s)
 
 type p11_state = p11.state
 
 entry init11 (arity_tag: ([p11.Field.LIMBS]u64))
-           (round_keys: [p11.rk_count]([p11.Field.LIMBS]u64))
-           (mds_matrix: matrix ([p11.Field.LIMBS]u64) [p11.width])
-           (pre_sparse_matrix: matrix ([p11.Field.LIMBS]u64) [p11.width])
-           (sparse_matrixes: [p11.sparse_count][p11.sparse_matrix_size]([p11.Field.LIMBS]u64))
-              : p11_state =
-  let constants = p11.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes in
-  p11.init constants
+             (round_keys: [p11.rk_count]([p11.Field.LIMBS]u64))
+             (mds_matrix: matrix ([p11.Field.LIMBS]u64) [p11.width])
+             (pre_sparse_matrix: matrix ([p11.Field.LIMBS]u64) [p11.width])
+             (sparse_matrixes: [p11.sparse_count][p11.sparse_matrix_size]([p11.Field.LIMBS]u64)) : p11_state =
+  let constants = p11.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes
+  in p11.init constants
 
 type s2_state = s2.state
 
 entry init2s (arity_tag: ([s2.Field.LIMBS]u64))
-           (round_keys: [s2.rk_count]([s2.Field.LIMBS]u64))
-           (mds_matrix: matrix ([s2.Field.LIMBS]u64) [s2.width])
-           (pre_sparse_matrix: matrix ([s2.Field.LIMBS]u64) [s2.width])
-           (sparse_matrixes: [s2.sparse_count][s2.sparse_matrix_size]([s2.Field.LIMBS]u64))
-              : s2_state =
-  let constants = s2.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes in
-  s2.init constants
+             (round_keys: [s2.rk_count]([s2.Field.LIMBS]u64))
+             (mds_matrix: matrix ([s2.Field.LIMBS]u64) [s2.width])
+             (pre_sparse_matrix: matrix ([s2.Field.LIMBS]u64) [s2.width])
+             (sparse_matrixes: [s2.sparse_count][s2.sparse_matrix_size]([s2.Field.LIMBS]u64)) : s2_state =
+  let constants = s2.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes
+  in s2.init constants
 
 type s8_state = s8.state
 
 entry init8s (arity_tag: ([s8.Field.LIMBS]u64))
-           (round_keys: [s8.rk_count]([s8.Field.LIMBS]u64))
-           (mds_matrix: matrix ([s8.Field.LIMBS]u64) [s8.width])
-           (pre_sparse_matrix: matrix ([s8.Field.LIMBS]u64) [s8.width])
-           (sparse_matrixes: [s8.sparse_count][s8.sparse_matrix_size]([s8.Field.LIMBS]u64))
-              : s8_state =
-  let constants = s8.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes in
-  s8.init constants
+             (round_keys: [s8.rk_count]([s8.Field.LIMBS]u64))
+             (mds_matrix: matrix ([s8.Field.LIMBS]u64) [s8.width])
+             (pre_sparse_matrix: matrix ([s8.Field.LIMBS]u64) [s8.width])
+             (sparse_matrixes: [s8.sparse_count][s8.sparse_matrix_size]([s8.Field.LIMBS]u64)) : s8_state =
+  let constants = s8.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes
+  in s8.init constants
 
 type s11_state = s11.state
 
 entry init11s (arity_tag: ([s11.Field.LIMBS]u64))
-           (round_keys: [s11.rk_count]([s11.Field.LIMBS]u64))
-           (mds_matrix: matrix ([s11.Field.LIMBS]u64) [s11.width])
-           (pre_sparse_matrix: matrix ([s11.Field.LIMBS]u64) [s11.width])
-           (sparse_matrixes: [s11.sparse_count][s11.sparse_matrix_size]([s11.Field.LIMBS]u64))
-              : s11_state =
-  let constants = s11.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes in
-  s11.init constants
+              (round_keys: [s11.rk_count]([s11.Field.LIMBS]u64))
+              (mds_matrix: matrix ([s11.Field.LIMBS]u64) [s11.width])
+              (pre_sparse_matrix: matrix ([s11.Field.LIMBS]u64) [s11.width])
+              (sparse_matrixes: [s11.sparse_count][s11.sparse_matrix_size]([s11.Field.LIMBS]u64)) : s11_state =
+  let constants = s11.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes
+  in s11.init constants
 
-entry mbatch_hash2 [u64_count] (s: p2_state) (u64s: [u64_count]u64): ([][p2.Field.LIMBS]u64, p2_state) = p2.hash_preimages_monts s u64s
-entry mbatch_hash8 [u64_count] (s: p8_state) (u64s: [u64_count]u64): ([][p8.Field.LIMBS]u64, p8_state) = p8.hash_preimages_monts s u64s
-entry mbatch_hash11 [u64_count] (s: p11_state) (u64s: [u64_count]u64): ([][p11.Field.LIMBS]u64, p11_state) = p11.hash_preimages_monts s u64s
+entry mbatch_hash2 [u64_count] (s: p2_state) (u64s: [u64_count]u64) : ([][p2.Field.LIMBS]u64, p2_state) = p2.hash_preimages_monts s u64s
+entry mbatch_hash8 [u64_count] (s: p8_state) (u64s: [u64_count]u64) : ([][p8.Field.LIMBS]u64, p8_state) = p8.hash_preimages_monts s u64s
+entry mbatch_hash11 [u64_count] (s: p11_state) (u64s: [u64_count]u64) : ([][p11.Field.LIMBS]u64, p11_state) = p11.hash_preimages_monts s u64s
 
 -- Strengthened
-entry mbatch_hash2s [u64_count] (s: s2_state) (u64s: [u64_count]u64): ([][s2.Field.LIMBS]u64, s2_state) = s2.hash_preimages_monts s u64s
-entry mbatch_hash8s [u64_count] (s: s8_state) (u64s: [u64_count]u64): ([][s8.Field.LIMBS]u64, s8_state) = s8.hash_preimages_monts s u64s
-entry mbatch_hash11s [u64_count] (s: s11_state) (u64s: [u64_count]u64): ([][s11.Field.LIMBS]u64, s11_state) = s11.hash_preimages_monts s u64s
+entry mbatch_hash2s [u64_count] (s: s2_state) (u64s: [u64_count]u64) : ([][s2.Field.LIMBS]u64, s2_state) = s2.hash_preimages_monts s u64s
+entry mbatch_hash8s [u64_count] (s: s8_state) (u64s: [u64_count]u64) : ([][s8.Field.LIMBS]u64, s8_state) = s8.hash_preimages_monts s u64s
+entry mbatch_hash11s [u64_count] (s: s11_state) (u64s: [u64_count]u64) : ([][s11.Field.LIMBS]u64, s11_state) = s11.hash_preimages_monts s u64s
 
 module t8_64m_hasher = t8_64m.Hasher
 type t8_64m_state = t8_64m_hasher.state
-entry init_t8_64m (arity_tag: ([t8_64m_hasher.Field.LIMBS]u64))
-           (round_keys: [t8_64m_hasher.rk_count]([t8_64m_hasher.Field.LIMBS]u64))
-           (mds_matrix: matrix ([t8_64m_hasher.Field.LIMBS]u64) [t8_64m_hasher.width])
-           (pre_sparse_matrix: matrix ([t8_64m_hasher.Field.LIMBS]u64) [t8_64m_hasher.width])
-           (sparse_matrixes: [t8_64m_hasher.sparse_count][t8_64m_hasher.sparse_matrix_size]([t8_64m_hasher.Field.LIMBS]u64))
-              : t8_64m_state =
-  let constants = t8_64m_hasher.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes in
-  t8_64m_hasher.init constants
 
-entry build_tree8_64m (s: t8_64m_state) (u64s: []u64): [][t8_64m_hasher.Field.LIMBS]u64 =
+entry init_t8_64m (arity_tag: ([t8_64m_hasher.Field.LIMBS]u64))
+                  (round_keys: [t8_64m_hasher.rk_count]([t8_64m_hasher.Field.LIMBS]u64))
+                  (mds_matrix: matrix ([t8_64m_hasher.Field.LIMBS]u64) [t8_64m_hasher.width])
+                  (pre_sparse_matrix: matrix ([t8_64m_hasher.Field.LIMBS]u64) [t8_64m_hasher.width])
+                  (sparse_matrixes: [t8_64m_hasher.sparse_count][t8_64m_hasher.sparse_matrix_size]([t8_64m_hasher.Field.LIMBS]u64)) : t8_64m_state =
+  let constants = t8_64m_hasher.make_constants arity_tag round_keys mds_matrix pre_sparse_matrix sparse_matrixes
+  in t8_64m_hasher.init constants
+
+entry build_tree8_64m (s: t8_64m_state) (u64s: []u64) : [][t8_64m_hasher.Field.LIMBS]u64 =
   map t8_64m_hasher.Field.mont_to_u64s
       (t8_64m.build_tree s ((map t8_64m_hasher.Field.mont_from_u64s (even_chunks t8_64m_hasher.Field.LIMBS u64s))
                             :> [t8_64m.leaves]t8_64m_hasher.Field.t))
 
-
-  -- Used in example program
+-- Used in example program
 def x8 = p8.init p8.blank_constants
-entry simple8 n = tabulate n (\i -> p8.Field.mont_to_u64s
-                                    (p8.hash_preimage x8 ((replicate 8 (p8.Field.mont_from_u32 (u32.i64 i)) :> [p8.arity]p8.Field.t))))
+
+entry simple8 n =
+  tabulate n (\i ->
+                p8.Field.mont_to_u64s (p8.hash_preimage x8 ((replicate 8 (p8.Field.mont_from_u32 (u32.i64 i)) :> [p8.arity]p8.Field.t))))

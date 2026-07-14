@@ -8,32 +8,31 @@
 -- output @ crypt-data/keys0.txt
 
 -- Multiplicative inverse mod 0x10001.
-def inv(a: i16): i32 =
-  let a = i32.i16(a) & 0xFFFF
+def inv (a: i16) : i32 =
+  let a = i32.i16 (a) & 0xFFFF
   let b = 0x10001
   let u = 0
   let v = 1
-  let (_,_,u,_) = loop ((a,b,u,v)) while a > 0i32 do
-    let q = i32.i64((i64.i32(b)&0xFFFFFFFFi64) // (i64.i32(a)&0xFFFFi64))
-    let r = i32.i64((i64.i32(b)&0xFFFFFFFFi64) %% (i64.i32(a)&0xFFFFi64))
-
-    let b = a
-    let a = r
-
-    let t = v
-    let v = u - q * v
-    let u = t
-    in (a,b,u,v)
-
+  let (_, _, u, _) =
+    loop ((a, b, u, v)) while a > 0i32 do
+      let q = i32.i64 ((i64.i32 (b) & 0xFFFFFFFFi64) // (i64.i32 (a) & 0xFFFFi64))
+      let r = i32.i64 ((i64.i32 (b) & 0xFFFFFFFFi64) %% (i64.i32 (a) & 0xFFFFi64))
+      let b = a
+      let a = r
+      let t = v
+      let v = u - q * v
+      let u = t
+      in (a, b, u, v)
   in (if u < 0 then u + 0x10001 else u) & 0xFFFF
 
-def encryptionKey(userkey: [8]i16): [52]i16 =
+def encryptionKey (userkey: [8]i16) : [52]i16 =
   -- Key starts out blank.
   let z = replicate 52 0i16
   -- First 8 subkeys are userkey itself.
-  let z = loop (z) for i < 8 do
-    let z[i] = userkey[i]
-    in z
+  let z =
+    loop (z) for i < 8 do
+      let z[i] = userkey[i]
+      in z
   -- Each set of 8 subkeys thereafter is derived from left rotating
   -- the whole 128-bit key 25 bits to left (once between each set of
   -- eight keys and then before the last four). Instead of actually
@@ -44,54 +43,58 @@ def encryptionKey(userkey: [8]i16): [52]i16 =
   -- member and right (with zero fill) in the other. For the last
   -- two subkeys in any group of eight, those 16 bits start to
   -- wrap around to the first two members of the previous eight.
-  let z = loop (z) for i in map (8+) (iota (52-8)) do
-    let j = i %% 8
-    let rshift x y = i16.u16 (u16.i16 x >> y)
-    let z[i] = if      j  < 6 then (z[i-7]`rshift`9) | (z[i-6]<<7i16)
-               else if j == 6 then (z[i-7]`rshift`9) | (z[i-14]<<7i16)
-                              else (z[i-15]`rshift`9) | (z[i-14]<<7i16)
-    in z
+  let z =
+    loop (z) for i in map (8 +) (iota (52 - 8)) do
+      let j = i %% 8
+      let rshift x y = i16.u16 (u16.i16 x >> y)
+      let z[i] =
+        if j < 6
+        then (z[i - 7] `rshift` 9) | (z[i - 6] << 7i16)
+        else if j == 6
+        then (z[i - 7] `rshift` 9) | (z[i - 14] << 7i16)
+        else (z[i - 15] `rshift` 9) | (z[i - 14] << 7i16)
+      in z
   in z
 
-def decryptionKey(z: [52]i16): [52]i16 =
+def decryptionKey (z: [52]i16) : [52]i16 =
   -- Key starts out blank.
   let dk = replicate 52 0i16
-  let t1 = inv(z[0])
-  let t2 = i32.i16(-z[1]) & 0xFFFF
-  let t3 = i32.i16(-z[2]) & 0xFFFF
-  let dk[51] = i16.i32(inv(z[3]))
-  let dk[50] = i16.i32(t3)
-  let dk[49] = i16.i32(t2)
-  let dk[48] = i16.i32(t1)
-  let dk = loop (dk) for i < 7 do
-    let kb = 4 + 6 * i
-    let jb = 47 - 6 * i
-    let t1 = z[kb+0]
-    let dk[jb-0] = z[kb+1]
-    let dk[jb-1] = t1
-    let t1 = i16.i32(inv(z[kb+2]))
-    let t2 = -z[kb+3]
-    let t3 = -z[kb+4]
-    let dk[jb-2] = i16.i32(inv(z[kb+5]))
-    let dk[jb-3] = t2
-    let dk[jb-4] = t3
-    let dk[jb-5] = t1
-    in dk
+  let t1 = inv (z[0])
+  let t2 = i32.i16 (-z[1]) & 0xFFFF
+  let t3 = i32.i16 (-z[2]) & 0xFFFF
+  let dk[51] = i16.i32 (inv (z[3]))
+  let dk[50] = i16.i32 (t3)
+  let dk[49] = i16.i32 (t2)
+  let dk[48] = i16.i32 (t1)
+  let dk =
+    loop (dk) for i < 7 do
+      let kb = 4 + 6 * i
+      let jb = 47 - 6 * i
+      let t1 = z[kb + 0]
+      let dk[jb - 0] = z[kb + 1]
+      let dk[jb - 1] = t1
+      let t1 = i16.i32 (inv (z[kb + 2]))
+      let t2 = -z[kb + 3]
+      let t3 = -z[kb + 4]
+      let dk[jb - 2] = i16.i32 (inv (z[kb + 5]))
+      let dk[jb - 3] = t2
+      let dk[jb - 4] = t3
+      let dk[jb - 5] = t1
+      in dk
   let kb = 4 + 6 * 7
   let jb = 47 - 6 * 7
-
-  let t1 = z[kb+0]
-  let dk[jb-0] = z[kb+1]
-  let dk[jb-1] = t1
-  let t1 = i16.i32(inv(z[kb+2]))
-  let t2 = -z[kb+3]
-  let t3 = -z[kb+4]
-  let dk[jb-2] = i16.i32(inv(z[kb+5]))
-  let dk[jb-3] = t3
-  let dk[jb-4] = t2
-  let dk[jb-5] = t1
+  let t1 = z[kb + 0]
+  let dk[jb - 0] = z[kb + 1]
+  let dk[jb - 1] = t1
+  let t1 = i16.i32 (inv (z[kb + 2]))
+  let t2 = -z[kb + 3]
+  let t3 = -z[kb + 4]
+  let dk[jb - 2] = i16.i32 (inv (z[kb + 5]))
+  let dk[jb - 3] = t3
+  let dk[jb - 4] = t2
+  let dk[jb - 5] = t1
   in dk
 
-def main(userkey: [8]i16): ([52]i16,[52]i16) =
-  let z = encryptionKey(userkey)
-  in (z, decryptionKey(z))
+def main (userkey: [8]i16) : ([52]i16, [52]i16) =
+  let z = encryptionKey (userkey)
+  in (z, decryptionKey (z))

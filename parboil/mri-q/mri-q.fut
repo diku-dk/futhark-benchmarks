@@ -32,18 +32,27 @@
 -- compiled input @ data/large.in
 -- output @ data/large.out
 
-def main [numK][numX]
-         (kx: [numK]f32) (ky: [numK]f32) (kz: [numK]f32)
-         (x: [numX]f32) (y: [numX]f32) (z: [numX]f32)
-         (phiR: [numK]f32) (phiI: [numK]f32)
-       : ([numX]f32, [numX]f32) =
-  let phiMag = map2 (\r i -> r*r + i*i) phiR phiI
-  let expArgs = map3 (\x_e y_e z_e ->
-                          map (2.0f32*f32.pi*)
-                              (map3 (\kx_e ky_e kz_e ->
-                                        kx_e * x_e + ky_e * y_e + kz_e * z_e)
-                                    kx ky kz))
-                     x y z
+def main [numK] [numX]
+         (kx: [numK]f32)
+         (ky: [numK]f32)
+         (kz: [numK]f32)
+         (x: [numX]f32)
+         (y: [numX]f32)
+         (z: [numX]f32)
+         (phiR: [numK]f32)
+         (phiI: [numK]f32) : ([numX]f32, [numX]f32) =
+  let phiMag = map2 (\r i -> r * r + i * i) phiR phiI
+  let expArgs =
+    map3 (\x_e y_e z_e ->
+            map (2.0f32 * f32.pi *)
+                (map3 (\kx_e ky_e kz_e ->
+                         kx_e * x_e + ky_e * y_e + kz_e * z_e)
+                      kx
+                      ky
+                      kz))
+         x
+         y
+         z
   let qr = map1 (map1 f32.cos >-> map2 (*) phiMag >-> f32.sum) expArgs
   let qi = map1 (map1 f32.sin >-> map2 (*) phiMag >-> f32.sum) expArgs
   in (qr, qi)

@@ -7,58 +7,59 @@
 -- input @ crypt-data/medium.in
 -- output @ crypt-data/medium.out
 
-def mk16b(upper: u8, lower: u8): u16 =
-  (u16.u8(upper) & 0xFFu16) << 8u16 | (u16.u8(lower) & 0xFFu16)
+def mk16b (upper: u8, lower: u8) : u16 =
+  (u16.u8 (upper) & 0xFFu16) << 8u16 | (u16.u8 (lower) & 0xFFu16)
 
-def cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
-  let x1 = mk16b(block[1], block[0])
-  let x2 = mk16b(block[3], block[2])
-  let x3 = mk16b(block[5], block[4])
-  let x4 = mk16b(block[7], block[6])
-  let (x1,x2,x3,x4) = loop ((x1,x2,x3,x4)) for key' in unflatten (take (8*6) key) do
-    -- 1) Multiply (modulo 0x10001), 1st text sub-block with 1st key
-    -- sub-block.
-    let x1 = u16.u32(u32.u16(x1) * u32.u16(key'[0]) %% 0x10001u32)
-    -- 2) Add (modulo 0x10000), 2nd text sub-block with 2nd key
-    -- sub-block.
-    let x2 = x2 + key'[1]
-    -- 3) Add (modulo 0x10000), 3rd text sub-block with 3rd key
-    -- sub-block.
-    let x3 = x3 + key'[2]
-    -- 4) Multiply (modulo 0x10001), 4th text sub-block
-    -- with 4th key sub-block.
-    let x4 = u16.u32(u32.u16(x4) * u32.u16(key'[3]) %% 0x10001u32)
-    -- 5) XOR results from steps 1 and 3.
-    let t2 = x1 ^ x3
-    -- 6) XOR results from steps 2 and 4.  Included in step 8.
+def cipher_idea_block (key: [52]u16) (block: [8]u8) : [8]u8 =
+  let x1 = mk16b (block[1], block[0])
+  let x2 = mk16b (block[3], block[2])
+  let x3 = mk16b (block[5], block[4])
+  let x4 = mk16b (block[7], block[6])
+  let (x1, x2, x3, x4) =
+    loop ((x1, x2, x3, x4)) for key' in unflatten (take (8 * 6) key) do
+      -- 1) Multiply (modulo 0x10001), 1st text sub-block with 1st key
+      -- sub-block.
+      let x1 = u16.u32 (u32.u16 (x1) * u32.u16 (key'[0]) %% 0x10001u32)
+      -- 2) Add (modulo 0x10000), 2nd text sub-block with 2nd key
+      -- sub-block.
+      let x2 = x2 + key'[1]
+      -- 3) Add (modulo 0x10000), 3rd text sub-block with 3rd key
+      -- sub-block.
+      let x3 = x3 + key'[2]
+      -- 4) Multiply (modulo 0x10001), 4th text sub-block
+      -- with 4th key sub-block.
+      let x4 = u16.u32 (u32.u16 (x4) * u32.u16 (key'[3]) %% 0x10001u32)
+      -- 5) XOR results from steps 1 and 3.
+      let t2 = x1 ^ x3
+      -- 6) XOR results from steps 2 and 4.  Included in step 8.
 
-    -- 7) Multiply (modulo 0x10001), result of step 5 with 5th key
-    -- sub-block.
-    let t2 = u16.u32(u32.u16(t2) * u32.u16(key'[4]) %% 0x10001u32)
-    -- 8) Add (modulo 0x10000), results of steps 6 and 7.
-    let t1 = t2 + (x2 ^ x4)
-    -- 9) Multiply (modulo 0x10001), result of step 8 with 6th key
-    -- sub-block.
-    let t1 = u16.u32(u32.u16(t1) * u32.u16(key'[5]) %% 0x10001u32)
-    -- 10) Add (modulo 0x10000), results of steps 7 and 9.
-    let t2 = t1 + t2
-    -- 11) XOR results from steps 1 and 9.
-    let x1 = x1 ^ t1
-    -- 14) XOR results from steps 4 and 10. (Out of order).
-    let x4 = x4 ^ t2
-    -- 13) XOR results from steps 2 and 10. (Out of order).
-    let t2 = t2 ^ x2
-    -- 12) XOR results from steps 3 and 9. (Out of order).
-    let x2 = x3 ^ t1
-    let x3 = t2 in -- Results of x2 and x3 now swapped.
-    (x1,x2,x3,x4)
-
-  let key' = key[6*8:]
+      -- 7) Multiply (modulo 0x10001), result of step 5 with 5th key
+      -- sub-block.
+      let t2 = u16.u32 (u32.u16 (t2) * u32.u16 (key'[4]) %% 0x10001u32)
+      -- 8) Add (modulo 0x10000), results of steps 6 and 7.
+      let t1 = t2 + (x2 ^ x4)
+      -- 9) Multiply (modulo 0x10001), result of step 8 with 6th key
+      -- sub-block.
+      let t1 = u16.u32 (u32.u16 (t1) * u32.u16 (key'[5]) %% 0x10001u32)
+      -- 10) Add (modulo 0x10000), results of steps 7 and 9.
+      let t2 = t1 + t2
+      -- 11) XOR results from steps 1 and 9.
+      let x1 = x1 ^ t1
+      -- 14) XOR results from steps 4 and 10. (Out of order).
+      let x4 = x4 ^ t2
+      -- 13) XOR results from steps 2 and 10. (Out of order).
+      let t2 = t2 ^ x2
+      -- 12) XOR results from steps 3 and 9. (Out of order).
+      let x2 = x3 ^ t1
+      let x3 = t2
+      -- Results of x2 and x3 now swapped.
+      in (x1, x2, x3, x4)
+  let key' = key[6 * 8:]
   -- Final output transform (4 steps).
 
   -- 1) Multiply (modulo 0x10001), 1st text-block
   -- with 1st key sub-block.
-  let x1 = u16.u32(u32.u16(x1) * u32.u16(key'[0]) %% 0x10001u32)
+  let x1 = u16.u32 (u32.u16 (x1) * u32.u16 (key'[0]) %% 0x10001u32)
   -- 2) Add (modulo 0x10000), 2nd text sub-block
   -- with 2nd key sub-block. It says x3, but that is to undo swap
   -- of subblocks 2 and 3 in 8th processing round.
@@ -69,18 +70,22 @@ def cipher_idea_block(key: [52]u16) (block: [8]u8): [8]u8 =
   let x2 = x2 + key'[2]
   -- 4) Multiply (modulo 0x10001), 4th text-block with 4th key
   -- sub-block.
-  let x4 = u16.u32(u32.u16(x4) * u32.u16(key'[3]) %% 0x10001u32)
+  let x4 = u16.u32 (u32.u16 (x4) * u32.u16 (key'[3]) %% 0x10001u32)
   -- Repackage from 16-bit sub-blocks to 8-bit byte array text2.
-  in [ u8.u16(x1), u8.u16(x1>>8u16)
-     , u8.u16(x3), u8.u16(x3>>8u16)
-     , u8.u16(x2), u8.u16(x2>>8u16)
-     , u8.u16(x4), u8.u16(x4>>8u16)
+  in [ u8.u16 (x1)
+     , u8.u16 (x1 >> 8u16)
+     , u8.u16 (x3)
+     , u8.u16 (x3 >> 8u16)
+     , u8.u16 (x2)
+     , u8.u16 (x2 >> 8u16)
+     , u8.u16 (x4)
+     , u8.u16 (x4 >> 8u16)
      ]
 
-def cipher_idea [n] (key: [52]u16, text: [n]u8): [n]u8 =
-  let blocks = unflatten (text :> [n/8*8]u8)
-  in flatten (map (cipher_idea_block(key)) blocks) :> [n]u8
+def cipher_idea [n] (key: [52]u16, text: [n]u8) : [n]u8 =
+  let blocks = unflatten (text :> [n / 8 * 8]u8)
+  in flatten (map (cipher_idea_block (key)) blocks) :> [n]u8
 
-def main [n] (z: [52]u16) (dk: [52]u16) (text: [n]u8): ([n]u8, [n]u8) =
-  let text_encrypted = cipher_idea(z, text)
-  in (text_encrypted, cipher_idea(dk, text_encrypted))
+def main [n] (z: [52]u16) (dk: [52]u16) (text: [n]u8) : ([n]u8, [n]u8) =
+  let text_encrypted = cipher_idea (z, text)
+  in (text_encrypted, cipher_idea (dk, text_encrypted))

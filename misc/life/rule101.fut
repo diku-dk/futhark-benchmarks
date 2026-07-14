@@ -11,12 +11,12 @@ import "genlife_1d"
 
 import "lib/github.com/athas/matte/colour"
 
-module rule101_rules: rules_and_visuals_1d = {
+module rule101_rules : rules_and_visuals_1d = {
   type cell = bool
 
   def value (b: cell) = i32.bool b
 
-  def weights: [3]i32 = [1,2,2]
+  def weights : [3]i32 = [1, 2, 2]
 
   def step (_: cell) (neighbours: i32) =
     neighbours == 2 || neighbours == 3 || neighbours == 4
@@ -25,9 +25,10 @@ module rule101_rules: rules_and_visuals_1d = {
 
   def uninit (c: cell) = c
 
-  def colour (b: cell) = if b
-                         then argb.black
-                         else argb.white
+  def colour (b: cell) =
+    if b
+    then argb.black
+    else argb.white
 }
 
 module rule101 = gen_life_vis_1d rule101_rules rule101_rules

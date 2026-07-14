@@ -28,52 +28,48 @@
 
 import "lib/github.com/diku-dk/segmented/segmented"
 
-def step [n][e]
-        (cost: *[n]i32)
-        (nodes_start_index: [n]i32)
-        (nodes_n_edges: [n]i32)
-        (edges_dest: [e]i32)
-        (graph_visited: [n]bool)
-        (graph_mask: *[n]bool)
-        (updating_graph_mask: *[n]bool) : (*[n]i32, *[n]bool, *[n]bool) =
-  let [n_indices] (active_indices : [n_indices]i64, _) = unzip (filter (.1) (zip (iota n) graph_mask))
+def step [n] [e]
+         (cost: *[n]i32)
+         (nodes_start_index: [n]i32)
+         (nodes_n_edges: [n]i32)
+         (edges_dest: [e]i32)
+         (graph_visited: [n]bool)
+         (graph_mask: *[n]bool)
+         (updating_graph_mask: *[n]bool) : (*[n]i32, *[n]bool, *[n]bool) =
+  let [n_indices] (active_indices: [n_indices]i64, _) = unzip (filter (.1) (zip (iota n) graph_mask))
   let graph_mask' =
     scatter graph_mask active_indices (map (const false) active_indices)
-
   -----------------------------------------------------------------------------
   -- BEGIN-FLATTENING: needed to ensure the asymptotic work/depth complexity --
   -----------------------------------------------------------------------------
-  let active_costs   = map (\tid -> #[unsafe] (cost[tid])) active_indices
-  let active_edges   = map (\tid -> #[unsafe] (nodes_n_edges[tid])) active_indices
+  let active_costs = map (\tid -> #[unsafe] (cost[tid])) active_indices
+  let active_edges = map (\tid -> #[unsafe] (nodes_n_edges[tid])) active_indices
   let scan_num_edges = scan (+) 0i32 active_edges
-  let flat_len       = i64.i32 scan_num_edges[n_indices-1]
-  let write_inds     = map (\i -> if i==0 then 0 else #[unsafe] i64.i32 scan_num_edges[i-1]) (iota n_indices)
-  let active_flags   = spread flat_len false write_inds (replicate n_indices true)
-  let track_nodes_tmp= spread flat_len 0 write_inds (map i32.i64 (iota n_indices))
-  let active_starts  = map (\tid -> #[unsafe] (nodes_start_index[tid])) active_indices
-  let track_index_tmp= spread flat_len 1 write_inds active_starts
-
-  let track_nodes    = segmented_scan (+) 0 active_flags track_nodes_tmp
-  let track_index    = segmented_scan (+) 0 active_flags track_index_tmp
+  let flat_len = i64.i32 scan_num_edges[n_indices - 1]
+  let write_inds = map (\i -> if i == 0 then 0 else #[unsafe] i64.i32 scan_num_edges[i - 1]) (iota n_indices)
+  let active_flags = spread flat_len false write_inds (replicate n_indices true)
+  let track_nodes_tmp = spread flat_len 0 write_inds (map i32.i64 (iota n_indices))
+  let active_starts = map (\tid -> #[unsafe] (nodes_start_index[tid])) active_indices
+  let track_index_tmp = spread flat_len 1 write_inds active_starts
+  let track_nodes = segmented_scan (+) 0 active_flags track_nodes_tmp
+  let track_index = segmented_scan (+) 0 active_flags track_index_tmp
   -----------------------------------------------------------------------------
   -- END-FLATTENING:   needed to ensure the asymptotic work/depth complexity --
   -----------------------------------------------------------------------------
 
-  let changes = map2(\row edge_index ->
-                      let node_id = #[unsafe] edges_dest[edge_index]
-                      in  if !(#[unsafe] graph_visited[node_id])
-                          then (i64.i32 node_id, #[unsafe] active_costs[row]+1)
-                          else (-1, -1)
-                    ) track_nodes track_index
-
-  let (changes_node_ids, changes_costs) = unzip(changes)
-
+  let changes =
+    map2 (\row edge_index ->
+            let node_id = #[unsafe] edges_dest[edge_index]
+            in if !(#[unsafe] graph_visited[node_id])
+               then (i64.i32 node_id, #[unsafe] active_costs[row] + 1)
+               else (-1, -1))
+         track_nodes
+         track_index
+  let (changes_node_ids, changes_costs) = unzip (changes)
   let cost' =
-      scatter cost changes_node_ids changes_costs
-
+    scatter cost changes_node_ids changes_costs
   let updating_graph_mask' =
-      scatter updating_graph_mask changes_node_ids (replicate flat_len true)
-
+    scatter updating_graph_mask changes_node_ids (replicate flat_len true)
   in (cost', graph_mask', updating_graph_mask')
 
 import "common"

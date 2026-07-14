@@ -36,19 +36,27 @@ module rnge = linear_congruential_engine u32 {
 module norm_rng = normal_distribution f64 rnge
 
 -- | Fills a radius x radius matrix representing the disk
-def strelDisk (radius: i64): [][]i32 =
-  let diameter = radius*2 - 1
-  in tabulate_2d diameter diameter
-                 (\x y -> let distance = f64.sqrt(f64.i64 (x-radius+1)**2 +
-                                                  f64.i64 (y-radius+1)**2)
-                          in if distance < f64.i64 radius then 1 else 0)
+def strelDisk (radius: i64) : [][]i32 =
+  let diameter = radius * 2 - 1
+  in tabulate_2d diameter
+                 diameter
+                 (\x y ->
+                    let distance =
+                      f64.sqrt (f64.i64 (x - radius + 1) ** 2
+                                + f64.i64 (y - radius + 1) ** 2)
+                    in if distance < f64.i64 radius then 1 else 0)
 
-def getneighbors [diameter] (se: [diameter][diameter]i32) (radius: i64): [](f64,f64) =
+def getneighbors [diameter] (se: [diameter][diameter]i32) (radius: i64) : [](f64, f64) =
   let center = radius - 1
   in se
-     |> map2 (\x -> map2 (\y v -> (v != 0, (f64.i64 (y-center),
-                                            f64.i64 (x-center))))
-                         (iota diameter))
+     |> map2 (\x ->
+                map2 (\y v ->
+                        ( v != 0
+                        , ( f64.i64 (y - center)
+                          , f64.i64 (x - center)
+                          )
+                        ))
+                     (iota diameter))
              (iota diameter)
      |> flatten
      |> filter (.0)
@@ -56,13 +64,14 @@ def getneighbors [diameter] (se: [diameter][diameter]i32) (radius: i64): [](f64,
 
 -- | Finds the first element in the CDF that is greater than or equal
 -- to the provided value and returns that index
-def findIndex [Nparticles] (CDF: [Nparticles]f64) (value: f64): i32 =
-  i32.min (i32.i64 Nparticles-1)
-          (loop x = 0 while x < i32.i64 Nparticles &&
-                            value < #[unsafe] CDF[x]
-           do x + 1)
+def findIndex [Nparticles] (CDF: [Nparticles]f64) (value: f64) : i32 =
+  i32.min (i32.i64 Nparticles - 1)
+          (loop x = 0
+           while x < i32.i64 Nparticles
+           && value < #[unsafe] CDF[x] do
+             x + 1)
 
-def particleFilter [IszX][IszY][Nfr]
+def particleFilter [IszX] [IszY] [Nfr]
                    (I: [IszX][IszY][Nfr]i32) (Nparticles: i64) =
   let seed = rnge.rng_from_seed [123] |> rnge.split_rng Nparticles
   let xe = f64.round (f64.i64 IszY / 2)
@@ -78,53 +87,54 @@ def particleFilter [IszX][IszY][Nfr]
   let (_, _, distances, _, _) =
     -- I have no idea why this should run Nfr-1 times instead of Nfr times.
     loop (arrayX, arrayY, distances, seed, seed0) for k in 1..<Nfr do
-    let (seed, x_noises) = seed
-                           |> map (norm_rng.rand {stddev=0, mean=5})
-                           |> unzip
-    let (seed, y_noises) = seed
-                           |> map (norm_rng.rand {stddev=0, mean=2})
-                           |> unzip
-    let arrayX = map2 (+) arrayX (map (1+) x_noises)
-    let arrayY = map2 (+) arrayY (map (-2+) y_noises)
-
-    let flikelihood x' y' =
-      let ind = map
-        (\(a,b) -> let indX = i64.f64 (f64.round x' + b)
-                   let indY = i64.f64 (f64.round y' + a)
-                   --- Weird: if either computed index is out of
-                   --- bounds, then we just read element [0,0]
-                   --- instead.  The original implementation did the
-                   --- same.  Maybe this is a safety check that never
-                   --- occurs in practice.
-                   in if indX >= IszX || indY >= IszY then (0,0) else (indX, indY)
-        ) objxy
-      in (map2 (-) (map (\(i,j) -> (#[unsafe] I[i,j,k]-100)**2) ind)
-                   (map (\(i,j) -> (#[unsafe] I[i,j,k]-228)**2) ind))
-         |> map f64.i32
-         |> map (/50)
-         |> f64.sum
-         |> (/f64.i64 countOnes)
-
-    let likelihood = map2 flikelihood arrayX arrayY
-
-    let weights = map2 (*) weights (map f64.exp likelihood)
-    let sumWeights = f64.sum weights
-    let weights = map2 (*) weights (map (/sumWeights) weights)
-    let xe = f64.sum (map2 (*) arrayX weights)
-    let ye = f64.sum (map2 (*) arrayY weights)
-    let distance = f64.sqrt ((xe-f64.round(f64.i64 IszY/2))**2 + (ye-f64.round(f64.i64 IszX/2))**2)
-    let distances[k] = distance
-
-    let CDF = scan (+) 0 weights
-    let (seed0, v) = norm_rng.rand {mean=0, stddev=1} seed0
-    let u1 = (1/f64.i64 Nparticles) * v
-    let u = map (f64.i64 >-> (/f64.i64 Nparticles) >-> (+u1)) (iota Nparticles)
-    let (xj, yj) = u
-                   |> map (\u' -> let i = findIndex CDF u'
-                                  in #[unsafe] (arrayX[i], arrayY[i]))
-                   |> unzip
-
-    in (xj, yj, distances, seed, seed0)
+      let (seed, x_noises) =
+        seed
+        |> map (norm_rng.rand {stddev = 0, mean = 5})
+        |> unzip
+      let (seed, y_noises) =
+        seed
+        |> map (norm_rng.rand {stddev = 0, mean = 2})
+        |> unzip
+      let arrayX = map2 (+) arrayX (map (1 +) x_noises)
+      let arrayY = map2 (+) arrayY (map (-2 +) y_noises)
+      let flikelihood x' y' =
+        let ind =
+          map (\(a, b) ->
+                 let indX = i64.f64 (f64.round x' + b)
+                 let indY = i64.f64 (f64.round y' + a)
+                 --- Weird: if either computed index is out of
+                 --- bounds, then we just read element [0,0]
+                 --- instead.  The original implementation did the
+                 --- same.  Maybe this is a safety check that never
+                 --- occurs in practice.
+                 in if indX >= IszX || indY >= IszY then (0, 0) else (indX, indY))
+              objxy
+        in (map2 (-)
+                 (map (\(i, j) -> (#[unsafe] I[i, j, k] - 100) ** 2) ind)
+                 (map (\(i, j) -> (#[unsafe] I[i, j, k] - 228) ** 2) ind))
+           |> map f64.i32
+           |> map (/ 50)
+           |> f64.sum
+           |> (/ f64.i64 countOnes)
+      let likelihood = map2 flikelihood arrayX arrayY
+      let weights = map2 (*) weights (map f64.exp likelihood)
+      let sumWeights = f64.sum weights
+      let weights = map2 (*) weights (map (/ sumWeights) weights)
+      let xe = f64.sum (map2 (*) arrayX weights)
+      let ye = f64.sum (map2 (*) arrayY weights)
+      let distance = f64.sqrt ((xe - f64.round (f64.i64 IszY / 2)) ** 2 + (ye - f64.round (f64.i64 IszX / 2)) ** 2)
+      let distances[k] = distance
+      let CDF = scan (+) 0 weights
+      let (seed0, v) = norm_rng.rand {mean = 0, stddev = 1} seed0
+      let u1 = (1 / f64.i64 Nparticles) * v
+      let u = map (f64.i64 >-> (/ f64.i64 Nparticles) >-> (+ u1)) (iota Nparticles)
+      let (xj, yj) =
+        u
+        |> map (\u' ->
+                  let i = findIndex CDF u'
+                  in #[unsafe] (arrayX[i], arrayY[i]))
+        |> unzip
+      in (xj, yj, distances, seed, seed0)
   in distances
 
 def main = particleFilter

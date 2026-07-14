@@ -12,25 +12,25 @@
 -- }
 --
 
+def main [m] [n] [q]
+         (A: [m][q]f32)
+         (B: [q][n]f32) : [m][n]f32 =
+  map (\Arow ->
+         map (\Bcol ->
+                let r =
+                  map2 (\a b -> a * b) Arow Bcol
+                  |> reduce (+) 0.0f32
+                in r)
+             (transpose B))
+      A
 
-def main [m][n][q]  (A: [m][q]f32) 
-                    (B: [q][n]f32)
-                  : [m][n]f32 =
-    map(\Arow ->
-            map (\Bcol ->
-                    let r = map2 (\a b -> a*b) Arow Bcol |>
-                            reduce (+) 0.0f32
-                    in  r
-                ) (transpose B)
-        ) A
-
-def main_inst (A: [1024][1024]f32) 
-         (B: [1024][1024]f32)
-         : [1024][1024]f32 =
-    map(\Arow ->
-            map (\Bcol ->
-                    let r = map2 (\a b -> a*b) Arow Bcol |>
-                            reduce (+) 0.0f32
-                    in  r
-                ) (transpose B)
-        ) A
+def main_inst (A: [1024][1024]f32)
+              (B: [1024][1024]f32) : [1024][1024]f32 =
+  map (\Arow ->
+         map (\Bcol ->
+                let r =
+                  map2 (\a b -> a * b) Arow Bcol
+                  |> reduce (+) 0.0f32
+                in r)
+             (transpose B))
+      A

@@ -12,7 +12,11 @@ import "generic_mandelbrot"
 
 module mandelbrot = mandelbrot f32
 
-def main (screenX: i32) (screenY: i32)
-         (xcentre: f32) (ycentre: f32) (width: f32)
-         (depth: i32) (radius: f32) =
+def main (screenX: i32)
+         (screenY: i32)
+         (xcentre: f32)
+         (ycentre: f32)
+         (width: f32)
+         (depth: i32)
+         (radius: f32) =
   mandelbrot.render_mandelbrot (i64.i32 screenX) (i64.i32 screenY) xcentre ycentre width depth radius
