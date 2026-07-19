@@ -1,4 +1,4 @@
 require {
-  github.com/diku-dk/sorts 0.7.1 #b42cfcb2d927d4192a1083f7d9efcdbfd1e5aa4d
+  github.com/diku-dk/sorts 0.7.3 #a473651d67d8ed0fafcea315f0226676721e2bdf
   github.com/diku-dk/segmented 0.5.3 #c96450f95a1e43e0906366a1dab45cb18220a643
 }

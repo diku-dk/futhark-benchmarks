@@ -51,10 +51,17 @@ with open(out_file, 'w') as f:
     print('#include <stdio.h>', file=f)
     print('#include "{}/liblys.h"'.format(self_dir), file=f)
     print('', file=f)
+
     if len(types) == 0:
         print('#define UNUSED(x) (void)(x)', file=f)
+
     print('static void build_text(const struct lys_context *ctx, char* dest, size_t dest_len, const char* format, float render_milliseconds, char* **sum_names) {', file=f)
-    if len(types) > 0:
+
+    if len(types) == 1:
+        print(f'  union {{ {contents_ctype} val; char* sum_name; }} contents;', file=f)
+        print('  FUT_CHECK(ctx->fut, futhark_entry_text_content(ctx->fut, &contents.val, render_milliseconds, ctx->state));', file=f)
+        print('  snprintf(dest, dest_len, format, {});'.format(('contents' + ('.sum_name' if contents_ctype == 'i32' else '.val'))), file=f)
+    elif len(types) > 0:
         print('  {} contents;'.format(contents_ctype), file=f)
         print('  FUT_CHECK(ctx->fut, futhark_entry_text_content(ctx->fut, &contents, render_milliseconds, ctx->state));', file=f)
         for p, t, v in zip(projects, types, out_vars):
@@ -70,6 +77,7 @@ with open(out_file, 'w') as f:
         for x in ['ctx', 'render_milliseconds', 'sum_names']:
             print('UNUSED({});'.format(x), file=f)
         print('  snprintf(dest, dest_len, "%s", format);', file=f)
+
     print('}', file=f)
     print('', file=f)
     print('size_t n_printf_arguments() {', file=f)

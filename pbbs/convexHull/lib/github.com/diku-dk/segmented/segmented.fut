@@ -36,9 +36,11 @@ def segmented_reduce [n] 't
 -- the repetition array. As an example, replicated_iota [2,3,1]
 -- returns the array [0,0,1,1,1,2].
 def replicated_iota [n] (reps: [n]i64) : []i64 =
-  let offsets = scan (+) 0 reps
+  let offsets =
+    map2 (-) (scan (+) 0 reps) reps
+    |> map2 (\r o -> if r == 0 then -1 else o) reps
   let size = reduce_comm (+) 0 reps
-  let tmp = scatter (replicate size 0) offsets (iota n |> map (+ 1))
+  let tmp = scatter (replicate size 0) offsets (iota n)
   in scan i64.max i64.lowest tmp
 
 -- | Segmented iota. Given a flags array, the function returns an
@@ -50,17 +52,18 @@ def segmented_iota [n] (flags: [n]bool) : *[n]i64 =
   let iotas = segmented_scan (+) 0 flags (replicate n 1)
   in map (\x -> x - 1) iotas
 
--- | Replicated and segemented iota generated together
--- in a slighly more efficient way.
--- each segment in the segmented iota corresponds to a segment
--- in the replicated iota. As an example repl_segm_iota [2,3,1]
--- returns the arrays [0,0,1,1,1,2] and [0,1,0,1,2,0].
+-- | Replicated and segmented iota generated together in a slighly more
+-- efficient way. Each segment in the segmented iota corresponds to a segment in
+-- the replicated iota. As an example repl_segm_iota [2,3,1] returns the arrays
+-- [0,0,1,1,1,2] and [0,1,0,1,2,0].
 def repl_segm_iota [n] (reps: [n]i64) : (*[]i64, *[]i64) =
-  let offsets = scan (+) 0 reps
+  let offsets =
+    map2 (-) (scan (+) 0 reps) reps
+    |> map2 (\r o -> if r == 0 then -1 else o) reps
   let size = reduce_comm (+) 0 reps
-  let tmp = scatter (rep 0) offsets (iota n |> map (+ 1))
+  let tmp = scatter (replicate size 0) offsets (iota n)
   let repl = scan i64.max i64.lowest tmp
-  let segm = map2 (\i r -> i - if r == 0 then 0 else offsets[r - 1]) (iota size) repl
+  let segm = map2 (\i r -> i - offsets[r]) (iota size) repl
   in (repl, segm)
 
 -- | Generic expansion function. The function expands a source array
