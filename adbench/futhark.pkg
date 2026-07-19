@@ -1,5 +1,5 @@
 require {
-  github.com/diku-dk/linalg 0.6.5 #d7e197834b26050add8c8b3d747cf61fa2762bbb
+  github.com/diku-dk/linalg 0.6.6 #53bac0ccc70055a79e03c4b1f9e191e0b58859a3
   github.com/athas/vector 0.7.1 #c8f9f029530cb29db9b2957b80e65dbe893c01df
   github.com/diku-dk/autodiff 0.2.4 #d41db4938a4ff9be27db975e7a53ff215c906e82
 }

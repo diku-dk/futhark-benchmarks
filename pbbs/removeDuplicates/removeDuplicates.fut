@@ -1,6 +1,6 @@
-import "lib/github.com/diku-dk/containers/array"
-import "lib/github.com/diku-dk/containers/key"
-import "lib/github.com/diku-dk/containers/slice"
+import "lib/github.com/diku-dk/containers/array/array"
+import "lib/github.com/diku-dk/containers/core/key"
+import "lib/github.com/diku-dk/containers/core/slice"
 import "lib/github.com/diku-dk/sorts/merge_sort"
 
 module array_key_int = mk_array_key static_i32key
