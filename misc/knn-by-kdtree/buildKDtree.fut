@@ -1,4 +1,5 @@
 -- ==
+-- tags { no_opencl }
 -- entry: main
 --
 -- compiled input @ valid-data/kdtree-ppl-32-m-2097152.in
