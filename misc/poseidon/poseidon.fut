@@ -1,3 +1,7 @@
+-- This is not a benchmark and it takes forever to compile.
+-- ==
+-- tags { disable }
+
 module F = import "lib/github.com/filecoin-project/fut-ff/field"
 
 import "lib/github.com/athas/vector/vector"
