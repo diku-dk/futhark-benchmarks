@@ -110,15 +110,15 @@ module u128 : uint with u = u32 = {
 
   #[inline]
   def (+) (a: t) (b: t) =
-    let lo = (low a) + (low b)
-    in { high = (high a) + (high b) + u64.bool (lo < low a)
+    let lo = (low a) u64.+ (low b)
+    in { high = (high a) u64.+ (high b) u64.+ u64.bool (lo < low a)
        , low = lo
        }
 
   #[inline]
   def (-) (a: t) (b: t) =
-    let lo = (low a) - (low b)
-    in { high = (high a) - (high b) - u64.bool (lo > low a)
+    let lo = (low a) u64.- (low b)
+    in { high = (high a) u64.- (high b) u64.- u64.bool (lo > low a)
        , low = lo
        }
 
@@ -128,7 +128,7 @@ module u128 : uint with u = u32 = {
 
   #[inline]
   def (==) (a: t) (b: t) : bool =
-    (high a) == (high b) && (low a) == (low b)
+    (high a) u64.== (high b) && (low a) u64.== (low b)
 
   def n : i64 = 2
 
@@ -148,7 +148,7 @@ module u128 : uint with u = u32 = {
 
   #[inline]
   def (*) (a: t) (b: t) : t =
-    let lo = (low a) * (low b)
+    let lo = (low a) u64.* (low b)
     let hi = u64.(mul_hi (low a) (low b))
     in {high = hi, low = lo}
 
@@ -217,7 +217,7 @@ module u192 : uint with u = u64 = {
 
   #[inline]
   def (==) (a: t) (b: t) : bool =
-    (high a) == (high b) && (mid a) == (mid b) && (low a) == (low b)
+    (high a) u64.== (high b) && (mid a) u64.== (mid b) && (low a) u64.== (low b)
 
   def n : i64 = 3
 
@@ -240,13 +240,13 @@ module u192 : uint with u = u64 = {
 
   #[inline]
   def (*) (a: t) (b: t) : t =
-    let lo = (low a) * (low b)
-    let mi'' = (mid a) * (low b)
-    let mi' = mi'' + (mid b) * (low a)
+    let lo = (low a) u64.* (low b)
+    let mi'' = (mid a) u64.* (low b)
+    let mi' = mi'' + (mid b) u64.* (low a)
     let mi = mi' + u64.mul_hi (low a) (low b)
     let carry = u64.bool (mi' < mi'') + u64.bool (mi < mi')
     let hi =
-      (mid a) * (mid b)
+      (mid a) u64.* (mid b)
       + u64.mul_hi (mid a) (low b)
       + u64.mul_hi (mid b) (low a)
       + carry
@@ -262,10 +262,10 @@ module u192 : uint with u = u64 = {
 
   #[inline]
   def (+) (a: t) (b: t) =
-    let lo = (low a) + (low b)
-    let mi' = (mid a) + (mid b)
-    let mi = mi' + u64.bool (lo < low a)
-    let hi = (high a) + (high b) + u64.bool (mi' < mid a) + u64.bool (mi < mi')
+    let lo = (low a) u64.+ (low b)
+    let mi' = (mid a) u64.+ (mid b)
+    let mi = mi' u64.+ u64.bool (lo < low a)
+    let hi = (high a) u64.+ (high b) u64.+ u64.bool (mi' < mid a) u64.+ u64.bool (mi < mi')
     in { high = hi
        , mid = mi
        , low = lo
@@ -273,10 +273,10 @@ module u192 : uint with u = u64 = {
 
   #[inline]
   def (-) (a: t) (b: t) =
-    let lo = (low a) - (low b)
-    let mi' = (mid a) - (mid b)
-    let mi = mi' - u64.bool (lo > low a)
-    let hi = (high a) - (high b) - u64.bool (mi' > mid a) - u64.bool (mi > mi')
+    let lo = (low a) u64.- (low b)
+    let mi' = (mid a) u64.- (mid b)
+    let mi = mi' u64.- u64.bool (lo > low a)
+    let hi = (high a) u64.- (high b) u64.- u64.bool (mi' > mid a) u64.- u64.bool (mi > mi')
     in { high = hi
        , mid = mi
        , low = lo

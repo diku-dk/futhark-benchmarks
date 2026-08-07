@@ -135,8 +135,10 @@ module mk_arraymap (K: ordkey) : map with key = K.key with ctx = K.ctx = {
              (m: map [n] v) : v =
     reduce_comm op ne m.vals
 
+  def array_map = map
+
   def map [n] 'a 'b (g: a -> b) ({ctx, keys, vals}: map [n] a) : map [n] b =
-    {ctx, keys, vals = map g vals}
+    {ctx, keys, vals = array_map g vals}
 
   def map_with_key [n] 'a 'b (g: key -> a -> b) ({ctx, keys, vals}: map [n] a) : map [n] b =
     let vals = map2 g keys vals

@@ -279,8 +279,10 @@ module mk_eytzinger_unlifted (K: ordkey) : eytzinger_unlifted with key = K.key w
              (m: map ctx [n] [f] v) : v =
     reduce_comm op ne m.vals
 
+  def array_map = map
+
   def map [n] [f] 'a 'b (g: a -> b) ({ctx, keys, vals, offsets, lookup_keys}: map ctx [n] [f] a) : map ctx [n] [f] b =
-    {ctx, keys, vals = map g vals, offsets, lookup_keys}
+    {ctx, keys, vals = array_map g vals, offsets, lookup_keys}
 
   def map_with_key [n] [f] 'a 'b (g: key -> a -> b) ({ctx, keys, vals, offsets, lookup_keys}: map ctx [n] [f] a) : map ctx [n] [f] b =
     let vals = map2 g keys vals

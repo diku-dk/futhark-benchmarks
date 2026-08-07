@@ -234,17 +234,18 @@ module lys : lys with text_content = () = {
   def resize h w (s: state) =
     s with screenX = w with screenY = h
 
-  def render (s: state) =
-    render s.palette
-           s.screenX
-           s.screenY
-           (next s.next_fn)
-           s.time
-           s.posX
-           s.posY
-           s.width
-           s.iters
-           s.radius
+  def render =
+    \(s: state) ->
+      render s.palette
+             s.screenX
+             s.screenY
+             (next s.next_fn)
+             s.time
+             s.posX
+             s.posY
+             s.width
+             s.iters
+             s.radius
 
   type text_content = ()
   def grab_mouse = false

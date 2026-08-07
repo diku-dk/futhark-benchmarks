@@ -147,7 +147,7 @@ def generate_world (size: i64) (disc: (f32, f32)) (seed: i32) : [size][size]f32 
   let grid = map ((.1) >-> f32.i32) reduced
   in unflatten grid
 
-def sm_init (size: i64) (conf: conf) (seed: u32) : state [size] =
+def sl_init (size: i64) (conf: conf) (seed: u32) : state [size] =
   let shift2d 'a [r] [c] (arr: [r][c]a): [r][c]a =
     let (mr, mc) = (r / 2, c / 2)
     let indices = tabulate_2d r c (\ir ic -> (ir, ic)) |> flatten
@@ -282,7 +282,7 @@ def step [size] (state: state [size]) : state [size] =
   let aa'' = map2 (map2 (\a b -> clamp (timestep a b))) aa' aa
   in state with world = aa''
 
-def sm_render [size] (state: state [size]) : [size][size]argb.colour =
+def sl_render [size] (state: state [size]) : [size][size]argb.colour =
   let w = state.world |> flatten
   in map (\v -> argb_colour.from_rgba v v v 0) w |> unflatten
 
@@ -305,11 +305,11 @@ module lys : lys with text_content = text_content = {
   def init (seed: u32) (h: i64) (w: i64) : state =
     let size = to_pow2 (i64.max h w)
     let conf = make_conf_simple 0.1
-    in {state = sm_init size conf seed, h, w}
+    in {state = sl_init size conf seed, h, w}
 
   -- Cut it down to requested size.
   def render (s: state) =
-    let screen = sm_render s.state
+    let screen = sl_render s.state
     in map (take s.w) screen |> take s.h
 
   -- Resizes can occur even with the -R flag to lys (at least on my machine,
@@ -351,4 +351,4 @@ module lys : lys with text_content = text_content = {
 -- compiled input { 1024 }
 def main (w: i32) =
   let w = i64.i32 w
-  in make_conf_simple 0.1 |> (\conf -> init w conf 123) |> iterate 100 step |> (.world)
+  in make_conf_simple 0.1 |> (\conf -> sl_init w conf 123) |> iterate 100 step |> (.world)

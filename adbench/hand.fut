@@ -230,7 +230,8 @@ entry calculate_jacobian [num_bones] [N] [M] [num_us]
     in jvp (uncurry (objective model correspondences points))
            (theta, us)
            (theta', us'')
-  let J = map flatten (map f (onehots oh))
+  let J =
+    #[flattening(sequentialise_irregular)] map flatten (map f (onehots oh))
   in if num_us == 0
      then J
      else -- ADBench expects the packed 'us' derivatives to be in the

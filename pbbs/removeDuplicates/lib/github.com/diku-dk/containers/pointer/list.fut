@@ -104,10 +104,10 @@ module list : list = {
   def (++) [n] [m] 'a (x: list [n] a) (y: list [m] a) =
     { S =
         if n == 0 || m == 0
-        then x.S ++ y.S
+        then x.S `concat` y.S
         else (copy x.S with [x.last] = n + y.head)
-             ++ map (\i -> if i == n then n else i + n) y.S
-    , V = x.V ++ y.V
+             `concat` map (\i -> if i == n then n else i + n) y.S
+    , V = x.V `concat` y.V
     , head = x.head
     , last = y.last + n
     }
@@ -118,9 +118,13 @@ module list : list = {
   def reduce [n] 'a (op: a -> a -> a) (_ne: a) (l: list [n] a) =
     last (scan op l)
 
+  def array_reduce_comm = reduce_comm
+
   def reduce_comm [n] 'a (op: a -> a -> a) (ne: a) (l: list [n] a) =
-    reduce_comm op ne l.V
+    array_reduce_comm op ne l.V
+
+  def array_map = map
 
   def map [n] 'a 'b (f: a -> b) (l: list [n] a) : list [n] b =
-    {S = l.S, V = map f l.V, last = l.last, head = l.head}
+    {S = l.S, V = array_map f l.V, last = l.last, head = l.head}
 }
