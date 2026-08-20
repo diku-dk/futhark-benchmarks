@@ -25,7 +25,7 @@ Compile and run with the Futhark `c` backend:
 
 ## Testing
 
-    futhark test --backend=c black-scholes.fut monte-carlo.fut
+    futhark test --backend=c black-scholes.fut monte-carlo.fut bonds.fut repo.fut
 
 ## References
 
