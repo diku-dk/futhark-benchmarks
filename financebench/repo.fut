@@ -22,11 +22,15 @@ def simple_compound_factor (rate: f32) (t: f32) : f32 =
   1.0f32 + rate * t
 
 -- Compute dirty price of a fixed-rate coupon bond.
-def bond_dirty_price (rate: f32) (freq: f32) (yield_rate: f32)
-                     (num_periods: i32) (face_value: f32) : f32 =
+def bond_dirty_price (rate: f32)
+                     (freq: f32)
+                     (yield_rate: f32)
+                     (num_periods: i32)
+                     (face_value: f32) : f32 =
   let coupon = face_value * rate / freq
   let coupon_pv =
-    loop pv = 0.0f32 for i < num_periods do
+    loop pv = 0.0f32
+    for i < num_periods do
       let t = f32.i32 (i + 1) / freq
       in pv + coupon * discount_factor yield_rate freq t
   let t_maturity = f32.i32 num_periods / freq
@@ -35,19 +39,26 @@ def bond_dirty_price (rate: f32) (freq: f32) (yield_rate: f32)
 
 -- Forward spot income: PV of coupons received between settlement and delivery.
 -- Simplified: assumes a fraction of the coupons fall within the repo period.
-def forward_spot_income (rate: f32) (freq: f32) (face_value: f32)
-                        (repo_term: f32) (yield_rate: f32) : f32 =
+def forward_spot_income (rate: f32)
+                        (freq: f32)
+                        (face_value: f32)
+                        (repo_term: f32)
+                        (yield_rate: f32) : f32 =
   let coupon = face_value * rate / freq
   let period = 1.0f32 / freq
   -- Number of coupon payments within repo term
   let n_coupons = i32.f32 (repo_term * freq)
-  in loop income = 0.0f32 for i < n_coupons do
+  in loop income = 0.0f32
+     for i < n_coupons do
        let t = f32.i32 (i + 1) * period
        in income + coupon * discount_factor yield_rate freq t
 
 -- Price a single repo: compute the bond forward value.
-def repo_forward_value (bond_rate: f32) (yield_rate: f32) (repo_rate: f32)
-                       (num_periods: i32) (repo_term: f32) : f32 =
+def repo_forward_value (bond_rate: f32)
+                       (yield_rate: f32)
+                       (repo_rate: f32)
+                       (num_periods: i32)
+                       (repo_term: f32) : f32 =
   let freq = 2.0f32
   let face_value = 100.0f32
   let dirty_price = bond_dirty_price bond_rate freq yield_rate num_periods face_value

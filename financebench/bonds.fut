@@ -34,12 +34,16 @@ def discount_factor (rate: f32) (freq: f32) (t: f32) : f32 =
 --   yield_rate: discount rate (yield to maturity)
 --   num_periods: total number of coupon periods
 --   face_value: par/face value of the bond
-def bond_dirty_price (rate: f32) (freq: f32) (yield_rate: f32)
-                     (num_periods: i32) (face_value: f32) : f32 =
+def bond_dirty_price (rate: f32)
+                     (freq: f32)
+                     (yield_rate: f32)
+                     (num_periods: i32)
+                     (face_value: f32) : f32 =
   let coupon = face_value * rate / freq
   -- Sum discounted coupon cash flows
   let coupon_pv =
-    loop pv = 0.0f32 for i < num_periods do
+    loop pv = 0.0f32
+    for i < num_periods do
       let t = f32.i32 (i + 1) / freq
       in pv + coupon * discount_factor yield_rate freq t
   -- Add discounted face value at maturity
@@ -50,8 +54,11 @@ def bond_dirty_price (rate: f32) (freq: f32) (yield_rate: f32)
 -- Accrued interest for a bond.
 -- Simplified: assumes we are at settlement which is some fraction through
 -- the current coupon period.
-def accrued_interest (rate: f32) (freq: f32) (face_value: f32)
-                     (days_accrued: f32) (days_in_period: f32) : f32 =
+def accrued_interest (rate: f32)
+                     (freq: f32)
+                     (face_value: f32)
+                     (days_accrued: f32)
+                     (days_in_period: f32) : f32 =
   let coupon = face_value * rate / freq
   in coupon * days_accrued / days_in_period
 

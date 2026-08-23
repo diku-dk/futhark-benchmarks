@@ -39,8 +39,8 @@ def inv_norm_cdf (x: f32) : f32 =
   let b5 = -13.280681552885721f32
   let z = x - 0.5f32
   let r = z * z
-  in (((((a1*r+a2)*r+a3)*r+a4)*r+a5)*r+a6) * z
-     / (((((b1*r+b2)*r+b3)*r+b4)*r+b5)*r+1.0f32)
+  in (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * z
+     / (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1.0f32)
 
 -- Forward rate calculation.
 def forward_rate (rate: f32) (t1: f32) (t2: f32) : f32 =
@@ -73,7 +73,8 @@ def mc_path (seed: u32) : f32 =
   let sqrt_dt = f32.sqrt dt
   -- Evolve path: S(t+dt) = S(t) * exp(drift*dt + sigma*sqrt(dt)*z)
   let (_state, s_final) =
-    loop (state, s) = (seed, underlying_val) for i < sequence_length do
+    loop (state, s) = (seed, underlying_val)
+    for i < sequence_length do
       let t = f32.i64 (i + 1) * dt
       let (state', u) = lcg_next state
       let z = inv_norm_cdf u
