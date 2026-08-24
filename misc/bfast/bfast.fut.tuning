@@ -1,8 +1,8 @@
-main.suff_intra_par_2=228
-main.suff_intra_par_3=128
-main.suff_intra_par_7=2000000000
-main.suff_outer_par_0=4349952
-main.suff_outer_par_1=2000000000
+main.suff_intra_par_1=2000000000
+main.suff_intra_par_3=2000000000
+main.suff_intra_par_5=128
+main.suff_outer_par_0=67968
+main.suff_outer_par_2=2000000000
 main.suff_outer_par_4=2000000000
-main.suff_outer_par_5=28138752
 main.suff_outer_par_6=2000000000
+main.suff_outer_par_7=2000000000
