@@ -6,8 +6,10 @@
 -- It is a bit inefficient that we have to sort at the end to get the
 -- right ordering, but the flattened quickhull does not otherwise
 -- preserve it.
+--
+-- Disabled on HIP due to https://github.com/ROCm/legacy-rocm-build/issues/6412
 -- ==
--- tags { no_opencl }
+-- tags { no_hip }
 -- compiled input @ data/2DinSphere_10K.in
 -- output @ data/2DinSphere_10K.out
 -- compiled input @ data/2DinSphere_100K.in
