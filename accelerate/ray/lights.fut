@@ -1,4 +1,4 @@
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/athas/matte/colour"
 import "types"
 import "objects"
 import "intersection"

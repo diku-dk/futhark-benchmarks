@@ -178,7 +178,7 @@ module naive_quickhull = quickhull space
 
 type point = space.point
 
-import "lib/github.com/diku-dk/sorts/radix_sort"
+import "../../lib/github.com/diku-dk/sorts/radix_sort"
 def sort_by f = radix_sort_float_by_key f f32.num_bits f32.get_bit
 
 def clockwise (convex_upper: []point) (convex_lower: []point) =

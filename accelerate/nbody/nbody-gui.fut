@@ -1,4 +1,4 @@
-import "lib/github.com/athas/vector/vspace"
+import "../../lib/github.com/athas/vector/vspace"
 import "physics"
 module bruteforce = import "nbody"
 module bh = import "nbody-bh"
@@ -52,7 +52,7 @@ def rotation (x_rotation: f32) (y_rotation: f32) : rotation =
 def inverse_rotation (x_rotation: f32) (y_rotation: f32) : rotation =
   rotmult (rotate_y_matrix y_rotation) (rotate_x_matrix x_rotation)
 
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/athas/matte/colour"
 
 -- FIXME: This rendering is terrible because it is not FoV-aware.
 def render_point (h: i64)
@@ -81,8 +81,8 @@ def render_point (h: i64)
          + 0xFF
        in (y'' * w + x'', colour)
 
-import "lib/github.com/diku-dk/lys/lys"
-import "lib/github.com/diku-dk/cpprandom/random"
+import "../../lib/github.com/diku-dk/lys/lys"
+import "../../lib/github.com/diku-dk/cpprandom/random"
 
 module rnge = pcg32
 module dist = uniform_real_distribution f32 rnge

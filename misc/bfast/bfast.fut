@@ -3,7 +3,7 @@
 -- compiled input @ data/sahara.in.gz
 -- output @ data/sahara.out.gz
 
-import "lib/github.com/diku-dk/linalg/linalg"
+import "../../lib/github.com/diku-dk/linalg/linalg"
 
 module f32linalg = mk_linalg f32
 

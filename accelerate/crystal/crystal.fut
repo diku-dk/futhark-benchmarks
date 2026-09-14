@@ -50,7 +50,7 @@
 --   1.0f32
 -- }
 
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/athas/matte/colour"
 
 def odd (n: i32) : bool = (n & 1) == 1
 

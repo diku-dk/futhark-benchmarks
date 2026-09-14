@@ -1,8 +1,8 @@
 -- Buddhabrot fractal: https://en.wikipedia.org/wiki/Buddhabrot
 
-import "lib/github.com/athas/matte/colour"
-import "lib/github.com/diku-dk/complex/complex"
-import "lib/github.com/diku-dk/cpprandom/random"
+import "../../lib/github.com/athas/matte/colour"
+import "../../lib/github.com/diku-dk/complex/complex"
+import "../../lib/github.com/diku-dk/cpprandom/random"
 
 module rand = minstd_rand
 module dist = uniform_real_distribution f32 rand

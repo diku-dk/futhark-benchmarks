@@ -2,8 +2,8 @@
 -- call-options](https://en.wikipedia.org/wiki/Option_style#American_and_European_options)
 -- in the [Heston model](https://en.wikipedia.org/wiki/Heston_model).
 
-import "lib/github.com/diku-dk/complex/complex"
-import "lib/github.com/diku-dk/date/date"
+import "../../lib/github.com/diku-dk/complex/complex"
+import "../../lib/github.com/diku-dk/date/date"
 
 -- | Parameters for the Heston model.
 type heston_parameters 'real =

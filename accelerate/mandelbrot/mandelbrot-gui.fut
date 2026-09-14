@@ -1,8 +1,8 @@
 module mandelbrot32 = import "mandelbrot32"
 module mandelbrot64 = import "mandelbrot64"
 
-import "lib/github.com/diku-dk/lys/lys"
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/diku-dk/lys/lys"
+import "../../lib/github.com/athas/matte/colour"
 
 type config =
   { xcentre: f64

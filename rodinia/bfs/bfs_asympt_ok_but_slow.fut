@@ -26,7 +26,7 @@
 -- input @ data/64kn_32e-var-1-256-skew.in.gz
 -- output @ data/64kn_32e-var-1-256-skew.out
 
-import "lib/github.com/diku-dk/segmented/segmented"
+import "../../lib/github.com/diku-dk/segmented/segmented"
 
 def step [n] [e]
          (cost: *[n]i32)

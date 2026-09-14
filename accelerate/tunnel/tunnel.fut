@@ -11,8 +11,8 @@
 -- compiled input { 10f32 4000 4000 }
 -- compiled input { 10f32 8000 8000 }
 
-import "lib/github.com/athas/vector/vspace"
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/athas/vector/vspace"
+import "../../lib/github.com/athas/matte/colour"
 
 module vec2 = mk_vspace_2d f32
 
@@ -82,7 +82,7 @@ def render (time: f32) (h: i64) (w: i64) =
 
 entry main (time: f32) (h: i32) (w: i32) = render time (i64.i32 h) (i64.i32 w)
 
-import "lib/github.com/diku-dk/lys/lys"
+import "../../lib/github.com/diku-dk/lys/lys"
 
 module lys : lys with text_content = i32 = {
   type text_content = i32

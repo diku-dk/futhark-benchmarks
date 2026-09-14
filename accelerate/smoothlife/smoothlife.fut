@@ -1,8 +1,8 @@
-import "lib/github.com/diku-dk/fft/stockham-radix-2"
-import "lib/github.com/diku-dk/complex/complex"
-import "lib/github.com/athas/matte/colour"
-import "lib/github.com/diku-dk/cpprandom/random"
-import "lib/github.com/diku-dk/segmented/segmented"
+import "../../lib/github.com/diku-dk/fft/stockham-radix-2"
+import "../../lib/github.com/diku-dk/complex/complex"
+import "../../lib/github.com/athas/matte/colour"
+import "../../lib/github.com/diku-dk/cpprandom/random"
+import "../../lib/github.com/diku-dk/segmented/segmented"
 
 module fft = mk_fft f32
 module complex = mk_complex f32
@@ -297,7 +297,7 @@ type sized_state [n] = state [n]
 -- Run as ./smoothlife -R -w 256 -h 256
 -- Uses default config, since lys does not support any kind of custom
 -- configuration atm
-import "lib/github.com/diku-dk/lys/lys"
+import "../../lib/github.com/diku-dk/lys/lys"
 
 module lys : lys with text_content = text_content = {
   type~ state = {state: state [], h: i64, w: i64}

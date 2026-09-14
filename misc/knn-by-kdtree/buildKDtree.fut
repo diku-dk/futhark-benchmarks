@@ -5,7 +5,7 @@
 -- compiled input @ valid-data/kdtree-ppl-32-m-2097152.in
 -- output @ valid-data/kdtree-ppl-32-m-2097152.out
 
-import "lib/github.com/diku-dk/sorts/radix_sort"
+import "../../lib/github.com/diku-dk/sorts/radix_sort"
 import "util"
 
 def iota32 n = map i32.i64 (iota n)

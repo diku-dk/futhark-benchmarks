@@ -24,7 +24,7 @@
 
 type link = {from: i32, to: i32}
 
-import "lib/github.com/diku-dk/segmented/segmented"
+import "../../lib/github.com/diku-dk/segmented/segmented"
 
 -- Calculate ranks from pages without any outbound edges
 -- This defaults to the page contribution / number of pages
@@ -65,7 +65,7 @@ def calculate_ranks [n]
     let ranks_pages = calculate_page_ranks links ranks sizes
     in calculate_dangling_ranks ranks_pages sizes
 
-import "lib/github.com/diku-dk/sorts/radix_sort"
+import "../../lib/github.com/diku-dk/sorts/radix_sort"
 
 def sort_by_to = radix_sort i32.num_bits (\i (link: link) -> i32.get_bit i link.to)
 
