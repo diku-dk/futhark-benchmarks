@@ -3,8 +3,8 @@
 -- always done in single-precision.  This matches how Accelerate does
 -- things.
 
-import "lib/github.com/diku-dk/complex/complex"
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/diku-dk/complex/complex"
+import "../../lib/github.com/athas/matte/colour"
 
 module mandelbrot (real: real)
   : {

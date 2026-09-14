@@ -5,7 +5,7 @@
 -- compiled input @ data/10000_quotes.in
 -- compiled input @ data/100000_quotes.in
 
-import "lib/github.com/diku-dk/cpprandom/random"
+import "../../lib/github.com/diku-dk/cpprandom/random"
 import "heston"
 
 module heston32 = heston f32 minstd_rand

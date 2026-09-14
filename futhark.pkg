@@ -1,0 +1,14 @@
+require {
+  github.com/diku-dk/containers 0.10.13 #221a64350b099794bb2e53f6297ac262c52c2a0e
+  github.com/diku-dk/linalg 0.6.7 #36dff7738f337889d6bdc7a13e542377b6c61cb8
+  github.com/diku-dk/autodiff 0.2.4 #d41db4938a4ff9be27db975e7a53ff215c906e82
+  github.com/diku-dk/date 1.1.0 #b8726460861e9b5b2279356706973d482c951db8
+  github.com/athas/vector 0.7.2 #75004c2819b471d21a15d95e68a0236aa2dd1bdc
+  github.com/athas/matte 0.1.3 #ec4243a5f64cb818a4289dbc4953460ea19da12c
+  github.com/diku-dk/complex 0.3.0 #7acd024f2f58c4bf3425582c068382b9a328d2d2
+  github.com/diku-dk/cpprandom 1.5.0 #ec96adc06f7a91040b2c1f7f9fdc56b9b2e9f3a3
+  github.com/diku-dk/fft 0.2.1 #2190ef56cd45293e35180c594b8fed8767573a94
+  github.com/diku-dk/lys 0.1.29 #1dc062f1d30019d6e2dfa10e6d37fcce743c41f1
+  github.com/diku-dk/segmented 0.5.3 #c96450f95a1e43e0906366a1dab45cb18220a643
+  github.com/diku-dk/sorts 0.7.3 #a473651d67d8ed0fafcea315f0226676721e2bdf
+}

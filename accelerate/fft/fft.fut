@@ -15,12 +15,12 @@
 -- compiled input @ data/128x128.in
 -- output @ data/128x128.out
 
-import "lib/github.com/diku-dk/complex/complex"
+import "../../lib/github.com/diku-dk/complex/complex"
 
 module c32 = mk_complex f32
 type c32 = c32.complex
 
-import "lib/github.com/diku-dk/fft/stockham-radix-2"
+import "../../lib/github.com/diku-dk/fft/stockham-radix-2"
 
 module fft = mk_fft f32
 
@@ -52,7 +52,7 @@ def transform [n] [m] (cutoff: i32) (arr: [n][m]u8) =
 -- to u8 induces too many false negatives when testing on hardware
 -- with less accurate floats (such as GPUs).
 
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/athas/matte/colour"
 
 def unpack_rgb (x: [3]u8) : (u8, u8, u8) =
   (x[0], x[1], x[2])

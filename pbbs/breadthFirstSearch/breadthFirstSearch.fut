@@ -1,4 +1,4 @@
-import "lib/github.com/diku-dk/segmented/segmented"
+import "../../lib/github.com/diku-dk/segmented/segmented"
 
 type queuePair = {vertex: i32, parent: i32}
 

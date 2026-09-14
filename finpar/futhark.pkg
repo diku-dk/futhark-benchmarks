@@ -1,3 +1,0 @@
-require {
-  github.com/diku-dk/date 1.0.4 #930eaab24a46a5067f9291ce60949d7c76b18d07
-}

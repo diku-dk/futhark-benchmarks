@@ -1,4 +1,4 @@
-import "lib/github.com/diku-dk/sorts/radix_sort"
+import "../../lib/github.com/diku-dk/sorts/radix_sort"
 
 import "brute-force"
 import "kd-traverse"

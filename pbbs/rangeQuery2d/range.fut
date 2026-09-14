@@ -25,8 +25,8 @@
 -- notest input @ data/2DonSphere_100M.in
 -- notest input @ data/2Dkuzmin_100M.in
 
-import "lib/github.com/diku-dk/sorts/radix_sort"
-import "lib/github.com/diku-dk/segmented/segmented"
+import "../../lib/github.com/diku-dk/sorts/radix_sort"
+import "../../lib/github.com/diku-dk/segmented/segmented"
 import "util"
 
 def ilog2 (n: i64) : i64 = i64.i32 (63 - i64.clz n)

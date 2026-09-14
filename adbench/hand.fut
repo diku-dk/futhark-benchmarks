@@ -1,4 +1,4 @@
-import "lib/github.com/diku-dk/linalg/linalg"
+import "../lib/github.com/diku-dk/linalg/linalg"
 
 module linalg_f64 = mk_linalg f64
 
@@ -198,7 +198,7 @@ entry calculate_objective [num_bones] [N] [M]
     }
   in objective model correspondences points theta us
 
-import "lib/github.com/diku-dk/autodiff/onehot"
+import "../lib/github.com/diku-dk/autodiff/onehot"
 
 -- The Jacobian is morally transposed, because that is what ADBench expects.
 entry calculate_jacobian [num_bones] [N] [M] [num_us]

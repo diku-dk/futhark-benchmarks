@@ -1,4 +1,4 @@
-import "lib/github.com/athas/vector/vspace"
+import "../lib/github.com/athas/vector/vspace"
 
 module v3d = mk_vspace_3d f64
 type point_3d = v3d.vector

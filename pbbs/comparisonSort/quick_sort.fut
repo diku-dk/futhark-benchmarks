@@ -1,4 +1,4 @@
-import "lib/github.com/diku-dk/sorts/quick_sort"
+import "../../lib/github.com/diku-dk/sorts/quick_sort"
 
 entry sort_f64 = qsort (f64.<=)
 

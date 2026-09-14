@@ -1,5 +1,5 @@
-import "lib/github.com/diku-dk/complex/complex"
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/diku-dk/complex/complex"
+import "../../lib/github.com/athas/matte/colour"
 
 module c32 = mk_complex f32
 type c32 = c32.complex
@@ -53,7 +53,7 @@ def render (palette: []argb.colour)
   julia screenX screenY next t x0 y0 width limit radius
   |> map (map (escape_to_rgba limit palette))
 
-import "lib/github.com/diku-dk/lys/lys"
+import "../../lib/github.com/diku-dk/lys/lys"
 
 -- | Cubic interpolation.
 def cubic (x0: f32, x1: f32) (y0: f32, y1: f32) (m0: f32, m1: f32) (x: f32) =

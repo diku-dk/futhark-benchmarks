@@ -1,4 +1,4 @@
-import "lib/github.com/diku-dk/sorts/merge_sort"
+import "../../lib/github.com/diku-dk/sorts/merge_sort"
 
 entry sort_f64 = merge_sort (f64.<=)
 

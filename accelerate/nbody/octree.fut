@@ -1,5 +1,5 @@
-import "lib/github.com/athas/vector/vspace"
-import "lib/github.com/diku-dk/sorts/radix_sort"
+import "../../lib/github.com/athas/vector/vspace"
+import "../../lib/github.com/diku-dk/sorts/radix_sort"
 import "radixtree"
 
 module vec3 = mk_vspace_3d f32

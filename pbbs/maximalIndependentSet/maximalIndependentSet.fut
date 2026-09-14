@@ -1,6 +1,6 @@
-import "lib/github.com/diku-dk/cpprandom/random"
-import "lib/github.com/diku-dk/cpprandom/shuffle"
-import "lib/github.com/diku-dk/segmented/segmented"
+import "../../lib/github.com/diku-dk/cpprandom/random"
+import "../../lib/github.com/diku-dk/cpprandom/shuffle"
+import "../../lib/github.com/diku-dk/segmented/segmented"
 
 module shuffle = mk_shuffle minstd_rand
 

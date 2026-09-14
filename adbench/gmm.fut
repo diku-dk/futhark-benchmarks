@@ -1,4 +1,4 @@
-import "lib/github.com/diku-dk/linalg/linalg"
+import "../lib/github.com/diku-dk/linalg/linalg"
 
 module linalg_f64 = mk_linalg f64
 

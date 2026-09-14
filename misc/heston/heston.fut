@@ -1,7 +1,7 @@
 -- | Heston calibration based on a generic least-squares solver.
 
-import "lib/github.com/diku-dk/date/date"
-import "lib/github.com/diku-dk/cpprandom/random"
+import "../../lib/github.com/diku-dk/date/date"
+import "../../lib/github.com/diku-dk/cpprandom/random"
 import "distance"
 import "least_squares"
 import "price_european_calls"

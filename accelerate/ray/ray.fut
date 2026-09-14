@@ -1,5 +1,5 @@
-import "lib/github.com/diku-dk/lys/lys"
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/diku-dk/lys/lys"
+import "../../lib/github.com/athas/matte/colour"
 module trace = import "trace"
 import "types"
 

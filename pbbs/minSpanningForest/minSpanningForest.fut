@@ -1,4 +1,4 @@
-import "lib/github.com/diku-dk/sorts/merge_sort"
+import "../../lib/github.com/diku-dk/sorts/merge_sort"
 
 def is_root (UFparents: []i32) (vert: i64) : bool =
   UFparents[vert] < 0

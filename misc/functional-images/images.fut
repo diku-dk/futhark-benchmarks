@@ -1,7 +1,7 @@
 -- A wrapper around the Pan library that provides actual screen
 -- frames.
 
-import "lib/github.com/athas/matte/colour"
+import "../../lib/github.com/athas/matte/colour"
 import "pan"
 
 def fcolorToColour (r, g, b, a) = argb.from_rgba r g b a
@@ -18,7 +18,7 @@ def region_to_argb : region -> argb_image = (>-> boolToColour)
 -- main changes are due to the fact that Futhark is not lazy.
 def fairlyClose ((u, v): point) = (u * u + v * v) < 100f32
 
-import "lib/github.com/diku-dk/complex/complex"
+import "../../lib/github.com/diku-dk/complex/complex"
 
 module complex = mk_complex f32
 type complex = complex.complex
@@ -177,7 +177,7 @@ def fancy t =
        (mandelbrotGreyscale 100 |> rotate' t |> cimage_to_argb)
   |> visualise_argb_image
 
-import "lib/github.com/diku-dk/lys/lys"
+import "../../lib/github.com/diku-dk/lys/lys"
 
 type text_content = i32
 
