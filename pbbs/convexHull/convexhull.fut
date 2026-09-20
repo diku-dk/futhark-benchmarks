@@ -98,7 +98,12 @@ module quickhull (S: euclidean_space) : convex_hull with space.point = S.point =
       map (\(seg_ix, p) ->
              signed_dist_to_line segs[seg_ix].0 segs[seg_ix].1 p)
           points
-    let max (i, id) (j, jd) = if dist_less jd id then (i, id) else (j, jd)
+    let max (i, id) (j, jd) =
+      if dist_less jd id
+      then (i, id)
+      else if dist_less id jd
+      then (j, jd)
+      else (i64.max i j, id)
     let extrema_ix =
       reduce_by_index (replicate num_segs (-1, zero_dist))
                       max
