@@ -181,7 +181,7 @@ def collide [n] [s] (grid_2d: *[n][s]f32) : *[n][s]f32 =
                      in (perform_collision rhos grid_2d[FLAG, i]) :> [n]f32)
   in transpose collided
 
-def gather_collide [n] [s] (grid_2d: [n][s]f32) : [n][s]f32 =
+def gather_collide [n] [s] (grid_2d: [n][s]f32) : *[n][s]f32 =
   let collided =
     tabulate s
              (\i ->
