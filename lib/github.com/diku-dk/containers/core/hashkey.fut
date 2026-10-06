@@ -20,14 +20,14 @@ module type hashkey = {
   type rng
 
   -- | Initialise an RNG state from a seed.
-  val rng_from_seed [n] : [n]i32 -> rng
+  val rng_from_seed [n] : [n]i32 -> *rng
 
   -- | Generate random constants for the hash function.
-  val rand : rng -> (rng, const)
+  val rand : rng -> (*rng, *const)
 
   -- | Equality definition for the key.
   val (==) : (ctx, key) -> (ctx, key) -> bool
 
   -- | A given hash function use.
-  val hash : ctx -> const -> key -> hash
+  val hash : ctx -> const -> key -> *hash
 }
