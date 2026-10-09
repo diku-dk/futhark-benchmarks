@@ -34,9 +34,13 @@ entry mk_slices [n] [m] (strings: [n]u8, offsets: [m]i64, lengths: [m]i64) : ([n
 
 -- ==
 -- entry: hash_dedup_str sort_dedup_str
--- "trigramSeq_10M" compiled script input { mk_slices ($loaddata "data/trigramSeq_10M.in") }
+-- "trigramSeq_10M" compiled script input {
+--    mk_slices (io.loadvalue "data/trigramSeq_10M.in" : ([42769295]u8, [10000000]i64, [10000000]i64))
+-- }
 -- output { 1385694i64 }
--- "trigramSeq_100M" compiled script input { mk_slices ($loaddata "data/trigramSeq_100M.in") }
+-- "trigramSeq_100M" compiled script input {
+--   mk_slices (io.loadvalue "data/trigramSeq_100M.in" : ([427638124]u8, [100000000]i64, [100000000]i64))
+-- }
 -- output { 9345882i64 }
 entry hash_dedup_str [n] [m] (ctx: [n]u8) (arr: [m](slice.slice u8)) =
   array_key_str.dedup ctx () arr |> (.1) |> length
