@@ -7,7 +7,7 @@ data for the smallest workloads. It is straightforward to generate for larger
 workloads if you need it, e.g:
 
 ```
-$ futhark script -b naive.fut 'main ($loaddata "data/2DonSphere_10K.in")' > data/2DonSphere_10K.out
+$ futhark eval --backend=c -f naive.fut 'main (io.loadvalue "data/2DonSphere_10K.in" : [10000][2]f64)' > data/2DonSphere_10K.out
 ```
 
 We follow the same input convention as PBBS, namely that of the `p` input
