@@ -4,7 +4,8 @@ import "lu"
 
 module lu64 = mk_lu f64
 
-entry test_lu = lu64.lu -- to make sure small blocks work.
+-- to make sure small blocks work.
+entry test_lu = lu64.lu
 
 -- ==
 -- entry: test_lu
@@ -51,7 +52,9 @@ entry test_lu = lu64.lu -- to make sure small blocks work.
 -- ]
 -- }
 
-entry test_lu2_l = \b m -> (lu64.lu2 b m).0 -- to make sure small blocks work.
+entry test_lu2_l = \b m -> (lu64.lu2 b m).0
+
+-- to make sure small blocks work.
 
 -- ==
 -- entry: test_lu2_l
@@ -60,7 +63,9 @@ entry test_lu2_l = \b m -> (lu64.lu2 b m).0 -- to make sure small blocks work.
 -- input { 16i64 [[1.0,-1.0,3.0],[2.0,-3.0,1.0],[3.0,2.0,1.0]] }
 -- output { [[1.0,0.0,0.0],[2.0,1.0,0.0],[3.0,-5.0,1.0]] }
 
-entry test_lu2_u = \b m -> (lu64.lu2 b m).1 -- to make sure small blocks work.
+entry test_lu2_u = \b m -> (lu64.lu2 b m).1
+
+-- to make sure small blocks work.
 
 -- ==
 -- entry: test_lu2_u

@@ -11,12 +11,12 @@ def nmf = nmf64.nmf
 def matsub = map2 (map2 (f64.-))
 def matprod = map2 (map2 (f64.*))
 
-def matmean [m][n] (xss: [m][n]f64) =
-  (f64.sum (map f64.sum xss)) / f64.i64 (m*n)
+def matmean [m] [n] (xss: [m][n]f64) =
+  (f64.sum (map f64.sum xss)) / f64.i64 (m * n)
 
 --Tests NMF and checks whether the approximated matrice has a norm close to the original matrix
-entry nmf_test [m][n] (A : [m][n]f64) (max_iter: i64) (tol: f64) (test_tol : f64) : bool =
-  let (W,H,_) = nmf A (m+n) max_iter tol
+entry nmf_test [m] [n] (A: [m][n]f64) (max_iter: i64) (tol: f64) (test_tol: f64) : bool =
+  let (W, H, _) = nmf A (m + n) max_iter tol
   let A2 = linalg64.matmul W H
   in nmf64.frob_norm A - nmf64.frob_norm A2 < test_tol
 

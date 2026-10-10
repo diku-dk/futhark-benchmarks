@@ -305,10 +305,10 @@ module type ndimlcg = {
   -- empty, the resulting RNG should still behave reasonably.  It is
   -- permissible for this function to process the seed array
   -- sequentially, so don't make it too large.
-  val rng_from_seed [n] : [n]i32 -> rng
+  val rng_from_seed [n] : [n]i32 -> *rng
 
   -- | Generate a single random element, and a new RNG state.
-  val rand : rng -> (rng, t)
+  val rand : rng -> *(rng, t)
 }
 
 -- | n-dimensional linear congruential generator. You can give it an
@@ -362,11 +362,11 @@ module mk_ndimlcg
        -- z < p
        in if geq_prime z then z - prime else z)
 
-  def rand (x: rng) : (rng, t) =
+  def rand (x: rng) : *(rng, t) =
     let y = map2 auxiliary P.mat (rep x)
-    in (y, y)
+    in (y, copy y)
 
-  def rng_from_seed [n] (seed: [n]i32) : rng =
+  def rng_from_seed [n] (seed: [n]i32) =
     let y =
       (replicate U.n 0u64) with [0] = u64.sum (map u64.i32 seed)
     let x = U.from_u64 y
