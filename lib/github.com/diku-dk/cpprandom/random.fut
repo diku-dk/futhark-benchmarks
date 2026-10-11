@@ -103,19 +103,19 @@ module type rng_engine = {
   -- empty, the resulting RNG should still behave reasonably.  It is
   -- permissible for this function to process the seed array
   -- sequentially, so don't make it too large.
-  val rng_from_seed [n] : [n]i32 -> rng
+  val rng_from_seed [n] : [n]i32 -> *rng
 
   -- | Split an RNG state into several states.  Implementations of
   -- this function tend to be cryptographically unsound, so be
   -- careful.
-  val split_rng : (n: i64) -> rng -> [n]rng
+  val split_rng : (n: i64) -> rng -> *[n]rng
 
   -- | Combine several RNG states into a single state - typically done
   -- with the result of `split_rng`@term.
-  val join_rng [n] : [n]rng -> rng
+  val join_rng [n] : [n]rng -> *rng
 
   -- | Generate a single random element, and a new RNG state.
-  val rand : rng -> (rng, int.t)
+  val rand : rng -> (*rng, *int.t)
 
   -- | The minimum value potentially returned by the generator.
   val min : int.t
@@ -164,9 +164,9 @@ module linear_congruential_engine
   type t = int.t
   type rng = int.t
 
-  def rand (x: rng) : (rng, t) =
+  def rand (x: rng) : *(rng, t) =
     let rng' = (P.a T.* x T.+ P.c) T.%% P.m
-    in (rng', rng')
+    in (rng', copy rng')
 
   def rng_from_seed [n] (seed: [n]i32) =
     let seed' =
@@ -176,11 +176,11 @@ module linear_congruential_engine
              ^ (i32 seed[i] ^ 0b1010101010101))
     in (rand (T.u32 seed')).0
 
-  def split_rng (n: i64) (x: rng) : [n]rng =
+  def split_rng (n: i64) (x: rng) =
     let (x, _) = rand x
     in tabulate n (\i -> x T.^ T.i32 (hash (i32.i64 i)))
 
-  def join_rng [n] (xs: [n]rng) : rng =
+  def join_rng [n] (xs: [n]rng) =
     reduce (T.^) (T.i32 0) xs
 
   def min = T.i32 0
@@ -228,7 +228,7 @@ module subtract_with_carry_engine
     , k: i32
     }
 
-  def rand ({x, carry, k}: rng) : (rng, t) =
+  def rand ({x, carry, k}: rng) : *(rng, t) =
     let short_index = k - short_lag
     let short_index =
       if short_index < 0
@@ -246,7 +246,7 @@ module subtract_with_carry_engine
     let k = (k + 1) % long_lag
     in ({x, carry, k}, xi)
 
-  def rng_from_seed [n] (seed: [n]i32) : rng =
+  def rng_from_seed [n] (seed: [n]i32) : *rng =
     let rng = e.rng_from_seed seed
     let (x, _) =
       loop (x, rng) = (replicate r (T.i32 0), rng)
@@ -259,17 +259,16 @@ module subtract_with_carry_engine
     let k = 0
     in {x, carry, k}
 
-  def split_rng (n: i64) ({x, carry, k}: rng) : [n]rng =
+  def split_rng (n: i64) ({x, carry, k}: rng) =
     tabulate n (\i ->
                   { x = map (T.^ (T.i32 (hash (i32.i64 i)))) x
                   , carry = carry && (i % 2 == 0)
                   , k
                   })
 
-  def join_rng [n] (xs: [n]rng) : rng =
-    xs[0]
-
-  -- FIXME
+  def join_rng [n] (xs: [n]rng) =
+    -- FIXME
+    copy xs[0]
 
   def min = T.i32 0
   def max = T.(modulus - i32 1)
@@ -302,17 +301,17 @@ module discard_block_engine
   def min = E.min
   def max = E.max
 
-  def rng_from_seed (xs: []i32) : rng =
-    (E.rng_from_seed xs, 0)
+  def rng_from_seed (xs: []i32) =
+    (E.rng_from_seed xs, 0i32)
 
-  def split_rng (n: i64) ((rng, i): rng) : [n]rng =
+  def split_rng (n: i64) ((rng, i): rng) =
     map (\rng' -> (rng', i)) (E.split_rng n rng)
 
-  def join_rng (rngs: []rng) : rng =
+  def join_rng (rngs: []rng) =
     let (rngs', is) = unzip rngs
     in (E.join_rng rngs', reduce i32.max 0 is)
 
-  def rand ((rng, i): rng) : (rng, t) =
+  def rand ((rng, i): rng) =
     let (rng, i) =
       if i >= K.r
       then (loop rng for _j < K.r - i do (E.rand rng).0, 0)
@@ -343,14 +342,14 @@ module shuffle_order_engine (K: {val k : i32}) (E: rng_engine)
   def rng_from_seed (xs: []i32) =
     build_table (E.rng_from_seed xs)
 
-  def split_rng (n: i64) ((rng, _): rng) : [n]rng =
+  def split_rng (n: i64) ((rng, _): rng) =
     map build_table (E.split_rng n rng)
 
   def join_rng (rngs: []rng) =
     let (rngs', _) = unzip rngs
     in build_table (E.join_rng rngs')
 
-  def rand ((rng, table): rng) : (rng, t) =
+  def rand ((rng, table): rng) =
     let (rng, x) = E.rand rng
     let i = i32.i64 (int.to_i64 x) % K.k
     let (rng, y) = E.rand rng
@@ -447,7 +446,7 @@ module xorshift128plus : rng_engine with int.t = u64 = {
     |> rand
     |> (.0)
 
-  def split_rng (n: i64) ((x, y): rng) : [n]rng =
+  def split_rng (n: i64) ((x, y): rng) =
     tabulate n (\i ->
                   let (a, b) = (rand (rng_from_seed [hash (i32.i64 (i ^ n))])).0
                   in (rand (rand (x ^ a, y ^ b)).0).0)
@@ -480,7 +479,7 @@ module pcg32 : rng_engine with int.t = u32 = {
     let state = loop state for x in xs do state + u64.i32 x
     in (rand state).0
 
-  def split_rng (n: i64) (state: rng) : [n]rng =
+  def split_rng (n: i64) (state: rng) =
     let ith i =
       let i' = hash (i32.i64 (i ^ n))
       in state ^ u64.i32 i' ^ (u64.i32 i' << 32)
@@ -516,9 +515,9 @@ module uniform_int_distribution (D: integral) (E: rng_engine)
   open E.int
 
   def rand ((D_min, D_max): distribution) (rng: E.rng) =
-    let min = to_E D_min
-    let max = to_E D_max
-    let range = max - min + i32 1
+    let range = to_E (D_max D.- D_min D.+ D.i32 1)
+    -- If the range is 0 then we assume arithmetic overflow.
+    let range = if range == i32 0 then E.max E.int.- E.min else range
     in if range <= i32 0
        then (rng, to_D E.min)
        else -- Avoid infinite loop if range exceeds what the RNG

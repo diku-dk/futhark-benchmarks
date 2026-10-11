@@ -187,7 +187,7 @@ module unionfind : unionfind = {
     let parents = reduce_by_index parents i64.min none vs us
     let (eqs, done) =
       copy (array.partition_unordered (\(i, p) -> parents[i] != p) eqs)
-    let parents = compression none parents (map (.0) done) |> (.0)
+    let (parents, _) = compression none parents (map (.0) done)
     in (parents, eqs)
 
   def union [n] [u]

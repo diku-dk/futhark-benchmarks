@@ -57,7 +57,7 @@ module type hyperloglog = {
   type hyperloglog [m]
 
   --  | Create the distinct element counting structure.
-  val create : (b: i64) -> hyperloglog [2 ** b]
+  val create : (b: i64) -> *hyperloglog [2 ** b]
 
   -- | Insert elements into the distinct element counting structure.
   --
@@ -108,7 +108,7 @@ module mk_hyperloglog
     case 64 -> 0.709
     case _ -> 0.7213 / (1 + 1.079 / f64.i64 m)
 
-  def create (b: i64) : hyperloglog [2 ** b] =
+  def create (b: i64) : *hyperloglog [2 ** b] =
     assert (0 < b && b < i64.i32 u32.num_bits - 1)
     { registers = rep 0
     , alpha = get_alpha (2 ** b)
@@ -185,7 +185,7 @@ module mk_hyperloglog_plusplus
     case 64 -> 0.709
     case _ -> 0.7213 / (1 + 1.079 / f64.i64 m)
 
-  def create (p: i64) : hyperloglog [2 ** p] =
+  def create (p: i64) : *hyperloglog [2 ** p] =
     assert (4 <= p && p <= 18)
     { registers = replicate (2 ** p) 0
     , alpha = get_alpha (2 ** p)

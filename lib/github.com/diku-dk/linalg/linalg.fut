@@ -12,36 +12,36 @@ module type linalg = {
   ------ CREATING MATRICES/VECTORS ------
 
   -- | Make a zero vector.
-  val veczeros : (n: i64) -> [n]t
+  val veczeros : (n: i64) -> *[n]t
 
   -- | Make a ones vector.
-  val vecones : (n: i64) -> [n]t
+  val vecones : (n: i64) -> *[n]t
 
   -- | Create an array of n values varying linearly from the first to second argument.
-  val linspace : t -> t -> (n: i64) -> [n]t
+  val linspace : t -> t -> (n: i64) -> *[n]t
 
   -- | Make an identity matrix.
-  val eye : (n: i64) -> [n][n]t
+  val eye : (n: i64) -> *[n][n]t
 
   -- | Make a zero matrix.
-  val matzeros : (n: i64) -> (m: i64) -> [n][m]t
+  val matzeros : (n: i64) -> (m: i64) -> *[n][m]t
 
   -- | Make a ones matrix.
-  val matones : (n: i64) -> (m: i64) -> [n][m]t
+  val matones : (n: i64) -> (m: i64) -> *[n][m]t
 
   -- | Cast scalar values up into matrices (simulated broadcasting).
-  val mat [m] [n] : t -> [m][n]t
+  val mat [m] [n] : t -> *[m][n]t
 
   ------ CORE FUNCTIONS ------
 
   -- | Dot product.
-  val dotprod [n] : [n]t -> [n]t -> t
+  val dotprod [n] : [n]t -> [n]t -> *t
 
   -- | Outer product.
   val outer [n] [m] : [n]t -> [m]t -> *[n][m]t
 
   -- | Cross product (only for three-element vectors).
-  val cross : [3]t -> [3]t -> [3]t
+  val cross : [3]t -> [3]t -> *[3]t
 
   -- | Multiply a matrix with a row vector.
   val matvecmul_row [n] [m] : [n][m]t -> [m]t -> *[n]t
@@ -129,19 +129,19 @@ module type ordered_linalg = {
 module type field = {
   type t
 
-  val + : t -> t -> t
-  val - : t -> t -> t
-  val * : t -> t -> t
-  val / : t -> t -> t
-  val ** : t -> t -> t
+  val (+) : t -> t -> *t
+  val (-) : t -> t -> *t
+  val (*) : t -> t -> *t
+  val (/) : t -> t -> *t
+  val (**) : t -> t -> *t
 
-  val neg : t -> t
+  val neg : t -> *t
 
-  val i64 : i64 -> t
-  val f64 : f64 -> t
-  val abs : t -> t
-  val fma : t -> t -> t -> t
-  val sqrt : t -> t
+  val i64 : i64 -> *t
+  val f64 : f64 -> *t
+  val abs : t -> *t
+  val fma : t -> t -> t -> *t
+  val sqrt : t -> *t
   val isnan : t -> bool
   val isinf : t -> bool
 }
@@ -150,41 +150,41 @@ module type field = {
 module type ordered_field = {
   include field
 
-  val == : t -> t -> bool
-  val < : t -> t -> bool
-  val > : t -> t -> bool
-  val <= : t -> t -> bool
-  val >= : t -> t -> bool
-  val != : t -> t -> bool
+  val (==) : t -> t -> bool
+  val (<) : t -> t -> bool
+  val (>) : t -> t -> bool
+  val (<=) : t -> t -> bool
+  val (>=) : t -> t -> bool
+  val (!=) : t -> t -> bool
 }
 
 -- | Given some numeric type, produce a linalg module.
 module mk_linalg (T: field) : linalg with t = T.t = {
   type t = T.t
 
-  def veczeros (N) : [N]t =
+  def veczeros (N) : *[N]t =
     T.(map (\_ -> i64 0) (0..<N))
 
-  def vecones (N) : [N]t =
+  def vecones (N) : *[N]t =
     map (\_ -> T.i64 1) (0..<N)
 
-  def linspace (start: t) (stop: t) (n: i64) : [n]t =
+  def linspace (start: t) (stop: t) (n: i64) : *[n]t =
     let step = T.((stop - start) / (i64 n - i64 1))
     in tabulate n (\i -> T.(i64 i * step + start))
 
-  def eye (n: i64) : [n][n]t =
+  def eye (n: i64) : *[n][n]t =
     tabulate_2d n n (\i j -> if i == j then T.i64 1 else T.i64 0)
 
-  def matzeros (N) (M) : [N][M]t =
+  def matzeros (N) (M) : *[N][M]t =
     map (\_ -> map (\_ -> T.i64 0) (0..<M)) (0..<N)
 
-  def matones (N) (M) : [N][M]t =
+  def matones (N) (M) : *[N][M]t =
     map (\_ -> map (\_ -> T.i64 1) (0..<M)) (0..<N)
 
-  def dotprod [n] (xs: [n]t) (ys: [n]t) : t =
+  def dotprod [n] (xs: [n]t) (ys: [n]t) =
     T.(reduce (+) (i64 0) (map2 (*) xs ys))
 
-  def cross (xs: [3]t) (ys: [3]t) : [3]t =
+  def cross (xs: [3]t) (ys: [3]t) =
     T.([ xs[1] * ys[2] - xs[2] * ys[1]
        , xs[2] * ys[0] - xs[0] * ys[2]
        , xs[0] * ys[1] - xs[1] * ys[0]
@@ -256,7 +256,7 @@ module mk_linalg (T: field) : linalg with t = T.t = {
   def indices_from [n] 't (x: i64) (arr: [n]t) =
     zip arr (map (+ x) (iota n))
 
-  def mat [m] [n] (v: t) : [m][n]t =
+  def mat [m] [n] (v: t) : *[m][n]t =
     tabulate_2d m n (\_ _ -> v)
 }
 
@@ -278,7 +278,8 @@ module mk_ordered_linalg (T: ordered_field) : ordered_linalg with t = T.t = {
 
   -- Matrix inversion is implemented with Gauss-Jordan.
   def gauss_jordan [m] [n] (A: [m][n]t) =
-    loop A for i < i64.min m n do
+    loop A = copy A
+    for i < i64.min m n do
       -- Find nonzero value.
       let j = A[i:, i] |> map T.abs |> argmax |> (.1) |> (+ i)
       let f = T.((i64 1 - A[i, i]) / A[j, i])

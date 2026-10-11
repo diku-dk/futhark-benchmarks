@@ -194,9 +194,9 @@ module mk_array_key_params
          let dest = replicate n arr[0]
          let (uniques, _, final_size, final_rng) =
            loop ( uniques: *[n]key
-                , elems: *[]key
+                , elems: []key
                 , old_size
-                , old_rng
+                , old_rng: *rng
                 ) =
                   (dest, arr, 0, copy r)
            while length elems != 0 do
