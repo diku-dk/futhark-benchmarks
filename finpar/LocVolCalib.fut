@@ -246,7 +246,7 @@ def main (outer_loop_count: i32)
          (beta: f32) : []f32 =
   let strikes = map (\i -> 0.001 * f32.i64 i) (iota (i64.i32 outer_loop_count))
   let res =
-    #[incremental_flattening(only_full)]
+    #[incremental_flattening(no_outer)]
     map (\x -> value (i64.i32 numX, i64.i32 numY, i64.i32 numT, s0, x, t, alpha, nu, beta))
         strikes
   in res
