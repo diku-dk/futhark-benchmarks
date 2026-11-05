@@ -318,5 +318,5 @@ def main [num_bits] [num_models] [num_und] [num_dates] [num_discts]
                 md_detvals
                 (map4 (blackScholes bb_row) md_cs md_vols md_drifts md_sts))
         bb_mat
-  let payoff = #[sequential_inner] reduce (map2 (+)) (replicate num_models 0.0) payoffs
+  let payoff = #[flattening(only_outer)] reduce (map2 (+)) (replicate num_models 0.0) payoffs
   in map (/ f32.i32 num_mc_it) payoff

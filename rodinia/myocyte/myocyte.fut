@@ -1323,7 +1323,7 @@ def main (repeat: i32)
          (params: [16]f32) : (bool, [workload][91]f32) =
   let (oks, y_res) =
     unzip
-    <| #[sequential_inner]
+    <| #[flattening(only_outer)]
        tabulate workload
                 (\i ->
                    let add_fact = f32.i32 (i32.i64 i % repeat) * eps
